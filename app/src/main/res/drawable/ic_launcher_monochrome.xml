@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Same glyph as foreground, but as a single-color silhouette. Android 13+
+         themed icons tint this layer with the system accent color; older
+         versions ignore the monochrome attribute on the adaptive-icon. -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="10"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M54,30 L54,60 M38,52 L54,68 L70,52 M34,82 L74,82" />
+</vector>

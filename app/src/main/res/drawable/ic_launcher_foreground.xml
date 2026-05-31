@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Stylized "download to disk" glyph. Three sub-paths in one element:
+         (1) vertical arrow shaft from 54,30 to 54,60
+         (2) chevron arrowhead 38,52 -> 54,68 -> 70,52
+         (3) horizontal landing bar 34,82 -> 74,82
+         All within the adaptive-icon safe zone (21..87 on a 108 canvas), with
+         a 25dp margin from the outer edge so launcher masks never clip it.
+         fillColor explicitly transparent because the default fill is black,
+         which would fill the open chevron path as a triangle. -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="10"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M54,30 L54,60 M38,52 L54,68 L70,52 M34,82 L74,82" />
+</vector>
