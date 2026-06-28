@@ -90,4 +90,15 @@ object DownloadFiles {
         if (partPath == null) return
         runCatching { File(partPath).takeIf { it.exists() }?.delete() }
     }
+
+    /**
+     * Remove the promoted final file. Used when a cancel arrives after the
+     * downloader had already renamed .part -> final; without this, the user's
+     * explicit cancel would leave the completed file on disk with no DB
+     * record. Safe if absent.
+     */
+    fun deleteFinal(finalPath: String?) {
+        if (finalPath == null) return
+        runCatching { File(finalPath).takeIf { it.exists() }?.delete() }
+    }
 }

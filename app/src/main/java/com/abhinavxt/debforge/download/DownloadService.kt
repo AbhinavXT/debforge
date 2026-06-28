@@ -18,6 +18,7 @@ import com.abhinavxt.debforge.domain.DownloadState
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
@@ -42,6 +43,22 @@ import javax.inject.Inject
  *
  * Cooperative cancellation in [ChunkedDownloader] persists per-chunk progress in
  * a NonCancellable block, so a paused/cancelled item leaves a resumable .part.
+ *
+ * Cancel-correctness notes:
+ *  - The work in [runOne] is created with [CoroutineStart.LAZY] so [currentJob]
+ *    can be published BEFORE [currentId]. The cancel/pause handlers gate on
+ *    `id == currentId`; by the time that gate opens, [currentJob] is guaranteed
+ *    non-null and cancellable. Cancelling a LAZY job before start() is
+ *    well-defined — start() then no-ops and join() returns immediately, so the
+ *    cancel can't be silently dropped in the publish window.
+ *  - All four cross-thread fields are @Volatile. Without that on currentJob, a
+ *    main-thread cancel could observe a stale null even after the IO write.
+ *  - After publishing state, [runOne] re-reads the DB row. A non-active
+ *    cancel/pause that raced ahead can have deleted the row (cancel) or moved
+ *    it to PAUSED (pause); in either case the engine aborts cleanly instead of
+ *    producing a ghost file or overwriting PAUSED back to DOWNLOADING.
+ *  - If the downloader had already promoted .part -> final when cancel was
+ *    processed, the CANCEL arm deletes the final file too so cancel is honest.
  */
 @AndroidEntryPoint
 class DownloadService : Service() {
@@ -53,8 +70,11 @@ class DownloadService : Service() {
 
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var queueJob: Job? = null
-    private var currentJob: Job? = null
 
+    // All four fields below are written from the IO thread (runOne) and read
+    // from the main thread (cancel/pause in onStartCommand). @Volatile gives
+    // the cross-thread visibility we rely on.
+    @Volatile private var currentJob: Job? = null
     @Volatile private var currentId: String? = null
     @Volatile private var currentFilename: String? = null
     @Volatile private var interrupt: Interrupt? = null
@@ -109,15 +129,13 @@ class DownloadService : Service() {
 
     private suspend fun runOne(entity: DownloadEntity) {
         interrupt = null
-        currentId = entity.rdId
-        currentFilename = entity.filename
-        downloadDao.updateState(entity.rdId, DownloadState.DOWNLOADING)
-        progressTracker.update(
-            entity.rdId, entity.bytesDownloaded, entity.filesize, DownloadState.DOWNLOADING
-        )
 
+        // Create the work LAZY so we can publish currentJob BEFORE currentId.
+        // A LAZY job that is cancelled before start() makes start() a no-op,
+        // so a cancel arriving in the publish window is captured by the job
+        // itself rather than silently dropped.
         val result = arrayOfNulls<DownloadOutcome>(1)
-        val job = serviceScope.launch {
+        val job = serviceScope.launch(start = CoroutineStart.LAZY) {
             result[0] = try {
                 downloader.download(entity)
             } catch (ce: CancellationException) {
@@ -126,7 +144,35 @@ class DownloadService : Service() {
                 DownloadOutcome.Failure(t.message ?: "Unexpected error")
             }
         }
+
+        // Publish order: currentJob FIRST, currentId LAST. The "id == currentId"
+        // check in cancel()/pause() is the gate for the active branch; by the
+        // time it matches, currentJob is guaranteed non-null.
         currentJob = job
+        currentFilename = entity.filename
+        currentId = entity.rdId
+
+        // Window-A guard: a non-active cancel/pause may have raced ahead and
+        // modified or deleted this row between the queue loop's nextInState()
+        // and our publish above. Re-read the row before doing any work so we
+        // don't produce a ghost file with no DB record (cancel) or overwrite
+        // a paused state back to DOWNLOADING (pause).
+        val fresh = downloadDao.getById(entity.rdId)
+        if (fresh == null || fresh.state == DownloadState.PAUSED) {
+            job.cancel()
+            currentJob = null
+            currentId = null
+            currentFilename = null
+            progressTracker.clear(entity.rdId)
+            return
+        }
+
+        downloadDao.updateState(entity.rdId, DownloadState.DOWNLOADING)
+        progressTracker.update(
+            entity.rdId, entity.bytesDownloaded, entity.filesize, DownloadState.DOWNLOADING
+        )
+
+        job.start()
         try {
             job.join()
         } finally {
@@ -142,6 +188,13 @@ class DownloadService : Service() {
                 chunkDao.deleteForDownload(entity.rdId)
                 downloadDao.delete(entity.rdId)
                 DownloadFiles.deletePart(entity.partFilePath)
+                // If the downloader had already promoted .part -> final before
+                // the cancel landed, the user's explicit cancel would otherwise
+                // leave the file sitting on disk with no DB record. Honour the
+                // cancel by removing it too.
+                if (result[0] is DownloadOutcome.Success) {
+                    DownloadFiles.deleteFinal(entity.finalFilePath)
+                }
                 progressTracker.clear(entity.rdId)
             }
             null -> when (val outcome = result[0]) {
