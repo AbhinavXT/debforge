@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+   Backup rules for Android 11 (minSdk 30). Same policy as
+   data_extraction_rules.xml: never back up API tokens or the download queue
+   (its absolute paths and .part files don't exist on a restored device).
+-->
+<full-backup-content>
+    <exclude domain="file" path="datastore/debforge_token.preferences_pb" />
+    <exclude domain="database" path="debforge.db" />
+</full-backup-content>
