@@ -7,52 +7,55 @@ name: Screenshots
 # Run it from the Actions tab ("Run workflow") after UI changes, before
 # tagging a release: F-Droid reads screenshots from the tagged commit.
 on:
-  workflow_dispatch:
+    workflow_dispatch:
 
 permissions:
-  contents: write
+    contents: write
 
 jobs:
-  screenshots:
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@v4
+    screenshots:
+        runs-on: ubuntu-latest
+        timeout-minutes: 30
+        steps:
+            - uses: actions/checkout@v4
 
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: "21"
+            - name: Make gradlew executable
+              run: chmod +x gradlew
 
-      - uses: gradle/actions/setup-gradle@v4
+            - uses: actions/setup-java@v4
+              with:
+                  distribution: temurin
+                  java-version: "21"
 
-      - name: Render screenshots
-        run: ./gradlew --stacktrace recordRoborazziDebug -Pscreenshots
+            - uses: gradle/actions/setup-gradle@v4
 
-      - name: Copy into fastlane metadata
-        run: |
-          src=app/build/screenshots
-          dst=fastlane/metadata/android/en-US/images/phoneScreenshots
-          ls -la "$src"
-          test -f "$src/1.png" || { echo "::error::No screenshots were produced"; exit 1; }
-          mkdir -p "$dst"
-          rm -f "$dst"/*.png
-          cp "$src"/*.png "$dst"/
+            - name: Render screenshots
+              run: ./gradlew --stacktrace recordRoborazziDebug -Pscreenshots
 
-      - name: Upload for review
-        uses: actions/upload-artifact@v4
-        with:
-          name: screenshots
-          path: fastlane/metadata/android/en-US/images/phoneScreenshots/
+            - name: Copy into fastlane metadata
+              run: |
+                  src=app/build/screenshots
+                  dst=fastlane/metadata/android/en-US/images/phoneScreenshots
+                  ls -la "$src"
+                  test -f "$src/1.png" || { echo "::error::No screenshots were produced"; exit 1; }
+                  mkdir -p "$dst"
+                  rm -f "$dst"/*.png
+                  cp "$src"/*.png "$dst"/
 
-      - name: Commit if changed
-        run: |
-          git add fastlane/metadata/android/en-US/images/phoneScreenshots
-          if git diff --cached --quiet; then
-            echo "Screenshots unchanged."
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -m "Update store screenshots"
-          git push
+            - name: Upload for review
+              uses: actions/upload-artifact@v4
+              with:
+                  name: screenshots
+                  path: fastlane/metadata/android/en-US/images/phoneScreenshots/
+
+            - name: Commit if changed
+              run: |
+                  git add fastlane/metadata/android/en-US/images/phoneScreenshots
+                  if git diff --cached --quiet; then
+                    echo "Screenshots unchanged."
+                    exit 0
+                  fi
+                  git config user.name "github-actions[bot]"
+                  git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+                  git commit -m "Update store screenshots"
+                  git push

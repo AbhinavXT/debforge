@@ -5,8 +5,8 @@
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.abhinavxt.debforge"
-    android:versionCode="10102"
-    android:versionName="1.1.2" >
+    android:versionCode="10200"
+    android:versionName="1.2.0" >
 
     <uses-sdk
         android:minSdkVersion="30"

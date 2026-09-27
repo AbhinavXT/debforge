@@ -5,8 +5,8 @@
 5-->
 6<manifest xmlns:android="http://schemas.android.com/apk/res/android"
 7    package="com.abhinavxt.debforge"
-8    android:versionCode="10102"
-9    android:versionName="1.1.2" >
+8    android:versionCode="10200"
+9    android:versionName="1.2.0" >
 10
 11    <uses-sdk
 11-->INJECTED

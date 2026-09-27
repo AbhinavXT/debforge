@@ -7,8 +7,8 @@ public final class BuildConfig {
   public static final boolean DEBUG = Boolean.parseBoolean("true");
   public static final String APPLICATION_ID = "com.abhinavxt.debforge";
   public static final String BUILD_TYPE = "debug";
-  public static final int VERSION_CODE = 10102;
-  public static final String VERSION_NAME = "1.1.2";
+  public static final int VERSION_CODE = 10200;
+  public static final String VERSION_NAME = "1.2.0";
   // Field from default config.
   public static final String GITHUB_REPO = "AbhinavXT/debforge";
   // Field from build type: debug
