@@ -169,7 +169,7 @@ Steps:
    `fastlane/metadata/android/en-US/images/phoneScreenshots/` as `1.png`,
    `2.png` and so on. Library, poster view, Downloads and Add work well. You can
    also add `tenInchScreenshots/` and `tvScreenshots/`.
-2. **Release v1.2.0** with `scripts/release.sh 1.2.0` and push the tag. Wait
+2. **Release v1.1.2** with `scripts/release.sh 1.1.2` and push the tag. Wait
    for the release job to go green.
 3. **Copy the certificate.** Open the release run's summary and copy the
    "Signing certificate SHA-256" value into `AllowedAPKSigningKeys` in

@@ -25,9 +25,9 @@ Repo: https://github.com/AbhinavXT/debforge.git
 Binaries: https://github.com/AbhinavXT/debforge/releases/download/v%v/DebForge-v%v.apk
 
 Builds:
-  - versionName: 1.2.0
-    versionCode: 10200
-    commit: v1.2.0
+  - versionName: 1.1.2
+    versionCode: 10102
+    commit: v1.1.2
     subdir: app
     gradle:
       - yes
@@ -37,10 +37,10 @@ Builds:
       - sed -i -e '/foojay/d' ../settings.gradle.kts
 
 # From the "Signing certificate SHA-256" line in the GitHub release job
-# summary (or: apksigner verify --print-certs DebForge-v1.2.0.apk).
+# summary (or: apksigner verify --print-certs DebForge-v1.1.2.apk).
 AllowedAPKSigningKeys: REPLACE_WITH_SIGNING_CERT_SHA256
 
 AutoUpdateMode: Version
 UpdateCheckMode: Tags ^v[0-9]+\.[0-9]+\.[0-9]+$
-CurrentVersion: 1.2.0
-CurrentVersionCode: 10200
+CurrentVersion: 1.1.2
+CurrentVersionCode: 10102

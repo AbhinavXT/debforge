@@ -39,9 +39,9 @@ android {
         // Plain literals on purpose: F-Droid reads these two lines with a regex
         // and never runs Gradle, so they must not be computed. Bump them with
         // `scripts/release.sh X.Y.Z` (also writes the changelog and the tag).
-        // Code scheme: major*10000 + minor*100 + patch, so 1.2.0 is 10200.
-        versionCode = 10200
-        versionName = "1.2.0"
+        // Code scheme: major*10000 + minor*100 + patch, so 1.1.2 is 10102.
+        versionCode = 10102
+        versionName = "1.1.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
