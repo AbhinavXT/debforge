@@ -1,0 +1,4 @@
+com.abhinavxt.debforge.test.app-updated_navigation_xml-0 /Users/abhinavpathak/abh/codehall/projects/android/debforge/app/build/generated/updated_navigation_xml/debugAndroidTest
+com.abhinavxt.debforge.test.app-packageDebugAndroidTestResources-1 /Users/abhinavpathak/abh/codehall/projects/android/debforge/app/build/intermediates/incremental/debugAndroidTest/packageDebugAndroidTestResources/merged.dir
+com.abhinavxt.debforge.test.app-packageDebugAndroidTestResources-2 /Users/abhinavpathak/abh/codehall/projects/android/debforge/app/build/intermediates/incremental/debugAndroidTest/packageDebugAndroidTestResources/stripped.dir
+com.abhinavxt.debforge.test.app-debugAndroidTest-3 /Users/abhinavpathak/abh/codehall/projects/android/debforge/app/build/intermediates/merged_res/debugAndroidTest/mergeDebugAndroidTestResources
