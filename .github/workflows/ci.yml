@@ -1,0 +1,55 @@
+name: CI
+
+# Compiles the app and runs unit tests on every push and pull request, so a
+# broken build shows up here instead of on your machine.
+on:
+  push:
+    branches: ["**"]
+    tags-ignore: ["v*"]   # tags are handled by release.yml
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0          # full history: versionCode = commit count
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Build debug APK and run unit tests
+        run: ./gradlew --stacktrace assembleDebug testDebugUnitTest
+        env:
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+
+      - name: Lint (report only)
+        continue-on-error: true
+        run: ./gradlew lintDebug
+
+      - name: Upload test and lint reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reports
+          path: |
+            app/build/reports/
+            app/build/test-results/
+          if-no-files-found: ignore
+
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: debforge-debug
+          path: app/build/outputs/apk/debug/*.apk
