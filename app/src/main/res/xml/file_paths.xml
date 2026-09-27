@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Lets DebForge hand finished downloads (anywhere on shared storage, which
+     it can write via all-files access) to players / share targets as
+     content:// URIs. -->
+<paths>
+    <external-path name="storage" path="." />
+</paths>

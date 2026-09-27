@@ -1,0 +1,40 @@
+DebForge downloads the files in your debrid account straight to your phone, tablet or Android TV. Sign in to one or more services and switch between them any time.
+
+<b>Supported services</b>
+<ul>
+<li>TorBox</li>
+<li>Real-Debrid</li>
+<li>AllDebrid</li>
+<li>Premiumize</li>
+<li>Debrid-Link</li>
+</ul>
+
+<b>Features</b>
+<ul>
+<li>Fast downloads with up to 16 connections per file, pause and resume, and automatic link refresh</li>
+<li>Library view with clean titles, series grouped by season, and search across your whole account</li>
+<li>Posters from TMDB (add your own free API key in Settings)</li>
+<li>Add magnet links, .torrent files and links, from the app or by sharing to it, and optionally download them as soon as they're ready</li>
+<li>Built-in player that remembers where you stopped, a Continue watching row, subtitles from the torrent and the next episode ready to go, or play in VLC and others if you prefer</li>
+<li>Follow a show and new episodes that reach your account download by themselves</li>
+<li>Home-screen widget, Quick Settings tile and launcher shortcuts</li>
+<li>Signed in to several services? Add to the one that already has it cached</li>
+<li>Free-space check before downloading, and optional auto-delete of old downloads</li>
+<li>Release-group notes, covers and sample clips are kept out of your library</li>
+<li>Rules for Wi-Fi only, charging only, a nightly time window and a speed limit</li>
+<li>Save to any folder, including SD cards and USB drives, with no special permission</li>
+<li>Remove torrents from your service in the app, or automatically once they have downloaded</li>
+<li>See whether a torrent is already cached before adding it (TorBox, Premiumize)</li>
+<li>Data-usage statistics for Wi-Fi and mobile data</li>
+<li>Back up and restore your settings, with optional password-encrypted sign-ins</li>
+<li>Optional Plex/Jellyfin folder layout for shows and movies</li>
+<li>Download a whole TorBox torrent as one zip</li>
+<li>Works on phones, tablets and Android TV</li>
+<li>Seven colour themes, light and dark, pure black for OLED, or your wallpaper colours</li>
+<li>Available in 14 languages</li>
+</ul>
+
+<b>Privacy</b>
+API keys are encrypted with the Android Keystore and never included in backups. There are no analytics and no ads. If the app crashes, a report with tokens, links and file names removed is kept on your device, and it is only sent if you choose to share it.
+
+DebForge needs an account with at least one of the services above. These are paid, proprietary services, which is why F-Droid marks the app with the "Non-Free Network Services" anti-feature.

@@ -1,0 +1,7 @@
+com.abhinavxt.debforge.app-pngs-0 /Users/abhinavpathak/abh/codehall/projects/android/debforge/app/build/generated/res/pngs/debug
+com.abhinavxt.debforge.app-updated_navigation_xml-1 /Users/abhinavpathak/abh/codehall/projects/android/debforge/app/build/generated/updated_navigation_xml/debug
+com.abhinavxt.debforge.app-packageDebugResources-2 /Users/abhinavpathak/abh/codehall/projects/android/debforge/app/build/intermediates/incremental/debug/packageDebugResources/merged.dir
+com.abhinavxt.debforge.app-packageDebugResources-3 /Users/abhinavpathak/abh/codehall/projects/android/debforge/app/build/intermediates/incremental/debug/packageDebugResources/stripped.dir
+com.abhinavxt.debforge.app-debug-4 /Users/abhinavpathak/abh/codehall/projects/android/debforge/app/build/intermediates/merged_res/debug/mergeDebugResources
+com.abhinavxt.debforge.app-debug-5 /Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/debug/res
+com.abhinavxt.debforge.app-main-6 /Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/res

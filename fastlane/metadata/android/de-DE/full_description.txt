@@ -1,0 +1,40 @@
+DebForge lädt die Dateien aus deinem Debrid-Konto direkt auf dein Handy, Tablet oder Android TV. Melde dich bei einem oder mehreren Diensten an und wechsle jederzeit zwischen ihnen.
+
+<b>Unterstützte Dienste</b>
+<ul>
+<li>TorBox</li>
+<li>Real-Debrid</li>
+<li>AllDebrid</li>
+<li>Premiumize</li>
+<li>Debrid-Link</li>
+</ul>
+
+<b>Funktionen</b>
+<ul>
+<li>Schnelle Downloads mit bis zu 16 Verbindungen pro Datei, Pausieren und Fortsetzen sowie automatischer Link-Aktualisierung</li>
+<li>Mediathek mit bereinigten Titeln, nach Staffeln gruppierten Serien und Suche im gesamten Konto</li>
+<li>Poster von TMDB (eigenen kostenlosen API-Schlüssel in den Einstellungen hinzufügen)</li>
+<li>Magnet-Links, .torrent-Dateien und Links in der App oder per Teilen hinzufügen und auf Wunsch herunterladen, sobald sie bereit sind</li>
+<li>Eingebauter Player, der sich merkt, wo du aufgehört hast, mit „Weiterschauen“, Untertiteln aus dem Torrent und der nächsten Folge bereit; oder VLC & Co., wenn du magst</li>
+<li>Folge einer Serie: neue Folgen, die in deinem Konto ankommen, werden automatisch geladen</li>
+<li>Startbildschirm-Widget, Schnelleinstellungs-Kachel und App-Verknüpfungen</li>
+<li>Bei mehreren Diensten angemeldet? Füge dort hinzu, wo es schon im Cache liegt</li>
+<li>Prüfung des freien Speichers vor dem Download und optionales automatisches Löschen alter Downloads</li>
+<li>Notizen der Release-Gruppe, Cover und Sample-Clips bleiben aus deiner Mediathek draußen</li>
+<li>Regeln für „nur WLAN“, „nur beim Laden“, ein nächtliches Zeitfenster und ein Geschwindigkeitslimit</li>
+<li>Speichern in jedem Ordner, auch auf SD-Karten und USB-Sticks, ohne besondere Berechtigung</li>
+<li>Torrents in der App vom Dienst entfernen oder automatisch, sobald sie heruntergeladen sind</li>
+<li>Vor dem Hinzufügen sehen, ob ein Torrent bereits im Cache ist (TorBox, Premiumize)</li>
+<li>Statistik zur Datennutzung für WLAN und mobile Daten</li>
+<li>Einstellungen sichern und wiederherstellen, optional mit passwortverschlüsselten Anmeldungen</li>
+<li>Optionale Ordnerstruktur für Plex/Jellyfin für Serien und Filme</li>
+<li>Einen ganzen TorBox-Torrent als eine Zip-Datei herunterladen</li>
+<li>Läuft auf Handys, Tablets und Android TV</li>
+<li>Sieben Farbthemen, hell und dunkel, reines Schwarz für OLED oder die Farben Ihres Hintergrundbilds</li>
+<li>In 14 Sprachen verfügbar</li>
+</ul>
+
+<b>Datenschutz</b>
+API-Schlüssel werden mit dem Android Keystore verschlüsselt und nie in Sicherungen aufgenommen. Es gibt keine Analysedienste und keine Werbung. Wenn die App abstürzt, wird ein Bericht ohne Tokens, Links und Dateinamen auf deinem Gerät gespeichert und nur gesendet, wenn du ihn teilst.
+
+DebForge benötigt ein Konto bei mindestens einem der oben genannten Dienste. Dabei handelt es sich um kostenpflichtige, proprietäre Dienste, weshalb F-Droid die App mit der Anti-Funktion „Non-Free Network Services“ kennzeichnet.

@@ -1,0 +1,40 @@
+O DebForge baixa os arquivos da sua conta debrid direto para o seu celular, tablet ou Android TV. Faça login em um ou mais serviços e alterne entre eles quando quiser.
+
+<b>Serviços compatíveis</b>
+<ul>
+<li>TorBox</li>
+<li>Real-Debrid</li>
+<li>AllDebrid</li>
+<li>Premiumize</li>
+<li>Debrid-Link</li>
+</ul>
+
+<b>Recursos</b>
+<ul>
+<li>Downloads rápidos com até 16 conexões por arquivo, pausar e retomar, e renovação automática de links</li>
+<li>Biblioteca com títulos limpos, séries agrupadas por temporada e pesquisa em toda a sua conta</li>
+<li>Pôsteres do TMDB (adicione sua própria chave de API gratuita em Configurações)</li>
+<li>Adicione links magnet, arquivos .torrent e links pelo app ou compartilhando com ele, e, se quiser, baixe-os assim que ficarem prontos</li>
+<li>Player integrado que lembra onde você parou, fileira Continuar assistindo, legendas do próprio torrent e o próximo episódio pronto; ou use o VLC e outros, se preferir</li>
+<li>Siga uma série e os episódios novos que chegam à sua conta são baixados sozinhos</li>
+<li>Widget na tela inicial, bloco de Configurações rápidas e atalhos</li>
+<li>Conectado a vários serviços? Adicione ao que já tem em cache</li>
+<li>Verificação de espaço livre antes de baixar e exclusão automática opcional de downloads antigos</li>
+<li>Notas do grupo de lançamento, capas e amostras ficam fora da sua biblioteca</li>
+<li>Regras para baixar somente no Wi-Fi, somente carregando, em uma janela de horário noturna e com limite de velocidade</li>
+<li>Salve em qualquer pasta, incluindo cartões SD e pendrives USB, sem permissão especial</li>
+<li>Remova torrents do seu serviço pelo app, ou automaticamente depois que forem baixados</li>
+<li>Veja se um torrent já está em cache antes de adicioná-lo (TorBox, Premiumize)</li>
+<li>Estatísticas de uso de dados para Wi-Fi e dados móveis</li>
+<li>Backup e restauração das configurações, com logins opcionalmente criptografados por senha</li>
+<li>Estrutura de pastas opcional no estilo Plex/Jellyfin para séries e filmes</li>
+<li>Baixe um torrent inteiro do TorBox como um único zip</li>
+<li>Funciona em celulares, tablets e Android TV</li>
+<li>Sete temas de cores, claro e escuro, preto puro para OLED ou as cores do seu papel de parede</li>
+<li>Disponível em 14 idiomas</li>
+</ul>
+
+<b>Privacidade</b>
+As chaves de API são criptografadas com o Android Keystore e nunca entram nos backups. Não há análises nem anúncios. Se o app falhar, um relatório sem tokens, links e nomes de arquivos fica guardado no seu dispositivo, e só é enviado se você decidir compartilhá-lo.
+
+O DebForge precisa de uma conta em pelo menos um dos serviços acima. São serviços pagos e proprietários, por isso o F-Droid marca o app com o antirrecurso "Non-Free Network Services".

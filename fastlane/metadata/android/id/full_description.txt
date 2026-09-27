@@ -1,0 +1,40 @@
+DebForge mengunduh file di akun debrid Anda langsung ke ponsel, tablet, atau Android TV. Masuk ke satu atau beberapa layanan dan beralih di antaranya kapan saja.
+
+<b>Layanan yang didukung</b>
+<ul>
+<li>TorBox</li>
+<li>Real-Debrid</li>
+<li>AllDebrid</li>
+<li>Premiumize</li>
+<li>Debrid-Link</li>
+</ul>
+
+<b>Fitur</b>
+<ul>
+<li>Unduhan cepat dengan hingga 16 koneksi per file, jeda dan lanjutkan, serta pembaruan link otomatis</li>
+<li>Tampilan pustaka dengan judul yang rapi, serial dikelompokkan per musim, dan pencarian di seluruh akun Anda</li>
+<li>Poster dari TMDB (tambahkan API key gratis Anda sendiri di Setelan)</li>
+<li>Tambahkan link magnet, file .torrent, dan link, dari aplikasi atau dengan membagikannya ke aplikasi, lalu unduh otomatis begitu siap jika diinginkan</li>
+<li>Pemutar bawaan yang mengingat posisi terakhir, baris Lanjut menonton, subtitle dari torrent, dan episode berikutnya siap; atau pakai VLC dan lainnya jika mau</li>
+<li>Ikuti serial dan episode baru yang masuk ke akun Anda terunduh otomatis</li>
+<li>Widget layar utama, ubin Setelan Cepat, dan pintasan</li>
+<li>Masuk ke beberapa layanan? Tambahkan ke yang sudah menyimpannya di cache</li>
+<li>Pemeriksaan ruang kosong sebelum mengunduh, dan hapus otomatis unduhan lama (opsional)</li>
+<li>Catatan grup rilis, sampul, dan klip sampel tidak masuk ke pustaka Anda</li>
+<li>Aturan hanya Wi-Fi, hanya saat mengisi daya, rentang waktu malam hari, dan batas kecepatan</li>
+<li>Simpan ke folder mana pun, termasuk kartu SD dan drive USB, tanpa izin khusus</li>
+<li>Hapus torrent dari layanan Anda di dalam aplikasi, atau secara otomatis setelah selesai diunduh</li>
+<li>Lihat apakah torrent sudah di-cache sebelum menambahkannya (TorBox, Premiumize)</li>
+<li>Statistik penggunaan data untuk Wi-Fi dan data seluler</li>
+<li>Cadangkan dan pulihkan setelan Anda, dengan opsi info masuk yang dienkripsi dengan sandi</li>
+<li>Tata letak folder Plex/Jellyfin opsional untuk serial dan film</li>
+<li>Unduh seluruh torrent TorBox sebagai satu file zip</li>
+<li>Berfungsi di ponsel, tablet, dan Android TV</li>
+<li>Tujuh tema warna, terang dan gelap, hitam pekat untuk OLED, atau warna wallpaper Anda</li>
+<li>Tersedia dalam 14 bahasa</li>
+</ul>
+
+<b>Privasi</b>
+API key dienkripsi dengan Android Keystore dan tidak pernah disertakan dalam cadangan. Tidak ada analitik dan tidak ada iklan. Jika aplikasi mengalami error, laporan dengan token, link, dan nama file yang telah dihapus disimpan di perangkat Anda, dan hanya dikirim jika Anda memilih untuk membagikannya.
+
+DebForge memerlukan akun di setidaknya salah satu layanan di atas. Layanan-layanan ini berbayar dan bersifat proprietary, itulah sebabnya F-Droid menandai aplikasi ini dengan anti-fitur "Non-Free Network Services".

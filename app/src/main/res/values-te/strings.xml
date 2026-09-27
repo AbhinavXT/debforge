@@ -1,0 +1,492 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tab_library">లైబ్రరీ</string>
+    <string name="tab_downloads">డౌన్‌లోడ్‌లు</string>
+    <string name="tab_settings">సెట్టింగ్‌లు</string>
+    <string name="action_cancel">రద్దు చేయి</string>
+    <string name="action_close">మూసివేయి</string>
+    <string name="action_download">డౌన్‌లోడ్ చేయి</string>
+    <string name="action_play">ప్లే చేయి</string>
+    <string name="action_open">తెరువు</string>
+    <string name="action_share">షేర్ చేయి</string>
+    <string name="action_remove">తీసివేయి</string>
+    <string name="action_retry">మళ్లీ ప్రయత్నించు</string>
+    <string name="action_save">సేవ్ చేయి</string>
+    <string name="action_allow">అనుమతించు</string>
+    <string name="action_add">జోడించు</string>
+    <string name="action_dismiss">విస్మరించు</string>
+    <string name="action_pause">పాజ్ చేయి</string>
+    <string name="action_resume">కొనసాగించు</string>
+    <string name="action_renew">రెన్యూ చేయి</string>
+    <string name="action_refresh">రిఫ్రెష్ చేయి</string>
+    <string name="action_clear">క్లియర్ చేయి</string>
+    <string name="action_done">పూర్తయింది</string>
+    <string name="setup_your_service">మీ డెబ్రిడ్ సర్వీస్</string>
+    <string name="setup_intro">మీ సర్వీస్‌ను ఎంచుకుని, మీ %1$s %2$sతో సైన్ ఇన్ చేయండి.</string>
+    <string name="setup_or_paste">లేదా మీ %1$sను పేస్ట్ చేయండి</string>
+    <string name="setup_paste">పేస్ట్ చేయి</string>
+    <string name="setup_pasted_from">%1$s నుండి పేస్ట్ చేయబడింది</string>
+    <string name="setup_validate">ధృవీకరించి కొనసాగించు</string>
+    <string name="setup_get_token">మీ %1$sను %2$s నుండి పొందండి</string>
+    <string name="setup_privacy">మీ %1$s ఈ పరికరంలో మాత్రమే ఎన్‌క్రిప్ట్ చేసి నిల్వ చేయబడుతుంది, %2$s APIని కాల్ చేయడానికి మాత్రమే ఉపయోగించబడుతుంది.</string>
+    <string name="setup_sign_in_with">%1$sతో సైన్ ఇన్ చేయి</string>
+    <string name="setup_enter_code_at">ఈ కోడ్‌ను %1$sలో ఎంటర్ చేయండి</string>
+    <string name="setup_open_service">%1$sను తెరువు</string>
+    <string name="setup_waiting_approval">ఆమోదం కోసం వేచి ఉంది…</string>
+    <string name="add_title">%1$sకు జోడించు</string>
+    <string name="add_choose_torrent">.torrent ఫైల్‌ను ఎంచుకోండి</string>
+    <string name="add_remove_file">ఫైల్‌ను తీసివేయి</string>
+    <string name="add_auto_download">సిద్ధమైన వెంటనే ఈ ఫోన్‌కు ఆటోమేటిక్‌గా డౌన్‌లోడ్ చేయి</string>
+    <string name="add_needs_storage">ముందుగా డౌన్‌లోడ్ ఫోల్డర్‌ను ఎంచుకోండి, లేదా ఫైల్ యాక్సెస్‌ను అనుమతించండి.</string>
+    <string name="add_allow_file_access">ఫైల్ యాక్సెస్‌ను అనుమతించు</string>
+    <string name="add_hint_both">మాగ్నెట్ లింక్‌లు లేదా URLలు, ఒక్కో లైన్‌కు ఒకటి</string>
+    <string name="add_hint_magnet">మాగ్నెట్ లింక్‌లు, ఒక్కో లైన్‌కు ఒకటి</string>
+    <string name="add_hint_links">హోస్టర్ లింక్‌లు, ఒక్కో లైన్‌కు ఒకటి</string>
+    <string name="processing_on">%1$sలో ప్రాసెస్ అవుతోంది</string>
+    <string name="processing_will_auto">ఆటోమేటిక్‌గా డౌన్‌లోడ్ అవుతుంది</string>
+    <string name="processing_auto_when_ready">సిద్ధమైనప్పుడు ఆటో-డౌన్‌లోడ్</string>
+    <string name="eta_seconds">%1$d సె. మిగిలి ఉంది</string>
+    <string name="eta_minutes">%1$d ని. మిగిలి ఉంది</string>
+    <string name="eta_hours">%1$d గం. %2$d ని. మిగిలి ఉంది</string>
+    <string name="browse_add_cd">మాగ్నెట్, లింక్ లేదా టొరెంట్ జోడించు</string>
+    <string name="browse_selected">%1$d ఎంచుకోబడ్డాయి</string>
+    <string name="browse_cancel_selection">ఎంపికను రద్దు చేయి</string>
+    <string name="browse_searching_all">మొత్తం లైబ్రరీలో వెతుకుతోంది… %1$d ఫైల్‌లు తనిఖీ చేయబడ్డాయి</string>
+    <string name="browse_search_hint">టైటిల్‌లు లేదా ఫైల్‌లను వెతకండి</string>
+    <string name="browse_posters">పోస్టర్‌లు</string>
+    <string name="browse_group_series">సిరీస్‌లుగా గ్రూప్ చేయి</string>
+    <string name="sort_newest">కొత్తవి</string>
+    <string name="sort_oldest">పాతవి</string>
+    <string name="sort_name_az">పేరు A-Z</string>
+    <string name="sort_name_za">పేరు Z-A</string>
+    <string name="sort_largest">పెద్దవి</string>
+    <string name="sort_smallest">చిన్నవి</string>
+    <string name="browse_other">ఇతరాలు</string>
+    <string name="browse_end_of_list">జాబితా ముగిసింది</string>
+    <string name="browse_no_matches">\"%1$s\"కు సరిపోలేవి ఏవీ లేవు</string>
+    <string name="browse_empty_title">మీ లైబ్రరీ ఖాళీగా ఉంది</string>
+    <string name="browse_empty_body">మీరు %1$sకు జోడించేవన్నీ ఇక్కడ కనిపిస్తాయి, పూర్తి వేగంతో డౌన్‌లోడ్‌కు సిద్ధంగా.</string>
+    <string name="browse_your_service">మీ సర్వీస్</string>
+    <string name="browse_empty_add">మాగ్నెట్, టొరెంట్ లేదా లింక్‌ను జోడించండి</string>
+    <string name="storage_title">ఫైల్‌లు ఎక్కడ సేవ్ కావాలి?</string>
+    <string name="storage_body">ఒక ఫోల్డర్‌ను ఎంచుకోండి: ఇంటర్నల్ స్టోరేజ్, SD కార్డ్ లేదా USB డ్రైవ్, ప్రత్యేక అనుమతి అవసరం లేదు. లేదా పాత్ ద్వారా Moviesలో సేవ్ చేయడానికి \"All files access\" ఇవ్వండి, లేదా DebForge సొంత స్టోరేజ్‌ను ఉపయోగించండి (యాప్‌ను అన్‌ఇన్‌స్టాల్ చేస్తే తొలగించబడుతుంది).</string>
+    <string name="storage_grant">యాక్సెస్ ఇవ్వు</string>
+    <string name="storage_use_app">యాప్ స్టోరేజ్‌ను ఉపయోగించు</string>
+    <string name="poster_downloaded">✓ డౌన్‌లోడ్ అయింది</string>
+    <string name="poster_series_tag">సిరీస్</string>
+    <string name="poster_movie_tag">సినిమా</string>
+    <string name="poster_file_tag">ఫైల్</string>
+    <string name="kind_series">సిరీస్</string>
+    <string name="kind_movie">సినిమా</string>
+    <string name="sheet_all_queued">అన్నీ క్యూలో ఉన్నాయి</string>
+    <string name="sheet_download_all">అన్నీ డౌన్‌లోడ్ చేయి (%1$d)</string>
+    <string name="sheet_zip_title">అన్నీ ఒకే .zipగా</string>
+    <string name="sheet_zip_download">.zip డౌన్‌లోడ్ చేయి</string>
+    <string name="sheet_season">సీజన్ %1$d</string>
+    <string name="sheet_download_season">సీజన్ డౌన్‌లోడ్ చేయి (%1$d)</string>
+    <string name="state_queued">క్యూలో ఉంది</string>
+    <string name="state_downloading">డౌన్‌లోడ్ అవుతోంది</string>
+    <string name="state_paused">పాజ్ చేయబడింది</string>
+    <string name="state_done">పూర్తయింది</string>
+    <string name="state_failed">విఫలమైంది</string>
+    <string name="expiry_expired">మీ %1$s ప్రీమియం గడువు ముగిసింది</string>
+    <string name="expiry_today">మీ %1$s ప్రీమియం గడువు ఈరోజు ముగుస్తుంది</string>
+    <string name="dl_clear_finished">పూర్తయినవి క్లియర్ చేయి</string>
+    <string name="dl_section_downloading">డౌన్‌లోడ్ అవుతున్నవి</string>
+    <string name="dl_section_queued">క్యూలో ఉన్నవి</string>
+    <string name="dl_section_paused">పాజ్ చేయబడినవి</string>
+    <string name="dl_section_failed">విఫలమైనవి</string>
+    <string name="dl_section_completed">పూర్తయినవి</string>
+    <string name="dl_waiting">వేచి ఉంది</string>
+    <string name="dl_so_far">ఇప్పటివరకు</string>
+    <string name="dl_waiting_size">వేచి ఉంది · %1$s</string>
+    <string name="dl_paused_progress">పాజ్ చేయబడింది · %1$s / %2$s</string>
+    <string name="dl_failed">డౌన్‌లోడ్ విఫలమైంది</string>
+    <string name="dl_done_at">పూర్తయింది · %1$s · %2$s</string>
+    <string name="dl_file_missing">ఫైల్ తరలించబడింది లేదా తొలగించబడింది</string>
+    <string name="dl_empty_title">ఏదీ యాక్టివ్‌గా లేదు</string>
+    <string name="dl_empty_body">క్యూలో చేర్చడానికి, మీ లైబ్రరీలో ఏదైనా ఐటెమ్‌పై డౌన్‌లోడ్ నొక్కండి.</string>
+    <string name="wait_network">నెట్‌వర్క్ కోసం వేచి ఉంది</string>
+    <string name="wait_wifi">Wi-Fi కోసం వేచి ఉంది</string>
+    <string name="wait_charger">ఛార్జర్ కోసం వేచి ఉంది</string>
+    <string name="wait_schedule">షెడ్యూల్ చేసిన సమయం కోసం వేచి ఉంది</string>
+    <string name="set_service_fallback">సర్వీస్</string>
+    <string name="set_download_folder">డౌన్‌లోడ్ ఫోల్డర్</string>
+    <string name="set_organise">షోలు / సినిమాల ఫోల్డర్‌లుగా అమర్చు</string>
+    <string name="set_organise_detail">Shows/The Bear/Season 02, Movies/Oppenheimer (2023) — Plex, Jellyfin, Kodi కోసం సిద్ధం.</string>
+    <string name="set_when">ఎప్పుడు డౌన్‌లోడ్ చేయాలి</string>
+    <string name="set_wifi_only">Wi-Fiలో మాత్రమే</string>
+    <string name="set_wifi_only_detail">మొబైల్ డేటాలో పాజ్ అవుతుంది; Wi-Fi అందగానే ఆటోమేటిక్‌గా కొనసాగుతుంది.</string>
+    <string name="set_charging_only">ఛార్జ్ అవుతున్నప్పుడు మాత్రమే</string>
+    <string name="set_schedule">షెడ్యూల్</string>
+    <string name="set_schedule_detail">కింది సమయాల మధ్యే డౌన్‌లోడ్ చేయి (ఉదా. రాత్రంతా).</string>
+    <string name="set_alarm_needed">బ్యాక్‌గ్రౌండ్‌లో సమయానికి మొదలవ్వాలంటే, DebForgeకు \"అలారాలు &amp; రిమైండర్‌లు\" అనుమతి ఇవ్వండి.</string>
+    <string name="set_default_sort">డిఫాల్ట్ క్రమం</string>
+    <string name="set_theme">థీమ్</string>
+    <string name="set_posters">పోస్టర్‌లు</string>
+    <string name="set_service">సర్వీస్</string>
+    <string name="set_signed_in">సైన్ ఇన్ అయింది</string>
+    <string name="set_not_signed_in">సైన్ ఇన్ కాలేదు</string>
+    <string name="set_sign_out_of">%1$s నుండి సైన్ అవుట్ చేయి</string>
+    <string name="set_sign_out_q">%1$s నుండి సైన్ అవుట్ చేయాలా?</string>
+    <string name="set_sign_out_body">మీ %1$s టోకెన్ ఈ పరికరం నుండి తీసివేయబడుతుంది. ఇతర సర్వీస్‌ల టోకెన్‌లు అలాగే ఉంటాయి. మీరు మళ్లీ సైన్ ఇన్ చేసే వరకు %1$s నుండి క్యూలో ఉన్న డౌన్‌లోడ్‌ల లింక్‌లు రిఫ్రెష్ కావు.</string>
+    <string name="set_sign_out">సైన్ అవుట్</string>
+    <string name="set_change">మార్చు</string>
+    <string name="set_choose_folder">ఫోల్డర్‌ను ఎంచుకోండి</string>
+    <string name="set_folder_note">సిస్టమ్ పికర్‌తో ఏదైనా ఫోల్డర్‌ను ఎంచుకోండి, లేదా వీటిలో ఒకదాన్ని. పాత్ ద్వారా షేర్ చేసిన ఫోల్డర్‌లకు All files access అవసరం.</string>
+    <string name="set_app_storage">యాప్ స్టోరేజ్ (అనుమతి అవసరం లేదు)</string>
+    <string name="set_sort_newest">కొత్తవి ముందు</string>
+    <string name="set_sort_oldest">పాతవి ముందు</string>
+    <string name="set_sort_largest">పెద్దవి ముందు</string>
+    <string name="set_sort_smallest">చిన్నవి ముందు</string>
+    <string name="theme_system">సిస్టమ్</string>
+    <string name="theme_light">లైట్</string>
+    <string name="theme_dark">డార్క్</string>
+    <string name="set_tmdb_note">పోస్టర్‌లు TMDB నుండి వస్తాయి. పోస్టర్‌లను ఆన్ చేయడానికి themoviedb.org → Settings → API నుండి ఉచిత API key లేదా read access tokenను ఇక్కడ పేస్ట్ చేయండి.</string>
+    <string name="set_tmdb_key">TMDB API key</string>
+    <string name="set_refresh_posters">పోస్టర్‌లను రిఫ్రెష్ చేయి</string>
+    <string name="poster_setup_title">పోస్టర్లను ఆన్ చేయండి</string>
+    <string name="poster_setup_body">DebForge పోస్టర్లు, వివరణలను TMDB నుండి తీసుకుంటుంది — ఇది సినిమాలు, టీవీల ఉచిత డేటాబేస్. దీనికి మీ సొంత ఉచిత key కావాలి, సుమారు రెండు నిమిషాలు పడుతుంది:</string>
+    <string name="poster_setup_step1">TMDB తెరిచి సైన్ ఇన్ చేయండి, లేదా ఉచిత ఖాతా సృష్టించండి.</string>
+    <string name="poster_setup_step2">API విభాగంలో వ్యక్తిగత ఉపయోగం కోసం key అభ్యర్థించండి.</string>
+    <string name="poster_setup_step3">“API Read Access Token” (లేదా API key) కాపీ చేసి కింద పేస్ట్ చేయండి.</string>
+    <string name="poster_setup_open">TMDB తెరవండి</string>
+    <string name="poster_setup_paste">పేస్ట్ చేయండి</string>
+    <string name="poster_setup_check">తనిఖీ చేసి సేవ్ చేయండి</string>
+    <string name="poster_setup_bad_format">ఇది TMDB key లా కనిపించడం లేదు. API Read Access Token లేదా 32 అక్షరాల API key కాపీ చేయండి.</string>
+    <string name="poster_setup_rejected">TMDB ఈ key ని అంగీకరించలేదు. మొత్తం కాపీ చేశారో లేదో చూడండి.</string>
+    <string name="poster_setup_unreachable">key తనిఖీ చేయడానికి TMDB ని చేరుకోలేకపోయాం.</string>
+    <string name="poster_setup_save_anyway">అయినా సేవ్ చేయండి</string>
+    <string name="poster_setup_done">పోస్టర్లు ఆన్ అయ్యాయి</string>
+    <string name="poster_banner">పోస్టర్లు, వివరణలు చూడటానికి ఉచిత TMDB key జోడించండి</string>
+    <string name="poster_banner_action">సెటప్ చేయండి</string>
+    <string name="set_posters_on">ఆన్. పోస్టర్లు, వివరణలు TMDB నుండి వస్తాయి.</string>
+    <string name="set_posters_change">key మార్చండి</string>
+    <string name="set_posters_remove">key తీసివేయండి</string>
+    <string name="acct_expired">ప్రీమియం గడువు ముగిసింది</string>
+    <string name="acct_expires_today">ప్రీమియం గడువు ఈరోజు ముగుస్తుంది</string>
+    <string name="acct_manage">ఖాతాను నిర్వహించు</string>
+    <string name="set_from">నుండి</string>
+    <string name="set_to">వరకు</string>
+    <string name="speed_unlimited">అపరిమితం</string>
+    <string name="speed_mbps">%1$d MB/s</string>
+    <string name="set_speed_limit">వేగ పరిమితి</string>
+    <string name="set_speed_detail">మీ నెట్‌వర్క్‌లోని ఇతరుల కోసం బ్యాండ్‌విడ్త్ వదిలిపెట్టండి.</string>
+    <string name="set_language">భాష</string>
+    <string name="lang_system">సిస్టమ్ డిఫాల్ట్</string>
+    <string name="notif_channel">డౌన్‌లోడ్‌లు</string>
+    <string name="notif_channel_desc">యాక్టివ్ డౌన్‌లోడ్ ప్రోగ్రెస్</string>
+    <string name="notif_preparing">డౌన్‌లోడ్ సిద్ధమవుతోంది</string>
+    <string name="notif_waiting_resume">%1$s — ఆటోమేటిక్‌గా కొనసాగుతుంది</string>
+    <string name="notif_paused_title">డౌన్‌లోడ్‌లు పాజ్ అయ్యాయి</string>
+    <string name="notif_paused_body">Android బ్యాక్‌గ్రౌండ్ సమయ పరిమితి ముగిసింది. కొనసాగించడానికి నొక్కండి.</string>
+    <string name="notif_sched_title">షెడ్యూల్ చేసిన డౌన్‌లోడ్‌లు మొదలవ్వడానికి సిద్ధంగా ఉన్నాయి</string>
+    <string name="notif_sched_body">మొదలుపెట్టడానికి నొక్కండి. ఆటోమేటిక్‌గా మొదలవ్వాలంటే \"అలారాలు &amp; రిమైండర్‌లు\" అనుమతి ఇవ్వండి.</string>
+    <string name="notif_ready_one">సిద్ధం: %1$s</string>
+    <string name="notif_ready_body">డౌన్‌లోడ్ క్యూలో ఉంది. మొదలుపెట్టడానికి నొక్కండి.</string>
+    <string name="notif_downloaded">డౌన్‌లోడ్ అయింది</string>
+    <string name="chooser_play_with">దీనితో ప్లే చేయి</string>
+    <string name="chooser_open_with">దీనితో తెరువు</string>
+    <string name="chooser_share">షేర్ చేయి</string>
+    <string name="msg_will_download_when_ready">\"%1$s\" సిద్ధమైనప్పుడు డౌన్‌లోడ్ అవుతుంది</string>
+    <string name="msg_ready_one">సిద్ధం — %1$s డౌన్‌లోడ్ అవుతోంది</string>
+    <string name="msg_no_player">వీడియో ప్లేయర్ ఏదీ కనుగొనబడలేదు — VLC లేదా mpvని ఇన్‌స్టాల్ చేయండి</string>
+    <string name="msg_app_storage">యాప్ స్టోరేజ్‌కు సేవ్ అవుతోంది — సెట్టింగ్‌లలో ఎప్పుడైనా మార్చవచ్చు</string>
+    <string name="msg_added_one">జోడించబడింది: %1$s</string>
+    <string name="add_err_nothing">జోడించడానికి ఏమీ లేదు — మాగ్నెట్ లింక్ లేదా http(s) URLను పేస్ట్ చేయండి</string>
+    <string name="add_err_unsupported">%1$s ఈ రకమైన ఐటెమ్‌ను జోడించలేదు</string>
+    <string name="add_partial">%2$dలో %1$d జోడించబడ్డాయి</string>
+    <string name="add_partial_suffix">(%2$dలో %1$d జోడించబడ్డాయి)</string>
+    <string name="add_magnet_link">మాగ్నెట్ లింక్</string>
+    <string name="add_err_too_large">ఈ ఫైల్ .torrent కావడానికి చాలా పెద్దది</string>
+    <string name="add_err_open">ఫైల్‌ను తెరవలేకపోయాం</string>
+    <string name="add_err_not_torrent">%1$s .torrent ఫైల్‌లా కనిపించడం లేదు</string>
+    <string name="add_err_read">ఫైల్‌ను చదవలేకపోయాం: %1$s</string>
+    <string name="add_err_permission">ఆ ఫైల్‌ను చదవడానికి అనుమతి లేదు — మళ్లీ ఎంచుకుని చూడండి</string>
+    <plurals name="n_episodes">
+        <item quantity="one">%1$d ఎపిసోడ్</item>
+        <item quantity="other">%1$d ఎపిసోడ్‌లు</item>
+    </plurals>
+    <plurals name="n_versions">
+        <item quantity="one">%1$d వెర్షన్</item>
+        <item quantity="other">%1$d వెర్షన్‌లు</item>
+    </plurals>
+    <plurals name="n_files">
+        <item quantity="one">%1$d ఫైల్</item>
+        <item quantity="other">%1$d ఫైల్‌లు</item>
+    </plurals>
+    <plurals name="expiry_in_days">
+        <item quantity="one">మీ %2$s ప్రీమియం గడువు %1$d రోజులో ముగుస్తుంది</item>
+        <item quantity="other">మీ %2$s ప్రీమియం గడువు %1$d రోజుల్లో ముగుస్తుంది</item>
+    </plurals>
+    <plurals name="added_n_files">
+        <item quantity="one">%1$d ఫైల్ క్యూకు జోడించబడింది</item>
+        <item quantity="other">%1$d ఫైల్‌లు క్యూకు జోడించబడ్డాయి</item>
+    </plurals>
+    <plurals name="acct_days_left">
+        <item quantity="one">ప్రీమియం: %1$d రోజు మిగిలి ఉంది</item>
+        <item quantity="other">ప్రీమియం: %1$d రోజులు మిగిలి ఉన్నాయి</item>
+    </plurals>
+    <plurals name="notif_ready_many">
+        <item quantity="one">%1$d ఐటెమ్ సిద్ధంగా ఉంది</item>
+        <item quantity="other">%1$d ఐటెమ్‌లు సిద్ధంగా ఉన్నాయి</item>
+    </plurals>
+    <plurals name="msg_ready_many">
+        <item quantity="one">%1$d ఐటెమ్ సిద్ధం — డౌన్‌లోడ్ అవుతోంది</item>
+        <item quantity="other">%1$d ఐటెమ్‌లు సిద్ధం — డౌన్‌లోడ్ అవుతున్నాయి</item>
+    </plurals>
+    <plurals name="add_added_n">
+        <item quantity="one">%2$sకు %1$d ఐటెమ్ జోడించబడింది</item>
+        <item quantity="other">%2$sకు %1$d ఐటెమ్‌లు జోడించబడ్డాయి</item>
+    </plurals>
+    <plurals name="add_skipped_n">
+        <item quantity="one">గుర్తించని %1$d ఐటెమ్ దాటవేయబడింది</item>
+        <item quantity="other">గుర్తించని %1$d ఐటెమ్‌లు దాటవేయబడ్డాయి</item>
+    </plurals>
+    <!-- Updates / About -->
+    <string name="update_banner">DebForge %1$s అందుబాటులో ఉంది</string>
+    <string name="action_update">అప్‌డేట్ చేయి</string>
+    <string name="about_title">పరిచయం</string>
+    <string name="about_version">DebForge %1$s</string>
+    <string name="about_build">బిల్డ్ %1$d · %2$s</string>
+    <string name="about_auto_update">అప్‌డేట్‌ల కోసం ఆటోమేటిక్‌గా తనిఖీ చేయి</string>
+    <string name="about_auto_update_detail">యాప్ తెరిచినప్పుడు GitHubకు ఒక అనామక రిక్వెస్ట్.</string>
+    <string name="about_check_now">అప్‌డేట్‌ల కోసం తనిఖీ చేయి</string>
+    <string name="about_checking">తనిఖీ చేస్తోంది…</string>
+    <string name="about_up_to_date">మీరు తాజా వెర్షన్‌లో ఉన్నారు.</string>
+    <string name="about_update_available">వెర్షన్ %1$s అందుబాటులో ఉంది.</string>
+    <string name="about_check_failed">అప్‌డేట్‌ల కోసం తనిఖీ చేయలేకపోయాం (%1$s).</string>
+    <string name="about_download">డౌన్‌లోడ్ చేయి</string>
+    <string name="about_release_notes">రిలీజ్ నోట్స్</string>
+    <string name="about_source">సోర్స్ కోడ్, సమస్యలు</string>
+    <string name="about_share_crash">చివరి క్రాష్ రిపోర్ట్‌ను షేర్ చేయి</string>
+
+    <!-- Crash reports -->
+    <string name="crash_title">గతసారి DebForge క్రాష్ అయింది</string>
+    <string name="crash_body">టోకెన్‌లు, లింక్‌లు, ఫైల్ పేర్లు తీసివేసిన ఒక రిపోర్ట్ ఈ పరికరంలో సేవ్ చేయబడింది. మీరు షేర్ చేస్తే తప్ప ఏదీ పంపబడదు.</string>
+    <string name="crash_share">రిపోర్ట్‌ను షేర్ చేయి</string>
+    <string name="crash_delete">తొలగించు</string>
+    <string name="crash_share_subject">DebForge క్రాష్ రిపోర్ట్</string>
+    <string name="dl_schedule_notice">ఇది మీ డౌన్‌లోడ్ సమయం కాదు. క్యూలోని ఫైల్‌లు %1$sకు మొదలవుతాయి. సెట్టింగ్‌లలో సమయాన్ని మార్చవచ్చు లేదా షెడ్యూల్‌ను ఆఫ్ చేయవచ్చు.</string>
+    <!-- Remove from service -->
+    <string name="action_remove_from">%1$s నుండి తీసివేయి</string>
+    <string name="remove_title">%1$s నుండి తీసివేయాలా?</string>
+    <string name="remove_body">“%1$s” మీ %2$s ఖాతా నుండి తొలగించబడుతుంది. ఈ ఫోన్‌లో ఇప్పటికే సేవ్ అయిన ఫైల్‌లు అలాగే ఉంటాయి. దీని అసంపూర్తి డౌన్‌లోడ్‌లు రద్దు చేయబడతాయి.</string>
+    <plurals name="msg_removed_n">
+        <item quantity="one">%2$s నుండి %1$d ఐటెమ్ తీసివేయబడింది</item>
+        <item quantity="other">%2$s నుండి %1$d ఐటెమ్‌లు తీసివేయబడ్డాయి</item>
+    </plurals>
+    <string name="set_remove_after">డౌన్‌లోడ్ తర్వాత సర్వీస్ నుండి తీసివేయి</string>
+    <string name="set_remove_after_detail">టొరెంట్ స్లాట్‌లను ఖాళీ చేస్తుంది. టొరెంట్‌లోని ప్రతి ఫైల్ ఈ ఫోన్‌కు డౌన్‌లోడ్ అయిన తర్వాతే అది తీసివేయబడుతుంది.</string>
+    <string name="set_show_extras">అదనపు ఫైల్‌లను చూపించు</string>
+    <string name="set_show_extras_detail">టొరెంట్‌లలోని రిలీజ్ గ్రూప్ నోట్స్ (.txt, .nfo), కవర్ చిత్రాలు మరియు శాంపిల్ క్లిప్‌లు. డిఫాల్ట్‌గా దాచబడతాయి, ఆటో-డౌన్‌లోడ్‌లో వదిలివేయబడతాయి.</string>
+    <!-- Cache check in the Add dialog -->
+    <string name="add_cache_checking">%1$sలో ఇది ఇప్పటికే ఉందో లేదో తనిఖీ చేస్తోంది…</string>
+    <string name="add_cache_one_yes">%1$sలో కాష్ అయి ఉంది. వెంటనే సిద్ధం.</string>
+    <string name="add_cache_one_no">ఇంకా కాష్ కాలేదు. %1$s ముందుగా దీన్ని డౌన్‌లోడ్ చేస్తుంది.</string>
+    <string name="add_cache_all_yes">మొత్తం %1$d కాష్ అయి ఉన్నాయి. వెంటనే సిద్ధం.</string>
+    <string name="add_cache_some">%2$dలో %1$d కాష్ అయి ఉన్నాయి. అవి వెంటనే సిద్ధం.</string>
+    <!-- Data usage -->
+    <string name="usage_title">డేటా వినియోగం</string>
+    <string name="usage_this_month">ఈ నెల %1$s</string>
+    <string name="usage_split">Wi-Fi %1$s · మొబైల్ డేటా %2$s</string>
+    <string name="usage_wifi">Wi-Fi</string>
+    <string name="usage_mobile">మొబైల్ డేటా</string>
+    <string name="usage_last_days">గత %1$d రోజులు</string>
+    <string name="usage_today">ఈరోజు</string>
+    <string name="usage_by_service">ఈ నెల సర్వీస్ వారీగా</string>
+    <string name="usage_reset">గణాంకాలను రీసెట్ చేయి</string>
+    <string name="usage_reset_q">డేటా వినియోగ గణాంకాలను రీసెట్ చేయాలా?</string>
+    <string name="usage_chart_desc">గత %1$d రోజుల్లో డౌన్‌లోడ్ చేసిన డేటా బార్ చార్ట్. అత్యధిక రోజు: %2$s.</string>
+    <!-- Backup / restore -->
+    <string name="action_ok">సరే</string>
+    <string name="backup_title">బ్యాకప్</string>
+    <string name="backup_detail">మీ సెట్టింగ్‌లను ఒక ఫైల్‌లో సేవ్ చేసి, ఈ ఫోన్‌లో లేదా వేరే ఫోన్‌లో రీస్టోర్ చేయండి.</string>
+    <string name="backup_create">బ్యాకప్ చేయి</string>
+    <string name="backup_restore">రీస్టోర్ చేయి</string>
+    <string name="backup_what">డౌన్‌లోడ్ నియమాలు, ఫోల్డర్, రూపురేఖలు, ఫాలో చేస్తున్న షోలు, ఇతర సెట్టింగ్‌లు ఎల్లప్పుడూ చేర్చబడతాయి.</string>
+    <string name="backup_include_signins">సైన్-ఇన్‌లను కూడా చేర్చు</string>
+    <string name="backup_include_signins_detail">సర్వీస్ లాగిన్‌లు, మీ TMDB key, పాస్‌వర్డ్‌తో ఎన్‌క్రిప్ట్ చేయబడి.</string>
+    <string name="backup_password">పాస్‌వర్డ్</string>
+    <string name="backup_password_again">పాస్‌వర్డ్‌ను మళ్లీ ఎంటర్ చేయండి</string>
+    <string name="backup_password_short">కనీసం %1$d అక్షరాలు</string>
+    <string name="backup_password_mismatch">పాస్‌వర్డ్‌లు సరిపోలడం లేదు</string>
+    <string name="backup_password_warning">ఈ పాస్‌వర్డ్‌ను సురక్షితంగా ఉంచండి. అది లేకుండా ఈ బ్యాకప్‌లోని సైన్-ఇన్‌లను రీస్టోర్ చేయలేరు.</string>
+    <string name="backup_choose_location">ఎక్కడ సేవ్ చేయాలో ఎంచుకోండి</string>
+    <string name="backup_saved">బ్యాకప్ సేవ్ చేయబడింది.</string>
+    <string name="backup_saved_with_signins">బ్యాకప్ సేవ్ చేయబడింది, సైన్-ఇన్‌లు మీ పాస్‌వర్డ్‌తో ఎన్‌క్రిప్ట్ చేయబడ్డాయి.</string>
+    <string name="backup_failed">బ్యాకప్‌ను సేవ్ చేయలేకపోయాం: %1$s</string>
+    <plurals name="restore_settings_n">
+        <item quantity="one">%1$d సెట్టింగ్ రీస్టోర్ చేయబడింది.</item>
+        <item quantity="other">%1$d సెట్టింగ్‌లు రీస్టోర్ చేయబడ్డాయి.</item>
+    </plurals>
+    <string name="restore_signins">%1$sకు సైన్ ఇన్ అయింది.</string>
+    <string name="restore_folder_skipped">డౌన్‌లోడ్ ఫోల్డర్ రీస్టోర్ కాలేదు: వేరే ఫోన్‌లో ఎంచుకున్న ఫోల్డర్‌ను ఇక్కడ ఉపయోగించలేము. సెట్టింగ్‌లలో దాన్ని మళ్లీ ఎంచుకోండి.</string>
+    <string name="restore_needs_password">ఈ బ్యాకప్‌లో సైన్-ఇన్‌లు ఉన్నాయి. వాటిని రీస్టోర్ చేయడానికి దాని పాస్‌వర్డ్‌ను ఎంటర్ చేయండి, లేదా సెట్టింగ్‌లను మాత్రమే రీస్టోర్ చేయండి.</string>
+    <string name="restore_wrong_password">తప్పు పాస్‌వర్డ్</string>
+    <string name="restore_settings_only">సెట్టింగ్‌లు మాత్రమే</string>
+    <string name="restore_newer">ఈ బ్యాకప్ DebForge కొత్త వెర్షన్‌తో తయారైంది. ముందుగా యాప్‌ను అప్‌డేట్ చేయండి.</string>
+    <string name="restore_not_backup">ఆ ఫైల్ DebForge బ్యాకప్ కాదు.</string>
+    <string name="restore_failed">రీస్టోర్ చేయలేకపోయాం: %1$s</string>
+    <!-- Folder picker (SAF) -->
+    <string name="storage_pick_folder">ఒక ఫోల్డర్‌ను ఎంచుకోండి</string>
+    <string name="set_pick_any_folder">ఏదైనా ఫోల్డర్‌ను ఎంచుకోండి…</string>
+    <string name="set_pick_any_folder_detail">ఇంటర్నల్ స్టోరేజ్, SD కార్డ్ లేదా USB డ్రైవ్. ప్రత్యేక అనుమతి అవసరం లేదు.</string>
+    <string name="storage_internal">ఇంటర్నల్ స్టోరేజ్</string>
+    <string name="storage_sd">SD కార్డ్</string>
+    <string name="msg_folder_set">డౌన్‌లోడ్‌లు %1$sలో సేవ్ చేయబడతాయి</string>
+    <!-- Service sign-in credential names -->
+    <string name="token_api_key">API key</string>
+    <string name="token_api_token">API token</string>
+    <!-- Empty library; %1$s is the service's website, e.g. torbox.app -->
+    <string name="browse_empty_hint">ఈ జాబితాను నింపడానికి %1$sలో ఒక టొరెంట్, మాగ్నెట్ లేదా లింక్‌ను జోడించండి.</string>
+    <!-- Errors talking to a service; %1$s is the service name -->
+    <string name="err_auth">%1$s మీ %2$sను తిరస్కరించింది. దాన్ని %3$sలో తనిఖీ చేయండి.</string>
+    <string name="err_rate_limit">%1$s అభ్యర్థనలను పరిమితం చేస్తోంది. ఒక నిమిషం ఆగి మళ్లీ ప్రయత్నించండి.</string>
+    <string name="err_http">%1$s: అభ్యర్థన విఫలమైంది (HTTP %2$d)</string>
+    <string name="err_failed">%1$s: అభ్యర్థన విఫలమైంది</string>
+    <string name="err_bad_response">%1$s నుండి ఊహించని ప్రతిస్పందన</string>
+    <string name="err_network">నెట్‌వర్క్ లోపం. మీ కనెక్షన్‌ను తనిఖీ చేయండి.</string>
+    <string name="err_unexpected">ఊహించని లోపం</string>
+    <string name="set_appearance">రూపురేఖలు</string>
+    <string name="theme_wallpaper">వాల్‌పేపర్</string>
+    <string name="theme_ember">నిప్పు</string>
+    <string name="theme_ocean">సముద్రం</string>
+    <string name="theme_aurora">అరోరా</string>
+    <string name="theme_forest">అడవి</string>
+    <string name="theme_amethyst">ఊదా</string>
+    <string name="theme_rose">గులాబీ</string>
+    <string name="theme_graphite">గ్రాఫైట్</string>
+    <string name="set_pure_black">పూర్తి నలుపు</string>
+    <string name="set_pure_black_detail">డార్క్ మోడ్‌లో నలుపు నేపథ్యం. OLED స్క్రీన్‌లకు, బ్యాటరీకి మంచిది.</string>
+    <string name="dl_more_actions">మరిన్ని చర్యలు</string>
+
+    <!-- Widget, Quick Settings tile, launcher shortcuts, clipboard offer -->
+    <string name="action_pause_all">అన్నీ పాజ్ చేయండి</string>
+    <string name="action_resume_all">అన్నీ కొనసాగించండి</string>
+    <string name="widget_label">DebForge డౌన్‌లోడ్‌లు</string>
+    <string name="widget_description">ఏం డౌన్‌లోడ్ అవుతోంది, అన్నీ పాజ్, జోడించు బటన్‌లతో</string>
+    <string name="widget_idle">ఏదీ డౌన్‌లోడ్ కావడం లేదు</string>
+    <string name="widget_idle_hint">మ్యాగ్నెట్ లేదా లింక్‌ను మీ సర్వీస్‌కు పంపడానికి జోడించు నొక్కండి.</string>
+    <string name="widget_progress">%2$sలో %1$s · %3$d%%</string>
+    <string name="tile_label">డౌన్‌లోడ్‌లు</string>
+    <string name="tile_idle">ఏదీ డౌన్‌లోడ్ కావడం లేదు</string>
+    <string name="shortcut_add">జోడించు</string>
+    <string name="shortcut_resume_all">అన్నీ కొనసాగించండి</string>
+    <string name="clipboard_offer">కాపీ చేసిన లింక్ దొరికింది. మీ సర్వీస్‌కు జోడించాలా?</string>
+    <string name="set_clipboard_offer">కాపీ చేసిన లింక్‌లను సూచించు</string>
+    <string name="set_clipboard_offer_detail">మ్యాగ్నెట్ లేదా .torrent లింక్ కాపీ చేసి DebForge తెరిస్తే, దాన్ని జోడించమని సూచిస్తుంది. ఇతర టెక్స్ట్ పట్టించుకోదు.</string>
+    <plurals name="widget_n_downloading">
+        <item quantity="one">%d డౌన్‌లోడ్ అవుతోంది</item>
+        <item quantity="other">%d డౌన్‌లోడ్ అవుతున్నాయి</item>
+    </plurals>
+    <plurals name="widget_n_queued">
+        <item quantity="one">%d క్యూలో</item>
+        <item quantity="other">%d క్యూలో</item>
+    </plurals>
+    <plurals name="widget_n_paused">
+        <item quantity="one">%d పాజ్</item>
+        <item quantity="other">%d పాజ్</item>
+    </plurals>
+    <plurals name="widget_n_failed">
+        <item quantity="one">%d విఫలం</item>
+        <item quantity="other">%d విఫలం</item>
+    </plurals>
+
+    <!-- Storage: space check, auto-delete -->
+    <string name="space_title">తగినంత స్థలం లేదు</string>
+    <string name="space_body">వీటికి %1$s కావాలి, కానీ %3$sలో %2$s మాత్రమే ఖాళీగా ఉంది. సరిపోని డౌన్‌లోడ్‌లు లోపంతో ఆగిపోతాయి; స్థలం ఖాళీ చేసి మళ్లీ ప్రయత్నించవచ్చు.</string>
+    <string name="space_queue_anyway">అయినా క్యూలో చేర్చండి</string>
+    <string name="set_storage_free">%1$s ఖాళీ</string>
+    <string name="set_storage_free_unknown">ఈ ఫోల్డర్‌లో ఖాళీ స్థలం తెలియదు</string>
+    <string name="set_auto_delete">డౌన్‌లోడ్‌లను తొలగించండి</string>
+    <string name="set_auto_delete_detail">DebForge డౌన్‌లోడ్ చేసి, డౌన్‌లోడ్‌లలో ఇంకా ఉన్న ఫైల్‌లు మాత్రమే</string>
+    <string name="set_auto_delete_never">ఎప్పుడూ వద్దు</string>
+    <string name="set_auto_delete_confirm_title">పాత డౌన్‌లోడ్‌లను ఇప్పుడే తొలగించాలా?</string>
+    <string name="set_auto_delete_now">ఇప్పుడే తొలగించండి</string>
+    <plurals name="set_storage_downloaded">
+        <item quantity="one">DebForge డౌన్‌లోడ్ చేసినవి: %2$d ఫైల్, %1$s</item>
+        <item quantity="other">DebForge డౌన్‌లోడ్ చేసినవి: %2$d ఫైల్‌లు, %1$s</item>
+    </plurals>
+    <plurals name="set_auto_delete_after_days">
+        <item quantity="one">%d రోజు తర్వాత</item>
+        <item quantity="other">%d రోజుల తర్వాత</item>
+    </plurals>
+    <plurals name="set_auto_delete_confirm_body">
+        <item quantity="one">%3$d రోజుల కంటే ముందు పూర్తైన %1$d ఫైల్ (%2$s) ఇప్పుడే ఈ పరికరం నుండి తొలగించబడుతుంది. కొత్తవి ఆ వయసుకు చేరగానే తొలగిపోతాయి.</item>
+        <item quantity="other">%3$d రోజుల కంటే ముందు పూర్తైన %1$d ఫైల్‌లు (%2$s) ఇప్పుడే ఈ పరికరం నుండి తొలగించబడతాయి. కొత్తవి ఆ వయసుకు చేరగానే తొలగిపోతాయి.</item>
+    </plurals>
+
+    <!-- Add dialog: choosing a service -->
+    <string name="add_send_to">ఇక్కడికి పంపండి</string>
+    <string name="add_target_cached_cd">క్యాష్‌లో ఉంది</string>
+    <string name="add_target_cached_hint">%1$sలో ఇది ఇప్పటికే క్యాష్‌లో ఉంది, కాబట్టి వెంటనే సిద్ధం.</string>
+    <string name="add_target_cant_hint">%1$s వీటిని తీసుకోలేదు, కాబట్టి ఇవి %2$sకు వెళ్తాయి.</string>
+    <string name="add_sent_elsewhere">ఇది %1$sలో ఉంది; లైబ్రరీ ఇప్పుడు %2$s చూపిస్తోంది (సెట్టింగ్‌లలో మార్చండి).</string>
+
+    <!-- Following shows -->
+    <string name="follow_action">ఫాలో చేయండి</string>
+    <string name="follow_following">ఫాలో చేస్తున్నారు</string>
+    <string name="follow_hint">కొత్త ఎపిసోడ్‌లు మీ ఖాతాలోకి రాగానే ఆటోమేటిక్‌గా డౌన్‌లోడ్ అవుతాయి.</string>
+    <string name="follow_started">%1$sని ఫాలో చేస్తున్నారు. కొత్త ఎపిసోడ్‌లు ఆటోమేటిక్‌గా డౌన్‌లోడ్ అవుతాయి.</string>
+    <string name="follow_stopped">%1$sని ఫాలో చేయడం ఆపారు.</string>
+    <string name="follow_queued_one">కొత్త ఎపిసోడ్ క్యూలో: %1$s</string>
+    <string name="follow_unfollow">అన్‌ఫాలో చేయండి</string>
+    <string name="set_follows">ఫాలో చేస్తున్న షోలు</string>
+    <string name="set_follows_none">ఇంకా ఏవీ లేవు. లైబ్రరీలో ఒక షో తెరిచి ఫాలో చేయండి నొక్కండి.</string>
+    <string name="set_follows_detail">మీ ఖాతాలోకి వచ్చే కొత్త ఎపిసోడ్‌లు ఆటోమేటిక్‌గా డౌన్‌లోడ్ అవుతాయి. DebForge కొన్ని గంటలకు ఒకసారి, లైబ్రరీ లోడ్ అయినప్పుడు తనిఖీ చేస్తుంది.</string>
+    <string name="notif_follow_one">కొత్త ఎపిసోడ్: %1$s</string>
+    <string name="notif_follow_body">డౌన్‌లోడ్ క్యూలో ఉంది. మొదలుకాకపోతే DebForge తెరవండి.</string>
+    <plurals name="follow_queued_many">
+        <item quantity="one">%d కొత్త ఎపిసోడ్ క్యూలో</item>
+        <item quantity="other">%d కొత్త ఎపిసోడ్‌లు క్యూలో</item>
+    </plurals>
+    <plurals name="notif_follow_many">
+        <item quantity="one">%d కొత్త ఎపిసోడ్</item>
+        <item quantity="other">%d కొత్త ఎపిసోడ్‌లు</item>
+    </plurals>
+
+    <!-- In-app player -->
+    <string name="player_unsupported_title">ఇక్కడ ప్లే చేయలేము</string>
+    <string name="player_unsupported_body">ఈ పరికరం DebForge ప్లేయర్‌లో ఈ వీడియోను డీకోడ్ చేయలేదు. VLC లేదా వేరే ప్లేయర్ సాధారణంగా ప్లే చేస్తుంది.</string>
+    <string name="player_error_body">ప్లేబ్యాక్ ఆగిపోయింది (%1$s). వేరే వీడియో ప్లేయర్ దీన్ని ప్లే చేయగలదు.</string>
+    <string name="player_no_audio_body">ఈ వీడియో ఆడియో ఫార్మాట్ ఈ పరికరంలో సపోర్ట్ కాదు, కాబట్టి శబ్దం లేకుండా ప్లే అవుతుంది. VLC లేదా వేరే ప్లేయర్ ఆడియో ప్లే చేయగలదు.</string>
+    <string name="action_open_other_player">వేరే ప్లేయర్‌లో తెరవండి</string>
+    <string name="player_keep_watching">చూస్తూ ఉండండి</string>
+    <string name="player_network_title">వీడియో లోడ్ కాలేదు</string>
+    <string name="player_network_body">కనెక్షన్ తెగిపోయింది లేదా లింక్ గడువు ముగిసింది. మళ్లీ ప్రయత్నించండి లేదా కనెక్షన్ తనిఖీ చేయండి.</string>
+    <string name="set_player">వీడియోలను ప్లే చేయండి</string>
+    <string name="set_player_internal">DebForge ప్లేయర్</string>
+    <string name="set_player_external">వేరే యాప్ (VLC, mpv…)</string>
+
+    <!-- Resume / Continue watching -->
+    <string name="continue_watching">చూడటం కొనసాగించండి</string>
+    <string name="continue_remove">చూడటం కొనసాగించండి నుండి తీసివేయండి</string>
+    <string name="continue_unavailable">%1$s ప్లే చేయలేకపోయాం: %2$s</string>
+    <string name="watched">✓ చూశారు</string>
+    <string name="player_start_over">↺ మొదటి నుండి</string>
+    <plurals name="continue_minutes_left">
+        <item quantity="one">%d నిమిషం మిగిలింది</item>
+        <item quantity="other">%d నిమిషాలు మిగిలాయి</item>
+    </plurals>
+
+    <!-- Subtitle label suffix: "French · Forced" -->
+    <string name="subtitle_forced">ఫోర్స్‌డ్</string>
+
+    <!-- Player: next episode -->
+    <string name="player_next">తర్వాత: %1$s</string>
+    <string name="player_play_now">ఇప్పుడే ప్లే చేయండి</string>
+    <string name="player_next_failed">తర్వాతి ఎపిసోడ్ లోడ్ కాలేదు.</string>
+    <plurals name="player_next_in">
+        <item quantity="one">%d సెకనులో ప్లే అవుతుంది</item>
+        <item quantity="other">%d సెకన్లలో ప్లే అవుతుంది</item>
+    </plurals>
+
+    <!-- Autoplay setting, followed shows in backups -->
+    <string name="set_autoplay_next">తర్వాతి ఎపిసోడ్‌ను ఆటోమేటిక్‌గా ప్లే చేయండి</string>
+    <string name="set_autoplay_next_detail">ఎపిసోడ్ ముగింపు దగ్గర, చిన్న కౌంట్‌డౌన్ తర్వాత తర్వాతిది మొదలవుతుంది. ఆఫ్‌లో ఉంటే \'ఇప్పుడే ప్లే చేయండి\' బటన్ చూపిస్తుంది.</string>
+    <plurals name="restore_follows_n">
+        <item quantity="one">ఇప్పుడు మరో %d షోను ఫాలో చేస్తున్నారు.</item>
+        <item quantity="other">ఇప్పుడు మరో %d షోలను ఫాలో చేస్తున్నారు.</item>
+    </plurals>
+</resources>

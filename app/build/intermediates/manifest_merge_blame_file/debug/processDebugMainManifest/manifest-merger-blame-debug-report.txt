@@ -1,0 +1,443 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<!--
+3 Debug builds only: an empty Hilt activity the JVM screenshot tests render
+4     the app's screens in (see app/src/test/.../screenshots).
+5-->
+6<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+7    package="com.abhinavxt.debforge"
+8    android:versionCode="10102"
+9    android:versionName="1.1.2" >
+10
+11    <uses-sdk
+11-->INJECTED
+12        android:minSdkVersion="30"
+12-->INJECTED
+13        android:targetSdkVersion="36" />
+13-->INJECTED
+14    <!-- Android TV: installable on TVs, which have no touchscreen. -->
+15    <uses-feature
+15-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:6:5-87
+16        android:name="android.software.leanback"
+16-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:6:19-59
+17        android:required="false" />
+17-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:6:60-84
+18    <uses-feature
+18-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:7:5-90
+19        android:name="android.hardware.touchscreen"
+19-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:7:19-62
+20        android:required="false" />
+20-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:7:63-87
+21
+22    <uses-permission android:name="android.permission.INTERNET" />
+22-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:9:5-67
+22-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:9:22-64
+23    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+23-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:10:5-79
+23-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:10:22-76
+24    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
+24-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:11:5-12:40
+24-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:11:22-79
+25    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+25-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:13:5-77
+25-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:13:22-74
+26    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+26-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:14:5-87
+26-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:14:22-84
+27    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" /> <!-- Android 14+: user-initiated data transfer jobs (no 6h dataSync cap). -->
+27-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:15:5-77
+27-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:15:22-74
+28    <uses-permission android:name="android.permission.RUN_USER_INITIATED_JOBS" /> <!-- Keeps the "download when ready" check scheduled across reboots. -->
+28-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:17:5-82
+28-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:17:22-79
+29    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" /> <!-- Exact wake-up at the start of the download schedule (user-granted). -->
+29-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:19:5-81
+29-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:19:22-78
+30    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+30-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:21:5-79
+30-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:21:22-76
+31    <uses-permission android:name="android.permission.WAKE_LOCK" />
+31-->[androidx.media3:media3-exoplayer:1.11.1] /Users/abhinavpathak/.gradle/caches/9.3.1/transforms/2d3eebfc0ece65eb26651450f519a6c9/transformed/media3-exoplayer-1.11.1/AndroidManifest.xml:23:5-68
+31-->[androidx.media3:media3-exoplayer:1.11.1] /Users/abhinavpathak/.gradle/caches/9.3.1/transforms/2d3eebfc0ece65eb26651450f519a6c9/transformed/media3-exoplayer-1.11.1/AndroidManifest.xml:23:22-65
+32
+33    <permission
+33-->[androidx.core:core:1.13.1] /Users/abhinavpathak/.gradle/caches/9.3.1/transforms/9f7c2a976576115af4c2a9d526191a30/transformed/core-1.13.1/AndroidManifest.xml:22:5-24:47
+34        android:name="com.abhinavxt.debforge.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+34-->[androidx.core:core:1.13.1] /Users/abhinavpathak/.gradle/caches/9.3.1/transforms/9f7c2a976576115af4c2a9d526191a30/transformed/core-1.13.1/AndroidManifest.xml:23:9-81
+35        android:protectionLevel="signature" />
+35-->[androidx.core:core:1.13.1] /Users/abhinavpathak/.gradle/caches/9.3.1/transforms/9f7c2a976576115af4c2a9d526191a30/transformed/core-1.13.1/AndroidManifest.xml:24:9-44
+36
+37    <uses-permission android:name="com.abhinavxt.debforge.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
+37-->[androidx.core:core:1.13.1] /Users/abhinavpathak/.gradle/caches/9.3.1/transforms/9f7c2a976576115af4c2a9d526191a30/transformed/core-1.13.1/AndroidManifest.xml:26:5-97
+37-->[androidx.core:core:1.13.1] /Users/abhinavpathak/.gradle/caches/9.3.1/transforms/9f7c2a976576115af4c2a9d526191a30/transformed/core-1.13.1/AndroidManifest.xml:26:22-94
+38
+39    <application
+39-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:23:5-166:19
+40        android:name="com.abhinavxt.debforge.DebForgeApp"
+40-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:24:9-36
+41        android:allowBackup="true"
+41-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:25:9-35
+42        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
+42-->[androidx.core:core:1.13.1] /Users/abhinavpathak/.gradle/caches/9.3.1/transforms/9f7c2a976576115af4c2a9d526191a30/transformed/core-1.13.1/AndroidManifest.xml:28:18-86
+43        android:banner="@drawable/tv_banner"
+43-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:31:9-45
+44        android:dataExtractionRules="@xml/data_extraction_rules"
+44-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:26:9-65
+45        android:debuggable="true"
+46        android:extractNativeLibs="false"
+46-->INJECTED
+47        android:fullBackupContent="@xml/backup_rules"
+47-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:27:9-54
+48        android:icon="@mipmap/ic_launcher"
+48-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:28:9-43
+49        android:label="@string/app_name"
+49-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:29:9-41
+50        android:localeConfig="@xml/locales_config"
+50-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:32:9-51
+51        android:roundIcon="@mipmap/ic_launcher_round"
+51-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:30:9-54
+52        android:supportsRtl="true"
+52-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:33:9-35
+53        android:testOnly="true"
+54        android:theme="@style/Theme.Debforge" >
+54-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:34:9-46
+55        <activity
+55-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/debug/AndroidManifest.xml:6:9-9:73
+56            android:name="com.abhinavxt.debforge.HiltTestActivity"
+56-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/debug/AndroidManifest.xml:7:13-67
+57            android:exported="false"
+57-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/debug/AndroidManifest.xml:8:13-37
+58            android:theme="@android:style/Theme.Material.NoActionBar" />
+58-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/debug/AndroidManifest.xml:9:13-70
+59        <activity
+59-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:35:9-81:20
+60            android:name="com.abhinavxt.debforge.MainActivity"
+60-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:36:13-41
+61            android:exported="true"
+61-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:37:13-36
+62            android:label="@string/app_name"
+62-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:39:13-45
+63            android:launchMode="singleTop"
+63-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:38:13-43
+64            android:theme="@style/Theme.Debforge" >
+64-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:40:13-50
+65            <intent-filter>
+65-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:41:13-47:29
+66                <action android:name="android.intent.action.MAIN" />
+66-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:42:17-69
+66-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:42:25-66
+67
+68                <category android:name="android.intent.category.LAUNCHER" />
+68-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:44:17-77
+68-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:44:27-74
+69                <!-- Shows up in the Android TV home screen's app row. -->
+70                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+70-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:46:17-86
+70-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:46:27-83
+71            </intent-filter>
+72            <!-- Long-press shortcuts: Add, Resume all (see AppActions). -->
+73            <meta-data
+73-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:49:13-51:53
+74                android:name="android.app.shortcuts"
+74-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:50:17-53
+75                android:resource="@xml/shortcuts" />
+75-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:51:17-50
+76
+77            <!-- Tapping a magnet link in a browser or another app. -->
+78            <intent-filter>
+78-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:54:13-59:29
+79                <action android:name="android.intent.action.VIEW" />
+79-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:55:17-69
+79-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:55:25-66
+80
+81                <category android:name="android.intent.category.DEFAULT" />
+81-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:56:17-76
+81-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:56:27-73
+82                <category android:name="android.intent.category.BROWSABLE" />
+82-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:57:17-78
+82-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:57:27-75
+83
+84                <data android:scheme="magnet" />
+84-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:58:17-49
+84-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:58:23-46
+85            </intent-filter>
+86
+87            <!-- Opening a .torrent file from a file manager / downloads. -->
+88            <intent-filter>
+88-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:62:13-68:29
+89                <action android:name="android.intent.action.VIEW" />
+89-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:55:17-69
+89-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:55:25-66
+90
+91                <category android:name="android.intent.category.DEFAULT" />
+91-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:56:17-76
+91-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:56:27-73
+92
+93                <data android:scheme="content" />
+93-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:58:17-49
+93-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:58:23-46
+94                <data android:scheme="file" />
+94-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:58:17-49
+94-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:58:23-46
+95                <data android:mimeType="application/x-bittorrent" />
+95-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:58:17-49
+96            </intent-filter>
+97
+98            <!-- Share sheet: a magnet / URL as text, or a .torrent file. -->
+99            <intent-filter>
+99-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:71:13-75:29
+100                <action android:name="android.intent.action.SEND" />
+100-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:72:17-69
+100-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:72:25-66
+101
+102                <category android:name="android.intent.category.DEFAULT" />
+102-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:56:17-76
+102-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:56:27-73
+103
+104                <data android:mimeType="text/plain" />
+104-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:58:17-49
+105            </intent-filter>
+106            <intent-filter>
+106-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:76:13-80:29
+107                <action android:name="android.intent.action.SEND" />
+107-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:72:17-69
+107-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:72:25-66
+108
+109                <category android:name="android.intent.category.DEFAULT" />
+109-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:56:17-76
+109-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:56:27-73
+110
+111                <data android:mimeType="application/x-bittorrent" />
+111-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:58:17-49
+112            </intent-filter>
+113        </activity>
+114
+115        <service
+115-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:83:9-86:56
+116            android:name="com.abhinavxt.debforge.download.DownloadService"
+116-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:84:13-53
+117            android:exported="false"
+117-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:85:13-37
+118            android:foregroundServiceType="dataSync" />
+118-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:86:13-53
+119        <service
+119-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:88:9-91:72
+120            android:name="com.abhinavxt.debforge.download.DownloadJobService"
+120-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:89:13-56
+121            android:exported="false"
+121-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:90:13-37
+122            android:permission="android.permission.BIND_JOB_SERVICE" />
+122-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:91:13-69
+123
+124        <receiver
+124-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:93:9-95:40
+125            android:name="com.abhinavxt.debforge.download.ScheduleAlarmReceiver"
+125-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:94:13-59
+126            android:exported="false" />
+126-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:95:13-37
+127        <!--
+128 Re-arms the download-window alarm after reboot / app update /
+129             clock or time-zone change (all exempt from implicit-broadcast limits).
+130        -->
+131        <receiver
+131-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:99:9-108:20
+132            android:name="com.abhinavxt.debforge.download.ScheduleRearmReceiver"
+132-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:100:13-59
+133            android:exported="true" >
+133-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:101:13-36
+134            <intent-filter>
+134-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:102:13-107:29
+135                <action android:name="android.intent.action.BOOT_COMPLETED" />
+135-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:103:17-79
+135-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:103:25-76
+136                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+136-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:104:17-84
+136-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:104:25-81
+137                <action android:name="android.intent.action.TIME_SET" />
+137-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:105:17-73
+137-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:105:25-70
+138                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+138-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:106:17-81
+138-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:106:25-78
+139            </intent-filter>
+140        </receiver>
+141
+142        <provider
+142-->INJECTED
+143            android:name="androidx.core.content.FileProvider"
+144            android:authorities="com.abhinavxt.debforge.files"
+144-->INJECTED
+145            android:exported="false"
+146            android:grantUriPermissions="true" >
+147            <meta-data
+148                android:name="android.support.FILE_PROVIDER_PATHS"
+149                android:resource="@xml/file_paths" />
+150        </provider>
+151
+152        <service
+152-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:120:9-123:72
+153            android:name="com.abhinavxt.debforge.download.watch.ReadyWatchJobService"
+153-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:121:13-64
+154            android:exported="false"
+154-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:122:13-37
+155            android:permission="android.permission.BIND_JOB_SERVICE" />
+155-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:123:13-69
+156        <!--
+157 In-app video player. Handles rotation itself so playback isn't
+158             interrupted; Android TV's D-pad works through PlayerView.
+159        -->
+160        <activity
+160-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:127:9-131:60
+161            android:name="com.abhinavxt.debforge.player.PlayerActivity"
+161-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:128:13-50
+162            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden|navigation"
+162-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:130:13-126
+163            android:exported="false"
+163-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:129:13-37
+164            android:theme="@style/Theme.Debforge.Player" /> <!-- Background check for new episodes of followed shows. -->
+164-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:131:13-57
+165        <service
+165-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:134:9-137:72
+166            android:name="com.abhinavxt.debforge.download.follow.FollowJobService"
+166-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:135:13-61
+167            android:exported="false"
+167-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:136:13-37
+168            android:permission="android.permission.BIND_JOB_SERVICE" /> <!-- Home-screen widget: queue status, Pause/Resume all, Add. -->
+168-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:137:13-69
+169        <receiver
+169-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:140:9-150:20
+170            android:name="com.abhinavxt.debforge.widget.DownloadsWidget"
+170-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:141:13-51
+171            android:exported="false"
+171-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:142:13-37
+172            android:label="@string/widget_label" >
+172-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:143:13-49
+173            <intent-filter>
+173-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:144:13-146:29
+174                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+174-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:145:17-84
+174-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:145:25-81
+175            </intent-filter>
+176
+177            <meta-data
+177-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:147:13-149:65
+178                android:name="android.appwidget.provider"
+178-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:148:17-58
+179                android:resource="@xml/downloads_widget_info" />
+179-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:149:17-62
+180        </receiver> <!-- Quick Settings tile: pause everything, or open to resume / add. -->
+181        <service
+181-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:153:9-165:19
+182            android:name="com.abhinavxt.debforge.widget.DownloadsTileService"
+182-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:154:13-56
+183            android:exported="true"
+183-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:155:13-36
+184            android:icon="@drawable/ic_notification_download"
+184-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:156:13-62
+185            android:label="@string/tile_label"
+185-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:157:13-47
+186            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE" >
+186-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:158:13-77
+187            <intent-filter>
+187-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:159:13-161:29
+188                <action android:name="android.service.quicksettings.action.QS_TILE" />
+188-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:160:17-87
+188-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:160:25-84
+189            </intent-filter>
+190
+191            <meta-data
+191-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:162:13-164:40
+192                android:name="android.service.quicksettings.TOGGLEABLE_TILE"
+192-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:163:17-77
+193                android:value="true" />
+193-->/Users/abhinavpathak/abh/codehall/projects/android/debforge/app/src/main/AndroidManifest.xml:164:17-37
+194        </service>
+195        <service
+195-->[androidx.room:room-runtime-android:2.7.2] /Users/abhinavpathak/.gradle/caches/9.3.1/transforms/8cace6142e5545dc77400e2bebdb0275/transformed/room-runtime-release/AndroidManifest.xml:24:9-28:63
+196            android:name="androidx.room.MultiInstanceInvalidationService"
+196-->[androidx.room:room-runtime-android:2.7.2] /Users/abhinavpathak/.gradle/caches/9.3.1/transforms/8cace6142e5545dc77400e2bebdb0275/transformed/room-runtime-release/AndroidManifest.xml:25:13-74
+197            android:directBootAware="true"
+197-->[androidx.room:room-runtime-android:2.7.2] /Users/abhinavpathak/.gradle/caches/9.3.1/transforms/8cace6142e5545dc77400e2bebdb0275/transformed/room-runtime-release/AndroidManifest.xml:26:13-43
+198            android:exported="false" />
+198-->[androidx.room:room-runtime-android:2.7.2] /Users/abhinavpathak/.gradle/caches/9.3.1/transforms/8cace6142e5545dc77400e2bebdb0275/transformed/room-runtime-release/AndroidManifest.xml:27:13-37
+199
+200        <activity
+200-->[androidx.compose.ui:ui-test-manifest:1.7.2] /Users/abhinavpathak/.gradle/caches/9.3.1/transforms/070da098ce01b0d5294b67a3d80f801c/transformed/ui-test-manifest-1.7.2/AndroidManifest.xml:23:9-25:39
+201            android:name="androidx.activity.ComponentActivity"
+201-->[androidx.compose.ui:ui-test-manifest:1.7.2] /Users/abhinavpathak/.gradle/caches/9.3.1/transforms/070da098ce01b0d5294b67a3d80f801c/transformed/ui-test-manifest-1.7.2/AndroidManifest.xml:24:13-63
+202            android:exported="true" />
+202-->[androidx.compose.ui:ui-test-manifest:1.7.2] /Users/abhinavpathak/.gradle/caches/9.3.1/transforms/070da098ce01b0d5294b67a3d80f801c/transformed/ui-test-manifest-1.7.2/AndroidManifest.xml:25:13-36
+203        <activity
+203-->[androidx.compose.ui:ui-tooling-android:1.7.2] /Users/abhinavpathak/.gradle/caches/9.3.1/transforms/6b32ab2e424ca02d3c86cdd2669fb8cd/transformed/ui-tooling-release/AndroidManifest.xml:23:9-25:39
+204            android:name="androidx.compose.ui.tooling.PreviewActivity"
+204-->[androidx.compose.ui:ui-tooling-android:1.7.2] /Users/abhinavpathak/.gradle/caches/9.3.1/transforms/6b32ab2e424ca02d3c86cdd2669fb8cd/transformed/ui-tooling-release/AndroidManifest.xml:24:13-71
+205            android:exported="true" />
+205-->[androidx.compose.ui:ui-tooling-android:1.7.2] /Users/abhinavpathak/.gradle/caches/9.3.1/transforms/6b32ab2e424ca02d3c86cdd2669fb8cd/transformed/ui-tooling-release/AndroidManifest.xml:25:13-36
+206
+207        <provider
+207-->[androidx.emoji2:emoji2:1.3.0] /Users/abhinavpathak/.gradle/caches/9.3.1/transforms/594d8b326e96ba04ae3504f5e1136e89/transformed/emoji2-1.3.0/AndroidManifest.xml:24:9-32:20
+208            android:name="androidx.startup.InitializationProvider"
+208-->[androidx.emoji2:emoji2:1.3.0] /Users/abhinavpathak/.gradle/caches/9.3.1/transforms/594d8b326e96ba04ae3504f5e1136e89/transformed/emoji2-1.3.0/AndroidManifest.xml:25:13-67
+209            android:authorities="com.abhinavxt.debforge.androidx-startup"
+209-->[androidx.emoji2:emoji2:1.3.0] /Users/abhinavpathak/.gradle/caches/9.3.1/transforms/594d8b326e96ba04ae3504f5e1136e89/transformed/emoji2-1.3.0/AndroidManifest.xml:26:13-68
+210            android:exported="false" >
+210-->[androidx.emoji2:emoji2:1.3.0] /Users/abhinavpathak/.gradle/caches/9.3.1/transforms/594d8b326e96ba04ae3504f5e1136e89/transformed/emoji2-1.3.0/AndroidManifest.xml:27:13-37
+211            <meta-data
+211-->[androidx.emoji2:emoji2:1.3.0] /Users/abhinavpathak/.gradle/caches/9.3.1/transforms/594d8b326e96ba04ae3504f5e1136e89/transformed/emoji2-1.3.0/AndroidManifest.xml:29:13-31:52
+212                android:name="androidx.emoji2.text.EmojiCompatInitializer"
+212-->[androidx.emoji2:emoji2:1.3.0] /Users/abhinavpathak/.gradle/caches/9.3.1/transforms/594d8b326e96ba04ae3504f5e1136e89/transformed/emoji2-1.3.0/AndroidManifest.xml:30:17-75
+213                android:value="androidx.startup" />
+213-->[androidx.emoji2:emoji2:1.3.0] /Users/abhinavpathak/.gradle/caches/9.3.1/transforms/594d8b326e96ba04ae3504f5e1136e89/transformed/emoji2-1.3.0/AndroidManifest.xml:31:17-49
+214            <meta-data
+214-->[androidx.lifecycle:lifecycle-process:2.8.7] /Users/abhinavpathak/.gradle/caches/9.3.1/transforms/dc420519cad0b6845389abadcac53825/transformed/lifecycle-process-2.8.7/AndroidManifest.xml:29:13-31:52
+215                android:name="androidx.lifecycle.ProcessLifecycleInitializer"
+215-->[androidx.lifecycle:lifecycle-process:2.8.7] /Users/abhinavpathak/.gradle/caches/9.3.1/transforms/dc420519cad0b6845389abadcac53825/transformed/lifecycle-process-2.8.7/AndroidManifest.xml:30:17-78
+216                android:value="androidx.startup" />
+216-->[androidx.lifecycle:lifecycle-process:2.8.7] /Users/abhinavpathak/.gradle/caches/9.3.1/transforms/dc420519cad0b6845389abadcac53825/transformed/lifecycle-process-2.8.7/AndroidManifest.xml:31:17-49
+217            <meta-data
+217-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/abhinavpathak/.gradle/caches/9.3.1/transforms/4192b518197281b0ab610784e30ae080/transformed/profileinstaller-1.3.1/AndroidManifest.xml:29:13-31:52
+218                android:name="androidx.profileinstaller.ProfileInstallerInitializer"
+218-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/abhinavpathak/.gradle/caches/9.3.1/transforms/4192b518197281b0ab610784e30ae080/transformed/profileinstaller-1.3.1/AndroidManifest.xml:30:17-85
+219                android:value="androidx.startup" />
+219-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/abhinavpathak/.gradle/caches/9.3.1/transforms/4192b518197281b0ab610784e30ae080/transformed/profileinstaller-1.3.1/AndroidManifest.xml:31:17-49
+220        </provider>
+221
+222        <receiver
+222-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/abhinavpathak/.gradle/caches/9.3.1/transforms/4192b518197281b0ab610784e30ae080/transformed/profileinstaller-1.3.1/AndroidManifest.xml:34:9-52:20
+223            android:name="androidx.profileinstaller.ProfileInstallReceiver"
+223-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/abhinavpathak/.gradle/caches/9.3.1/transforms/4192b518197281b0ab610784e30ae080/transformed/profileinstaller-1.3.1/AndroidManifest.xml:35:13-76
+224            android:directBootAware="false"
+224-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/abhinavpathak/.gradle/caches/9.3.1/transforms/4192b518197281b0ab610784e30ae080/transformed/profileinstaller-1.3.1/AndroidManifest.xml:36:13-44
+225            android:enabled="true"
+225-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/abhinavpathak/.gradle/caches/9.3.1/transforms/4192b518197281b0ab610784e30ae080/transformed/profileinstaller-1.3.1/AndroidManifest.xml:37:13-35
+226            android:exported="true"
+226-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/abhinavpathak/.gradle/caches/9.3.1/transforms/4192b518197281b0ab610784e30ae080/transformed/profileinstaller-1.3.1/AndroidManifest.xml:38:13-36
+227            android:permission="android.permission.DUMP" >
+227-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/abhinavpathak/.gradle/caches/9.3.1/transforms/4192b518197281b0ab610784e30ae080/transformed/profileinstaller-1.3.1/AndroidManifest.xml:39:13-57
+228            <intent-filter>
+228-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/abhinavpathak/.gradle/caches/9.3.1/transforms/4192b518197281b0ab610784e30ae080/transformed/profileinstaller-1.3.1/AndroidManifest.xml:40:13-42:29
+229                <action android:name="androidx.profileinstaller.action.INSTALL_PROFILE" />
+229-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/abhinavpathak/.gradle/caches/9.3.1/transforms/4192b518197281b0ab610784e30ae080/transformed/profileinstaller-1.3.1/AndroidManifest.xml:41:17-91
+229-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/abhinavpathak/.gradle/caches/9.3.1/transforms/4192b518197281b0ab610784e30ae080/transformed/profileinstaller-1.3.1/AndroidManifest.xml:41:25-88
+230            </intent-filter>
+231            <intent-filter>
+231-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/abhinavpathak/.gradle/caches/9.3.1/transforms/4192b518197281b0ab610784e30ae080/transformed/profileinstaller-1.3.1/AndroidManifest.xml:43:13-45:29
+232                <action android:name="androidx.profileinstaller.action.SKIP_FILE" />
+232-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/abhinavpathak/.gradle/caches/9.3.1/transforms/4192b518197281b0ab610784e30ae080/transformed/profileinstaller-1.3.1/AndroidManifest.xml:44:17-85
+232-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/abhinavpathak/.gradle/caches/9.3.1/transforms/4192b518197281b0ab610784e30ae080/transformed/profileinstaller-1.3.1/AndroidManifest.xml:44:25-82
+233            </intent-filter>
+234            <intent-filter>
+234-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/abhinavpathak/.gradle/caches/9.3.1/transforms/4192b518197281b0ab610784e30ae080/transformed/profileinstaller-1.3.1/AndroidManifest.xml:46:13-48:29
+235                <action android:name="androidx.profileinstaller.action.SAVE_PROFILE" />
+235-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/abhinavpathak/.gradle/caches/9.3.1/transforms/4192b518197281b0ab610784e30ae080/transformed/profileinstaller-1.3.1/AndroidManifest.xml:47:17-88
+235-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/abhinavpathak/.gradle/caches/9.3.1/transforms/4192b518197281b0ab610784e30ae080/transformed/profileinstaller-1.3.1/AndroidManifest.xml:47:25-85
+236            </intent-filter>
+237            <intent-filter>
+237-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/abhinavpathak/.gradle/caches/9.3.1/transforms/4192b518197281b0ab610784e30ae080/transformed/profileinstaller-1.3.1/AndroidManifest.xml:49:13-51:29
+238                <action android:name="androidx.profileinstaller.action.BENCHMARK_OPERATION" />
+238-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/abhinavpathak/.gradle/caches/9.3.1/transforms/4192b518197281b0ab610784e30ae080/transformed/profileinstaller-1.3.1/AndroidManifest.xml:50:17-95
+238-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/abhinavpathak/.gradle/caches/9.3.1/transforms/4192b518197281b0ab610784e30ae080/transformed/profileinstaller-1.3.1/AndroidManifest.xml:50:25-92
+239            </intent-filter>
+240        </receiver>
+241    </application>
+242
+243</manifest>

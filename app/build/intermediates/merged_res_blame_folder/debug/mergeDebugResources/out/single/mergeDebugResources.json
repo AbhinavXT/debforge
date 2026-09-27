@@ -1,0 +1,90 @@
+[
+    {
+        "merged": "com.abhinavxt.debforge.app-debug-69:/drawable_shortcut_resume.xml.flat",
+        "source": "com.abhinavxt.debforge.app-main-71:/drawable/shortcut_resume.xml"
+    },
+    {
+        "merged": "com.abhinavxt.debforge.app-debug-69:/drawable_shortcut_add.xml.flat",
+        "source": "com.abhinavxt.debforge.app-main-71:/drawable/shortcut_add.xml"
+    },
+    {
+        "merged": "com.abhinavxt.debforge.app-debug-69:/mipmap-anydpi-v26_ic_launcher.xml.flat",
+        "source": "com.abhinavxt.debforge.app-main-71:/mipmap-anydpi-v26/ic_launcher.xml"
+    },
+    {
+        "merged": "com.abhinavxt.debforge.app-debug-69:/xml_file_paths.xml.flat",
+        "source": "com.abhinavxt.debforge.app-main-71:/xml/file_paths.xml"
+    },
+    {
+        "merged": "com.abhinavxt.debforge.app-debug-69:/drawable_ic_action_play.xml.flat",
+        "source": "com.abhinavxt.debforge.app-main-71:/drawable/ic_action_play.xml"
+    },
+    {
+        "merged": "com.abhinavxt.debforge.app-debug-69:/drawable_ic_launcher_monochrome.xml.flat",
+        "source": "com.abhinavxt.debforge.app-main-71:/drawable/ic_launcher_monochrome.xml"
+    },
+    {
+        "merged": "com.abhinavxt.debforge.app-debug-69:/xml_data_extraction_rules.xml.flat",
+        "source": "com.abhinavxt.debforge.app-main-71:/xml/data_extraction_rules.xml"
+    },
+    {
+        "merged": "com.abhinavxt.debforge.app-debug-69:/drawable_ic_launcher_background.xml.flat",
+        "source": "com.abhinavxt.debforge.app-main-71:/drawable/ic_launcher_background.xml"
+    },
+    {
+        "merged": "com.abhinavxt.debforge.app-debug-69:/xml_downloads_widget_info.xml.flat",
+        "source": "com.abhinavxt.debforge.app-main-71:/xml/downloads_widget_info.xml"
+    },
+    {
+        "merged": "com.abhinavxt.debforge.app-debug-69:/drawable_widget_bg.xml.flat",
+        "source": "com.abhinavxt.debforge.app-main-71:/drawable/widget_bg.xml"
+    },
+    {
+        "merged": "com.abhinavxt.debforge.app-debug-69:/layout_widget_downloads.xml.flat",
+        "source": "com.abhinavxt.debforge.app-main-71:/layout/widget_downloads.xml"
+    },
+    {
+        "merged": "com.abhinavxt.debforge.app-debug-69:/mipmap-anydpi-v26_ic_launcher_round.xml.flat",
+        "source": "com.abhinavxt.debforge.app-main-71:/mipmap-anydpi-v26/ic_launcher_round.xml"
+    },
+    {
+        "merged": "com.abhinavxt.debforge.app-debug-69:/xml_locales_config.xml.flat",
+        "source": "com.abhinavxt.debforge.app-main-71:/xml/locales_config.xml"
+    },
+    {
+        "merged": "com.abhinavxt.debforge.app-debug-69:/xml_backup_rules.xml.flat",
+        "source": "com.abhinavxt.debforge.app-main-71:/xml/backup_rules.xml"
+    },
+    {
+        "merged": "com.abhinavxt.debforge.app-debug-69:/xml_shortcuts.xml.flat",
+        "source": "com.abhinavxt.debforge.app-main-71:/xml/shortcuts.xml"
+    },
+    {
+        "merged": "com.abhinavxt.debforge.app-debug-69:/drawable_ic_launcher_foreground.xml.flat",
+        "source": "com.abhinavxt.debforge.app-main-71:/drawable/ic_launcher_foreground.xml"
+    },
+    {
+        "merged": "com.abhinavxt.debforge.app-debug-69:/drawable_widget_pill.xml.flat",
+        "source": "com.abhinavxt.debforge.app-main-71:/drawable/widget_pill.xml"
+    },
+    {
+        "merged": "com.abhinavxt.debforge.app-debug-69:/drawable_ic_action_pause.xml.flat",
+        "source": "com.abhinavxt.debforge.app-main-71:/drawable/ic_action_pause.xml"
+    },
+    {
+        "merged": "com.abhinavxt.debforge.app-debug-69:/drawable_ic_action_add.xml.flat",
+        "source": "com.abhinavxt.debforge.app-main-71:/drawable/ic_action_add.xml"
+    },
+    {
+        "merged": "com.abhinavxt.debforge.app-debug-69:/drawable_ic_notification_download.xml.flat",
+        "source": "com.abhinavxt.debforge.app-main-71:/drawable/ic_notification_download.xml"
+    },
+    {
+        "merged": "com.abhinavxt.debforge.app-debug-69:/drawable_widget_progress.xml.flat",
+        "source": "com.abhinavxt.debforge.app-main-71:/drawable/widget_progress.xml"
+    },
+    {
+        "merged": "com.abhinavxt.debforge.app-debug-69:/drawable-xhdpi_tv_banner.png.flat",
+        "source": "com.abhinavxt.debforge.app-main-71:/drawable-xhdpi/tv_banner.png"
+    }
+]

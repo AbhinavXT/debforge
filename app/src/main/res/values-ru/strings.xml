@@ -1,0 +1,540 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tab_library">Библиотека</string>
+    <string name="tab_downloads">Загрузки</string>
+    <string name="tab_settings">Настройки</string>
+    <string name="action_cancel">Отмена</string>
+    <string name="action_close">Закрыть</string>
+    <string name="action_download">Скачать</string>
+    <string name="action_play">Воспроизвести</string>
+    <string name="action_open">Открыть</string>
+    <string name="action_share">Поделиться</string>
+    <string name="action_remove">Удалить</string>
+    <string name="action_retry">Повторить</string>
+    <string name="action_save">Сохранить</string>
+    <string name="action_allow">Разрешить</string>
+    <string name="action_add">Добавить</string>
+    <string name="action_dismiss">Скрыть</string>
+    <string name="action_pause">Приостановить</string>
+    <string name="action_resume">Продолжить</string>
+    <string name="action_renew">Продлить</string>
+    <string name="action_refresh">Обновить</string>
+    <string name="action_clear">Очистить</string>
+    <string name="action_done">Готово</string>
+    <string name="setup_your_service">ваш debrid-сервис</string>
+    <string name="setup_intro">Выберите сервис и войдите в %1$s, используя %2$s.</string>
+    <string name="setup_or_paste">или вставьте %1$s</string>
+    <string name="setup_paste">Вставить</string>
+    <string name="setup_pasted_from">Вставлено из %1$s</string>
+    <string name="setup_validate">Проверить и продолжить</string>
+    <string name="setup_get_token">Получите %1$s на %2$s</string>
+    <string name="setup_privacy">Ключ (%1$s) хранится в зашифрованном виде только на этом устройстве и используется только для запросов к API (%2$s).</string>
+    <string name="setup_sign_in_with">Войти через %1$s</string>
+    <string name="setup_enter_code_at">Введите этот код на %1$s</string>
+    <string name="setup_open_service">Открыть %1$s</string>
+    <string name="setup_waiting_approval">Ожидание подтверждения…</string>
+    <string name="add_title">Добавить в %1$s</string>
+    <string name="add_choose_torrent">Выбрать файл .torrent</string>
+    <string name="add_remove_file">Убрать файл</string>
+    <string name="add_auto_download">Автоматически скачать на телефон, когда будет готово</string>
+    <string name="add_needs_storage">Сначала выберите папку для загрузок или разрешите доступ к файлам.</string>
+    <string name="add_allow_file_access">Разрешить доступ к файлам</string>
+    <string name="add_hint_both">Magnet-ссылки или URL, по одной в строке</string>
+    <string name="add_hint_magnet">Magnet-ссылки, по одной в строке</string>
+    <string name="add_hint_links">Ссылки на файлообменники, по одной в строке</string>
+    <string name="processing_on">Обработка на %1$s</string>
+    <string name="processing_will_auto">Будет скачано автоматически</string>
+    <string name="processing_auto_when_ready">Скачать автоматически, когда будет готово</string>
+    <string name="eta_seconds">осталось %1$d с</string>
+    <string name="eta_minutes">осталось %1$d мин</string>
+    <string name="eta_hours">осталось %1$d ч %2$d мин</string>
+    <string name="browse_add_cd">Добавить magnet, ссылку или торрент</string>
+    <string name="browse_selected">Выбрано: %1$d</string>
+    <string name="browse_cancel_selection">Отменить выбор</string>
+    <string name="browse_searching_all">Поиск по всей библиотеке… Проверено файлов: %1$d</string>
+    <string name="browse_search_hint">Поиск по названиям и файлам</string>
+    <string name="browse_posters">Постеры</string>
+    <string name="browse_group_series">Группировать сериалы</string>
+    <string name="sort_newest">Сначала новые</string>
+    <string name="sort_oldest">Сначала старые</string>
+    <string name="sort_name_az">Имя А–Я</string>
+    <string name="sort_name_za">Имя Я–А</string>
+    <string name="sort_largest">Сначала большие</string>
+    <string name="sort_smallest">Сначала маленькие</string>
+    <string name="browse_other">Другое</string>
+    <string name="browse_end_of_list">Конец списка</string>
+    <string name="browse_no_matches">Ничего не найдено по запросу \"%1$s\"</string>
+    <string name="browse_empty_title">Библиотека пуста</string>
+    <string name="browse_empty_body">Всё, что вы добавите в %1$s, появится здесь и будет готово к загрузке на полной скорости.</string>
+    <string name="browse_your_service">ваш сервис</string>
+    <string name="browse_empty_add">Добавить magnet, торрент или ссылку</string>
+    <string name="storage_title">Куда сохранять файлы?</string>
+    <string name="storage_body">Выберите папку: внутренняя память, SD-карта или USB-накопитель, без особых разрешений. Или разрешите \"Доступ ко всем файлам\", чтобы сохранять в Movies по пути, или используйте собственное хранилище DebForge (удаляется вместе с приложением).</string>
+    <string name="storage_grant">Предоставить доступ</string>
+    <string name="storage_use_app">Хранилище приложения</string>
+    <string name="poster_downloaded">✓ Скачано</string>
+    <string name="poster_series_tag">СЕРИАЛ</string>
+    <string name="poster_movie_tag">ФИЛЬМ</string>
+    <string name="poster_file_tag">ФАЙЛ</string>
+    <string name="kind_series">Сериал</string>
+    <string name="kind_movie">Фильм</string>
+    <string name="sheet_all_queued">Всё в очереди</string>
+    <string name="sheet_download_all">Скачать всё (%1$d)</string>
+    <string name="sheet_zip_title">Всё одним .zip</string>
+    <string name="sheet_zip_download">Скачать .zip</string>
+    <string name="sheet_season">Сезон %1$d</string>
+    <string name="sheet_download_season">Скачать сезон (%1$d)</string>
+    <string name="state_queued">В очереди</string>
+    <string name="state_downloading">Загрузка</string>
+    <string name="state_paused">Приостановлено</string>
+    <string name="state_done">Готово</string>
+    <string name="state_failed">Ошибка</string>
+    <string name="expiry_expired">Премиум %1$s истёк</string>
+    <string name="expiry_today">Премиум %1$s истекает сегодня</string>
+    <string name="dl_clear_finished">Очистить завершённые</string>
+    <string name="dl_section_downloading">Загружаются</string>
+    <string name="dl_section_queued">В очереди</string>
+    <string name="dl_section_paused">Приостановлены</string>
+    <string name="dl_section_failed">С ошибкой</string>
+    <string name="dl_section_completed">Завершены</string>
+    <string name="dl_waiting">Ожидание</string>
+    <string name="dl_so_far">пока</string>
+    <string name="dl_waiting_size">Ожидание · %1$s</string>
+    <string name="dl_paused_progress">Приостановлено · %1$s / %2$s</string>
+    <string name="dl_failed">Ошибка загрузки</string>
+    <string name="dl_done_at">Готово · %1$s · %2$s</string>
+    <string name="dl_file_missing">Файл перемещён или удалён</string>
+    <string name="dl_empty_title">Нет активных загрузок</string>
+    <string name="dl_empty_body">Нажмите «Скачать» у элемента в Библиотеке, чтобы добавить его в очередь.</string>
+    <string name="wait_network">Ожидание сети</string>
+    <string name="wait_wifi">Ожидание Wi-Fi</string>
+    <string name="wait_charger">Ожидание зарядки</string>
+    <string name="wait_schedule">Ожидание времени по расписанию</string>
+    <string name="set_service_fallback">сервис</string>
+    <string name="set_download_folder">Папка для загрузок</string>
+    <string name="set_organise">Раскладывать по папкам Shows / Movies</string>
+    <string name="set_organise_detail">Shows/The Bear/Season 02, Movies/Oppenheimer (2023) — готово для Plex, Jellyfin, Kodi.</string>
+    <string name="set_when">Когда скачивать</string>
+    <string name="set_wifi_only">Только по Wi-Fi</string>
+    <string name="set_wifi_only_detail">Пауза при мобильном интернете; автоматическое продолжение по Wi-Fi.</string>
+    <string name="set_charging_only">Только во время зарядки</string>
+    <string name="set_schedule">Расписание</string>
+    <string name="set_schedule_detail">Скачивать только в указанные ниже часы (например, ночью).</string>
+    <string name="set_alarm_needed">Чтобы загрузка начиналась вовремя в фоне, разрешите DebForge \"Будильники и напоминания\".</string>
+    <string name="set_default_sort">Сортировка по умолчанию</string>
+    <string name="set_theme">Тема</string>
+    <string name="set_posters">Постеры</string>
+    <string name="set_service">Сервис</string>
+    <string name="set_signed_in">вход выполнен</string>
+    <string name="set_not_signed_in">вход не выполнен</string>
+    <string name="set_sign_out_of">Выйти из %1$s</string>
+    <string name="set_sign_out_q">Выйти из %1$s?</string>
+    <string name="set_sign_out_body">Токен %1$s будет удалён с этого устройства. Токены других сервисов сохранятся. Загрузки из %1$s в очереди не смогут обновить ссылки, пока вы не войдёте снова.</string>
+    <string name="set_sign_out">Выйти</string>
+    <string name="set_change">Изменить</string>
+    <string name="set_choose_folder">Выбрать папку</string>
+    <string name="set_folder_note">Выберите любую папку через системный выбор или одну из этих. Для общих папок по пути нужен доступ ко всем файлам.</string>
+    <string name="set_app_storage">Хранилище приложения (без разрешений)</string>
+    <string name="set_sort_newest">Сначала новые</string>
+    <string name="set_sort_oldest">Сначала старые</string>
+    <string name="set_sort_largest">Сначала большие</string>
+    <string name="set_sort_smallest">Сначала маленькие</string>
+    <string name="theme_system">Система</string>
+    <string name="theme_light">Светлая</string>
+    <string name="theme_dark">Тёмная</string>
+    <string name="set_tmdb_note">Обложки берутся из TMDB. Вставьте бесплатный API-ключ или токен доступа на чтение с themoviedb.org → Settings → API, чтобы включить постеры.</string>
+    <string name="set_tmdb_key">API-ключ TMDB</string>
+    <string name="set_refresh_posters">Обновить постеры</string>
+    <string name="poster_setup_title">Включить постеры</string>
+    <string name="poster_setup_body">DebForge берёт постеры и описания из TMDB — бесплатной базы фильмов и сериалов. Нужен ваш собственный бесплатный ключ, это займёт около двух минут:</string>
+    <string name="poster_setup_step1">Откройте TMDB и войдите или создайте бесплатный аккаунт.</string>
+    <string name="poster_setup_step2">В разделе API запросите ключ для личного использования.</string>
+    <string name="poster_setup_step3">Скопируйте «API Read Access Token» (или API-ключ) и вставьте ниже.</string>
+    <string name="poster_setup_open">Открыть TMDB</string>
+    <string name="poster_setup_paste">Вставить</string>
+    <string name="poster_setup_check">Проверить и сохранить</string>
+    <string name="poster_setup_bad_format">Это не похоже на ключ TMDB. Скопируйте API Read Access Token или 32-символьный API-ключ.</string>
+    <string name="poster_setup_rejected">TMDB не принял этот ключ. Проверьте, что скопировали его целиком.</string>
+    <string name="poster_setup_unreachable">Не удалось связаться с TMDB для проверки ключа.</string>
+    <string name="poster_setup_save_anyway">Всё равно сохранить</string>
+    <string name="poster_setup_done">Постеры включены</string>
+    <string name="poster_banner">Добавьте бесплатный ключ TMDB, чтобы видеть постеры и описания</string>
+    <string name="poster_banner_action">Настроить</string>
+    <string name="set_posters_on">Включено. Постеры и описания берутся из TMDB.</string>
+    <string name="set_posters_change">Сменить ключ</string>
+    <string name="set_posters_remove">Удалить ключ</string>
+    <string name="acct_expired">Премиум истёк</string>
+    <string name="acct_expires_today">Премиум истекает сегодня</string>
+    <string name="acct_manage">Управление аккаунтом</string>
+    <string name="set_from">С</string>
+    <string name="set_to">до</string>
+    <string name="speed_unlimited">Без ограничений</string>
+    <string name="speed_mbps">%1$d МБ/с</string>
+    <string name="set_speed_limit">Ограничение скорости</string>
+    <string name="set_speed_detail">Оставьте часть канала другим устройствам в сети.</string>
+    <string name="set_language">Язык</string>
+    <string name="lang_system">Как в системе</string>
+    <string name="notif_channel">Загрузки</string>
+    <string name="notif_channel_desc">Ход активных загрузок</string>
+    <string name="notif_preparing">Подготовка загрузки</string>
+    <string name="notif_waiting_resume">%1$s — продолжится автоматически</string>
+    <string name="notif_paused_title">Загрузки приостановлены</string>
+    <string name="notif_paused_body">Достигнут лимит фоновой работы Android. Нажмите, чтобы продолжить.</string>
+    <string name="notif_sched_title">Запланированные загрузки готовы к запуску</string>
+    <string name="notif_sched_body">Нажмите, чтобы начать. Разрешите \"Будильники и напоминания\" для автоматического запуска.</string>
+    <string name="notif_ready_one">Готово: %1$s</string>
+    <string name="notif_ready_body">Добавлено в очередь загрузок. Нажмите, чтобы начать.</string>
+    <string name="notif_downloaded">Скачано</string>
+    <string name="chooser_play_with">Воспроизвести с помощью</string>
+    <string name="chooser_open_with">Открыть с помощью</string>
+    <string name="chooser_share">Поделиться</string>
+    <string name="msg_will_download_when_ready">\"%1$s\" будет скачан, когда будет готов</string>
+    <string name="msg_ready_one">Готово — скачивается %1$s</string>
+    <string name="msg_no_player">Видеоплеер не найден — установите VLC или mpv</string>
+    <string name="msg_app_storage">Сохранение в хранилище приложения — это можно изменить в Настройках</string>
+    <string name="msg_added_one">Добавлено: %1$s</string>
+    <string name="add_err_nothing">Нечего добавить — вставьте magnet-ссылку или URL http(s)</string>
+    <string name="add_err_unsupported">%1$s не поддерживает такой тип элемента</string>
+    <string name="add_partial">Добавлено %1$d из %2$d</string>
+    <string name="add_partial_suffix">(добавлено %1$d из %2$d)</string>
+    <string name="add_magnet_link">Magnet-ссылка</string>
+    <string name="add_err_too_large">Файл слишком большой для .torrent</string>
+    <string name="add_err_open">Не удалось открыть файл</string>
+    <string name="add_err_not_torrent">%1$s не похож на файл .torrent</string>
+    <string name="add_err_read">Не удалось прочитать файл: %1$s</string>
+    <string name="add_err_permission">Нет разрешения на чтение файла — попробуйте выбрать его снова</string>
+    <plurals name="n_episodes">
+        <item quantity="one">%1$d серия</item>
+        <item quantity="few">%1$d серии</item>
+        <item quantity="many">%1$d серий</item>
+        <item quantity="other">%1$d серии</item>
+    </plurals>
+    <plurals name="n_versions">
+        <item quantity="one">%1$d версия</item>
+        <item quantity="few">%1$d версии</item>
+        <item quantity="many">%1$d версий</item>
+        <item quantity="other">%1$d версии</item>
+    </plurals>
+    <plurals name="n_files">
+        <item quantity="one">%1$d файл</item>
+        <item quantity="few">%1$d файла</item>
+        <item quantity="many">%1$d файлов</item>
+        <item quantity="other">%1$d файла</item>
+    </plurals>
+    <plurals name="expiry_in_days">
+        <item quantity="one">Премиум %2$s истекает через %1$d день</item>
+        <item quantity="few">Премиум %2$s истекает через %1$d дня</item>
+        <item quantity="many">Премиум %2$s истекает через %1$d дней</item>
+        <item quantity="other">Премиум %2$s истекает через %1$d дня</item>
+    </plurals>
+    <plurals name="added_n_files">
+        <item quantity="one">В очередь добавлен %1$d файл</item>
+        <item quantity="few">В очередь добавлено %1$d файла</item>
+        <item quantity="many">В очередь добавлено %1$d файлов</item>
+        <item quantity="other">В очередь добавлено %1$d файла</item>
+    </plurals>
+    <plurals name="acct_days_left">
+        <item quantity="one">Премиум: остался %1$d день</item>
+        <item quantity="few">Премиум: осталось %1$d дня</item>
+        <item quantity="many">Премиум: осталось %1$d дней</item>
+        <item quantity="other">Премиум: осталось %1$d дня</item>
+    </plurals>
+    <plurals name="notif_ready_many">
+        <item quantity="one">%1$d элемент готов</item>
+        <item quantity="few">%1$d элемента готовы</item>
+        <item quantity="many">%1$d элементов готовы</item>
+        <item quantity="other">%1$d элемента готовы</item>
+    </plurals>
+    <plurals name="msg_ready_many">
+        <item quantity="one">%1$d элемент готов — скачивание</item>
+        <item quantity="few">%1$d элемента готовы — скачивание</item>
+        <item quantity="many">%1$d элементов готовы — скачивание</item>
+        <item quantity="other">%1$d элемента готовы — скачивание</item>
+    </plurals>
+    <plurals name="add_added_n">
+        <item quantity="one">В %2$s добавлен %1$d элемент</item>
+        <item quantity="few">В %2$s добавлено %1$d элемента</item>
+        <item quantity="many">В %2$s добавлено %1$d элементов</item>
+        <item quantity="other">В %2$s добавлено %1$d элемента</item>
+    </plurals>
+    <plurals name="add_skipped_n">
+        <item quantity="one">Пропущен %1$d нераспознанный элемент</item>
+        <item quantity="few">Пропущено %1$d нераспознанных элемента</item>
+        <item quantity="many">Пропущено %1$d нераспознанных элементов</item>
+        <item quantity="other">Пропущено %1$d нераспознанного элемента</item>
+    </plurals>
+    <!-- Updates / About -->
+    <string name="update_banner">Доступна версия DebForge %1$s</string>
+    <string name="action_update">Обновить</string>
+    <string name="about_title">О приложении</string>
+    <string name="about_version">DebForge %1$s</string>
+    <string name="about_build">Сборка %1$d · %2$s</string>
+    <string name="about_auto_update">Автоматически проверять обновления</string>
+    <string name="about_auto_update_detail">Один анонимный запрос к GitHub при запуске приложения.</string>
+    <string name="about_check_now">Проверить обновления</string>
+    <string name="about_checking">Проверка…</string>
+    <string name="about_up_to_date">У вас последняя версия.</string>
+    <string name="about_update_available">Доступна версия %1$s.</string>
+    <string name="about_check_failed">Не удалось проверить обновления (%1$s).</string>
+    <string name="about_download">Скачать</string>
+    <string name="about_release_notes">Список изменений</string>
+    <string name="about_source">Исходный код и баг-репорты</string>
+    <string name="about_share_crash">Отправить последний отчёт о сбое</string>
+
+    <!-- Crash reports -->
+    <string name="crash_title">При прошлом запуске DebForge произошёл сбой</string>
+    <string name="crash_body">На устройстве сохранён отчёт, из которого удалены токены, ссылки и имена файлов. Ничего не отправляется, пока вы сами им не поделитесь.</string>
+    <string name="crash_share">Поделиться отчётом</string>
+    <string name="crash_delete">Удалить</string>
+    <string name="crash_share_subject">Отчёт о сбое DebForge</string>
+    <string name="dl_schedule_notice">Сейчас не время загрузок. Файлы из очереди начнут скачиваться в %1$s. Изменить часы или отключить расписание можно в Настройках.</string>
+    <!-- Remove from service -->
+    <string name="action_remove_from">Удалить из %1$s</string>
+    <string name="remove_title">Удалить из %1$s?</string>
+    <string name="remove_body">«%1$s» будет удалён из вашего аккаунта %2$s. Файлы, уже сохранённые на телефоне, останутся. Незавершённые загрузки будут отменены.</string>
+    <plurals name="msg_removed_n">
+        <item quantity="one">Удалён %1$d элемент из %2$s</item>
+        <item quantity="few">Удалено %1$d элемента из %2$s</item>
+        <item quantity="many">Удалено %1$d элементов из %2$s</item>
+        <item quantity="other">Удалено %1$d элемента из %2$s</item>
+    </plurals>
+    <string name="set_remove_after">Удалять из сервиса после загрузки</string>
+    <string name="set_remove_after_detail">Освобождает слоты для торрентов. Торрент удаляется, только когда все его файлы скачаны на этот телефон.</string>
+    <string name="set_show_extras">Показывать доп. файлы</string>
+    <string name="set_show_extras_detail">Заметки релиз-группы (.txt, .nfo), обложки и сэмплы внутри торрентов. По умолчанию скрыты и пропускаются при автозагрузке.</string>
+    <!-- Cache check in the Add dialog -->
+    <string name="add_cache_checking">Проверка, есть ли это уже на %1$s…</string>
+    <string name="add_cache_one_yes">В кеше %1$s. Доступно сразу.</string>
+    <string name="add_cache_one_no">Ещё нет в кеше. Сначала %1$s скачает это.</string>
+    <string name="add_cache_all_yes">Все (%1$d) в кеше. Доступны сразу.</string>
+    <string name="add_cache_some">В кеше %1$d из %2$d. Они доступны сразу.</string>
+    <!-- Data usage -->
+    <string name="usage_title">Передача данных</string>
+    <string name="usage_this_month">%1$s за этот месяц</string>
+    <string name="usage_split">Wi-Fi %1$s · Мобильные данные %2$s</string>
+    <string name="usage_wifi">Wi-Fi</string>
+    <string name="usage_mobile">Мобильные данные</string>
+    <string name="usage_last_days">Последние %1$d дн.</string>
+    <string name="usage_today">Сегодня</string>
+    <string name="usage_by_service">Этот месяц по сервисам</string>
+    <string name="usage_reset">Сбросить статистику</string>
+    <string name="usage_reset_q">Сбросить статистику трафика?</string>
+    <string name="usage_chart_desc">Столбчатая диаграмма скачанных данных за последние %1$d дн. Самый активный день: %2$s.</string>
+    <!-- Backup / restore -->
+    <string name="action_ok">ОК</string>
+    <string name="backup_title">Резервная копия</string>
+    <string name="backup_detail">Сохраните настройки в файл и восстановите их на этом или другом телефоне.</string>
+    <string name="backup_create">Создать копию</string>
+    <string name="backup_restore">Восстановить</string>
+    <string name="backup_what">Правила загрузки, папка, оформление, отслеживаемые сериалы и другие настройки включаются всегда.</string>
+    <string name="backup_include_signins">Включить данные входа</string>
+    <string name="backup_include_signins_detail">Входы в сервисы и ваш ключ TMDB, зашифрованные паролем.</string>
+    <string name="backup_password">Пароль</string>
+    <string name="backup_password_again">Повторите пароль</string>
+    <string name="backup_password_short">Не менее %1$d символов</string>
+    <string name="backup_password_mismatch">Пароли не совпадают</string>
+    <string name="backup_password_warning">Сохраните этот пароль. Без него данные входа из этой копии восстановить не получится.</string>
+    <string name="backup_choose_location">Выберите, куда сохранить</string>
+    <string name="backup_saved">Резервная копия сохранена.</string>
+    <string name="backup_saved_with_signins">Резервная копия сохранена, данные входа зашифрованы вашим паролем.</string>
+    <string name="backup_failed">Не удалось сохранить копию: %1$s</string>
+    <plurals name="restore_settings_n">
+        <item quantity="one">Восстановлена %1$d настройка.</item>
+        <item quantity="few">Восстановлено %1$d настройки.</item>
+        <item quantity="many">Восстановлено %1$d настроек.</item>
+        <item quantity="other">Восстановлено %1$d настройки.</item>
+    </plurals>
+    <string name="restore_signins">Выполнен вход в %1$s.</string>
+    <string name="restore_folder_skipped">Папка для загрузок не восстановлена: папку, выбранную на другом телефоне, нельзя использовать здесь. Выберите её снова в Настройках.</string>
+    <string name="restore_needs_password">Эта копия содержит данные входа. Введите пароль, чтобы восстановить их, или восстановите только настройки.</string>
+    <string name="restore_wrong_password">Неверный пароль</string>
+    <string name="restore_settings_only">Только настройки</string>
+    <string name="restore_newer">Эта копия создана более новой версией DebForge. Сначала обновите приложение.</string>
+    <string name="restore_not_backup">Этот файл не является резервной копией DebForge.</string>
+    <string name="restore_failed">Не удалось восстановить: %1$s</string>
+    <!-- Folder picker (SAF) -->
+    <string name="storage_pick_folder">Выберите папку</string>
+    <string name="set_pick_any_folder">Выбрать любую папку…</string>
+    <string name="set_pick_any_folder_detail">Внутренняя память, SD-карта или USB-накопитель. Без особых разрешений.</string>
+    <string name="storage_internal">Внутренняя память</string>
+    <string name="storage_sd">SD-карта</string>
+    <string name="msg_folder_set">Загрузки будут сохраняться в %1$s</string>
+    <!-- Service sign-in credential names -->
+    <string name="token_api_key">API-ключ</string>
+    <string name="token_api_token">API-токен</string>
+    <!-- Empty library; %1$s is the service's website, e.g. torbox.app -->
+    <string name="browse_empty_hint">Добавьте торрент, magnet-ссылку или ссылку на %1$s, чтобы заполнить этот список.</string>
+    <!-- Errors talking to a service; %1$s is the service name -->
+    <string name="err_auth">Сервис %1$s отклонил %2$s. Проверьте его на %3$s.</string>
+    <string name="err_rate_limit">%1$s ограничивает число запросов. Подождите минуту и повторите попытку.</string>
+    <string name="err_http">%1$s: ошибка запроса (HTTP %2$d)</string>
+    <string name="err_failed">%1$s: ошибка запроса</string>
+    <string name="err_bad_response">Неожиданный ответ от %1$s</string>
+    <string name="err_network">Ошибка сети. Проверьте подключение.</string>
+    <string name="err_unexpected">Непредвиденная ошибка</string>
+    <string name="set_appearance">Оформление</string>
+    <string name="theme_wallpaper">Обои</string>
+    <string name="theme_ember">Жар</string>
+    <string name="theme_ocean">Океан</string>
+    <string name="theme_aurora">Аврора</string>
+    <string name="theme_forest">Лес</string>
+    <string name="theme_amethyst">Аметист</string>
+    <string name="theme_rose">Роза</string>
+    <string name="theme_graphite">Графит</string>
+    <string name="set_pure_black">Чисто чёрный</string>
+    <string name="set_pure_black_detail">Чёрный фон в тёмном режиме. Лучше для OLED-экранов и батареи.</string>
+    <string name="dl_more_actions">Другие действия</string>
+
+    <!-- Widget, Quick Settings tile, launcher shortcuts, clipboard offer -->
+    <string name="action_pause_all">Приостановить все</string>
+    <string name="action_resume_all">Возобновить все</string>
+    <string name="widget_label">Загрузки DebForge</string>
+    <string name="widget_description">Что загружается, с кнопками «Приостановить все» и «Добавить»</string>
+    <string name="widget_idle">Ничего не загружается</string>
+    <string name="widget_idle_hint">Нажмите «Добавить», чтобы отправить магнет или ссылку в ваш сервис.</string>
+    <string name="widget_progress">%1$s из %2$s · %3$d%%</string>
+    <string name="tile_label">Загрузки</string>
+    <string name="tile_idle">Ничего не загружается</string>
+    <string name="shortcut_add">Добавить</string>
+    <string name="shortcut_resume_all">Возобновить все</string>
+    <string name="clipboard_offer">Найдена скопированная ссылка. Добавить в сервис?</string>
+    <string name="set_clipboard_offer">Предлагать скопированные ссылки</string>
+    <string name="set_clipboard_offer_detail">Если открыть DebForge со скопированной магнет- или .torrent-ссылкой, приложение предложит её добавить. Остальной текст игнорируется.</string>
+    <plurals name="widget_n_downloading">
+        <item quantity="one">%d загружается</item>
+        <item quantity="few">%d загружаются</item>
+        <item quantity="many">%d загружаются</item>
+        <item quantity="other">%d загружаются</item>
+    </plurals>
+    <plurals name="widget_n_queued">
+        <item quantity="one">%d в очереди</item>
+        <item quantity="few">%d в очереди</item>
+        <item quantity="many">%d в очереди</item>
+        <item quantity="other">%d в очереди</item>
+    </plurals>
+    <plurals name="widget_n_paused">
+        <item quantity="one">%d на паузе</item>
+        <item quantity="few">%d на паузе</item>
+        <item quantity="many">%d на паузе</item>
+        <item quantity="other">%d на паузе</item>
+    </plurals>
+    <plurals name="widget_n_failed">
+        <item quantity="one">%d с ошибкой</item>
+        <item quantity="few">%d с ошибкой</item>
+        <item quantity="many">%d с ошибкой</item>
+        <item quantity="other">%d с ошибкой</item>
+    </plurals>
+
+    <!-- Storage: space check, auto-delete -->
+    <string name="space_title">Недостаточно места</string>
+    <string name="space_body">Нужно %1$s, но в %3$s свободно только %2$s. Загрузки, которые не поместятся, остановятся с ошибкой — повторите после освобождения места.</string>
+    <string name="space_queue_anyway">Всё равно добавить</string>
+    <string name="set_storage_free">Свободно %1$s</string>
+    <string name="set_storage_free_unknown">Свободное место в этой папке неизвестно</string>
+    <string name="set_auto_delete">Удалять загрузки через</string>
+    <string name="set_auto_delete_detail">только файлы, скачанные DebForge и ещё показанные в «Загрузках»</string>
+    <string name="set_auto_delete_never">Никогда</string>
+    <string name="set_auto_delete_confirm_title">Удалить старые загрузки сейчас?</string>
+    <string name="set_auto_delete_now">Удалить сейчас</string>
+    <plurals name="set_storage_downloaded">
+        <item quantity="one">%1$s в %2$d файле, скачанном DebForge</item>
+        <item quantity="few">%1$s в %2$d файлах, скачанных DebForge</item>
+        <item quantity="many">%1$s в %2$d файлах, скачанных DebForge</item>
+        <item quantity="other">%1$s в %2$d файла, скачанных DebForge</item>
+    </plurals>
+    <plurals name="set_auto_delete_after_days">
+        <item quantity="one">Через %d день</item>
+        <item quantity="few">Через %d дня</item>
+        <item quantity="many">Через %d дней</item>
+        <item quantity="other">Через %d дня</item>
+    </plurals>
+    <plurals name="set_auto_delete_confirm_body">
+        <item quantity="one">%1$d файл, завершённый более %3$d дн. назад (%2$s), будет сейчас удалён с устройства. Более новые удалятся, когда достигнут этого возраста.</item>
+        <item quantity="few">%1$d файла, завершённых более %3$d дн. назад (%2$s), будут сейчас удалены с устройства. Более новые удалятся, когда достигнут этого возраста.</item>
+        <item quantity="many">%1$d файлов, завершённых более %3$d дн. назад (%2$s), будут сейчас удалены с устройства. Более новые удалятся, когда достигнут этого возраста.</item>
+        <item quantity="other">%1$d файла, завершённых более %3$d дн. назад (%2$s), будут сейчас удалены с устройства. Более новые удалятся, когда достигнут этого возраста.</item>
+    </plurals>
+
+    <!-- Add dialog: choosing a service -->
+    <string name="add_send_to">Отправить в</string>
+    <string name="add_target_cached_cd">В кэше</string>
+    <string name="add_target_cached_hint">В %1$s это уже есть в кэше — готово сразу.</string>
+    <string name="add_target_cant_hint">%1$s это не принимает, поэтому отправим в %2$s.</string>
+    <string name="add_sent_elsewhere">Это в %1$s; в библиотеке сейчас %2$s (переключите в настройках).</string>
+
+    <!-- Following shows -->
+    <string name="follow_action">Следить</string>
+    <string name="follow_following">Отслеживается</string>
+    <string name="follow_hint">Новые серии скачиваются сами, как только появятся в вашем аккаунте.</string>
+    <string name="follow_started">Вы следите за «%1$s». Новые серии будут скачиваться сами.</string>
+    <string name="follow_stopped">Вы больше не следите за «%1$s».</string>
+    <string name="follow_queued_one">Новая серия в очереди: %1$s</string>
+    <string name="follow_unfollow">Не следить</string>
+    <string name="set_follows">Отслеживаемые сериалы</string>
+    <string name="set_follows_none">Пока нет. Откройте сериал в библиотеке и нажмите «Следить».</string>
+    <string name="set_follows_detail">Новые серии, попавшие в ваш аккаунт, скачиваются автоматически. DebForge проверяет каждые пару часов и при загрузке библиотеки.</string>
+    <string name="notif_follow_one">Новая серия: %1$s</string>
+    <string name="notif_follow_body">В очереди на загрузку. Откройте DebForge, если загрузка не началась.</string>
+    <plurals name="follow_queued_many">
+        <item quantity="one">%d новая серия в очереди</item>
+        <item quantity="few">%d новые серии в очереди</item>
+        <item quantity="many">%d новых серий в очереди</item>
+        <item quantity="other">%d новой серии в очереди</item>
+    </plurals>
+    <plurals name="notif_follow_many">
+        <item quantity="one">%d новая серия</item>
+        <item quantity="few">%d новые серии</item>
+        <item quantity="many">%d новых серий</item>
+        <item quantity="other">%d новой серии</item>
+    </plurals>
+
+    <!-- In-app player -->
+    <string name="player_unsupported_title">Здесь не воспроизвести</string>
+    <string name="player_unsupported_body">Это устройство не может декодировать видео в плеере DebForge. VLC или другой плеер обычно справляются.</string>
+    <string name="player_error_body">Воспроизведение остановлено (%1$s). Другой видеоплеер, возможно, справится.</string>
+    <string name="player_no_audio_body">Аудиоформат этого видео не поддерживается на устройстве — видео пойдёт без звука. VLC или другой плеер воспроизведёт звук.</string>
+    <string name="action_open_other_player">Открыть в другом плеере</string>
+    <string name="player_keep_watching">Смотреть дальше</string>
+    <string name="player_network_title">Не удалось загрузить видео</string>
+    <string name="player_network_body">Соединение прервалось или срок ссылки истёк. Повторите попытку или проверьте подключение.</string>
+    <string name="set_player">Воспроизводить видео в</string>
+    <string name="set_player_internal">Плеер DebForge</string>
+    <string name="set_player_external">Другое приложение (VLC, mpv…)</string>
+
+    <!-- Resume / Continue watching -->
+    <string name="continue_watching">Продолжить просмотр</string>
+    <string name="continue_remove">Убрать из «Продолжить просмотр»</string>
+    <string name="continue_unavailable">Не удаётся воспроизвести «%1$s»: %2$s</string>
+    <string name="watched">✓ Просмотрено</string>
+    <string name="player_start_over">↺ С начала</string>
+    <plurals name="continue_minutes_left">
+        <item quantity="one">Осталась %d мин</item>
+        <item quantity="few">Осталось %d мин</item>
+        <item quantity="many">Осталось %d мин</item>
+        <item quantity="other">Осталось %d мин</item>
+    </plurals>
+
+    <!-- Subtitle label suffix: "French · Forced" -->
+    <string name="subtitle_forced">Принудительные</string>
+
+    <!-- Player: next episode -->
+    <string name="player_next">Далее: %1$s</string>
+    <string name="player_play_now">Смотреть сейчас</string>
+    <string name="player_next_failed">Не удалось загрузить следующую серию.</string>
+    <plurals name="player_next_in">
+        <item quantity="one">Начнётся через %d секунду</item>
+        <item quantity="few">Начнётся через %d секунды</item>
+        <item quantity="many">Начнётся через %d секунд</item>
+        <item quantity="other">Начнётся через %d секунды</item>
+    </plurals>
+
+    <!-- Autoplay setting, followed shows in backups -->
+    <string name="set_autoplay_next">Автовоспроизведение следующей серии</string>
+    <string name="set_autoplay_next_detail">В конце серии следующая начнётся после короткого отсчёта. Если выключено — предлагается кнопка «Смотреть сейчас».</string>
+    <plurals name="restore_follows_n">
+        <item quantity="one">Теперь вы следите ещё за %d сериалом.</item>
+        <item quantity="few">Теперь вы следите ещё за %d сериалами.</item>
+        <item quantity="many">Теперь вы следите ещё за %d сериалами.</item>
+        <item quantity="other">Теперь вы следите ещё за %d сериала.</item>
+    </plurals>
+</resources>

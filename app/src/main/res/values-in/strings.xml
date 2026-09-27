@@ -1,0 +1,468 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tab_library">Pustaka</string>
+    <string name="tab_downloads">Unduhan</string>
+    <string name="tab_settings">Setelan</string>
+    <string name="action_cancel">Batal</string>
+    <string name="action_close">Tutup</string>
+    <string name="action_download">Unduh</string>
+    <string name="action_play">Putar</string>
+    <string name="action_open">Buka</string>
+    <string name="action_share">Bagikan</string>
+    <string name="action_remove">Hapus</string>
+    <string name="action_retry">Coba lagi</string>
+    <string name="action_save">Simpan</string>
+    <string name="action_allow">Izinkan</string>
+    <string name="action_add">Tambah</string>
+    <string name="action_dismiss">Tutup</string>
+    <string name="action_pause">Jeda</string>
+    <string name="action_resume">Lanjutkan</string>
+    <string name="action_renew">Perpanjang</string>
+    <string name="action_refresh">Muat ulang</string>
+    <string name="action_clear">Bersihkan</string>
+    <string name="action_done">Selesai</string>
+    <string name="setup_your_service">layanan debrid Anda</string>
+    <string name="setup_intro">Pilih layanan Anda dan masuk dengan %2$s %1$s Anda.</string>
+    <string name="setup_or_paste">atau tempel %1$s Anda</string>
+    <string name="setup_paste">Tempel</string>
+    <string name="setup_pasted_from">Ditempel dari %1$s</string>
+    <string name="setup_validate">Validasi &amp; lanjutkan</string>
+    <string name="setup_get_token">Dapatkan %1$s Anda dari %2$s</string>
+    <string name="setup_privacy">%1$s Anda disimpan terenkripsi hanya di perangkat ini dan hanya digunakan untuk memanggil API %2$s.</string>
+    <string name="setup_sign_in_with">Masuk dengan %1$s</string>
+    <string name="setup_enter_code_at">Masukkan kode ini di %1$s</string>
+    <string name="setup_open_service">Buka %1$s</string>
+    <string name="setup_waiting_approval">Menunggu persetujuan…</string>
+    <string name="add_title">Tambah ke %1$s</string>
+    <string name="add_choose_torrent">Pilih file .torrent</string>
+    <string name="add_remove_file">Hapus file</string>
+    <string name="add_auto_download">Unduh otomatis ke ponsel ini saat siap</string>
+    <string name="add_needs_storage">Pilih folder unduhan terlebih dahulu, atau izinkan akses file.</string>
+    <string name="add_allow_file_access">Izinkan akses file</string>
+    <string name="add_hint_both">Link magnet atau URL, satu per baris</string>
+    <string name="add_hint_magnet">Link magnet, satu per baris</string>
+    <string name="add_hint_links">Link hoster, satu per baris</string>
+    <string name="processing_on">Diproses di %1$s</string>
+    <string name="processing_will_auto">Akan diunduh otomatis</string>
+    <string name="processing_auto_when_ready">Unduh otomatis saat siap</string>
+    <string name="eta_seconds">%1$d dtk lagi</string>
+    <string name="eta_minutes">%1$d mnt lagi</string>
+    <string name="eta_hours">%1$d j %2$d mnt lagi</string>
+    <string name="browse_add_cd">Tambah magnet, link, atau torrent</string>
+    <string name="browse_selected">%1$d dipilih</string>
+    <string name="browse_cancel_selection">Batalkan pilihan</string>
+    <string name="browse_searching_all">Mencari di seluruh pustaka… %1$d file diperiksa</string>
+    <string name="browse_search_hint">Cari judul atau file</string>
+    <string name="browse_posters">Poster</string>
+    <string name="browse_group_series">Kelompokkan sebagai serial</string>
+    <string name="sort_newest">Terbaru</string>
+    <string name="sort_oldest">Terlama</string>
+    <string name="sort_name_az">Nama A-Z</string>
+    <string name="sort_name_za">Nama Z-A</string>
+    <string name="sort_largest">Terbesar</string>
+    <string name="sort_smallest">Terkecil</string>
+    <string name="browse_other">Lainnya</string>
+    <string name="browse_end_of_list">Akhir daftar</string>
+    <string name="browse_no_matches">Tidak ada hasil untuk \"%1$s\"</string>
+    <string name="browse_empty_title">Pustaka Anda kosong</string>
+    <string name="browse_empty_body">Apa pun yang Anda tambahkan ke %1$s akan muncul di sini, siap diunduh dengan kecepatan penuh.</string>
+    <string name="browse_your_service">layanan Anda</string>
+    <string name="browse_empty_add">Tambah magnet, torrent, atau link</string>
+    <string name="storage_title">Simpan file di mana?</string>
+    <string name="storage_body">Pilih folder: penyimpanan internal, kartu SD, atau drive USB, tanpa izin khusus. Atau izinkan \"Akses semua file\" untuk menyimpan ke Movies lewat path, atau gunakan penyimpanan milik DebForge (dihapus jika aplikasi di-uninstal).</string>
+    <string name="storage_grant">Berikan akses</string>
+    <string name="storage_use_app">Gunakan penyimpanan aplikasi</string>
+    <string name="poster_downloaded">✓ Terunduh</string>
+    <string name="poster_series_tag">SERIAL</string>
+    <string name="poster_movie_tag">FILM</string>
+    <string name="poster_file_tag">FILE</string>
+    <string name="kind_series">Serial</string>
+    <string name="kind_movie">Film</string>
+    <string name="sheet_all_queued">Semua dalam antrean</string>
+    <string name="sheet_download_all">Unduh semua (%1$d)</string>
+    <string name="sheet_zip_title">Semuanya sebagai satu .zip</string>
+    <string name="sheet_zip_download">Unduh .zip</string>
+    <string name="sheet_season">Musim %1$d</string>
+    <string name="sheet_download_season">Unduh musim (%1$d)</string>
+    <string name="state_queued">Dalam antrean</string>
+    <string name="state_downloading">Mengunduh</string>
+    <string name="state_paused">Dijeda</string>
+    <string name="state_done">Selesai</string>
+    <string name="state_failed">Gagal</string>
+    <string name="expiry_expired">Premium %1$s Anda sudah berakhir</string>
+    <string name="expiry_today">Premium %1$s Anda berakhir hari ini</string>
+    <string name="dl_clear_finished">Bersihkan yang selesai</string>
+    <string name="dl_section_downloading">Mengunduh</string>
+    <string name="dl_section_queued">Dalam antrean</string>
+    <string name="dl_section_paused">Dijeda</string>
+    <string name="dl_section_failed">Gagal</string>
+    <string name="dl_section_completed">Selesai</string>
+    <string name="dl_waiting">Menunggu</string>
+    <string name="dl_so_far">sejauh ini</string>
+    <string name="dl_waiting_size">Menunggu · %1$s</string>
+    <string name="dl_paused_progress">Dijeda · %1$s / %2$s</string>
+    <string name="dl_failed">Unduhan gagal</string>
+    <string name="dl_done_at">Selesai · %1$s · %2$s</string>
+    <string name="dl_file_missing">File sudah dipindah atau dihapus</string>
+    <string name="dl_empty_title">Tidak ada yang aktif</string>
+    <string name="dl_empty_body">Ketuk Unduh pada item di Pustaka untuk memasukkannya ke antrean.</string>
+    <string name="wait_network">Menunggu jaringan</string>
+    <string name="wait_wifi">Menunggu Wi-Fi</string>
+    <string name="wait_charger">Menunggu pengisi daya</string>
+    <string name="wait_schedule">Menunggu jam terjadwal</string>
+    <string name="set_service_fallback">layanan</string>
+    <string name="set_download_folder">Folder unduhan</string>
+    <string name="set_organise">Atur ke folder Shows / Movies</string>
+    <string name="set_organise_detail">Shows/The Bear/Season 02, Movies/Oppenheimer (2023) — siap untuk Plex, Jellyfin, Kodi.</string>
+    <string name="set_when">Kapan mengunduh</string>
+    <string name="set_wifi_only">Hanya Wi-Fi</string>
+    <string name="set_wifi_only_detail">Jeda saat pakai data seluler; lanjut otomatis saat di Wi-Fi.</string>
+    <string name="set_charging_only">Hanya saat mengisi daya</string>
+    <string name="set_schedule">Jadwal</string>
+    <string name="set_schedule_detail">Hanya mengunduh di antara jam di bawah ini (mis. semalaman).</string>
+    <string name="set_alarm_needed">Agar dapat mulai tepat waktu di latar belakang, izinkan \"Alarm &amp; pengingat\" untuk DebForge.</string>
+    <string name="set_default_sort">Urutan default</string>
+    <string name="set_theme">Tema</string>
+    <string name="set_posters">Poster</string>
+    <string name="set_service">Layanan</string>
+    <string name="set_signed_in">sudah masuk</string>
+    <string name="set_not_signed_in">belum masuk</string>
+    <string name="set_sign_out_of">Keluar dari %1$s</string>
+    <string name="set_sign_out_q">Keluar dari %1$s?</string>
+    <string name="set_sign_out_body">Token %1$s Anda akan dihapus dari perangkat ini. Token untuk layanan lain tetap disimpan. Unduhan dari %1$s yang masih dalam antrean tidak bisa memperbarui link-nya sampai Anda masuk lagi.</string>
+    <string name="set_sign_out">Keluar</string>
+    <string name="set_change">Ubah</string>
+    <string name="set_choose_folder">Pilih folder</string>
+    <string name="set_folder_note">Pilih folder apa pun dengan pemilih sistem, atau salah satu dari ini. Folder bersama lewat path memerlukan Akses semua file.</string>
+    <string name="set_app_storage">Penyimpanan aplikasi (tanpa izin)</string>
+    <string name="set_sort_newest">Terbaru dulu</string>
+    <string name="set_sort_oldest">Terlama dulu</string>
+    <string name="set_sort_largest">Terbesar dulu</string>
+    <string name="set_sort_smallest">Terkecil dulu</string>
+    <string name="theme_system">Sistem</string>
+    <string name="theme_light">Terang</string>
+    <string name="theme_dark">Gelap</string>
+    <string name="set_tmdb_note">Gambar berasal dari TMDB. Tempel API key gratis atau read access token dari themoviedb.org → Settings → API untuk mengaktifkan poster.</string>
+    <string name="set_tmdb_key">API key TMDB</string>
+    <string name="set_refresh_posters">Muat ulang poster</string>
+    <string name="poster_setup_title">Aktifkan poster</string>
+    <string name="poster_setup_body">DebForge mengambil poster dan deskripsi dari TMDB, database film dan TV gratis. Diperlukan kunci gratis milik Anda sendiri, sekitar dua menit:</string>
+    <string name="poster_setup_step1">Buka TMDB dan masuk, atau buat akun gratis.</string>
+    <string name="poster_setup_step2">Di bagian API, minta kunci untuk penggunaan pribadi.</string>
+    <string name="poster_setup_step3">Salin “API Read Access Token” (atau API key) lalu tempel di bawah.</string>
+    <string name="poster_setup_open">Buka TMDB</string>
+    <string name="poster_setup_paste">Tempel</string>
+    <string name="poster_setup_check">Periksa dan simpan</string>
+    <string name="poster_setup_bad_format">Itu tidak tampak seperti kunci TMDB. Salin API Read Access Token atau API key 32 karakter.</string>
+    <string name="poster_setup_rejected">TMDB tidak menerima kunci ini. Pastikan Anda menyalin seluruhnya.</string>
+    <string name="poster_setup_unreachable">Tidak dapat menghubungi TMDB untuk memeriksa kunci.</string>
+    <string name="poster_setup_save_anyway">Tetap simpan</string>
+    <string name="poster_setup_done">Poster aktif</string>
+    <string name="poster_banner">Tambahkan kunci TMDB gratis untuk melihat poster dan deskripsi</string>
+    <string name="poster_banner_action">Atur</string>
+    <string name="set_posters_on">Aktif. Poster dan deskripsi berasal dari TMDB.</string>
+    <string name="set_posters_change">Ganti kunci</string>
+    <string name="set_posters_remove">Hapus kunci</string>
+    <string name="acct_expired">Premium sudah berakhir</string>
+    <string name="acct_expires_today">Premium berakhir hari ini</string>
+    <string name="acct_manage">Kelola akun</string>
+    <string name="set_from">Dari</string>
+    <string name="set_to">sampai</string>
+    <string name="speed_unlimited">Tanpa batas</string>
+    <string name="speed_mbps">%1$d MB/dtk</string>
+    <string name="set_speed_limit">Batas kecepatan</string>
+    <string name="set_speed_detail">Sisakan bandwidth untuk pengguna lain di jaringan Anda.</string>
+    <string name="set_language">Bahasa</string>
+    <string name="lang_system">Default sistem</string>
+    <string name="notif_channel">Unduhan</string>
+    <string name="notif_channel_desc">Progres unduhan aktif</string>
+    <string name="notif_preparing">Menyiapkan unduhan</string>
+    <string name="notif_waiting_resume">%1$s — akan dilanjutkan otomatis</string>
+    <string name="notif_paused_title">Unduhan dijeda</string>
+    <string name="notif_paused_body">Batas waktu latar belakang Android telah tercapai. Ketuk untuk melanjutkan.</string>
+    <string name="notif_sched_title">Unduhan terjadwal siap dimulai</string>
+    <string name="notif_sched_body">Ketuk untuk memulai. Izinkan \"Alarm &amp; pengingat\" agar mulai otomatis.</string>
+    <string name="notif_ready_one">Siap: %1$s</string>
+    <string name="notif_ready_body">Masuk antrean unduhan. Ketuk untuk memulai.</string>
+    <string name="notif_downloaded">Terunduh</string>
+    <string name="chooser_play_with">Putar dengan</string>
+    <string name="chooser_open_with">Buka dengan</string>
+    <string name="chooser_share">Bagikan</string>
+    <string name="msg_will_download_when_ready">\"%1$s\" akan diunduh saat siap</string>
+    <string name="msg_ready_one">Siap — mengunduh %1$s</string>
+    <string name="msg_no_player">Pemutar video tidak ditemukan — instal VLC atau mpv</string>
+    <string name="msg_app_storage">Menyimpan ke penyimpanan aplikasi — ubah kapan saja di Setelan</string>
+    <string name="msg_added_one">Ditambahkan: %1$s</string>
+    <string name="add_err_nothing">Tidak ada yang ditambahkan — tempel link magnet atau URL http(s)</string>
+    <string name="add_err_unsupported">%1$s tidak bisa menambahkan jenis item tersebut</string>
+    <string name="add_partial">%1$d dari %2$d ditambahkan</string>
+    <string name="add_partial_suffix">(%1$d dari %2$d ditambahkan)</string>
+    <string name="add_magnet_link">Link magnet</string>
+    <string name="add_err_too_large">File terlalu besar untuk sebuah .torrent</string>
+    <string name="add_err_open">Tidak dapat membuka file</string>
+    <string name="add_err_not_torrent">%1$s sepertinya bukan file .torrent</string>
+    <string name="add_err_read">Tidak dapat membaca file: %1$s</string>
+    <string name="add_err_permission">Tidak ada izin untuk membaca file tersebut — coba pilih lagi</string>
+    <plurals name="n_episodes">
+        <item quantity="other">%1$d episode</item>
+    </plurals>
+    <plurals name="n_versions">
+        <item quantity="other">%1$d versi</item>
+    </plurals>
+    <plurals name="n_files">
+        <item quantity="other">%1$d file</item>
+    </plurals>
+    <plurals name="expiry_in_days">
+        <item quantity="other">Premium %2$s Anda berakhir dalam %1$d hari</item>
+    </plurals>
+    <plurals name="added_n_files">
+        <item quantity="other">%1$d file ditambahkan ke antrean</item>
+    </plurals>
+    <plurals name="acct_days_left">
+        <item quantity="other">Premium: sisa %1$d hari</item>
+    </plurals>
+    <plurals name="notif_ready_many">
+        <item quantity="other">%1$d item siap</item>
+    </plurals>
+    <plurals name="msg_ready_many">
+        <item quantity="other">%1$d item siap — mengunduh</item>
+    </plurals>
+    <plurals name="add_added_n">
+        <item quantity="other">%1$d item ditambahkan ke %2$s</item>
+    </plurals>
+    <plurals name="add_skipped_n">
+        <item quantity="other">%1$d item tak dikenal dilewati</item>
+    </plurals>
+    <!-- Updates / About -->
+    <string name="update_banner">DebForge %1$s tersedia</string>
+    <string name="action_update">Perbarui</string>
+    <string name="about_title">Tentang</string>
+    <string name="about_version">DebForge %1$s</string>
+    <string name="about_build">Build %1$d · %2$s</string>
+    <string name="about_auto_update">Periksa pembaruan secara otomatis</string>
+    <string name="about_auto_update_detail">Satu permintaan anonim ke GitHub saat aplikasi dibuka.</string>
+    <string name="about_check_now">Periksa pembaruan</string>
+    <string name="about_checking">Memeriksa…</string>
+    <string name="about_up_to_date">Anda menggunakan versi terbaru.</string>
+    <string name="about_update_available">Versi %1$s tersedia.</string>
+    <string name="about_check_failed">Tidak dapat memeriksa pembaruan (%1$s).</string>
+    <string name="about_download">Unduh</string>
+    <string name="about_release_notes">Catatan rilis</string>
+    <string name="about_source">Kode sumber dan masalah</string>
+    <string name="about_share_crash">Bagikan laporan error terakhir</string>
+
+    <!-- Crash reports -->
+    <string name="crash_title">DebForge mengalami error terakhir kali</string>
+    <string name="crash_body">Laporan telah disimpan di perangkat ini dengan token, link, dan nama file dihapus. Tidak ada yang dikirim kecuali Anda membagikannya.</string>
+    <string name="crash_share">Bagikan laporan</string>
+    <string name="crash_delete">Hapus</string>
+    <string name="crash_share_subject">Laporan error DebForge</string>
+    <string name="dl_schedule_notice">Di luar jam unduhan Anda. File dalam antrean mulai pukul %1$s. Anda dapat mengubah jam atau menonaktifkan jadwal di Setelan.</string>
+    <!-- Remove from service -->
+    <string name="action_remove_from">Hapus dari %1$s</string>
+    <string name="remove_title">Hapus dari %1$s?</string>
+    <string name="remove_body">“%1$s” akan dihapus dari akun %2$s Anda. File yang sudah tersimpan di ponsel ini tetap ada. Unduhan yang belum selesai akan dibatalkan.</string>
+    <plurals name="msg_removed_n">
+        <item quantity="other">%1$d item dihapus dari %2$s</item>
+    </plurals>
+    <string name="set_remove_after">Hapus dari layanan setelah diunduh</string>
+    <string name="set_remove_after_detail">Mengosongkan slot torrent. Torrent hanya dihapus setelah semua file di dalamnya selesai diunduh ke ponsel ini.</string>
+    <string name="set_show_extras">Tampilkan file tambahan</string>
+    <string name="set_show_extras_detail">Catatan grup rilis (.txt, .nfo), gambar sampul, dan klip sampel di dalam torrent. Disembunyikan secara default dan dilewati saat unduh otomatis.</string>
+    <!-- Cache check in the Add dialog -->
+    <string name="add_cache_checking">Memeriksa apakah %1$s sudah memilikinya…</string>
+    <string name="add_cache_one_yes">Sudah di-cache di %1$s. Langsung siap.</string>
+    <string name="add_cache_one_no">Belum di-cache. %1$s akan mengunduhnya terlebih dahulu.</string>
+    <string name="add_cache_all_yes">Semua %1$d sudah di-cache. Langsung siap.</string>
+    <string name="add_cache_some">%1$d dari %2$d sudah di-cache. Yang itu langsung siap.</string>
+    <!-- Data usage -->
+    <string name="usage_title">Penggunaan data</string>
+    <string name="usage_this_month">%1$s bulan ini</string>
+    <string name="usage_split">Wi-Fi %1$s · Data seluler %2$s</string>
+    <string name="usage_wifi">Wi-Fi</string>
+    <string name="usage_mobile">Data seluler</string>
+    <string name="usage_last_days">%1$d hari terakhir</string>
+    <string name="usage_today">Hari ini</string>
+    <string name="usage_by_service">Bulan ini per layanan</string>
+    <string name="usage_reset">Reset statistik</string>
+    <string name="usage_reset_q">Reset statistik penggunaan data?</string>
+    <string name="usage_chart_desc">Diagram batang data yang diunduh selama %1$d hari terakhir. Hari tersibuk: %2$s.</string>
+    <!-- Backup / restore -->
+    <string name="action_ok">OK</string>
+    <string name="backup_title">Cadangan</string>
+    <string name="backup_detail">Simpan setelan Anda ke file, lalu pulihkan di ponsel ini atau ponsel lain.</string>
+    <string name="backup_create">Cadangkan</string>
+    <string name="backup_restore">Pulihkan</string>
+    <string name="backup_what">Aturan unduhan, folder, tampilan, serial yang diikuti, dan setelan lainnya selalu disertakan.</string>
+    <string name="backup_include_signins">Sertakan info masuk</string>
+    <string name="backup_include_signins_detail">Login layanan dan key TMDB Anda, dienkripsi dengan sandi.</string>
+    <string name="backup_password">Sandi</string>
+    <string name="backup_password_again">Ulangi sandi</string>
+    <string name="backup_password_short">Minimal %1$d karakter</string>
+    <string name="backup_password_mismatch">Sandi tidak cocok</string>
+    <string name="backup_password_warning">Simpan sandi ini dengan aman. Tanpanya, info masuk di cadangan ini tidak dapat dipulihkan.</string>
+    <string name="backup_choose_location">Pilih lokasi penyimpanan</string>
+    <string name="backup_saved">Cadangan disimpan.</string>
+    <string name="backup_saved_with_signins">Cadangan disimpan, dengan info masuk dienkripsi oleh sandi Anda.</string>
+    <string name="backup_failed">Tidak dapat menyimpan cadangan: %1$s</string>
+    <plurals name="restore_settings_n">
+        <item quantity="other">%1$d setelan dipulihkan.</item>
+    </plurals>
+    <string name="restore_signins">Sudah masuk ke %1$s.</string>
+    <string name="restore_folder_skipped">Folder unduhan tidak dipulihkan: folder yang dipilih di ponsel lain tidak bisa digunakan di sini. Pilih lagi di Setelan.</string>
+    <string name="restore_needs_password">Cadangan ini berisi info masuk. Masukkan sandinya untuk memulihkannya, atau pulihkan setelan saja.</string>
+    <string name="restore_wrong_password">Sandi salah</string>
+    <string name="restore_settings_only">Setelan saja</string>
+    <string name="restore_newer">Cadangan ini dibuat oleh versi DebForge yang lebih baru. Perbarui aplikasi terlebih dahulu.</string>
+    <string name="restore_not_backup">File tersebut bukan cadangan DebForge.</string>
+    <string name="restore_failed">Tidak dapat memulihkan: %1$s</string>
+    <!-- Folder picker (SAF) -->
+    <string name="storage_pick_folder">Pilih folder</string>
+    <string name="set_pick_any_folder">Pilih folder apa pun…</string>
+    <string name="set_pick_any_folder_detail">Penyimpanan internal, kartu SD, atau drive USB. Tanpa izin khusus.</string>
+    <string name="storage_internal">Penyimpanan internal</string>
+    <string name="storage_sd">Kartu SD</string>
+    <string name="msg_folder_set">Unduhan akan disimpan ke %1$s</string>
+    <!-- Service sign-in credential names -->
+    <string name="token_api_key">API key</string>
+    <string name="token_api_token">API token</string>
+    <!-- Empty library; %1$s is the service's website, e.g. torbox.app -->
+    <string name="browse_empty_hint">Tambahkan torrent, magnet, atau link di %1$s untuk mengisi daftar ini.</string>
+    <!-- Errors talking to a service; %1$s is the service name -->
+    <string name="err_auth">%1$s menolak %2$s Anda. Periksa di %3$s.</string>
+    <string name="err_rate_limit">%1$s sedang membatasi permintaan. Tunggu satu menit lalu coba lagi.</string>
+    <string name="err_http">%1$s: permintaan gagal (HTTP %2$d)</string>
+    <string name="err_failed">%1$s: permintaan gagal</string>
+    <string name="err_bad_response">Respons tak terduga dari %1$s</string>
+    <string name="err_network">Kesalahan jaringan. Periksa koneksi Anda.</string>
+    <string name="err_unexpected">Kesalahan tak terduga</string>
+    <string name="set_appearance">Tampilan</string>
+    <string name="theme_wallpaper">Wallpaper</string>
+    <string name="theme_ember">Bara</string>
+    <string name="theme_ocean">Samudra</string>
+    <string name="theme_aurora">Aurora</string>
+    <string name="theme_forest">Hutan</string>
+    <string name="theme_amethyst">Ametis</string>
+    <string name="theme_rose">Mawar</string>
+    <string name="theme_graphite">Grafit</string>
+    <string name="set_pure_black">Hitam pekat</string>
+    <string name="set_pure_black_detail">Latar hitam di mode gelap. Lebih hemat baterai di layar OLED.</string>
+    <string name="dl_more_actions">Tindakan lain</string>
+
+    <!-- Widget, Quick Settings tile, launcher shortcuts, clipboard offer -->
+    <string name="action_pause_all">Jeda semua</string>
+    <string name="action_resume_all">Lanjutkan semua</string>
+    <string name="widget_label">Unduhan DebForge</string>
+    <string name="widget_description">Yang sedang diunduh, dengan Jeda semua dan Tambah</string>
+    <string name="widget_idle">Tidak ada unduhan</string>
+    <string name="widget_idle_hint">Ketuk Tambah untuk mengirim magnet atau tautan ke layanan Anda.</string>
+    <string name="widget_progress">%1$s dari %2$s · %3$d%%</string>
+    <string name="tile_label">Unduhan</string>
+    <string name="tile_idle">Tidak ada unduhan</string>
+    <string name="shortcut_add">Tambah</string>
+    <string name="shortcut_resume_all">Lanjutkan semua</string>
+    <string name="clipboard_offer">Tautan yang disalin ditemukan. Tambahkan ke layanan Anda?</string>
+    <string name="set_clipboard_offer">Tawarkan tautan yang disalin</string>
+    <string name="set_clipboard_offer_detail">Saat membuka DebForge dengan magnet atau tautan .torrent tersalin, tawarkan untuk menambahkannya. Teks lain diabaikan.</string>
+    <plurals name="widget_n_downloading">
+        <item quantity="other">%d diunduh</item>
+    </plurals>
+    <plurals name="widget_n_queued">
+        <item quantity="other">%d antre</item>
+    </plurals>
+    <plurals name="widget_n_paused">
+        <item quantity="other">%d dijeda</item>
+    </plurals>
+    <plurals name="widget_n_failed">
+        <item quantity="other">%d gagal</item>
+    </plurals>
+
+    <!-- Storage: space check, auto-delete -->
+    <string name="space_title">Ruang tidak cukup</string>
+    <string name="space_body">Dibutuhkan %1$s, tetapi hanya %2$s yang kosong di %3$s. Unduhan yang tidak muat akan berhenti dengan galat yang bisa dicoba ulang setelah ruang dikosongkan.</string>
+    <string name="space_queue_anyway">Tetap antrekan</string>
+    <string name="set_storage_free">%1$s kosong</string>
+    <string name="set_storage_free_unknown">Ruang kosong folder ini tidak diketahui</string>
+    <string name="set_auto_delete">Hapus unduhan setelah</string>
+    <string name="set_auto_delete_detail">hanya file yang diunduh DebForge dan masih ada di Unduhan</string>
+    <string name="set_auto_delete_never">Tidak pernah</string>
+    <string name="set_auto_delete_confirm_title">Hapus unduhan lama sekarang?</string>
+    <string name="set_auto_delete_now">Hapus sekarang</string>
+    <plurals name="set_storage_downloaded">
+        <item quantity="other">%1$s dalam %2$d file yang diunduh DebForge</item>
+    </plurals>
+    <plurals name="set_auto_delete_after_days">
+        <item quantity="other">Setelah %d hari</item>
+    </plurals>
+    <plurals name="set_auto_delete_confirm_body">
+        <item quantity="other">%1$d file yang selesai lebih dari %3$d hari lalu (%2$s) akan dihapus dari perangkat ini sekarang. Yang lebih baru dihapus saat mencapai usia itu.</item>
+    </plurals>
+
+    <!-- Add dialog: choosing a service -->
+    <string name="add_send_to">Kirim ke</string>
+    <string name="add_target_cached_cd">Di-cache</string>
+    <string name="add_target_cached_hint">%1$s sudah menyimpannya di cache, jadi langsung siap.</string>
+    <string name="add_target_cant_hint">%1$s tidak menerima ini, jadi dikirim ke %2$s.</string>
+    <string name="add_sent_elsewhere">Ada di %1$s; Pustaka sedang menampilkan %2$s (ganti di Setelan).</string>
+
+    <!-- Following shows -->
+    <string name="follow_action">Ikuti</string>
+    <string name="follow_following">Diikuti</string>
+    <string name="follow_hint">Episode baru diunduh otomatis begitu masuk ke akun Anda.</string>
+    <string name="follow_started">Mengikuti %1$s. Episode baru akan diunduh otomatis.</string>
+    <string name="follow_stopped">Berhenti mengikuti %1$s.</string>
+    <string name="follow_queued_one">Episode baru diantrekan: %1$s</string>
+    <string name="follow_unfollow">Berhenti ikuti</string>
+    <string name="set_follows">Serial yang diikuti</string>
+    <string name="set_follows_none">Belum ada. Buka serial di Pustaka lalu ketuk Ikuti.</string>
+    <string name="set_follows_detail">Episode baru yang masuk ke akun Anda diunduh otomatis. DebForge memeriksa setiap beberapa jam dan setiap kali Pustaka dimuat.</string>
+    <string name="notif_follow_one">Episode baru: %1$s</string>
+    <string name="notif_follow_body">Diantrekan untuk diunduh. Buka DebForge jika belum mulai.</string>
+    <plurals name="follow_queued_many">
+        <item quantity="other">%d episode baru diantrekan</item>
+    </plurals>
+    <plurals name="notif_follow_many">
+        <item quantity="other">%d episode baru</item>
+    </plurals>
+
+    <!-- In-app player -->
+    <string name="player_unsupported_title">Tidak bisa diputar di sini</string>
+    <string name="player_unsupported_body">Perangkat ini tidak bisa mendekode video ini di pemutar DebForge. VLC atau pemutar lain biasanya bisa.</string>
+    <string name="player_error_body">Pemutaran berhenti (%1$s). Pemutar video lain mungkin bisa memutarnya.</string>
+    <string name="player_no_audio_body">Format audio video ini tidak didukung di perangkat ini, jadi akan diputar tanpa suara. VLC atau pemutar lain bisa memutar audionya.</string>
+    <string name="action_open_other_player">Buka di pemutar lain</string>
+    <string name="player_keep_watching">Tetap tonton</string>
+    <string name="player_network_title">Tidak dapat memuat video</string>
+    <string name="player_network_body">Koneksi terputus atau tautan kedaluwarsa. Coba lagi atau periksa koneksi Anda.</string>
+    <string name="set_player">Putar video di</string>
+    <string name="set_player_internal">Pemutar DebForge</string>
+    <string name="set_player_external">Aplikasi lain (VLC, mpv…)</string>
+
+    <!-- Resume / Continue watching -->
+    <string name="continue_watching">Lanjut menonton</string>
+    <string name="continue_remove">Hapus dari Lanjut menonton</string>
+    <string name="continue_unavailable">Tidak dapat memutar %1$s: %2$s</string>
+    <string name="watched">✓ Sudah ditonton</string>
+    <string name="player_start_over">↺ Dari awal</string>
+    <plurals name="continue_minutes_left">
+        <item quantity="other">Sisa %d mnt</item>
+    </plurals>
+
+    <!-- Subtitle label suffix: "French · Forced" -->
+    <string name="subtitle_forced">Paksa</string>
+
+    <!-- Player: next episode -->
+    <string name="player_next">Berikutnya: %1$s</string>
+    <string name="player_play_now">Putar sekarang</string>
+    <string name="player_next_failed">Tidak dapat memuat episode berikutnya.</string>
+    <plurals name="player_next_in">
+        <item quantity="other">Diputar dalam %d detik</item>
+    </plurals>
+
+    <!-- Autoplay setting, followed shows in backups -->
+    <string name="set_autoplay_next">Putar otomatis episode berikutnya</string>
+    <string name="set_autoplay_next_detail">Menjelang akhir episode, episode berikutnya dimulai setelah hitung mundur singkat. Nonaktif: ditawarkan dengan tombol Putar sekarang.</string>
+    <plurals name="restore_follows_n">
+        <item quantity="other">Kini mengikuti %d serial lagi.</item>
+    </plurals>
+</resources>

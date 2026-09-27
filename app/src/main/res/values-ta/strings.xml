@@ -1,0 +1,492 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tab_library">லைப்ரரி</string>
+    <string name="tab_downloads">பதிவிறக்கங்கள்</string>
+    <string name="tab_settings">அமைப்புகள்</string>
+    <string name="action_cancel">ரத்துசெய்</string>
+    <string name="action_close">மூடு</string>
+    <string name="action_download">பதிவிறக்கு</string>
+    <string name="action_play">இயக்கு</string>
+    <string name="action_open">திற</string>
+    <string name="action_share">பகிர்</string>
+    <string name="action_remove">அகற்று</string>
+    <string name="action_retry">மீண்டும் முயல்</string>
+    <string name="action_save">சேமி</string>
+    <string name="action_allow">அனுமதி</string>
+    <string name="action_add">சேர்</string>
+    <string name="action_dismiss">நிராகரி</string>
+    <string name="action_pause">இடைநிறுத்து</string>
+    <string name="action_resume">தொடர்</string>
+    <string name="action_renew">புதுப்பி</string>
+    <string name="action_refresh">ரெஃப்ரெஷ் செய்</string>
+    <string name="action_clear">அழி</string>
+    <string name="action_done">முடிந்தது</string>
+    <string name="setup_your_service">உங்கள் டெப்ரிட் சேவை</string>
+    <string name="setup_intro">உங்கள் சேவையைத் தேர்ந்தெடுத்து, உங்கள் %1$s %2$s மூலம் உள்நுழையவும்.</string>
+    <string name="setup_or_paste">அல்லது உங்கள் %1$s-ஐ ஒட்டவும்</string>
+    <string name="setup_paste">ஒட்டு</string>
+    <string name="setup_pasted_from">%1$s-இலிருந்து ஒட்டப்பட்டது</string>
+    <string name="setup_validate">சரிபார்த்துத் தொடர்</string>
+    <string name="setup_get_token">உங்கள் %1$s-ஐ %2$s-இல் பெறவும்</string>
+    <string name="setup_privacy">உங்கள் %1$s இந்தச் சாதனத்தில் மட்டும் என்க்ரிப்ட் செய்து சேமிக்கப்படும், %2$s API-ஐ அழைக்க மட்டுமே பயன்படுத்தப்படும்.</string>
+    <string name="setup_sign_in_with">%1$s மூலம் உள்நுழை</string>
+    <string name="setup_enter_code_at">இந்தக் குறியீட்டை %1$s-இல் உள்ளிடவும்</string>
+    <string name="setup_open_service">%1$s-ஐத் திற</string>
+    <string name="setup_waiting_approval">ஒப்புதலுக்காகக் காத்திருக்கிறது…</string>
+    <string name="add_title">%1$s-இல் சேர்</string>
+    <string name="add_choose_torrent">.torrent கோப்பைத் தேர்ந்தெடு</string>
+    <string name="add_remove_file">கோப்பை அகற்று</string>
+    <string name="add_auto_download">தயாரானதும் இந்த ஃபோனில் தானாகப் பதிவிறக்கு</string>
+    <string name="add_needs_storage">முதலில் ஒரு பதிவிறக்கக் கோப்புறையைத் தேர்ந்தெடுக்கவும், அல்லது கோப்பு அணுகலை அனுமதிக்கவும்.</string>
+    <string name="add_allow_file_access">கோப்பு அணுகலை அனுமதி</string>
+    <string name="add_hint_both">மேக்னெட் லிங்க் அல்லது URL, ஒரு வரிக்கு ஒன்று</string>
+    <string name="add_hint_magnet">மேக்னெட் லிங்க், ஒரு வரிக்கு ஒன்று</string>
+    <string name="add_hint_links">ஹோஸ்டர் லிங்க், ஒரு வரிக்கு ஒன்று</string>
+    <string name="processing_on">%1$s-இல் செயலாக்கப்படுகிறது</string>
+    <string name="processing_will_auto">தானாகப் பதிவிறக்கப்படும்</string>
+    <string name="processing_auto_when_ready">தயாரானதும் தானாகப் பதிவிறக்கம்</string>
+    <string name="eta_seconds">%1$d வி. மீதம்</string>
+    <string name="eta_minutes">%1$d நி. மீதம்</string>
+    <string name="eta_hours">%1$d ம. %2$d நி. மீதம்</string>
+    <string name="browse_add_cd">மேக்னெட், லிங்க் அல்லது டோரன்ட் சேர்</string>
+    <string name="browse_selected">%1$d தேர்ந்தெடுக்கப்பட்டன</string>
+    <string name="browse_cancel_selection">தேர்வை ரத்துசெய்</string>
+    <string name="browse_searching_all">முழு லைப்ரரியிலும் தேடுகிறது… %1$d கோப்புகள் சரிபார்க்கப்பட்டன</string>
+    <string name="browse_search_hint">தலைப்புகள் அல்லது கோப்புகளைத் தேடு</string>
+    <string name="browse_posters">போஸ்டர்கள்</string>
+    <string name="browse_group_series">தொடர்களாகக் குழுவாக்கு</string>
+    <string name="sort_newest">புதியவை</string>
+    <string name="sort_oldest">பழையவை</string>
+    <string name="sort_name_az">பெயர் A-Z</string>
+    <string name="sort_name_za">பெயர் Z-A</string>
+    <string name="sort_largest">பெரியவை</string>
+    <string name="sort_smallest">சிறியவை</string>
+    <string name="browse_other">மற்றவை</string>
+    <string name="browse_end_of_list">பட்டியல் முடிந்தது</string>
+    <string name="browse_no_matches">\"%1$s\"-க்குப் பொருத்தம் எதுவும் இல்லை</string>
+    <string name="browse_empty_title">உங்கள் லைப்ரரி காலியாக உள்ளது</string>
+    <string name="browse_empty_body">%1$s-இல் நீங்கள் சேர்க்கும் அனைத்தும் இங்கே தோன்றும், முழு வேகத்தில் பதிவிறக்கத் தயாராக.</string>
+    <string name="browse_your_service">உங்கள் சேவை</string>
+    <string name="browse_empty_add">மேக்னெட், டோரன்ட் அல்லது லிங்க் சேர்க்கவும்</string>
+    <string name="storage_title">கோப்புகள் எங்கே சேமிக்கப்பட வேண்டும்?</string>
+    <string name="storage_body">ஒரு கோப்புறையைத் தேர்ந்தெடுக்கவும்: இன்டர்னல் ஸ்டோரேஜ், SD கார்டு அல்லது USB டிரைவ், சிறப்பு அனுமதி எதுவும் தேவையில்லை. அல்லது பாதை மூலம் Movies-இல் சேமிக்க \"All files access\" அனுமதியை வழங்கவும், அல்லது DebForge-இன் சொந்த ஸ்டோரேஜைப் பயன்படுத்தவும் (ஆப்ஸை அன்இன்ஸ்டால் செய்தால் நீக்கப்படும்).</string>
+    <string name="storage_grant">அணுகலை வழங்கு</string>
+    <string name="storage_use_app">ஆப்ஸ் ஸ்டோரேஜைப் பயன்படுத்து</string>
+    <string name="poster_downloaded">✓ பதிவிறக்கப்பட்டது</string>
+    <string name="poster_series_tag">தொடர்</string>
+    <string name="poster_movie_tag">திரைப்படம்</string>
+    <string name="poster_file_tag">கோப்பு</string>
+    <string name="kind_series">தொடர்</string>
+    <string name="kind_movie">திரைப்படம்</string>
+    <string name="sheet_all_queued">அனைத்தும் வரிசையில் உள்ளன</string>
+    <string name="sheet_download_all">அனைத்தையும் பதிவிறக்கு (%1$d)</string>
+    <string name="sheet_zip_title">அனைத்தும் ஒரே .zip ஆக</string>
+    <string name="sheet_zip_download">.zip பதிவிறக்கு</string>
+    <string name="sheet_season">சீசன் %1$d</string>
+    <string name="sheet_download_season">சீசனைப் பதிவிறக்கு (%1$d)</string>
+    <string name="state_queued">வரிசையில்</string>
+    <string name="state_downloading">பதிவிறக்குகிறது</string>
+    <string name="state_paused">இடைநிறுத்தப்பட்டது</string>
+    <string name="state_done">முடிந்தது</string>
+    <string name="state_failed">தோல்வி</string>
+    <string name="expiry_expired">உங்கள் %1$s பிரீமியம் காலாவதியாகிவிட்டது</string>
+    <string name="expiry_today">உங்கள் %1$s பிரீமியம் இன்று காலாவதியாகிறது</string>
+    <string name="dl_clear_finished">முடிந்தவற்றை அழி</string>
+    <string name="dl_section_downloading">பதிவிறக்குகிறது</string>
+    <string name="dl_section_queued">வரிசையில்</string>
+    <string name="dl_section_paused">இடைநிறுத்தப்பட்டவை</string>
+    <string name="dl_section_failed">தோல்வியடைந்தவை</string>
+    <string name="dl_section_completed">முடிந்தவை</string>
+    <string name="dl_waiting">காத்திருக்கிறது</string>
+    <string name="dl_so_far">இதுவரை</string>
+    <string name="dl_waiting_size">காத்திருக்கிறது · %1$s</string>
+    <string name="dl_paused_progress">இடைநிறுத்தப்பட்டது · %1$s / %2$s</string>
+    <string name="dl_failed">பதிவிறக்கம் தோல்வியடைந்தது</string>
+    <string name="dl_done_at">முடிந்தது · %1$s · %2$s</string>
+    <string name="dl_file_missing">கோப்பு நகர்த்தப்பட்டது அல்லது நீக்கப்பட்டது</string>
+    <string name="dl_empty_title">செயலில் எதுவும் இல்லை</string>
+    <string name="dl_empty_body">வரிசையில் சேர்க்க, லைப்ரரியில் ஒரு உருப்படியின் பதிவிறக்கு பட்டனைத் தட்டவும்.</string>
+    <string name="wait_network">நெட்வொர்க்கிற்காகக் காத்திருக்கிறது</string>
+    <string name="wait_wifi">Wi-Fi-க்காகக் காத்திருக்கிறது</string>
+    <string name="wait_charger">சார்ஜருக்காகக் காத்திருக்கிறது</string>
+    <string name="wait_schedule">திட்டமிட்ட நேரத்துக்காகக் காத்திருக்கிறது</string>
+    <string name="set_service_fallback">சேவை</string>
+    <string name="set_download_folder">பதிவிறக்கக் கோப்புறை</string>
+    <string name="set_organise">ஷோக்கள் / திரைப்படங்கள் கோப்புறைகளாக ஒழுங்கமை</string>
+    <string name="set_organise_detail">Shows/The Bear/Season 02, Movies/Oppenheimer (2023) — Plex, Jellyfin, Kodi-க்குத் தயார்.</string>
+    <string name="set_when">எப்போது பதிவிறக்க வேண்டும்</string>
+    <string name="set_wifi_only">Wi-Fi-இல் மட்டும்</string>
+    <string name="set_wifi_only_detail">மொபைல் டேட்டாவில் இடைநிறுத்தப்படும்; Wi-Fi கிடைத்ததும் தானாகத் தொடரும்.</string>
+    <string name="set_charging_only">சார்ஜ் ஆகும்போது மட்டும்</string>
+    <string name="set_schedule">அட்டவணை</string>
+    <string name="set_schedule_detail">கீழே உள்ள நேரங்களில் மட்டும் பதிவிறக்கு (எ.கா. இரவு முழுவதும்).</string>
+    <string name="set_alarm_needed">பின்னணியில் சரியான நேரத்தில் தொடங்க, DebForge-க்கு \"அலாரங்கள் &amp; நினைவூட்டல்கள்\" அனுமதியை வழங்கவும்.</string>
+    <string name="set_default_sort">இயல்பு வரிசை</string>
+    <string name="set_theme">தீம்</string>
+    <string name="set_posters">போஸ்டர்கள்</string>
+    <string name="set_service">சேவை</string>
+    <string name="set_signed_in">உள்நுழைந்துள்ளது</string>
+    <string name="set_not_signed_in">உள்நுழையவில்லை</string>
+    <string name="set_sign_out_of">%1$s-இலிருந்து வெளியேறு</string>
+    <string name="set_sign_out_q">%1$s-இலிருந்து வெளியேறவா?</string>
+    <string name="set_sign_out_body">உங்கள் %1$s டோக்கன் இந்தச் சாதனத்திலிருந்து அகற்றப்படும். மற்ற சேவைகளின் டோக்கன்கள் அப்படியே இருக்கும். நீங்கள் மீண்டும் உள்நுழையும் வரை %1$s-இன் வரிசையிலுள்ள பதிவிறக்கங்களின் லிங்க்குகள் புதுப்பிக்கப்படாது.</string>
+    <string name="set_sign_out">வெளியேறு</string>
+    <string name="set_change">மாற்று</string>
+    <string name="set_choose_folder">கோப்புறையைத் தேர்ந்தெடு</string>
+    <string name="set_folder_note">சிஸ்டம் பிக்கர் மூலம் எந்தக் கோப்புறையையும் தேர்ந்தெடுக்கவும், அல்லது இவற்றில் ஒன்றை. பாதை மூலம் பகிரப்பட்ட கோப்புறைகளுக்கு All files access தேவை.</string>
+    <string name="set_app_storage">ஆப்ஸ் ஸ்டோரேஜ் (அனுமதி தேவையில்லை)</string>
+    <string name="set_sort_newest">புதியவை முதலில்</string>
+    <string name="set_sort_oldest">பழையவை முதலில்</string>
+    <string name="set_sort_largest">பெரியவை முதலில்</string>
+    <string name="set_sort_smallest">சிறியவை முதலில்</string>
+    <string name="theme_system">சிஸ்டம்</string>
+    <string name="theme_light">லைட்</string>
+    <string name="theme_dark">டார்க்</string>
+    <string name="set_tmdb_note">போஸ்டர்கள் TMDB-இலிருந்து வருகின்றன. போஸ்டர்களை இயக்க, themoviedb.org → Settings → API-இலிருந்து இலவச API key அல்லது read access token-ஐ இங்கே ஒட்டவும்.</string>
+    <string name="set_tmdb_key">TMDB API key</string>
+    <string name="set_refresh_posters">போஸ்டர்களை ரெஃப்ரெஷ் செய்</string>
+    <string name="poster_setup_title">போஸ்டர்களை இயக்கு</string>
+    <string name="poster_setup_body">DebForge போஸ்டர்களையும் விளக்கங்களையும் TMDB-யிலிருந்து பெறுகிறது — இது திரைப்படம், டிவி தொடர்களுக்கான இலவச தரவுத்தளம். இதற்கு உங்கள் சொந்த இலவச key தேவை, சுமார் இரண்டு நிமிடங்கள் ஆகும்:</string>
+    <string name="poster_setup_step1">TMDB-ஐத் திறந்து உள்நுழையவும், அல்லது இலவச கணக்கை உருவாக்கவும்.</string>
+    <string name="poster_setup_step2">API பகுதியில் தனிப்பட்ட பயன்பாட்டுக்கான key-ஐக் கோரவும்.</string>
+    <string name="poster_setup_step3">“API Read Access Token”-ஐ (அல்லது API key-ஐ) நகலெடுத்து கீழே ஒட்டவும்.</string>
+    <string name="poster_setup_open">TMDB-ஐத் திற</string>
+    <string name="poster_setup_paste">ஒட்டு</string>
+    <string name="poster_setup_check">சரிபார்த்துச் சேமி</string>
+    <string name="poster_setup_bad_format">இது TMDB key போலத் தெரியவில்லை. API Read Access Token அல்லது 32 எழுத்து API key-ஐ நகலெடுக்கவும்.</string>
+    <string name="poster_setup_rejected">TMDB இந்த key-ஐ ஏற்கவில்லை. முழுவதையும் நகலெடுத்தீர்களா எனப் பார்க்கவும்.</string>
+    <string name="poster_setup_unreachable">key-ஐச் சரிபார்க்க TMDB-ஐ அணுக முடியவில்லை.</string>
+    <string name="poster_setup_save_anyway">இருந்தாலும் சேமி</string>
+    <string name="poster_setup_done">போஸ்டர்கள் இயக்கப்பட்டன</string>
+    <string name="poster_banner">போஸ்டர்களும் விளக்கங்களும் காண இலவச TMDB key-ஐச் சேர்க்கவும்</string>
+    <string name="poster_banner_action">அமை</string>
+    <string name="set_posters_on">இயக்கத்தில். போஸ்டர்களும் விளக்கங்களும் TMDB-யிலிருந்து வருகின்றன.</string>
+    <string name="set_posters_change">key-ஐ மாற்று</string>
+    <string name="set_posters_remove">key-ஐ நீக்கு</string>
+    <string name="acct_expired">பிரீமியம் காலாவதியாகிவிட்டது</string>
+    <string name="acct_expires_today">பிரீமியம் இன்று காலாவதியாகிறது</string>
+    <string name="acct_manage">கணக்கை நிர்வகி</string>
+    <string name="set_from">தொடக்கம்</string>
+    <string name="set_to">முடிவு</string>
+    <string name="speed_unlimited">வரம்பற்றது</string>
+    <string name="speed_mbps">%1$d MB/s</string>
+    <string name="set_speed_limit">வேக வரம்பு</string>
+    <string name="set_speed_detail">உங்கள் நெட்வொர்க்கில் மற்றவர்களுக்கும் பேண்ட்வித் விட்டுவைக்கவும்.</string>
+    <string name="set_language">மொழி</string>
+    <string name="lang_system">சிஸ்டம் இயல்பு</string>
+    <string name="notif_channel">பதிவிறக்கங்கள்</string>
+    <string name="notif_channel_desc">செயலில் உள்ள பதிவிறக்கங்களின் முன்னேற்றம்</string>
+    <string name="notif_preparing">பதிவிறக்கம் தயாராகிறது</string>
+    <string name="notif_waiting_resume">%1$s — தானாகத் தொடரும்</string>
+    <string name="notif_paused_title">பதிவிறக்கங்கள் இடைநிறுத்தப்பட்டன</string>
+    <string name="notif_paused_body">Android-இன் பின்னணி நேர வரம்பு எட்டப்பட்டது. தொடர தட்டவும்.</string>
+    <string name="notif_sched_title">திட்டமிட்ட பதிவிறக்கங்கள் தொடங்கத் தயார்</string>
+    <string name="notif_sched_body">தொடங்க தட்டவும். தானாகத் தொடங்க \"அலாரங்கள் &amp; நினைவூட்டல்கள்\" அனுமதியை வழங்கவும்.</string>
+    <string name="notif_ready_one">தயார்: %1$s</string>
+    <string name="notif_ready_body">பதிவிறக்க வரிசையில் உள்ளது. தொடங்க தட்டவும்.</string>
+    <string name="notif_downloaded">பதிவிறக்கப்பட்டது</string>
+    <string name="chooser_play_with">இதன் மூலம் இயக்கு</string>
+    <string name="chooser_open_with">இதன் மூலம் திற</string>
+    <string name="chooser_share">பகிர்</string>
+    <string name="msg_will_download_when_ready">\"%1$s\" தயாரானதும் பதிவிறக்கப்படும்</string>
+    <string name="msg_ready_one">தயார் — %1$s பதிவிறக்கப்படுகிறது</string>
+    <string name="msg_no_player">வீடியோ பிளேயர் எதுவும் இல்லை — VLC அல்லது mpv-ஐ நிறுவவும்</string>
+    <string name="msg_app_storage">ஆப்ஸ் ஸ்டோரேஜில் சேமிக்கிறது — அமைப்புகளில் எப்போது வேண்டுமானாலும் மாற்றலாம்</string>
+    <string name="msg_added_one">சேர்க்கப்பட்டது: %1$s</string>
+    <string name="add_err_nothing">சேர்க்க எதுவும் இல்லை — மேக்னெட் லிங்க் அல்லது http(s) URL-ஐ ஒட்டவும்</string>
+    <string name="add_err_unsupported">%1$s இந்த வகை உருப்படியைச் சேர்க்க முடியாது</string>
+    <string name="add_partial">%2$d-இல் %1$d சேர்க்கப்பட்டன</string>
+    <string name="add_partial_suffix">(%2$d-இல் %1$d சேர்க்கப்பட்டன)</string>
+    <string name="add_magnet_link">மேக்னெட் லிங்க்</string>
+    <string name="add_err_too_large">இந்தக் கோப்பு .torrent ஆக இருக்க மிகப் பெரியது</string>
+    <string name="add_err_open">கோப்பைத் திறக்க முடியவில்லை</string>
+    <string name="add_err_not_torrent">%1$s ஒரு .torrent கோப்பாகத் தெரியவில்லை</string>
+    <string name="add_err_read">கோப்பைப் படிக்க முடியவில்லை: %1$s</string>
+    <string name="add_err_permission">அந்தக் கோப்பைப் படிக்க அனுமதி இல்லை — மீண்டும் தேர்ந்தெடுத்துப் பார்க்கவும்</string>
+    <plurals name="n_episodes">
+        <item quantity="one">%1$d எபிசோடு</item>
+        <item quantity="other">%1$d எபிசோடுகள்</item>
+    </plurals>
+    <plurals name="n_versions">
+        <item quantity="one">%1$d பதிப்பு</item>
+        <item quantity="other">%1$d பதிப்புகள்</item>
+    </plurals>
+    <plurals name="n_files">
+        <item quantity="one">%1$d கோப்பு</item>
+        <item quantity="other">%1$d கோப்புகள்</item>
+    </plurals>
+    <plurals name="expiry_in_days">
+        <item quantity="one">உங்கள் %2$s பிரீமியம் %1$d நாளில் காலாவதியாகும்</item>
+        <item quantity="other">உங்கள் %2$s பிரீமியம் %1$d நாட்களில் காலாவதியாகும்</item>
+    </plurals>
+    <plurals name="added_n_files">
+        <item quantity="one">%1$d கோப்பு வரிசையில் சேர்க்கப்பட்டது</item>
+        <item quantity="other">%1$d கோப்புகள் வரிசையில் சேர்க்கப்பட்டன</item>
+    </plurals>
+    <plurals name="acct_days_left">
+        <item quantity="one">பிரீமியம்: %1$d நாள் மீதம்</item>
+        <item quantity="other">பிரீமியம்: %1$d நாட்கள் மீதம்</item>
+    </plurals>
+    <plurals name="notif_ready_many">
+        <item quantity="one">%1$d உருப்படி தயார்</item>
+        <item quantity="other">%1$d உருப்படிகள் தயார்</item>
+    </plurals>
+    <plurals name="msg_ready_many">
+        <item quantity="one">%1$d உருப்படி தயார் — பதிவிறக்கப்படுகிறது</item>
+        <item quantity="other">%1$d உருப்படிகள் தயார் — பதிவிறக்கப்படுகின்றன</item>
+    </plurals>
+    <plurals name="add_added_n">
+        <item quantity="one">%2$s-இல் %1$d உருப்படி சேர்க்கப்பட்டது</item>
+        <item quantity="other">%2$s-இல் %1$d உருப்படிகள் சேர்க்கப்பட்டன</item>
+    </plurals>
+    <plurals name="add_skipped_n">
+        <item quantity="one">அடையாளம் தெரியாத %1$d உருப்படி தவிர்க்கப்பட்டது</item>
+        <item quantity="other">அடையாளம் தெரியாத %1$d உருப்படிகள் தவிர்க்கப்பட்டன</item>
+    </plurals>
+    <!-- Updates / About -->
+    <string name="update_banner">DebForge %1$s கிடைக்கிறது</string>
+    <string name="action_update">புதுப்பி</string>
+    <string name="about_title">அறிமுகம்</string>
+    <string name="about_version">DebForge %1$s</string>
+    <string name="about_build">பில்ட் %1$d · %2$s</string>
+    <string name="about_auto_update">புதுப்பிப்புகளைத் தானாகச் சரிபார்</string>
+    <string name="about_auto_update_detail">ஆப்ஸ் திறக்கும்போது GitHub-க்கு ஒரு அநாமதேயக் கோரிக்கை.</string>
+    <string name="about_check_now">புதுப்பிப்புகளைச் சரிபார்</string>
+    <string name="about_checking">சரிபார்க்கிறது…</string>
+    <string name="about_up_to_date">நீங்கள் சமீபத்திய பதிப்பைப் பயன்படுத்துகிறீர்கள்.</string>
+    <string name="about_update_available">பதிப்பு %1$s கிடைக்கிறது.</string>
+    <string name="about_check_failed">புதுப்பிப்புகளைச் சரிபார்க்க முடியவில்லை (%1$s).</string>
+    <string name="about_download">பதிவிறக்கு</string>
+    <string name="about_release_notes">வெளியீட்டுக் குறிப்புகள்</string>
+    <string name="about_source">மூலக் குறியீடு &amp; சிக்கல்கள்</string>
+    <string name="about_share_crash">கடைசி கிராஷ் அறிக்கையைப் பகிர்</string>
+
+    <!-- Crash reports -->
+    <string name="crash_title">கடந்த முறை DebForge கிராஷ் ஆனது</string>
+    <string name="crash_body">டோக்கன்கள், லிங்க்குகள், கோப்புப் பெயர்கள் நீக்கப்பட்ட ஓர் அறிக்கை இந்தச் சாதனத்தில் சேமிக்கப்பட்டது. நீங்கள் பகிராதவரை எதுவும் அனுப்பப்படாது.</string>
+    <string name="crash_share">அறிக்கையைப் பகிர்</string>
+    <string name="crash_delete">நீக்கு</string>
+    <string name="crash_share_subject">DebForge கிராஷ் அறிக்கை</string>
+    <string name="dl_schedule_notice">இது உங்கள் பதிவிறக்க நேரம் அல்ல. வரிசையிலுள்ள கோப்புகள் %1$s-க்குத் தொடங்கும். அமைப்புகளில் நேரத்தை மாற்றலாம் அல்லது அட்டவணையை முடக்கலாம்.</string>
+    <!-- Remove from service -->
+    <string name="action_remove_from">%1$s-இலிருந்து அகற்று</string>
+    <string name="remove_title">%1$s-இலிருந்து அகற்றவா?</string>
+    <string name="remove_body">“%1$s” உங்கள் %2$s கணக்கிலிருந்து நீக்கப்படும். இந்த ஃபோனில் ஏற்கெனவே சேமிக்கப்பட்ட கோப்புகள் அப்படியே இருக்கும். இதன் முடிக்கப்படாத பதிவிறக்கங்கள் ரத்துசெய்யப்படும்.</string>
+    <plurals name="msg_removed_n">
+        <item quantity="one">%2$s-இலிருந்து %1$d உருப்படி அகற்றப்பட்டது</item>
+        <item quantity="other">%2$s-இலிருந்து %1$d உருப்படிகள் அகற்றப்பட்டன</item>
+    </plurals>
+    <string name="set_remove_after">பதிவிறக்கிய பின் சேவையிலிருந்து அகற்று</string>
+    <string name="set_remove_after_detail">டோரன்ட் ஸ்லாட்களைக் காலியாக்கும். ஒரு டோரன்டிலுள்ள ஒவ்வொரு கோப்பும் இந்த ஃபோனில் பதிவிறக்கப்பட்ட பிறகே அது அகற்றப்படும்.</string>
+    <string name="set_show_extras">கூடுதல் கோப்புகளைக் காட்டு</string>
+    <string name="set_show_extras_detail">டொரண்ட்களில் உள்ள ரிலீஸ் குழு குறிப்புகள் (.txt, .nfo), கவர் படங்கள் மற்றும் மாதிரி கிளிப்புகள். இயல்பாக மறைக்கப்படும், தானியங்கு பதிவிறக்கத்தில் தவிர்க்கப்படும்.</string>
+    <!-- Cache check in the Add dialog -->
+    <string name="add_cache_checking">%1$s-இல் இது ஏற்கெனவே உள்ளதா எனச் சரிபார்க்கிறது…</string>
+    <string name="add_cache_one_yes">%1$s-இல் கேஷ் செய்யப்பட்டுள்ளது. உடனடியாகத் தயார்.</string>
+    <string name="add_cache_one_no">இன்னும் கேஷ் ஆகவில்லை. %1$s முதலில் இதைப் பதிவிறக்கும்.</string>
+    <string name="add_cache_all_yes">%1$d-உம் கேஷ் செய்யப்பட்டுள்ளன. உடனடியாகத் தயார்.</string>
+    <string name="add_cache_some">%2$d-இல் %1$d கேஷ் செய்யப்பட்டுள்ளன. அவை உடனடியாகத் தயார்.</string>
+    <!-- Data usage -->
+    <string name="usage_title">டேட்டா பயன்பாடு</string>
+    <string name="usage_this_month">இந்த மாதம் %1$s</string>
+    <string name="usage_split">Wi-Fi %1$s · மொபைல் டேட்டா %2$s</string>
+    <string name="usage_wifi">Wi-Fi</string>
+    <string name="usage_mobile">மொபைல் டேட்டா</string>
+    <string name="usage_last_days">கடந்த %1$d நாட்கள்</string>
+    <string name="usage_today">இன்று</string>
+    <string name="usage_by_service">இந்த மாதம் சேவை வாரியாக</string>
+    <string name="usage_reset">புள்ளிவிவரங்களை மீட்டமை</string>
+    <string name="usage_reset_q">டேட்டா பயன்பாட்டுப் புள்ளிவிவரங்களை மீட்டமைக்கவா?</string>
+    <string name="usage_chart_desc">கடந்த %1$d நாட்களில் பதிவிறக்கப்பட்ட டேட்டாவின் பார் சார்ட். அதிகம் பயன்படுத்திய நாள்: %2$s.</string>
+    <!-- Backup / restore -->
+    <string name="action_ok">சரி</string>
+    <string name="backup_title">காப்புப்பிரதி</string>
+    <string name="backup_detail">உங்கள் அமைப்புகளை ஒரு கோப்பில் சேமித்து, இந்த அல்லது வேறொரு ஃபோனில் மீட்டெடுக்கவும்.</string>
+    <string name="backup_create">காப்புப்பிரதி எடு</string>
+    <string name="backup_restore">மீட்டெடு</string>
+    <string name="backup_what">பதிவிறக்க விதிகள், கோப்புறை, தோற்றம், பின்தொடரும் தொடர்கள் மற்றும் பிற அமைப்புகள் எப்போதும் சேர்க்கப்படும்.</string>
+    <string name="backup_include_signins">உள்நுழைவுகளையும் சேர்</string>
+    <string name="backup_include_signins_detail">சேவை உள்நுழைவுகளும் உங்கள் TMDB key-உம், கடவுச்சொல்லால் என்க்ரிப்ட் செய்யப்பட்டு.</string>
+    <string name="backup_password">கடவுச்சொல்</string>
+    <string name="backup_password_again">கடவுச்சொல்லை மீண்டும் உள்ளிடு</string>
+    <string name="backup_password_short">குறைந்தது %1$d எழுத்துகள்</string>
+    <string name="backup_password_mismatch">கடவுச்சொற்கள் பொருந்தவில்லை</string>
+    <string name="backup_password_warning">இந்தக் கடவுச்சொல்லைப் பாதுகாப்பாக வைத்திருங்கள். இது இல்லாமல் இந்தக் காப்புப்பிரதியிலுள்ள உள்நுழைவுகளை மீட்டெடுக்க முடியாது.</string>
+    <string name="backup_choose_location">சேமிக்கும் இடத்தைத் தேர்ந்தெடு</string>
+    <string name="backup_saved">காப்புப்பிரதி சேமிக்கப்பட்டது.</string>
+    <string name="backup_saved_with_signins">காப்புப்பிரதி சேமிக்கப்பட்டது, உள்நுழைவுகள் உங்கள் கடவுச்சொல்லால் என்க்ரிப்ட் செய்யப்பட்டுள்ளன.</string>
+    <string name="backup_failed">காப்புப்பிரதியைச் சேமிக்க முடியவில்லை: %1$s</string>
+    <plurals name="restore_settings_n">
+        <item quantity="one">%1$d அமைப்பு மீட்டெடுக்கப்பட்டது.</item>
+        <item quantity="other">%1$d அமைப்புகள் மீட்டெடுக்கப்பட்டன.</item>
+    </plurals>
+    <string name="restore_signins">%1$s-இல் உள்நுழைந்தது.</string>
+    <string name="restore_folder_skipped">பதிவிறக்கக் கோப்புறை மீட்டெடுக்கப்படவில்லை: வேறொரு ஃபோனில் தேர்ந்தெடுத்த கோப்புறையை இங்கே பயன்படுத்த முடியாது. அமைப்புகளில் மீண்டும் தேர்ந்தெடுக்கவும்.</string>
+    <string name="restore_needs_password">இந்தக் காப்புப்பிரதியில் உள்நுழைவுகள் உள்ளன. அவற்றை மீட்டெடுக்க அதன் கடவுச்சொல்லை உள்ளிடவும், அல்லது அமைப்புகளை மட்டும் மீட்டெடுக்கவும்.</string>
+    <string name="restore_wrong_password">தவறான கடவுச்சொல்</string>
+    <string name="restore_settings_only">அமைப்புகள் மட்டும்</string>
+    <string name="restore_newer">இந்தக் காப்புப்பிரதி DebForge-இன் புதிய பதிப்பால் உருவாக்கப்பட்டது. முதலில் ஆப்ஸைப் புதுப்பிக்கவும்.</string>
+    <string name="restore_not_backup">அந்தக் கோப்பு DebForge காப்புப்பிரதி அல்ல.</string>
+    <string name="restore_failed">மீட்டெடுக்க முடியவில்லை: %1$s</string>
+    <!-- Folder picker (SAF) -->
+    <string name="storage_pick_folder">ஒரு கோப்புறையைத் தேர்ந்தெடு</string>
+    <string name="set_pick_any_folder">எந்தக் கோப்புறையையும் தேர்ந்தெடு…</string>
+    <string name="set_pick_any_folder_detail">இன்டர்னல் ஸ்டோரேஜ், SD கார்டு அல்லது USB டிரைவ். சிறப்பு அனுமதி தேவையில்லை.</string>
+    <string name="storage_internal">இன்டர்னல் ஸ்டோரேஜ்</string>
+    <string name="storage_sd">SD கார்டு</string>
+    <string name="msg_folder_set">பதிவிறக்கங்கள் %1$s-இல் சேமிக்கப்படும்</string>
+    <!-- Service sign-in credential names -->
+    <string name="token_api_key">API key</string>
+    <string name="token_api_token">API token</string>
+    <!-- Empty library; %1$s is the service's website, e.g. torbox.app -->
+    <string name="browse_empty_hint">இந்தப் பட்டியலை நிரப்ப %1$s-இல் ஒரு டோரன்ட், மேக்னெட் அல்லது லிங்க்கைச் சேர்க்கவும்.</string>
+    <!-- Errors talking to a service; %1$s is the service name -->
+    <string name="err_auth">%1$s உங்கள் %2$s-ஐ நிராகரித்தது. அதை %3$s-இல் சரிபார்க்கவும்.</string>
+    <string name="err_rate_limit">%1$s கோரிக்கைகளைக் கட்டுப்படுத்துகிறது. ஒரு நிமிடம் காத்திருந்து மீண்டும் முயலவும்.</string>
+    <string name="err_http">%1$s: கோரிக்கை தோல்வியடைந்தது (HTTP %2$d)</string>
+    <string name="err_failed">%1$s: கோரிக்கை தோல்வியடைந்தது</string>
+    <string name="err_bad_response">%1$s-இலிருந்து எதிர்பாராத பதில்</string>
+    <string name="err_network">நெட்வொர்க் பிழை. உங்கள் இணைப்பைச் சரிபார்க்கவும்.</string>
+    <string name="err_unexpected">எதிர்பாராத பிழை</string>
+    <string name="set_appearance">தோற்றம்</string>
+    <string name="theme_wallpaper">வால்பேப்பர்</string>
+    <string name="theme_ember">கனல்</string>
+    <string name="theme_ocean">கடல்</string>
+    <string name="theme_aurora">அரோரா</string>
+    <string name="theme_forest">காடு</string>
+    <string name="theme_amethyst">ஊதா</string>
+    <string name="theme_rose">ரோஜா</string>
+    <string name="theme_graphite">கிராஃபைட்</string>
+    <string name="set_pure_black">முழு கருப்பு</string>
+    <string name="set_pure_black_detail">டார்க் பயன்முறையில் கருப்புப் பின்னணி. OLED திரைக்கும் பேட்டரிக்கும் நல்லது.</string>
+    <string name="dl_more_actions">மேலும் செயல்கள்</string>
+
+    <!-- Widget, Quick Settings tile, launcher shortcuts, clipboard offer -->
+    <string name="action_pause_all">அனைத்தையும் இடைநிறுத்து</string>
+    <string name="action_resume_all">அனைத்தையும் தொடர்</string>
+    <string name="widget_label">DebForge பதிவிறக்கங்கள்</string>
+    <string name="widget_description">என்ன பதிவிறக்கமாகிறது — அனைத்தையும் இடைநிறுத்து, சேர் பொத்தான்களுடன்</string>
+    <string name="widget_idle">எதுவும் பதிவிறக்கமாகவில்லை</string>
+    <string name="widget_idle_hint">மேக்னெட் அல்லது இணைப்பை உங்கள் சேவைக்கு அனுப்ப சேர் என்பதைத் தட்டவும்.</string>
+    <string name="widget_progress">%2$s-இல் %1$s · %3$d%%</string>
+    <string name="tile_label">பதிவிறக்கங்கள்</string>
+    <string name="tile_idle">எதுவும் பதிவிறக்கமாகவில்லை</string>
+    <string name="shortcut_add">சேர்</string>
+    <string name="shortcut_resume_all">அனைத்தையும் தொடர்</string>
+    <string name="clipboard_offer">நகலெடுத்த இணைப்பு கிடைத்தது. உங்கள் சேவையில் சேர்க்கவா?</string>
+    <string name="set_clipboard_offer">நகலெடுத்த இணைப்புகளைப் பரிந்துரை</string>
+    <string name="set_clipboard_offer_detail">மேக்னெட் அல்லது .torrent இணைப்பை நகலெடுத்து DebForge-ஐத் திறக்கும்போது அதைச் சேர்க்கப் பரிந்துரைக்கும். மற்ற உரை புறக்கணிக்கப்படும்.</string>
+    <plurals name="widget_n_downloading">
+        <item quantity="one">%d பதிவிறக்கமாகிறது</item>
+        <item quantity="other">%d பதிவிறக்கமாகின்றன</item>
+    </plurals>
+    <plurals name="widget_n_queued">
+        <item quantity="one">%d வரிசையில்</item>
+        <item quantity="other">%d வரிசையில்</item>
+    </plurals>
+    <plurals name="widget_n_paused">
+        <item quantity="one">%d இடைநிறுத்தம்</item>
+        <item quantity="other">%d இடைநிறுத்தம்</item>
+    </plurals>
+    <plurals name="widget_n_failed">
+        <item quantity="one">%d தோல்வி</item>
+        <item quantity="other">%d தோல்வி</item>
+    </plurals>
+
+    <!-- Storage: space check, auto-delete -->
+    <string name="space_title">போதுமான இடம் இல்லை</string>
+    <string name="space_body">இவற்றுக்கு %1$s தேவை, ஆனால் %3$s-இல் %2$s மட்டுமே காலியாக உள்ளது. இடம் போதாத பதிவிறக்கங்கள் பிழையுடன் நிற்கும்; இடத்தைக் காலி செய்து மீண்டும் முயலலாம்.</string>
+    <string name="space_queue_anyway">இருந்தாலும் வரிசையில் சேர்</string>
+    <string name="set_storage_free">%1$s காலி</string>
+    <string name="set_storage_free_unknown">இந்தக் கோப்புறையின் காலி இடம் தெரியவில்லை</string>
+    <string name="set_auto_delete">பதிவிறக்கங்களை நீக்கு</string>
+    <string name="set_auto_delete_detail">DebForge பதிவிறக்கி, பதிவிறக்கங்களில் இன்னும் உள்ள கோப்புகள் மட்டும்</string>
+    <string name="set_auto_delete_never">ஒருபோதும் இல்லை</string>
+    <string name="set_auto_delete_confirm_title">பழைய பதிவிறக்கங்களை இப்போது நீக்கவா?</string>
+    <string name="set_auto_delete_now">இப்போது நீக்கு</string>
+    <plurals name="set_storage_downloaded">
+        <item quantity="one">DebForge பதிவிறக்கியவை: %2$d கோப்பு, %1$s</item>
+        <item quantity="other">DebForge பதிவிறக்கியவை: %2$d கோப்புகள், %1$s</item>
+    </plurals>
+    <plurals name="set_auto_delete_after_days">
+        <item quantity="one">%d நாளுக்குப் பிறகு</item>
+        <item quantity="other">%d நாட்களுக்குப் பிறகு</item>
+    </plurals>
+    <plurals name="set_auto_delete_confirm_body">
+        <item quantity="one">%3$d நாட்களுக்கு முன் முடிந்த %1$d கோப்பு (%2$s) இப்போது இந்தச் சாதனத்திலிருந்து நீக்கப்படும். புதியவை அந்த வயதை அடையும்போது நீக்கப்படும்.</item>
+        <item quantity="other">%3$d நாட்களுக்கு முன் முடிந்த %1$d கோப்புகள் (%2$s) இப்போது இந்தச் சாதனத்திலிருந்து நீக்கப்படும். புதியவை அந்த வயதை அடையும்போது நீக்கப்படும்.</item>
+    </plurals>
+
+    <!-- Add dialog: choosing a service -->
+    <string name="add_send_to">இங்கே அனுப்பு</string>
+    <string name="add_target_cached_cd">கேஷில் உள்ளது</string>
+    <string name="add_target_cached_hint">%1$s-இல் இது ஏற்கனவே கேஷில் உள்ளது, அதனால் உடனே தயார்.</string>
+    <string name="add_target_cant_hint">%1$s இவற்றை ஏற்க முடியாது, அதனால் இவை %2$s-க்குச் செல்லும்.</string>
+    <string name="add_sent_elsewhere">இது %1$s-இல் உள்ளது; நூலகம் இப்போது %2$s-ஐக் காட்டுகிறது (அமைப்புகளில் மாற்றவும்).</string>
+
+    <!-- Following shows -->
+    <string name="follow_action">பின்தொடர்</string>
+    <string name="follow_following">பின்தொடர்கிறீர்கள்</string>
+    <string name="follow_hint">புதிய எபிசோடுகள் உங்கள் கணக்கில் வந்ததும் தானாகப் பதிவிறக்கப்படும்.</string>
+    <string name="follow_started">%1$s-ஐப் பின்தொடர்கிறீர்கள். புதிய எபிசோடுகள் தானாகப் பதிவிறக்கப்படும்.</string>
+    <string name="follow_stopped">%1$s-ஐப் பின்தொடர்வது நிறுத்தப்பட்டது.</string>
+    <string name="follow_queued_one">புதிய எபிசோட் வரிசையில்: %1$s</string>
+    <string name="follow_unfollow">பின்தொடர்வதை நிறுத்து</string>
+    <string name="set_follows">பின்தொடரும் தொடர்கள்</string>
+    <string name="set_follows_none">இன்னும் இல்லை. நூலகத்தில் ஒரு தொடரைத் திறந்து பின்தொடர் என்பதைத் தட்டவும்.</string>
+    <string name="set_follows_detail">உங்கள் கணக்கில் வரும் புதிய எபிசோடுகள் தானாகப் பதிவிறக்கப்படும். DebForge சில மணிநேரத்துக்கு ஒருமுறையும் நூலகம் ஏற்றப்படும்போதும் சரிபார்க்கும்.</string>
+    <string name="notif_follow_one">புதிய எபிசோட்: %1$s</string>
+    <string name="notif_follow_body">பதிவிறக்க வரிசையில் உள்ளது. தொடங்கவில்லை என்றால் DebForge-ஐத் திறக்கவும்.</string>
+    <plurals name="follow_queued_many">
+        <item quantity="one">%d புதிய எபிசோட் வரிசையில்</item>
+        <item quantity="other">%d புதிய எபிசோடுகள் வரிசையில்</item>
+    </plurals>
+    <plurals name="notif_follow_many">
+        <item quantity="one">%d புதிய எபிசோட்</item>
+        <item quantity="other">%d புதிய எபிசோடுகள்</item>
+    </plurals>
+
+    <!-- In-app player -->
+    <string name="player_unsupported_title">இங்கே இயக்க முடியாது</string>
+    <string name="player_unsupported_body">இந்தச் சாதனம் DebForge பிளேயரில் இந்த வீடியோவை டிகோட் செய்ய முடியாது. VLC அல்லது வேறு பிளேயர் பொதுவாக இயக்கும்.</string>
+    <string name="player_error_body">இயக்கம் நின்றது (%1$s). வேறு வீடியோ பிளேயர் இதை இயக்கக்கூடும்.</string>
+    <string name="player_no_audio_body">இந்த வீடியோவின் ஆடியோ வடிவம் இந்தச் சாதனத்தில் ஆதரிக்கப்படவில்லை, எனவே ஒலியின்றி இயங்கும். VLC அல்லது வேறு பிளேயர் ஆடியோவை இயக்கும்.</string>
+    <string name="action_open_other_player">வேறு பிளேயரில் திற</string>
+    <string name="player_keep_watching">தொடர்ந்து பார்</string>
+    <string name="player_network_title">வீடியோவை ஏற்ற முடியவில்லை</string>
+    <string name="player_network_body">இணைப்பு துண்டிக்கப்பட்டது அல்லது இணைப்பின் காலம் முடிந்தது. மீண்டும் முயலவும் அல்லது இணைப்பைச் சரிபார்க்கவும்.</string>
+    <string name="set_player">வீடியோக்களை இயக்க</string>
+    <string name="set_player_internal">DebForge பிளேயர்</string>
+    <string name="set_player_external">வேறு ஆப் (VLC, mpv…)</string>
+
+    <!-- Resume / Continue watching -->
+    <string name="continue_watching">தொடர்ந்து பார்க்க</string>
+    <string name="continue_remove">தொடர்ந்து பார்க்க என்பதிலிருந்து நீக்கு</string>
+    <string name="continue_unavailable">%1$s-ஐ இயக்க முடியவில்லை: %2$s</string>
+    <string name="watched">✓ பார்த்தது</string>
+    <string name="player_start_over">↺ தொடக்கத்திலிருந்து</string>
+    <plurals name="continue_minutes_left">
+        <item quantity="one">%d நிமிடம் மீதம்</item>
+        <item quantity="other">%d நிமிடங்கள் மீதம்</item>
+    </plurals>
+
+    <!-- Subtitle label suffix: "French · Forced" -->
+    <string name="subtitle_forced">கட்டாயம்</string>
+
+    <!-- Player: next episode -->
+    <string name="player_next">அடுத்து: %1$s</string>
+    <string name="player_play_now">இப்போது இயக்கு</string>
+    <string name="player_next_failed">அடுத்த எபிசோடை ஏற்ற முடியவில்லை.</string>
+    <plurals name="player_next_in">
+        <item quantity="one">%d விநாடியில் தொடங்கும்</item>
+        <item quantity="other">%d விநாடிகளில் தொடங்கும்</item>
+    </plurals>
+
+    <!-- Autoplay setting, followed shows in backups -->
+    <string name="set_autoplay_next">அடுத்த எபிசோடைத் தானாக இயக்கு</string>
+    <string name="set_autoplay_next_detail">எபிசோட் முடியும் நேரத்தில், சிறிய கவுண்ட்டவுனுக்குப் பின் அடுத்தது தொடங்கும். அணைத்தால் \'இப்போது இயக்கு\' பொத்தான் காட்டப்படும்.</string>
+    <plurals name="restore_follows_n">
+        <item quantity="one">இப்போது மேலும் %d தொடரைப் பின்தொடர்கிறீர்கள்.</item>
+        <item quantity="other">இப்போது மேலும் %d தொடர்களைப் பின்தொடர்கிறீர்கள்.</item>
+    </plurals>
+</resources>

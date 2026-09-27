@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Theme.Debforge" parent="android:Theme.Material.Light.NoActionBar" />
+    <!-- Video player: black from the first frame (no white flash), no action bar. -->
+    <style name="Theme.Debforge.Player" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@android:color/black</item>
+        <item name="android:colorBackground">@android:color/black</item>
+    </style>
+</resources>

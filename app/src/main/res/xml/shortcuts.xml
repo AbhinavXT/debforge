@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Long-press the launcher icon. Handled by MainActivity.handleAppAction. -->
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/shortcut_add"
+        android:shortcutId="add"
+        android:shortcutShortLabel="@string/shortcut_add">
+        <intent
+            android:action="com.abhinavxt.debforge.action.ADD"
+            android:targetClass="com.abhinavxt.debforge.MainActivity"
+            android:targetPackage="com.abhinavxt.debforge" />
+    </shortcut>
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/shortcut_resume"
+        android:shortcutId="resume_all"
+        android:shortcutShortLabel="@string/shortcut_resume_all">
+        <intent
+            android:action="com.abhinavxt.debforge.action.RESUME_ALL"
+            android:targetClass="com.abhinavxt.debforge.MainActivity"
+            android:targetPackage="com.abhinavxt.debforge" />
+    </shortcut>
+</shortcuts>

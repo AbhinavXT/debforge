@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Languages offered in Android 13+ per-app language settings. Keep in sync
+     with LANGUAGES in ui/settings/SettingsScreen.kt and the values-* folders
+     (Indonesian is "id" here, "values-in" as a resource folder). -->
+<locale-config xmlns:android="http://schemas.android.com/apk/res/android">
+    <locale android:name="en" />
+    <locale android:name="bn" />
+    <locale android:name="de" />
+    <locale android:name="es" />
+    <locale android:name="fr" />
+    <locale android:name="hi" />
+    <locale android:name="id" />
+    <locale android:name="mr" />
+    <locale android:name="pt-BR" />
+    <locale android:name="ru" />
+    <locale android:name="ta" />
+    <locale android:name="te" />
+    <locale android:name="tr" />
+    <locale android:name="zh-CN" />
+</locale-config>

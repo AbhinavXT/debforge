@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Home-screen widget, in the default Ember theme. RemoteViews can't read
+     the app's Compose theme, so light and dark are fixed resources. -->
+<resources>
+    <color name="widget_bg">#FFFFF8F5</color>
+    <color name="widget_fg">#FF231A16</color>
+    <color name="widget_fg_dim">#FF6F5E57</color>
+    <color name="widget_accent">#FF96400F</color>
+    <color name="widget_track">#FFEBDDD6</color>
+    <color name="widget_pill">#FFF6E2D8</color>
+    <color name="widget_pill_fg">#FF3A1A08</color>
+</resources>

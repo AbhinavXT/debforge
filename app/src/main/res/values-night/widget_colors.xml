@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="widget_bg">#FF1E1917</color>
+    <color name="widget_fg">#FFEDE0DA</color>
+    <color name="widget_fg_dim">#FFB5A49C</color>
+    <color name="widget_accent">#FFFFB690</color>
+    <color name="widget_track">#FF3A302C</color>
+    <color name="widget_pill">#FF4A2A1A</color>
+    <color name="widget_pill_fg">#FFFFDBCB</color>
+</resources>

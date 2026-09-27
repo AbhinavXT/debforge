@@ -1,0 +1,615 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:ns1="urn:oasis:names:tc:xliff:document:1.2">
+    <string-array name="exo_controls_playback_speeds">
+    <item>0,25-fach</item>
+    <item>0,5-fach</item>
+    <item>0,75-fach</item>
+    <item>Standard</item>
+    <item>1,25-fach</item>
+    <item>1,5-fach</item>
+    <item>2-fach</item>
+  </string-array>
+    <plurals name="acct_days_left">
+        <item quantity="one">Premium: noch %1$d Tag</item>
+        <item quantity="other">Premium: noch %1$d Tage</item>
+    </plurals>
+    <plurals name="add_added_n">
+        <item quantity="one">%1$d Eintrag zu %2$s hinzugefügt</item>
+        <item quantity="other">%1$d Einträge zu %2$s hinzugefügt</item>
+    </plurals>
+    <plurals name="add_skipped_n">
+        <item quantity="one">%1$d unbekannter Eintrag übersprungen</item>
+        <item quantity="other">%1$d unbekannte Einträge übersprungen</item>
+    </plurals>
+    <plurals name="added_n_files">
+        <item quantity="one">%1$d Datei zur Warteschlange hinzugefügt</item>
+        <item quantity="other">%1$d Dateien zur Warteschlange hinzugefügt</item>
+    </plurals>
+    <plurals name="continue_minutes_left">
+        <item quantity="one">Noch %d Min.</item>
+        <item quantity="other">Noch %d Min.</item>
+    </plurals>
+    <plurals name="exo_controls_fastforward_by_amount_description">
+    <item quantity="one">%d Sekunde vorspulen</item>
+    <item quantity="other">%d Sekunden vorspulen</item>
+  </plurals>
+    <plurals name="exo_controls_rewind_by_amount_description">
+    <item quantity="one">%d Sekunde zurückspulen</item>
+    <item quantity="other">%d Sekunden zurückspulen</item>
+  </plurals>
+    <plurals name="expiry_in_days">
+        <item quantity="one">Dein %2$s-Premium läuft in %1$d Tag ab</item>
+        <item quantity="other">Dein %2$s-Premium läuft in %1$d Tagen ab</item>
+    </plurals>
+    <plurals name="follow_queued_many">
+        <item quantity="one">%d neue Folge eingereiht</item>
+        <item quantity="other">%d neue Folgen eingereiht</item>
+    </plurals>
+    <plurals name="msg_ready_many">
+        <item quantity="one">%1$d Eintrag bereit – wird heruntergeladen</item>
+        <item quantity="other">%1$d Einträge bereit – werden heruntergeladen</item>
+    </plurals>
+    <plurals name="msg_removed_n">
+        <item quantity="one">Von %2$s entfernt</item>
+        <item quantity="other">%1$d Einträge von %2$s entfernt</item>
+    </plurals>
+    <plurals name="n_episodes">
+        <item quantity="one">%1$d Folge</item>
+        <item quantity="other">%1$d Folgen</item>
+    </plurals>
+    <plurals name="n_files">
+        <item quantity="one">%1$d Datei</item>
+        <item quantity="other">%1$d Dateien</item>
+    </plurals>
+    <plurals name="n_versions">
+        <item quantity="one">%1$d Version</item>
+        <item quantity="other">%1$d Versionen</item>
+    </plurals>
+    <plurals name="notif_follow_many">
+        <item quantity="one">%d neue Folge</item>
+        <item quantity="other">%d neue Folgen</item>
+    </plurals>
+    <plurals name="notif_ready_many">
+        <item quantity="one">%1$d Eintrag ist bereit</item>
+        <item quantity="other">%1$d Einträge sind bereit</item>
+    </plurals>
+    <plurals name="player_next_in">
+        <item quantity="one">Startet in %d Sekunde</item>
+        <item quantity="other">Startet in %d Sekunden</item>
+    </plurals>
+    <plurals name="restore_follows_n">
+        <item quantity="one">Du folgst jetzt %d weiteren Serie.</item>
+        <item quantity="other">Du folgst jetzt %d weiteren Serien.</item>
+    </plurals>
+    <plurals name="restore_settings_n">
+        <item quantity="one">%1$d Einstellung wiederhergestellt.</item>
+        <item quantity="other">%1$d Einstellungen wiederhergestellt.</item>
+    </plurals>
+    <plurals name="set_auto_delete_after_days">
+        <item quantity="one">Nach %d Tag</item>
+        <item quantity="other">Nach %d Tagen</item>
+    </plurals>
+    <plurals name="set_auto_delete_confirm_body">
+        <item quantity="one">%1$d Datei, die vor mehr als %3$d Tagen fertig wurde (%2$s), wird jetzt von diesem Gerät gelöscht. Neuere folgen, sobald sie so alt sind.</item>
+        <item quantity="other">%1$d Dateien, die vor mehr als %3$d Tagen fertig wurden (%2$s), werden jetzt von diesem Gerät gelöscht. Neuere folgen, sobald sie so alt sind.</item>
+    </plurals>
+    <plurals name="set_storage_downloaded">
+        <item quantity="one">%1$s in %2$d von DebForge geladenen Datei</item>
+        <item quantity="other">%1$s in %2$d von DebForge geladenen Dateien</item>
+    </plurals>
+    <plurals name="widget_n_downloading">
+        <item quantity="one">%d lädt</item>
+        <item quantity="other">%d laden</item>
+    </plurals>
+    <plurals name="widget_n_failed">
+        <item quantity="one">%d fehlgeschlagen</item>
+        <item quantity="other">%d fehlgeschlagen</item>
+    </plurals>
+    <plurals name="widget_n_paused">
+        <item quantity="one">%d pausiert</item>
+        <item quantity="other">%d pausiert</item>
+    </plurals>
+    <plurals name="widget_n_queued">
+        <item quantity="one">%d wartet</item>
+        <item quantity="other">%d warten</item>
+    </plurals>
+    <string name="about_auto_update">Automatisch nach Updates suchen</string>
+    <string name="about_auto_update_detail">Eine anonyme Anfrage an GitHub beim Öffnen der App.</string>
+    <string name="about_build">Build %1$d · %2$s</string>
+    <string name="about_check_failed">Suche nach Updates fehlgeschlagen (%1$s).</string>
+    <string name="about_check_now">Nach Updates suchen</string>
+    <string name="about_checking">Suche…</string>
+    <string name="about_download">Herunterladen</string>
+    <string name="about_release_notes">Versionshinweise</string>
+    <string name="about_share_crash">Letzten Absturzbericht teilen</string>
+    <string name="about_source">Quellcode und Fehlermeldungen</string>
+    <string name="about_title">Über</string>
+    <string name="about_up_to_date">Du hast die neueste Version.</string>
+    <string name="about_update_available">Version %1$s ist verfügbar.</string>
+    <string name="about_version">DebForge %1$s</string>
+    <string name="acct_expired">Premium ist abgelaufen</string>
+    <string name="acct_expires_today">Premium läuft heute ab</string>
+    <string name="acct_manage">Konto verwalten</string>
+    <string name="action_add">Hinzufügen</string>
+    <string name="action_allow">Zulassen</string>
+    <string name="action_cancel">Abbrechen</string>
+    <string name="action_clear">Leeren</string>
+    <string name="action_close">Schließen</string>
+    <string name="action_dismiss">Schließen</string>
+    <string name="action_done">Fertig</string>
+    <string name="action_download">Herunterladen</string>
+    <string name="action_ok">OK</string>
+    <string name="action_open">Öffnen</string>
+    <string name="action_open_other_player">In anderem Player öffnen</string>
+    <string name="action_pause">Pausieren</string>
+    <string name="action_pause_all">Alle pausieren</string>
+    <string name="action_play">Abspielen</string>
+    <string name="action_refresh">Aktualisieren</string>
+    <string name="action_remove">Entfernen</string>
+    <string name="action_remove_from">Von %1$s entfernen</string>
+    <string name="action_renew">Verlängern</string>
+    <string name="action_resume">Fortsetzen</string>
+    <string name="action_resume_all">Alle fortsetzen</string>
+    <string name="action_retry">Wiederholen</string>
+    <string name="action_save">Speichern</string>
+    <string name="action_share">Teilen</string>
+    <string name="action_update">Aktualisieren</string>
+    <string name="add_allow_file_access">Dateizugriff erlauben</string>
+    <string name="add_auto_download">Automatisch auf dieses Handy laden, sobald bereit</string>
+    <string name="add_cache_all_yes">Alle %1$d sind im Cache. Sofort bereit.</string>
+    <string name="add_cache_checking">Prüfe, ob %1$s es schon hat…</string>
+    <string name="add_cache_one_no">Noch nicht im Cache. %1$s lädt es zuerst herunter.</string>
+    <string name="add_cache_one_yes">Auf %1$s im Cache. Sofort bereit.</string>
+    <string name="add_cache_some">%1$d von %2$d im Cache. Diese sind sofort bereit.</string>
+    <string name="add_choose_torrent">.torrent-Datei auswählen</string>
+    <string name="add_err_not_torrent">%1$s sieht nicht wie eine .torrent-Datei aus</string>
+    <string name="add_err_nothing">Nichts hinzuzufügen – füge einen Magnet-Link oder eine http(s)-URL ein</string>
+    <string name="add_err_open">Datei konnte nicht geöffnet werden</string>
+    <string name="add_err_permission">Keine Berechtigung zum Lesen der Datei – wähle sie erneut aus</string>
+    <string name="add_err_read">Datei konnte nicht gelesen werden: %1$s</string>
+    <string name="add_err_too_large">Die Datei ist zu groß für eine .torrent-Datei</string>
+    <string name="add_err_unsupported">%1$s kann diesen Eintragstyp nicht hinzufügen</string>
+    <string name="add_hint_both">Magnet-Links oder URLs, einer pro Zeile</string>
+    <string name="add_hint_links">Hoster-Links, einer pro Zeile</string>
+    <string name="add_hint_magnet">Magnet-Links, einer pro Zeile</string>
+    <string name="add_magnet_link">Magnet-Link</string>
+    <string name="add_needs_storage">Wähle zuerst einen Download-Ordner oder erlaube den Dateizugriff.</string>
+    <string name="add_partial">%1$d von %2$d hinzugefügt</string>
+    <string name="add_partial_suffix">(%1$d von %2$d hinzugefügt)</string>
+    <string name="add_remove_file">Datei entfernen</string>
+    <string name="add_send_to">Senden an</string>
+    <string name="add_sent_elsewhere">Es liegt bei %1$s; die Mediathek zeigt %2$s (in den Einstellungen wechseln).</string>
+    <string name="add_target_cached_cd">Im Cache</string>
+    <string name="add_target_cached_hint">%1$s hat das bereits im Cache, es ist also sofort bereit.</string>
+    <string name="add_target_cant_hint">%1$s kann das nicht annehmen, daher geht es an %2$s.</string>
+    <string name="add_title">Zu %1$s hinzufügen</string>
+    <string name="backup_choose_location">Speicherort wählen</string>
+    <string name="backup_create">Sichern</string>
+    <string name="backup_detail">Speichere deine Einstellungen in einer Datei und stelle sie auf diesem oder einem anderen Handy wieder her.</string>
+    <string name="backup_failed">Sicherung konnte nicht gespeichert werden: %1$s</string>
+    <string name="backup_include_signins">Anmeldungen einschließen</string>
+    <string name="backup_include_signins_detail">Dienst-Anmeldungen und dein TMDB-Schlüssel, mit einem Passwort verschlüsselt.</string>
+    <string name="backup_password">Passwort</string>
+    <string name="backup_password_again">Passwort wiederholen</string>
+    <string name="backup_password_mismatch">Passwörter stimmen nicht überein</string>
+    <string name="backup_password_short">Mindestens %1$d Zeichen</string>
+    <string name="backup_password_warning">Bewahre dieses Passwort sicher auf. Ohne es können die Anmeldungen in dieser Sicherung nicht wiederhergestellt werden.</string>
+    <string name="backup_restore">Wiederherstellen</string>
+    <string name="backup_saved">Sicherung gespeichert.</string>
+    <string name="backup_saved_with_signins">Sicherung gespeichert, Anmeldungen mit deinem Passwort verschlüsselt.</string>
+    <string name="backup_title">Sicherung</string>
+    <string name="backup_what">Download-Regeln, Ordner, Darstellung, gefolgte Serien und weitere Einstellungen sind immer enthalten.</string>
+    <string name="browse_add_cd">Magnet, Link oder Torrent hinzufügen</string>
+    <string name="browse_cancel_selection">Auswahl aufheben</string>
+    <string name="browse_empty_add">Magnet, Torrent oder Link hinzufügen</string>
+    <string name="browse_empty_body">Alles, was du zu %1$s hinzufügst, erscheint hier – bereit zum Download mit voller Geschwindigkeit.</string>
+    <string name="browse_empty_hint">Füge auf %1$s einen Torrent, Magnet-Link oder Link hinzu, um diese Liste zu füllen.</string>
+    <string name="browse_empty_title">Deine Mediathek ist leer</string>
+    <string name="browse_end_of_list">Ende der Liste</string>
+    <string name="browse_group_series">Als Serie gruppieren</string>
+    <string name="browse_no_matches">Keine Treffer für \"%1$s\"</string>
+    <string name="browse_other">Sonstiges</string>
+    <string name="browse_posters">Poster</string>
+    <string name="browse_search_hint">Titel oder Dateien suchen</string>
+    <string name="browse_searching_all">Durchsuche deine gesamte Mediathek… %1$d Dateien geprüft</string>
+    <string name="browse_selected">%1$d ausgewählt</string>
+    <string name="browse_your_service">deinem Dienst</string>
+    <string msgid="881409763997275156" name="call_notification_answer_action">"Annehmen"</string>
+    <string msgid="8793775615905189152" name="call_notification_answer_video_action">"Video"</string>
+    <string msgid="3229508546291798546" name="call_notification_decline_action">"Ablehnen"</string>
+    <string msgid="2659457946726154263" name="call_notification_hang_up_action">"Auflegen"</string>
+    <string msgid="6107532579223922871" name="call_notification_incoming_text">"Eingehender Anruf"</string>
+    <string msgid="8623827134497363134" name="call_notification_ongoing_text">"Aktueller Anruf"</string>
+    <string msgid="59049573811482460" name="call_notification_screening_text">"Filter für eingehenden Anruf"</string>
+    <string name="chooser_open_with">Öffnen mit</string>
+    <string name="chooser_play_with">Abspielen mit</string>
+    <string name="chooser_share">Teilen</string>
+    <string name="clipboard_offer">Kopierter Link gefunden. Zu deinem Dienst hinzufügen?</string>
+    <string msgid="406453423630273620" name="close_drawer">"Navigationsmenü schließen"</string>
+    <string msgid="7573152094250666567" name="close_sheet">"Tabelle schließen"</string>
+    <string name="continue_remove">Aus Weiterschauen entfernen</string>
+    <string name="continue_unavailable">%1$s kann nicht abgespielt werden: %2$s</string>
+    <string name="continue_watching">Weiterschauen</string>
+    <string name="crash_body">Auf diesem Gerät wurde ein Bericht gespeichert – ohne Tokens, Links und Dateinamen. Es wird nichts gesendet, außer du teilst ihn.</string>
+    <string name="crash_delete">Löschen</string>
+    <string name="crash_share">Bericht teilen</string>
+    <string name="crash_share_subject">DebForge-Absturzbericht</string>
+    <string name="crash_title">DebForge ist beim letzten Mal abgestürzt</string>
+    <string msgid="8038256446254964252" name="default_error_message">"Ungültige Eingabe"</string>
+    <string msgid="6312721426453364202" name="default_popup_window_title">"Pop-up-Fenster"</string>
+    <string name="dl_clear_finished">Abgeschlossene entfernen</string>
+    <string name="dl_done_at">Fertig · %1$s · %2$s</string>
+    <string name="dl_empty_body">Tippe in deiner Mediathek bei einem Eintrag auf Herunterladen, um ihn einzureihen.</string>
+    <string name="dl_empty_title">Nichts aktiv</string>
+    <string name="dl_failed">Download fehlgeschlagen</string>
+    <string name="dl_file_missing">Datei wurde verschoben oder gelöscht</string>
+    <string name="dl_more_actions">Weitere Aktionen</string>
+    <string name="dl_paused_progress">Pausiert · %1$s / %2$s</string>
+    <string name="dl_schedule_notice">Außerhalb deiner Download-Zeiten. Wartende Dateien starten um %1$s. Du kannst die Zeiten ändern oder den Zeitplan in den Einstellungen ausschalten.</string>
+    <string name="dl_section_completed">Abgeschlossen</string>
+    <string name="dl_section_downloading">Wird geladen</string>
+    <string name="dl_section_failed">Fehlgeschlagen</string>
+    <string name="dl_section_paused">Pausiert</string>
+    <string name="dl_section_queued">In Warteschlange</string>
+    <string name="dl_so_far">bisher</string>
+    <string name="dl_waiting">Wartet</string>
+    <string name="dl_waiting_size">Wartet · %1$s</string>
+    <string msgid="1890207353314751437" name="dropdown_menu">"Drop-down-Menü"</string>
+    <string name="err_auth">Dein Zugang (%2$s) wurde von %1$s abgelehnt. Prüfe ihn auf %3$s.</string>
+    <string name="err_bad_response">Unerwartete Antwort von %1$s</string>
+    <string name="err_failed">%1$s: Anfrage fehlgeschlagen</string>
+    <string name="err_http">%1$s: Anfrage fehlgeschlagen (HTTP %2$d)</string>
+    <string name="err_network">Netzwerkfehler. Prüfe deine Verbindung.</string>
+    <string name="err_rate_limit">%1$s begrenzt gerade die Anfragen. Warte eine Minute und versuche es erneut.</string>
+    <string name="err_unexpected">Unerwarteter Fehler</string>
+    <string name="eta_hours">noch %1$d h %2$d min</string>
+    <string name="eta_minutes">noch %1$d min</string>
+    <string name="eta_seconds">noch %1$d s</string>
+    <string name="exo_controls_cc_disabled_description">Untertitel aktivieren</string>
+    <string name="exo_controls_cc_enabled_description">Untertitel deaktivieren</string>
+    <string name="exo_controls_fastforward_description">Vorspulen</string>
+    <string name="exo_controls_fullscreen_enter_description">Vollbild aktivieren</string>
+    <string name="exo_controls_fullscreen_exit_description">Vollbild beenden</string>
+    <string name="exo_controls_hide">Player-Steuerelemente ausblenden</string>
+    <string name="exo_controls_next_description">Weiter</string>
+    <string name="exo_controls_overflow_hide_description">Zusätzliche Einstellungen ausblenden</string>
+    <string name="exo_controls_overflow_show_description">Zusätzliche Einstellungen einblenden</string>
+    <string name="exo_controls_pause_description">Pausieren</string>
+    <string name="exo_controls_play_description">Wiedergeben</string>
+    <string name="exo_controls_playback_speed">Geschwindigkeit</string>
+    <string name="exo_controls_previous_description">Zurück</string>
+    <string name="exo_controls_repeat_all_description">Aktueller Modus: alles wiederholen. Wiederholungsmodus ändern.</string>
+    <string name="exo_controls_repeat_off_description">Aktueller Modus: nichts wiederholen. Wiederholungsmodus ändern.</string>
+    <string name="exo_controls_repeat_one_description">Aktueller Modus: einen Titel wiederholen. Wiederholungsmodus ändern.</string>
+    <string name="exo_controls_rewind_description">Zurückspulen</string>
+    <string name="exo_controls_seek_bar_description">Wiedergabefortschritt</string>
+    <string name="exo_controls_settings_description">Einstellungen</string>
+    <string name="exo_controls_show">Player-Steuerelemente anzeigen</string>
+    <string name="exo_controls_shuffle_off_description">Zufallsmix aktivieren</string>
+    <string name="exo_controls_shuffle_on_description">Zufallsmix deaktivieren</string>
+    <string name="exo_controls_stop_description">Beenden</string>
+    <string name="exo_controls_vr_description">VR-Modus</string>
+    <string name="exo_download_completed">Download abgeschlossen</string>
+    <string name="exo_download_description">Herunterladen</string>
+    <string name="exo_download_downloading">Wird heruntergeladen</string>
+    <string name="exo_download_failed">Download fehlgeschlagen</string>
+    <string name="exo_download_notification_channel_name">Downloads</string>
+    <string name="exo_download_paused">Downloads pausiert</string>
+    <string name="exo_download_paused_for_network">Auf Netzwerkverbindung wird gewartet</string>
+    <string name="exo_download_paused_for_wifi">Auf WLAN-Verbindung wird gewartet</string>
+    <string name="exo_download_removing">Downloads werden entfernt</string>
+    <string name="exo_item_list">%1$s, %2$s</string>
+    <string name="exo_track_bitrate">%1$.2f Mbit/s</string>
+    <string name="exo_track_mono">Mono</string>
+    <string name="exo_track_resolution">%1$d × %2$d</string>
+    <string name="exo_track_role_alternate">Alternativer Track</string>
+    <string name="exo_track_role_closed_captions">Untertitel</string>
+    <string name="exo_track_role_commentary">Kommentare</string>
+    <string name="exo_track_role_supplementary">Zusatzinhalte</string>
+    <string name="exo_track_selection_auto">Automatisch</string>
+    <string name="exo_track_selection_none">Ohne</string>
+    <string name="exo_track_selection_title_audio">Audio</string>
+    <string name="exo_track_stereo">Stereo</string>
+    <string name="exo_track_surround">Surround-Sound</string>
+    <string name="exo_track_surround_5_point_1">5.1-Surround-Sound</string>
+    <string name="exo_track_surround_7_point_1">7.1-Surround-Sound</string>
+    <string name="exo_track_unknown">Unbekannt</string>
+    <string name="exo_track_unknown_name">Unbekannt (%1$s)</string>
+    <string name="expiry_expired">Dein %1$s-Premium ist abgelaufen</string>
+    <string name="expiry_today">Dein %1$s-Premium läuft heute ab</string>
+    <string name="follow_action">Folgen</string>
+    <string name="follow_following">Gefolgt</string>
+    <string name="follow_hint">Neue Folgen werden automatisch geladen, sobald sie in deinem Konto sind.</string>
+    <string name="follow_queued_one">Neue Folge eingereiht: %1$s</string>
+    <string name="follow_started">Du folgst %1$s. Neue Folgen werden automatisch geladen.</string>
+    <string name="follow_stopped">Du folgst %1$s nicht mehr.</string>
+    <string name="follow_unfollow">Nicht mehr folgen</string>
+    <string msgid="6827826412747255547" name="in_progress">"In Bearbeitung"</string>
+    <string msgid="7933458017204019916" name="indeterminate">"Teilweise aktiviert"</string>
+    <string name="kind_movie">Film</string>
+    <string name="kind_series">Serie</string>
+    <string name="lang_system">Systemsprache</string>
+    <string msgid="2988463736136100848" name="m3c_bottom_sheet_collapse_description">"Ansicht am unteren Rand minimieren"</string>
+    <string msgid="1555567894577437024" name="m3c_bottom_sheet_dismiss_description">"Ansicht am unteren Rand schließen"</string>
+    <string msgid="8403354765404029791" name="m3c_bottom_sheet_drag_handle_description">"Ziehpunkt"</string>
+    <string msgid="6670819569745899763" name="m3c_bottom_sheet_expand_description">"Ansicht am unteren Rand maximieren"</string>
+    <string msgid="3010635850035863127" name="m3c_bottom_sheet_pane_title">"Ansicht am unteren Rand"</string>
+    <string msgid="8166741421776570875" name="m3c_date_input_headline">"Eingabedatum"</string>
+    <string msgid="229313757840775812" name="m3c_date_input_headline_description">"Eingabedatum: %1$s"</string>
+    <string msgid="6116910750161463197" name="m3c_date_input_invalid_for_pattern">"Datum entspricht nicht dem erwarteten Format: %1$s"</string>
+    <string msgid="2521768508935305279" name="m3c_date_input_invalid_not_allowed">"Unzulässiges Datum: %1$s"</string>
+    <string msgid="7052898923934555305" name="m3c_date_input_invalid_year_range">"Datum liegt außerhalb des erwarteten Jahresbereichs (%1$s–%2$s)"</string>
+    <string msgid="2895559812010326913" name="m3c_date_input_label">"Datum"</string>
+    <string msgid="1237013946323089826" name="m3c_date_input_no_input_description">"Kein Datum"</string>
+    <string msgid="7306227249789210568" name="m3c_date_input_title">"Datum auswählen"</string>
+    <string msgid="7605002211875882969" name="m3c_date_picker_headline">"Ausgewähltes Datum"</string>
+    <string msgid="3664277305226978227" name="m3c_date_picker_headline_description">"Aktuelle Auswahl: %1$s"</string>
+    <string msgid="8436650776581492840" name="m3c_date_picker_navigate_to_year_description">"Zum Jahr %1$s wechseln"</string>
+    <string msgid="5811000998184572395" name="m3c_date_picker_no_selection_description">"Kein Datum"</string>
+    <string msgid="7813882352367152251" name="m3c_date_picker_scroll_to_earlier_years">"Zum Ansehen vorheriger Jahre scrollen"</string>
+    <string msgid="5727367015496556177" name="m3c_date_picker_scroll_to_later_years">"Zum Ansehen nachfolgender Jahre scrollen"</string>
+    <string msgid="1804346892470238807" name="m3c_date_picker_switch_to_calendar_mode">"In den Kalendereingabemodus wechseln"</string>
+    <string msgid="395627960681594326" name="m3c_date_picker_switch_to_day_selection">"Wischen, um ein Jahr auszuwählen, oder tippen, um zur Tagesauswahl zurückzukehren"</string>
+    <string msgid="2219746470065162704" name="m3c_date_picker_switch_to_input_mode">"In den Texteingabemodus wechseln"</string>
+    <string msgid="7142101321095356500" name="m3c_date_picker_switch_to_next_month">"Zum nächsten Monat wechseln"</string>
+    <string msgid="228438865139394590" name="m3c_date_picker_switch_to_previous_month">"Zum vorherigen Monat wechseln"</string>
+    <string msgid="791651718641787594" name="m3c_date_picker_switch_to_year_selection">"Zur Jahresauswahl wechseln"</string>
+    <string msgid="7430790972741451689" name="m3c_date_picker_title">"Datum auswählen"</string>
+    <string msgid="3199387177749801575" name="m3c_date_picker_today_description">"Heute"</string>
+    <string msgid="2068382232816991922" name="m3c_date_picker_year_picker_pane_title">"Jahresauswahl sichtbar"</string>
+    <string msgid="3190049423327661366" name="m3c_date_range_input_invalid_range_input">"Angegebener Zeitraum ungültig"</string>
+    <string msgid="3148384720560189467" name="m3c_date_range_input_title">"Daten eingeben"</string>
+    <string msgid="2138321128465719402" name="m3c_date_range_picker_day_in_range">"Im Zeitraum"</string>
+    <string msgid="4947636797751277713" name="m3c_date_range_picker_end_headline">"Enddatum"</string>
+    <string msgid="602077859540990149" name="m3c_date_range_picker_scroll_to_next_month">"Zum Ansehen des nächsten Monats scrollen"</string>
+    <string msgid="4592174524846109496" name="m3c_date_range_picker_scroll_to_previous_month">"Zum Ansehen des vorherigen Monats scrollen"</string>
+    <string msgid="4665981448952749820" name="m3c_date_range_picker_start_headline">"Startdatum"</string>
+    <string msgid="3134165431120340385" name="m3c_date_range_picker_title">"Daten auswählen"</string>
+    <string msgid="7617233117134790350" name="m3c_dialog">"Dialogfeld"</string>
+    <string msgid="3177828188723359358" name="m3c_dropdown_menu_collapsed">"Minimiert"</string>
+    <string msgid="2360841780724299882" name="m3c_dropdown_menu_expanded">"Maximiert"</string>
+    <string msgid="8687821690726149911" name="m3c_dropdown_menu_toggle">"Drop-down-Menü maximieren/minimieren"</string>
+    <string msgid="6152806324422087846" name="m3c_search_bar_search">"Suche"</string>
+    <string msgid="6152755701819882931" name="m3c_snackbar_dismiss">"Schließen"</string>
+    <string msgid="7655536806087401899" name="m3c_suggestions_available">"Vorschläge unten"</string>
+    <string msgid="2786685010796619560" name="m3c_time_picker_am">"AM"</string>
+    <string msgid="2349193472625211372" name="m3c_time_picker_hour">"Stunde"</string>
+    <string msgid="9179527532316922345" name="m3c_time_picker_hour_24h_suffix">"%1$d Std."</string>
+    <string msgid="8876759303332837035" name="m3c_time_picker_hour_selection">"Stunde auswählen"</string>
+    <string msgid="3458167507790628988" name="m3c_time_picker_hour_suffix">"%1$d Uhr"</string>
+    <string msgid="6973808109666874069" name="m3c_time_picker_hour_text_field">"für Stunde"</string>
+    <string msgid="4313071914266462005" name="m3c_time_picker_minute">"Minute"</string>
+    <string msgid="4699133535056739733" name="m3c_time_picker_minute_selection">"Minuten auswählen"</string>
+    <string msgid="5064177921781937179" name="m3c_time_picker_minute_suffix">"%1$d Minuten"</string>
+    <string msgid="7661234488295443182" name="m3c_time_picker_minute_text_field">"für Minuten"</string>
+    <string msgid="5865171949528594571" name="m3c_time_picker_period_toggle_description">"Vormittags oder nachmittags auswählen"</string>
+    <string msgid="6616362054113087709" name="m3c_time_picker_pm">"Nachmittags"</string>
+    <string msgid="1805687647081129904" name="m3c_tooltip_long_press_label">"Kurzinfo anzeigen"</string>
+    <string msgid="5460405025248574620" name="m3c_tooltip_pane_description">"Kurzinfo"</string>
+    <string name="msg_added_one">Hinzugefügt: %1$s</string>
+    <string name="msg_app_storage">Speichere im App-Speicher – jederzeit in den Einstellungen änderbar</string>
+    <string name="msg_folder_set">Downloads werden in %1$s gespeichert</string>
+    <string name="msg_no_player">Kein Videoplayer gefunden – installiere VLC oder mpv</string>
+    <string name="msg_ready_one">Bereit – %1$s wird heruntergeladen</string>
+    <string name="msg_will_download_when_ready">\"%1$s\" wird heruntergeladen, sobald es bereit ist</string>
+    <string msgid="542007171693138492" name="navigation_menu">"Navigationsmenü"</string>
+    <string msgid="6610465462668679431" name="not_selected">"Nicht ausgewählt"</string>
+    <string name="notif_channel">Downloads</string>
+    <string name="notif_channel_desc">Fortschritt aktiver Downloads</string>
+    <string name="notif_downloaded">Heruntergeladen</string>
+    <string name="notif_follow_body">Zum Download eingereiht. Öffne DebForge, falls es nicht startet.</string>
+    <string name="notif_follow_one">Neue Folge: %1$s</string>
+    <string name="notif_paused_body">Das Hintergrund-Zeitlimit von Android wurde erreicht. Tippe, um fortzufahren.</string>
+    <string name="notif_paused_title">Downloads pausiert</string>
+    <string name="notif_preparing">Download wird vorbereitet</string>
+    <string name="notif_ready_body">Zum Download eingereiht. Tippe zum Starten.</string>
+    <string name="notif_ready_one">Bereit: %1$s</string>
+    <string name="notif_sched_body">Tippe zum Starten. Erlaube \"Wecker &amp; Erinnerungen\", damit sie automatisch starten.</string>
+    <string name="notif_sched_title">Geplante Downloads können starten</string>
+    <string name="notif_waiting_resume">%1$s – wird automatisch fortgesetzt</string>
+    <string name="player_error_body">Wiedergabe gestoppt (%1$s). Ein anderer Videoplayer kann es vielleicht abspielen.</string>
+    <string name="player_keep_watching">Weiter ansehen</string>
+    <string name="player_network_body">Die Verbindung ist abgebrochen oder der Link ist abgelaufen. Versuch es erneut oder prüfe deine Verbindung.</string>
+    <string name="player_network_title">Video konnte nicht geladen werden</string>
+    <string name="player_next">Als Nächstes: %1$s</string>
+    <string name="player_next_failed">Die nächste Folge konnte nicht geladen werden.</string>
+    <string name="player_no_audio_body">Das Audioformat dieses Videos wird auf diesem Gerät nicht unterstützt; es liefe ohne Ton. VLC oder ein anderer Player spielt den Ton ab.</string>
+    <string name="player_play_now">Jetzt abspielen</string>
+    <string name="player_start_over">↺ Von vorn</string>
+    <string name="player_unsupported_body">Dieses Gerät kann das Video im DebForge-Player nicht dekodieren. VLC oder ein anderer Player schafft das meist.</string>
+    <string name="player_unsupported_title">Hier nicht abspielbar</string>
+    <string name="poster_banner">Füge einen kostenlosen TMDB-Schlüssel hinzu, um Poster und Beschreibungen zu sehen</string>
+    <string name="poster_banner_action">Einrichten</string>
+    <string name="poster_downloaded">✓ Heruntergeladen</string>
+    <string name="poster_file_tag">DATEI</string>
+    <string name="poster_movie_tag">FILM</string>
+    <string name="poster_series_tag">SERIE</string>
+    <string name="poster_setup_bad_format">Das sieht nicht wie ein TMDB-Schlüssel aus. Kopiere das API Read Access Token oder den 32-stelligen API-Schlüssel.</string>
+    <string name="poster_setup_body">DebForge holt Poster und Beschreibungen von TMDB, einer kostenlosen Film- und Seriendatenbank. Dafür brauchst du einen eigenen kostenlosen Schlüssel – das dauert etwa zwei Minuten:</string>
+    <string name="poster_setup_check">Prüfen und speichern</string>
+    <string name="poster_setup_done">Poster sind aktiviert</string>
+    <string name="poster_setup_open">TMDB öffnen</string>
+    <string name="poster_setup_paste">Einfügen</string>
+    <string name="poster_setup_rejected">TMDB hat diesen Schlüssel nicht akzeptiert. Prüfe, ob du ihn vollständig kopiert hast.</string>
+    <string name="poster_setup_save_anyway">Trotzdem speichern</string>
+    <string name="poster_setup_step1">Öffne TMDB und melde dich an oder erstelle ein kostenloses Konto.</string>
+    <string name="poster_setup_step2">Beantrage unter API einen Schlüssel für die private Nutzung.</string>
+    <string name="poster_setup_step3">Kopiere das „API Read Access Token“ (oder den API-Schlüssel) und füge es unten ein.</string>
+    <string name="poster_setup_title">Poster aktivieren</string>
+    <string name="poster_setup_unreachable">TMDB war zum Prüfen des Schlüssels nicht erreichbar.</string>
+    <string name="processing_auto_when_ready">Automatisch laden, sobald bereit</string>
+    <string name="processing_on">Wird auf %1$s verarbeitet</string>
+    <string name="processing_will_auto">Wird automatisch geladen</string>
+    <string msgid="5941395253238309765" name="range_end">"Bereichsende"</string>
+    <string msgid="7097486360902471446" name="range_start">"Bereichsstart"</string>
+    <string name="remove_body">„%1$s“ wird aus deinem %2$s-Konto gelöscht. Bereits auf diesem Handy gespeicherte Dateien bleiben erhalten. Nicht abgeschlossene Downloads davon werden abgebrochen.</string>
+    <string name="remove_title">Von %1$s entfernen?</string>
+    <string name="restore_failed">Wiederherstellung fehlgeschlagen: %1$s</string>
+    <string name="restore_folder_skipped">Der Download-Ordner wurde nicht wiederhergestellt: Ein auf einem anderen Handy gewählter Ordner kann hier nicht verwendet werden. Wähle ihn in den Einstellungen erneut.</string>
+    <string name="restore_needs_password">Diese Sicherung enthält Anmeldungen. Gib ihr Passwort ein, um sie wiederherzustellen, oder stelle nur die Einstellungen wieder her.</string>
+    <string name="restore_newer">Diese Sicherung wurde mit einer neueren Version von DebForge erstellt. Aktualisiere zuerst die App.</string>
+    <string name="restore_not_backup">Diese Datei ist keine DebForge-Sicherung.</string>
+    <string name="restore_settings_only">Nur Einstellungen</string>
+    <string name="restore_signins">Bei %1$s angemeldet.</string>
+    <string name="restore_wrong_password">Falsches Passwort</string>
+    <string msgid="6043586758067023" name="selected">"Ausgewählt"</string>
+    <string name="set_alarm_needed">Damit der Download im Hintergrund pünktlich startet, erlaube \"Wecker &amp; Erinnerungen\" für DebForge.</string>
+    <string name="set_app_storage">App-Speicher (keine Berechtigung nötig)</string>
+    <string name="set_appearance">Darstellung</string>
+    <string name="set_auto_delete">Downloads löschen nach</string>
+    <string name="set_auto_delete_confirm_title">Alte Downloads jetzt löschen?</string>
+    <string name="set_auto_delete_detail">nur Dateien, die DebForge geladen hat und noch unter Downloads listet</string>
+    <string name="set_auto_delete_never">Nie</string>
+    <string name="set_auto_delete_now">Jetzt löschen</string>
+    <string name="set_autoplay_next">Nächste Folge automatisch abspielen</string>
+    <string name="set_autoplay_next_detail">Kurz vor Ende einer Folge startet die nächste nach einem Countdown. Aus: Sie wird mit „Jetzt abspielen“ angeboten.</string>
+    <string name="set_change">Ändern</string>
+    <string name="set_charging_only">Nur beim Laden</string>
+    <string name="set_choose_folder">Ordner wählen</string>
+    <string name="set_clipboard_offer">Kopierte Links anbieten</string>
+    <string name="set_clipboard_offer_detail">Wenn du DebForge mit einem kopierten Magnet- oder .torrent-Link öffnest, wird angeboten, ihn hinzuzufügen. Anderer Text wird ignoriert.</string>
+    <string name="set_default_sort">Standardsortierung</string>
+    <string name="set_download_folder">Download-Ordner</string>
+    <string name="set_folder_note">Wähle einen beliebigen Ordner über die Systemauswahl oder einen dieser Ordner. Freigegebene Ordner per Pfad benötigen Zugriff auf alle Dateien.</string>
+    <string name="set_follows">Gefolgte Serien</string>
+    <string name="set_follows_detail">Neue Folgen, die in deinem Konto ankommen, werden automatisch geladen. DebForge prüft alle paar Stunden und immer, wenn die Mediathek lädt.</string>
+    <string name="set_follows_none">Noch keine. Öffne eine Serie in der Mediathek und tippe auf Folgen.</string>
+    <string name="set_from">Von</string>
+    <string name="set_language">Sprache</string>
+    <string name="set_not_signed_in">nicht angemeldet</string>
+    <string name="set_organise">In Ordner Shows / Movies sortieren</string>
+    <string name="set_organise_detail">Shows/The Bear/Season 02, Movies/Oppenheimer (2023) – bereit für Plex, Jellyfin, Kodi.</string>
+    <string name="set_pick_any_folder">Beliebigen Ordner wählen…</string>
+    <string name="set_pick_any_folder_detail">Interner Speicher, SD-Karte oder USB-Stick. Keine besondere Berechtigung.</string>
+    <string name="set_player">Videos abspielen mit</string>
+    <string name="set_player_external">Andere App (VLC, mpv…)</string>
+    <string name="set_player_internal">DebForge-Player</string>
+    <string name="set_posters">Poster</string>
+    <string name="set_posters_change">Schlüssel ändern</string>
+    <string name="set_posters_on">Aktiv. Poster und Beschreibungen kommen von TMDB.</string>
+    <string name="set_posters_remove">Schlüssel entfernen</string>
+    <string name="set_pure_black">Reines Schwarz</string>
+    <string name="set_pure_black_detail">Schwarze Hintergründe im dunklen Modus. Schont OLED-Displays und Akku.</string>
+    <string name="set_refresh_posters">Poster aktualisieren</string>
+    <string name="set_remove_after">Nach dem Download vom Dienst entfernen</string>
+    <string name="set_remove_after_detail">Gibt Torrent-Plätze frei. Ein Torrent wird erst entfernt, wenn alle seine Dateien auf dieses Handy heruntergeladen wurden.</string>
+    <string name="set_schedule">Zeitplan</string>
+    <string name="set_schedule_detail">Nur zwischen den unten angegebenen Uhrzeiten herunterladen (z. B. über Nacht).</string>
+    <string name="set_service">Dienst</string>
+    <string name="set_service_fallback">Dienst</string>
+    <string name="set_show_extras">Zusatzdateien anzeigen</string>
+    <string name="set_show_extras_detail">Notizen der Release-Gruppe (.txt, .nfo), Coverbilder und Sample-Clips in Torrents. Standardmäßig ausgeblendet und beim automatischen Download übersprungen.</string>
+    <string name="set_sign_out">Abmelden</string>
+    <string name="set_sign_out_body">Dein %1$s-Token wird von diesem Gerät entfernt. Tokens für andere Dienste bleiben erhalten. Wartende Downloads von %1$s können ihre Links erst wieder aktualisieren, wenn du dich erneut anmeldest.</string>
+    <string name="set_sign_out_of">Von %1$s abmelden</string>
+    <string name="set_sign_out_q">Von %1$s abmelden?</string>
+    <string name="set_signed_in">angemeldet</string>
+    <string name="set_sort_largest">Größte zuerst</string>
+    <string name="set_sort_newest">Neueste zuerst</string>
+    <string name="set_sort_oldest">Älteste zuerst</string>
+    <string name="set_sort_smallest">Kleinste zuerst</string>
+    <string name="set_speed_detail">Lass Bandbreite für andere in deinem Netzwerk übrig.</string>
+    <string name="set_speed_limit">Geschwindigkeitslimit</string>
+    <string name="set_storage_free">%1$s frei</string>
+    <string name="set_storage_free_unknown">Freier Speicher für diesen Ordner unbekannt</string>
+    <string name="set_theme">Design</string>
+    <string name="set_tmdb_key">TMDB-API-Schlüssel</string>
+    <string name="set_tmdb_note">Die Bilder stammen von TMDB. Füge einen kostenlosen API-Schlüssel oder ein Lesezugriffs-Token von themoviedb.org → Settings → API ein, um Poster zu aktivieren.</string>
+    <string name="set_to">bis</string>
+    <string name="set_when">Wann herunterladen</string>
+    <string name="set_wifi_only">Nur über WLAN</string>
+    <string name="set_wifi_only_detail">Bei mobilen Daten pausieren, im WLAN automatisch fortsetzen.</string>
+    <string name="setup_enter_code_at">Gib diesen Code auf %1$s ein</string>
+    <string name="setup_get_token">%1$s auf %2$s abrufen</string>
+    <string name="setup_intro">Wähle deinen Dienst und melde dich bei %1$s an (mit %2$s).</string>
+    <string name="setup_open_service">%1$s öffnen</string>
+    <string name="setup_or_paste">oder %1$s einfügen</string>
+    <string name="setup_paste">Einfügen</string>
+    <string name="setup_pasted_from">Eingefügt von %1$s</string>
+    <string name="setup_privacy">Dein Zugang (%1$s) wird nur auf diesem Gerät verschlüsselt gespeichert und ausschließlich für Aufrufe der API von %2$s verwendet.</string>
+    <string name="setup_sign_in_with">Mit %1$s anmelden</string>
+    <string name="setup_validate">Prüfen &amp; weiter</string>
+    <string name="setup_waiting_approval">Warte auf Bestätigung…</string>
+    <string name="setup_your_service">deinem Debrid-Dienst</string>
+    <string name="sheet_all_queued">Alle in der Warteschlange</string>
+    <string name="sheet_download_all">Alle herunterladen (%1$d)</string>
+    <string name="sheet_download_season">Staffel herunterladen (%1$d)</string>
+    <string name="sheet_season">Staffel %1$d</string>
+    <string name="sheet_zip_download">.zip herunterladen</string>
+    <string name="sheet_zip_title">Alles als eine .zip</string>
+    <string name="shortcut_add">Hinzufügen</string>
+    <string name="shortcut_resume_all">Alle fortsetzen</string>
+    <string name="sort_largest">Größte</string>
+    <string name="sort_name_az">Name A–Z</string>
+    <string name="sort_name_za">Name Z–A</string>
+    <string name="sort_newest">Neueste</string>
+    <string name="sort_oldest">Älteste</string>
+    <string name="sort_smallest">Kleinste</string>
+    <string name="space_body">Benötigt werden %1$s, in %3$s sind aber nur %2$s frei. Downloads, die nicht passen, stoppen mit einem Fehler; nach dem Freigeben von Speicher kannst du sie erneut starten.</string>
+    <string name="space_queue_anyway">Trotzdem hinzufügen</string>
+    <string name="space_title">Nicht genug Speicherplatz</string>
+    <string name="speed_mbps">%1$d MB/s</string>
+    <string name="speed_unlimited">Unbegrenzt</string>
+    <string name="state_done">Fertig</string>
+    <string name="state_downloading">Wird geladen</string>
+    <string msgid="4139871816613051306" name="state_empty">"Leer"</string>
+    <string name="state_failed">Fehlgeschlagen</string>
+    <string msgid="5834637030682409883" name="state_off">"Aus"</string>
+    <string msgid="1490883874751719580" name="state_on">"An"</string>
+    <string name="state_paused">Pausiert</string>
+    <string name="state_queued">In Warteschlange</string>
+    <string msgid="6277540029070332960" name="status_bar_notification_info_overflow">"999+"</string>
+    <string name="storage_body">Wähle einen Ordner: interner Speicher, SD-Karte oder USB-Stick, ohne besondere Berechtigung. Oder erlaube \"Zugriff auf alle Dateien\", um per Pfad in Movies zu speichern, oder nutze den eigenen Speicher von DebForge (wird beim Deinstallieren der App gelöscht).</string>
+    <string name="storage_grant">Zugriff gewähren</string>
+    <string name="storage_internal">Interner Speicher</string>
+    <string name="storage_pick_folder">Ordner wählen</string>
+    <string name="storage_sd">SD-Karte</string>
+    <string name="storage_title">Wo sollen Dateien gespeichert werden?</string>
+    <string name="storage_use_app">App-Speicher verwenden</string>
+    <string name="subtitle_forced">Erzwungen</string>
+    <string msgid="2561197295334830845" name="switch_role">"Wechseln"</string>
+    <string msgid="1672349317127674378" name="tab">"Tab"</string>
+    <string name="tab_downloads">Downloads</string>
+    <string name="tab_library">Mediathek</string>
+    <string name="tab_settings">Einstellungen</string>
+    <string msgid="5946805113151406391" name="template_percent">"<ns1:g id="PERCENTAGE">%1$d</ns1:g> Prozent."</string>
+    <string name="theme_amethyst">Amethyst</string>
+    <string name="theme_aurora">Polarlicht</string>
+    <string name="theme_dark">Dunkel</string>
+    <string name="theme_ember">Glut</string>
+    <string name="theme_forest">Wald</string>
+    <string name="theme_graphite">Graphit</string>
+    <string name="theme_light">Hell</string>
+    <string name="theme_ocean">Ozean</string>
+    <string name="theme_rose">Rose</string>
+    <string name="theme_system">System</string>
+    <string name="theme_wallpaper">Hintergrundbild</string>
+    <string name="tile_idle">Keine Downloads</string>
+    <string name="tile_label">Downloads</string>
+    <string name="token_api_key">API-Schlüssel</string>
+    <string name="token_api_token">API-Token</string>
+    <string msgid="3765533235322692011" name="tooltip_description">"Kurzinfo"</string>
+    <string msgid="3124740595719787496" name="tooltip_label">"Kurzinfo anzeigen"</string>
+    <string name="update_banner">DebForge %1$s ist verfügbar</string>
+    <string name="usage_by_service">Diesen Monat nach Dienst</string>
+    <string name="usage_chart_desc">Balkendiagramm der heruntergeladenen Daten der letzten %1$d Tage. Aktivster Tag: %2$s.</string>
+    <string name="usage_last_days">Letzte %1$d Tage</string>
+    <string name="usage_mobile">Mobile Daten</string>
+    <string name="usage_reset">Statistik zurücksetzen</string>
+    <string name="usage_reset_q">Statistik zur Datennutzung zurücksetzen?</string>
+    <string name="usage_split">WLAN %1$s · Mobile Daten %2$s</string>
+    <string name="usage_this_month">%1$s diesen Monat</string>
+    <string name="usage_title">Datennutzung</string>
+    <string name="usage_today">Heute</string>
+    <string name="usage_wifi">WLAN</string>
+    <string name="wait_charger">Warte auf Ladegerät</string>
+    <string name="wait_network">Warte auf Netzwerk</string>
+    <string name="wait_schedule">Warte auf geplante Uhrzeit</string>
+    <string name="wait_wifi">Warte auf WLAN</string>
+    <string name="watched">✓ Gesehen</string>
+    <string name="widget_description">Was gerade lädt, mit „Alle pausieren“ und „Hinzufügen“</string>
+    <string name="widget_idle">Keine Downloads</string>
+    <string name="widget_idle_hint">Tippe auf Hinzufügen, um einen Magnet oder Link an deinen Dienst zu senden.</string>
+    <string name="widget_label">DebForge-Downloads</string>
+    <string name="widget_progress">%1$s von %2$s · %3$d %%</string>
+</resources>

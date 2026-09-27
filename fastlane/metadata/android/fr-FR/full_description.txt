@@ -1,0 +1,40 @@
+DebForge télécharge les fichiers de votre compte debrid directement sur votre téléphone, votre tablette ou votre Android TV. Connectez-vous à un ou plusieurs services et passez de l'un à l'autre à tout moment.
+
+<b>Services pris en charge</b>
+<ul>
+<li>TorBox</li>
+<li>Real-Debrid</li>
+<li>AllDebrid</li>
+<li>Premiumize</li>
+<li>Debrid-Link</li>
+</ul>
+
+<b>Fonctionnalités</b>
+<ul>
+<li>Téléchargements rapides avec jusqu'à 16 connexions par fichier, pause et reprise, et actualisation automatique des liens</li>
+<li>Bibliothèque avec des titres épurés, des séries regroupées par saison et une recherche dans tout votre compte</li>
+<li>Affiches de TMDB (ajoutez votre propre clé API gratuite dans les Paramètres)</li>
+<li>Ajoutez des liens magnet, des fichiers .torrent et des liens depuis l'application ou en les partageant vers elle, et téléchargez-les éventuellement dès qu'ils sont prêts</li>
+<li>Lecteur intégré qui retient où vous vous êtes arrêté, rangée « Reprendre », sous-titres du torrent et épisode suivant prêt ; ou lisez avec VLC et d'autres si vous préférez</li>
+<li>Suivez une série : les nouveaux épisodes qui arrivent sur votre compte se téléchargent tout seuls</li>
+<li>Widget d'écran d'accueil, tuile Réglages rapides et raccourcis</li>
+<li>Connecté à plusieurs services ? Ajoutez à celui qui l'a déjà en cache</li>
+<li>Vérification de l'espace libre avant de télécharger et suppression automatique facultative des anciens téléchargements</li>
+<li>Les notes du groupe de release, jaquettes et extraits restent hors de votre bibliothèque</li>
+<li>Règles : Wi-Fi uniquement, uniquement en charge, plage horaire nocturne et limite de vitesse</li>
+<li>Enregistrement dans n'importe quel dossier, y compris cartes SD et clés USB, sans autorisation spéciale</li>
+<li>Supprimez les torrents de votre service depuis l'application, ou automatiquement une fois téléchargés</li>
+<li>Vérifiez si un torrent est déjà en cache avant de l'ajouter (TorBox, Premiumize)</li>
+<li>Statistiques de consommation des données en Wi-Fi et en données mobiles</li>
+<li>Sauvegarde et restauration de vos paramètres, avec connexions chiffrées par mot de passe en option</li>
+<li>Organisation des dossiers compatible Plex/Jellyfin pour les séries et les films, en option</li>
+<li>Téléchargez un torrent TorBox entier en un seul zip</li>
+<li>Fonctionne sur téléphones, tablettes et Android TV</li>
+<li>Sept thèmes de couleur, clair et sombre, noir pur pour les écrans OLED ou les couleurs de votre fond d'écran</li>
+<li>Disponible en 14 langues</li>
+</ul>
+
+<b>Confidentialité</b>
+Les clés API sont chiffrées avec l'Android Keystore et ne sont jamais incluses dans les sauvegardes. Aucune statistique d'utilisation, aucune publicité. Si l'application plante, un rapport sans jetons, liens ni noms de fichiers est conservé sur votre appareil, et il n'est envoyé que si vous choisissez de le partager.
+
+DebForge nécessite un compte auprès d'au moins un des services ci-dessus. Ce sont des services payants et propriétaires, c'est pourquoi F-Droid signale l'application avec l'anti-fonctionnalité « Non-Free Network Services ».

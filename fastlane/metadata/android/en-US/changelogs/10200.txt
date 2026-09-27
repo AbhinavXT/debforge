@@ -1,0 +1,7 @@
+• Built-in player: resumes where you stopped, Continue watching, subtitles from the torrent, next episode, fresh links when one expires. VLC & co. still one setting away
+• Follow a show: new episodes download by themselves
+• Home-screen widget, Quick Settings tile and shortcuts
+• Add to whichever signed-in service has it cached
+• Free-space checks and optional auto-delete
+• Release-group .txt files, covers and samples hidden
+• Guided poster setup

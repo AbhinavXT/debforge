@@ -1,0 +1,40 @@
+DebForge, debrid hesabınızdaki dosyaları doğrudan telefonunuza, tabletinize veya Android TV'nize indirir. Bir veya daha fazla hizmete giriş yapın ve istediğiniz zaman aralarında geçiş yapın.
+
+<b>Desteklenen hizmetler</b>
+<ul>
+<li>TorBox</li>
+<li>Real-Debrid</li>
+<li>AllDebrid</li>
+<li>Premiumize</li>
+<li>Debrid-Link</li>
+</ul>
+
+<b>Özellikler</b>
+<ul>
+<li>Dosya başına 16 bağlantıya kadar hızlı indirme, duraklatma ve devam ettirme, otomatik bağlantı yenileme</li>
+<li>Düzenli başlıklar, sezonlara göre gruplanmış diziler ve tüm hesabınızda arama içeren kitaplık görünümü</li>
+<li>TMDB'den posterler (Ayarlar'a kendi ücretsiz API anahtarınızı ekleyin)</li>
+<li>Magnet bağlantıları, .torrent dosyaları ve bağlantıları uygulamadan ya da uygulamaya paylaşarak ekleyin; isterseniz hazır olur olmaz indirilsin</li>
+<li>Kaldığınız yeri hatırlayan yerleşik oynatıcı: İzlemeye devam et satırı, torrentteki altyazılar ve hazır bekleyen sonraki bölüm; isterseniz VLC ve diğerleri</li>
+<li>Bir diziyi takip edin, hesabınıza gelen yeni bölümler kendiliğinden insin</li>
+<li>Ana ekran widget'ı, Hızlı Ayarlar kutucuğu ve kısayollar</li>
+<li>Birden fazla hizmette misiniz? Zaten önbellekte olana ekleyin</li>
+<li>İndirmeden önce boş alan denetimi ve eski indirmeleri isteğe bağlı otomatik silme</li>
+<li>Yayın grubu notları, kapaklar ve örnek klipler kitaplığınıza girmez</li>
+<li>Yalnızca Wi-Fi, yalnızca şarj olurken, gece saat aralığı ve hız sınırı kuralları</li>
+<li>SD kartlar ve USB sürücüler dahil herhangi bir klasöre özel izin gerekmeden kaydedin</li>
+<li>Torrent'leri hizmetinizden uygulama içinde veya indirildikten sonra otomatik olarak kaldırın</li>
+<li>Bir torrent'i eklemeden önce önbellekte olup olmadığını görün (TorBox, Premiumize)</li>
+<li>Wi-Fi ve mobil veri için veri kullanımı istatistikleri</li>
+<li>Ayarlarınızı yedekleyin ve geri yükleyin; giriş bilgileri isteğe bağlı olarak şifreyle korunur</li>
+<li>Diziler ve filmler için isteğe bağlı Plex/Jellyfin klasör düzeni</li>
+<li>Bir TorBox torrent'inin tamamını tek bir zip olarak indirin</li>
+<li>Telefonlarda, tabletlerde ve Android TV'de çalışır</li>
+<li>Yedi renk teması, açık ve koyu, OLED için saf siyah veya duvar kağıdınızın renkleri</li>
+<li>14 dilde kullanılabilir</li>
+</ul>
+
+<b>Gizlilik</b>
+API anahtarları Android Keystore ile şifrelenir ve yedeklere asla dahil edilmez. Analiz ve reklam yoktur. Uygulama çökerse token'ların, bağlantıların ve dosya adlarının çıkarıldığı bir rapor cihazınızda saklanır ve yalnızca siz paylaşmayı seçerseniz gönderilir.
+
+DebForge, yukarıdaki hizmetlerden en az birinde hesap gerektirir. Bunlar ücretli ve özel mülk hizmetler olduğundan F-Droid, uygulamayı "Non-Free Network Services" (Özgür Olmayan Ağ Hizmetleri) anti-özelliğiyle işaretler.
