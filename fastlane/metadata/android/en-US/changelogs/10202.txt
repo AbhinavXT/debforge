@@ -1,0 +1,2 @@
+Build output no longer included in the source tree
+Stop tracking build output, Gradle cache and local.properties
