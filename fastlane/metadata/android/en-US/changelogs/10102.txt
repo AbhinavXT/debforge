@@ -1,6 +1,6 @@
-• First release on F-Droid and Obtainium: the same signed APK everywhere, so you can switch between them
+• First release on F-Droid and Obtainium, with the same signed APK everywhere
 • New and finished torrents show up in the Library without pulling to refresh
+• Download rules apply instantly: turning off Wi-Fi only or the schedule resumes downloads, and scheduled downloads start on time, even after a restart
 • Posters now use your own free TMDB key (Settings → Posters)
-• The built-in update check switches itself off when F-Droid or Obtainium keeps DebForge updated
-• Check for updates and share crash reports from Settings → About
-• DebForge is now open source under GPL-3.0
+• Update check and crash reports in Settings → About
+• Now open source under GPL-3.0

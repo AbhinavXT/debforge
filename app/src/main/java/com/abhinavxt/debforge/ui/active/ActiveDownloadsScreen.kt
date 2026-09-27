@@ -40,6 +40,7 @@ import java.io.File
 @Composable
 fun ActiveDownloadsScreen(viewModel: ActiveDownloadsViewModel = hiltViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val scheduledStart by viewModel.scheduledStartHour.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
@@ -63,6 +64,10 @@ fun ActiveDownloadsScreen(viewModel: ActiveDownloadsViewModel = hiltViewModel())
             modifier = Modifier.padding(padding).fillMaxSize(),
             contentPadding = PaddingValues(vertical = 8.dp)
         ) {
+            val start = scheduledStart
+            if (start != null && grouped[DownloadState.QUEUED].orEmpty().isNotEmpty()) {
+                item(key = "schedule-notice") { ScheduleNotice(start) }
+            }
             // Display order: action-needed states first.
             SECTION_ORDER.forEach { sectionState ->
                 val rows = grouped[sectionState].orEmpty()
@@ -145,6 +150,22 @@ private fun DownloadingRow(row: ActiveRow, vm: ActiveDownloadsViewModel) {
             TextButton(onClick = { vm.cancel(row.id) }) { Text(stringResource(R.string.action_cancel)) }
         }
     )
+}
+
+/** "Outside your download hours. Queued files start at 01:00." */
+@Composable
+private fun ScheduleNotice(startHour: Int) {
+    Surface(
+        color = MaterialTheme.colorScheme.secondaryContainer,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Text(
+            stringResource(R.string.dl_schedule_notice, "%02d:00".format(startHour)),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSecondaryContainer,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)
+        )
+    }
 }
 
 @Composable

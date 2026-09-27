@@ -3,6 +3,7 @@ package com.abhinavxt.debforge.ui.settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.abhinavxt.debforge.data.metadata.MetadataRepository
+import com.abhinavxt.debforge.download.DownloadScheduler
 import com.abhinavxt.debforge.data.prefs.SettingsStore
 import com.abhinavxt.debforge.data.prefs.DownloadRules
 import com.abhinavxt.debforge.data.provider.AccountInfo
@@ -41,7 +42,8 @@ data class SettingsUiState(
 class SettingsViewModel @Inject constructor(
     private val settingsStore: SettingsStore,
     private val auth: AuthRepository,
-    private val metadata: MetadataRepository
+    private val metadata: MetadataRepository,
+    private val downloadScheduler: DownloadScheduler
 ) : ViewModel() {
 
     val dynamicColor: StateFlow<Boolean> = settingsStore.dynamicColorFlow.stateIn(
@@ -74,10 +76,24 @@ class SettingsViewModel @Inject constructor(
     )
 
     fun setOrganizeLibrary(v: Boolean) = viewModelScope.launch { settingsStore.setOrganizeLibrary(v) }
-    fun setWifiOnly(v: Boolean) = viewModelScope.launch { settingsStore.setWifiOnly(v) }
-    fun setChargingOnly(v: Boolean) = viewModelScope.launch { settingsStore.setChargingOnly(v) }
-    fun setSchedule(enabled: Boolean, start: Int, end: Int) =
-        viewModelScope.launch { settingsStore.setSchedule(enabled, start, end) }
+    // After a rule changes, make sure queued work runs (or keeps waiting)
+    // under the new rule. The app is visible here, which Android requires to
+    // (re)start the download job.
+    fun setWifiOnly(v: Boolean) = viewModelScope.launch {
+        settingsStore.setWifiOnly(v)
+        downloadScheduler.ensureRunning()
+    }
+    fun setChargingOnly(v: Boolean) = viewModelScope.launch {
+        settingsStore.setChargingOnly(v)
+        downloadScheduler.ensureRunning()
+    }
+    // Turning the schedule off, or moving the window over "now", starts
+    // queued downloads at once; otherwise the wake-up alarm moves to the new
+    // start time.
+    fun setSchedule(enabled: Boolean, start: Int, end: Int) = viewModelScope.launch {
+        settingsStore.setSchedule(enabled, start, end)
+        downloadScheduler.ensureRunning()
+    }
     fun setSpeedLimit(kbps: Int) = viewModelScope.launch { settingsStore.setSpeedLimitKbps(kbps) }
 
     fun setDynamicColor(enabled: Boolean) = viewModelScope.launch { settingsStore.setDynamicColor(enabled) }

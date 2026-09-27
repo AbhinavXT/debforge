@@ -8,6 +8,8 @@ import com.abhinavxt.debforge.domain.DownloadProgress
 import com.abhinavxt.debforge.domain.DownloadState
 import com.abhinavxt.debforge.download.DownloadController
 import com.abhinavxt.debforge.download.DownloadProgressTracker
+import com.abhinavxt.debforge.download.conditions.Block
+import com.abhinavxt.debforge.download.conditions.DownloadConditions
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -54,8 +56,17 @@ data class ActiveUiState(
 class ActiveDownloadsViewModel @Inject constructor(
     private val downloadDao: DownloadDao,
     progressTracker: DownloadProgressTracker,
-    private val controller: DownloadController
+    private val controller: DownloadController,
+    conditions: DownloadConditions
 ) : ViewModel() {
+
+    /**
+     * Start hour of the download window while the schedule is holding the
+     * queue, else null. Queued rows alone just say "Waiting"; this explains why.
+     */
+    val scheduledStartHour: StateFlow<Int?> = combine(conditions.blocked, conditions.rules) { block, rules ->
+        rules.scheduleStartHour.takeIf { block == Block.OUTSIDE_SCHEDULE }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     val state: StateFlow<ActiveUiState> = combine(
         downloadDao.observeAll(),

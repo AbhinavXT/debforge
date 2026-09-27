@@ -65,3 +65,31 @@ class ScheduleAlarmReceiver : BroadcastReceiver() {
         }
     }
 }
+
+/**
+ * Android forgets alarms on reboot, and a time or time-zone change moves the
+ * local hour the window alarm was computed for. Re-arm it in those cases.
+ */
+@AndroidEntryPoint
+class ScheduleRearmReceiver : BroadcastReceiver() {
+
+    @Inject lateinit var scheduler: DownloadScheduler
+
+    override fun onReceive(context: Context, intent: Intent) {
+        when (intent.action) {
+            Intent.ACTION_BOOT_COMPLETED,
+            Intent.ACTION_MY_PACKAGE_REPLACED,
+            Intent.ACTION_TIME_CHANGED,
+            Intent.ACTION_TIMEZONE_CHANGED -> Unit
+            else -> return
+        }
+        val pending = goAsync()
+        CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
+            try {
+                scheduler.rearmScheduleAlarm()
+            } finally {
+                pending.finish()
+            }
+        }
+    }
+}

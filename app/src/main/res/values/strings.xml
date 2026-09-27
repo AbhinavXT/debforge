@@ -253,4 +253,5 @@
     <string name="crash_share">Share report</string>
     <string name="crash_delete">Delete</string>
     <string name="crash_share_subject">DebForge crash report</string>
+    <string name="dl_schedule_notice">Outside your download hours. Queued files start at %1$s. You can change the hours or turn the schedule off in Settings.</string>
 </resources>

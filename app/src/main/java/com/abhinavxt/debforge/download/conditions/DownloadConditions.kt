@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.stateIn
 import java.util.Calendar
@@ -73,20 +74,25 @@ class PowerMonitor @Inject constructor(@ApplicationContext private val context: 
  */
 @Singleton
 class DownloadConditions @Inject constructor(
-    settings: SettingsStore,
-    network: NetworkMonitor,
-    power: PowerMonitor
+    private val settings: SettingsStore,
+    private val network: NetworkMonitor,
+    private val power: PowerMonitor
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     val rules: StateFlow<DownloadRules> = settings.downloadRulesFlow
         .stateIn(scope, SharingStarted.Eagerly, DownloadRules())
 
-    /** Re-evaluates the schedule once a minute. */
+    /**
+     * Re-evaluates the schedule on every minute boundary (not every 60 s from
+     * whenever the process started), so a window that ends at 07:00 is seen
+     * at 07:00:00 rather than up to a minute later.
+     */
     private val minuteTicks = flow {
         while (true) {
-            emit(System.currentTimeMillis())
-            delay(60_000)
+            val now = System.currentTimeMillis()
+            emit(now)
+            delay(60_000 - now % 60_000 + 50)
         }
     }
 
@@ -101,23 +107,39 @@ class DownloadConditions @Inject constructor(
 
     fun currentBlock(): Block? = blocked.value
 
+    /**
+     * Like [currentBlock], but re-evaluated right now from the latest saved
+     * settings and the current clock. [blocked] can lag: the schedule is only
+     * re-checked once a minute, and a setting saved a moment ago may not have
+     * reached [rules] yet. Use this for start/stop decisions (alarm at window
+     * start, a rule just changed in Settings).
+     */
+    suspend fun freshBlock(now: Long = System.currentTimeMillis()): Block? =
+        evaluate(settings.downloadRulesFlow.first(), network.online.value, network.unmetered.value, power.charging.value, now)
+
+    /** Latest saved rules (not the possibly-lagging [rules] snapshot). */
+    suspend fun freshRules(): DownloadRules = settings.downloadRulesFlow.first()
+
     /** Is [now] inside the user's download window? Always true when the schedule is off. */
     fun inWindow(now: Long = System.currentTimeMillis()): Boolean = inWindow(rules.value, now)
 
     /** Millis of the next window start (for the wake-up alarm). */
-    fun nextWindowStart(now: Long = System.currentTimeMillis()): Long {
-        val cal = Calendar.getInstance().apply {
-            timeInMillis = now
-            set(Calendar.HOUR_OF_DAY, rules.value.scheduleStartHour)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 5)
-            set(Calendar.MILLISECOND, 0)
-        }
-        if (cal.timeInMillis <= now) cal.add(Calendar.DAY_OF_YEAR, 1)
-        return cal.timeInMillis
-    }
+    fun nextWindowStart(r: DownloadRules = rules.value, now: Long = System.currentTimeMillis()): Long =
+        nextWindowStart(r.scheduleStartHour, now)
 
     companion object {
+        fun nextWindowStart(startHour: Int, now: Long): Long {
+            val cal = Calendar.getInstance().apply {
+                timeInMillis = now
+                set(Calendar.HOUR_OF_DAY, startHour)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 5)
+                set(Calendar.MILLISECOND, 0)
+            }
+            if (cal.timeInMillis <= now) cal.add(Calendar.DAY_OF_YEAR, 1)
+            return cal.timeInMillis
+        }
+
         fun evaluate(r: DownloadRules, online: Boolean, unmetered: Boolean, charging: Boolean, now: Long): Block? = when {
             r.scheduleEnabled && !inWindow(r, now) -> Block.OUTSIDE_SCHEDULE
             !online -> Block.NO_NETWORK
