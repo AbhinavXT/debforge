@@ -1,0 +1,5 @@
+• First release on F-Droid and Obtainium: the same signed APK everywhere, so you can switch between them
+• Posters now use your own free TMDB key (Settings → Posters)
+• The built-in update check switches itself off when F-Droid or Obtainium keeps DebForge updated
+• Check for updates and share crash reports from Settings → About
+• DebForge is now open source under GPL-3.0

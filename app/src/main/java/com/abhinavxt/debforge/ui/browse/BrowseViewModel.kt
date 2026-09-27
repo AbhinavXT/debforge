@@ -11,6 +11,7 @@ import com.abhinavxt.debforge.data.metadata.MetadataRepository
 import com.abhinavxt.debforge.data.provider.RemoteJob
 import com.abhinavxt.debforge.download.watch.ReadyWatcher
 import android.net.Uri
+import android.os.SystemClock
 import kotlinx.coroutines.delay
 import com.abhinavxt.debforge.data.prefs.SettingsStore
 import com.abhinavxt.debforge.data.repository.AuthRepository
@@ -131,6 +132,12 @@ class BrowseViewModel @Inject constructor(
     private var nextPage = 1
     private var loadJob: Job? = null
 
+    /** How many items came from page 1 last time, so a quiet refresh knows what to replace. */
+    private var firstPageCount = 0
+    /** elapsedRealtime of the last successful page-1 load; 0 = never. */
+    private var lastListLoad = 0L
+    private var quietJob: Job? = null
+
     init {
         // Something was added from the Add dialog: confirm it and reload so
         // cached torrents (ready instantly on TorBox) appear right away.
@@ -174,6 +181,7 @@ class BrowseViewModel @Inject constructor(
         // provider (or previous refresh) can't land in the new list.
         loadJob?.cancel()
         searchJob?.cancel()
+        quietJob?.cancel()
         nextPage = 1
         _state.update {
             it.copy(items = emptyList(), endReached = false, error = null, isInitialLoad = true, isAppending = false)
@@ -183,6 +191,8 @@ class BrowseViewModel @Inject constructor(
             when (val result = downloadsRepository.getDownloadsPage(p, 1)) {
                 is DataResult.Success -> {
                     nextPage = 2
+                    firstPageCount = result.data.items.size
+                    lastListLoad = SystemClock.elapsedRealtime()
                     _state.update {
                         it.copy(
                             items = result.data.items,
@@ -198,6 +208,35 @@ class BrowseViewModel @Inject constructor(
                     _state.update { it.copy(isInitialLoad = false, error = result.message) }
                 }
             }
+        }
+    }
+
+    /**
+     * Re-reads page 1 in place: new items appear at the top and finished ones
+     * that were deleted drop out, without clearing the list, showing a spinner
+     * or losing the scroll position. Pages loaded further down are kept.
+     */
+    private fun refreshQuietly() {
+        val p = provider ?: return
+        val s = _state.value
+        // A full load, a page append or the search fill owns the list right now.
+        if (s.isInitialLoad || lastListLoad == 0L) return
+        if (loadJob?.isActive == true || searchJob?.isActive == true || quietJob?.isActive == true) return
+        quietJob = viewModelScope.launch {
+            val result = downloadsRepository.getDownloadsPage(p, 1)
+            if (result !is DataResult.Success || p != provider) return@launch
+            val fresh = result.data.items
+            _state.update { current ->
+                val onlyFirstPage = current.items.size <= firstPageCount
+                val merged = mergeFirstPage(current.items, firstPageCount, fresh) { it.id }
+                current.copy(
+                    items = merged,
+                    error = null,
+                    endReached = if (onlyFirstPage) !result.data.hasMore else current.endReached
+                )
+            }
+            firstPageCount = fresh.size
+            lastListLoad = SystemClock.elapsedRealtime()
         }
     }
 
@@ -292,13 +331,25 @@ class BrowseViewModel @Inject constructor(
     fun dismissExpiryWarning() = _state.update { it.copy(expiryWarning = null) }
 
     private fun loadProcessing() {
-        val p = provider ?: return
+        provider ?: return
         processingJob?.cancel()
-        processingJob = viewModelScope.launch {
-            // Failures here are non-fatal: the strip just stays as it was.
-            val r = downloadsRepository.listProcessing(p)
-            if (r is DataResult.Success) _processing.value = r.data
-        }
+        processingJob = viewModelScope.launch { updateProcessing() }
+    }
+
+    /**
+     * Refreshes the processing strip. Returns true when a job that was
+     * processing has left the list, i.e. it finished (or was deleted), so its
+     * files should now be in the library. Failures are non-fatal: the strip
+     * just stays as it was.
+     */
+    private suspend fun updateProcessing(): Boolean {
+        val p = provider ?: return false
+        val r = downloadsRepository.listProcessing(p)
+        if (r !is DataResult.Success || p != provider) return false
+        val before = _processing.value.mapTo(HashSet()) { it.ref }
+        _processing.value = r.data
+        val after = r.data.mapTo(HashSet()) { it.ref }
+        return (before - after).isNotEmpty()
     }
 
     fun isWatched(job: RemoteJob) = "${job.provider.name}|${job.ref}" in watchedJobs.value
@@ -315,25 +366,40 @@ class BrowseViewModel @Inject constructor(
     }
 
     /**
-     * Called from the screen while it's visible (repeatOnLifecycle). Every
-     * 20 s, if anything is processing or watched: refresh the strip and let
-     * the watcher queue anything that finished.
+     * Called from the screen while it's visible (repeatOnLifecycle), so it
+     * stops in the background and restarts on return.
+     *
+     *  - On return: catch up at once if the list is more than a few seconds old.
+     *  - Something processing or watched: check the processing list every
+     *    [BUSY_POLL_MS]; when a job finishes, its files appear immediately.
+     *  - Otherwise: re-read the newest page every [IDLE_POLL_MS], so items
+     *    added on the service's website (or finished there) show up without a
+     *    manual refresh.
+     *
+     * The intervals are deliberately not shorter: TorBox's uncached list call
+     * is its most expensive endpoint and is rate-limited per key.
      */
     suspend fun pollWhileVisible() {
+        if (lastListLoad != 0L && sinceListLoad() > RESUME_STALE_MS) {
+            updateProcessing()
+            refreshQuietly()
+        }
         while (true) {
-            delay(POLL_MS)
-            if (_processing.value.isEmpty() && watchedJobs.value.isEmpty()) continue
-            loadProcessing()
-            val ready = watcher.checkNow(fromBackground = false)
+            val busy = _processing.value.isNotEmpty() || watchedJobs.value.isNotEmpty()
+            delay(if (busy) BUSY_POLL_MS else IDLE_POLL_MS)
+            val finished = updateProcessing()
+            val ready = if (watchedJobs.value.isNotEmpty()) watcher.checkNow(fromBackground = false) else emptyList()
             if (ready.isNotEmpty()) {
                 _events.send(
                     if (ready.size == 1) str(R.string.msg_ready_one, ready.first())
                     else appContext.resources.getQuantityString(R.plurals.msg_ready_many, ready.size, ready.size)
                 )
-                refresh()
             }
+            if (finished || ready.isNotEmpty() || sinceListLoad() >= IDLE_POLL_MS) refreshQuietly()
         }
     }
+
+    private fun sinceListLoad(): Long = SystemClock.elapsedRealtime() - lastListLoad
 
     /** Resolve a streamable link and hand it to an external player. */
     fun play(item: DownloadItem, title: String) {
@@ -417,7 +483,12 @@ class BrowseViewModel @Inject constructor(
     private fun str(id: Int, vararg args: Any): String = appContext.getString(id, *args)
 
     companion object {
-        private const val POLL_MS = 20_000L
+        /** Processing-strip check while something is downloading on the service. */
+        private const val BUSY_POLL_MS = 10_000L
+        /** Newest-page check when nothing is processing (catches website adds). */
+        private const val IDLE_POLL_MS = 60_000L
+        /** Returning to the screen with an older list than this refreshes at once. */
+        private const val RESUME_STALE_MS = 15_000L
         private const val SEARCH_DEBOUNCE_MS = 400L
         /** Stop auto-paging past this many files (very large accounts). */
         private const val SEARCH_CAP = 5_000

@@ -146,7 +146,7 @@
     <string name="theme_system">Follow system</string>
     <string name="theme_light">Light</string>
     <string name="theme_dark">Dark</string>
-    <string name="set_tmdb_note">Artwork comes from TMDB. Paste a free API key or read access token from themoviedb.org → Settings → API. Leave empty to use the built-in key (if any).</string>
+    <string name="set_tmdb_note">Artwork comes from TMDB. Paste a free API key or read access token from themoviedb.org → Settings → API to turn posters on.</string>
     <string name="set_tmdb_key">TMDB API key</string>
     <string name="set_refresh_posters">Refresh posters</string>
     <string name="acct_expired">Premium has expired</string>

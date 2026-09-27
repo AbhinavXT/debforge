@@ -1,0 +1,29 @@
+DebForge downloads the files in your debrid account straight to your phone, tablet or Android TV. Sign in to one or more services and switch between them any time.
+
+<b>Supported services</b>
+<ul>
+<li>TorBox</li>
+<li>Real-Debrid</li>
+<li>AllDebrid</li>
+<li>Premiumize</li>
+<li>Debrid-Link</li>
+</ul>
+
+<b>Features</b>
+<ul>
+<li>Fast downloads with up to 16 connections per file, pause and resume, and automatic link refresh</li>
+<li>Library view with clean titles, series grouped by season, and search across your whole account</li>
+<li>Posters from TMDB (add your own free API key in Settings)</li>
+<li>Add magnet links, .torrent files and links, from the app or by sharing to it, and optionally download them as soon as they're ready</li>
+<li>Stream any file in VLC, MX Player or another video player</li>
+<li>Rules for Wi-Fi only, charging only, a nightly time window and a speed limit</li>
+<li>Optional Plex/Jellyfin folder layout for shows and movies</li>
+<li>Download a whole TorBox torrent as one zip</li>
+<li>Works on phones, tablets and Android TV</li>
+<li>English and Hindi</li>
+</ul>
+
+<b>Privacy</b>
+API keys are encrypted with the Android Keystore and never included in backups. There are no analytics and no ads. If the app crashes, a report with tokens, links and file names removed is kept on your device, and it is only sent if you choose to share it.
+
+DebForge needs an account with at least one of the services above. These are paid, proprietary services, which is why F-Droid marks the app with the "Non-Free Network Services" anti-feature.

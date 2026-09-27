@@ -145,7 +145,7 @@
     <string name="theme_system">सिस्टम के अनुसार</string>
     <string name="theme_light">लाइट</string>
     <string name="theme_dark">डार्क</string>
-    <string name="set_tmdb_note">आर्टवर्क TMDB से आता है। themoviedb.org → Settings → API से मुफ़्त API key या read access token पेस्ट करें। बिल्ट-इन key (अगर हो) के लिए खाली छोड़ें।</string>
+    <string name="set_tmdb_note">पोस्टर TMDB से आते हैं। पोस्टर चालू करने के लिए themoviedb.org → Settings → API से मुफ़्त API key या read access token यहाँ पेस्ट करें।</string>
     <string name="set_tmdb_key">TMDB API key</string>
     <string name="set_refresh_posters">पोस्टर रीफ़्रेश करें</string>
     <string name="acct_expired">प्रीमियम समाप्त हो गया है</string>

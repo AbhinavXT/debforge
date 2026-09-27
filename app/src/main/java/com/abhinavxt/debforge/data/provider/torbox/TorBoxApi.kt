@@ -22,8 +22,10 @@ import retrofit2.http.Query
  * Rate limit: 300 req/min per key.
  *
  * `mylist` supports offset/limit pagination. Its responses are cached
- * server-side for a few seconds; `bypass_cache=true` forces fresh data (we
- * only send it on the first page of a manual refresh).
+ * server-side; `bypass_cache=true` forces fresh data. We send it on page 1
+ * (where new items appear) and for the processing list, and not on later
+ * pages. It is TorBox's most expensive call, which is why the Library polls
+ * at a measured pace (see BrowseViewModel.pollWhileVisible).
  */
 interface TorBoxApi {
 

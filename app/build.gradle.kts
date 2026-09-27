@@ -7,21 +7,6 @@ plugins {
     alias(libs.plugins.hilt)
 }
 
-// --- Version from git ------------------------------------------------------
-// versionName = latest tag without the leading "v" (v1.4.0 -> 1.4.0);
-// versionCode = number of commits, so every build on main counts upward.
-// Both fall back sensibly when git or tags are missing (e.g. a zip download).
-fun git(vararg args: String): String? = runCatching {
-    providers.exec {
-        commandLine("git", *args)
-        isIgnoreExitValue = true
-    }.standardOutput.asText.get().trim().takeIf { it.isNotEmpty() }
-}.getOrNull()
-
-val gitVersionName: String = git("describe", "--tags", "--abbrev=0", "--match", "v*")
-    ?.removePrefix("v") ?: "1.0"
-val gitVersionCode: Int = git("rev-list", "--count", "HEAD")?.toIntOrNull() ?: 1
-
 // --- Secrets: env var first (CI), then local.properties / keystore.properties
 val localProps = Properties().apply {
     rootProject.file("local.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
@@ -51,20 +36,24 @@ android {
         applicationId = "com.abhinavxt.debforge"
         minSdk = 30
         targetSdk = 36
-        versionCode = gitVersionCode
-        versionName = gitVersionName
+        // Plain literals on purpose: F-Droid reads these two lines with a regex
+        // and never runs Gradle, so they must not be computed. Bump them with
+        // `scripts/release.sh X.Y.Z` (also writes the changelog and the tag).
+        // Code scheme: major*10000 + minor*100 + patch, so 1.2.0 is 10200.
+        versionCode = 10200
+        versionName = "1.2.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        // Optional TMDB key for posters: TMDB_API_KEY env var (CI secret) or
-        // local.properties (never committed). Users can also paste one in Settings.
-        val tmdbKey = secret("TMDB_API_KEY", localProps, "TMDB_API_KEY").orEmpty()
-        buildConfigField("String", "TMDB_API_KEY", "\"$tmdbKey\"")
-
         // GitHub "owner/repo" whose Releases the in-app update check reads.
-        // Override with DEBFORGE_GITHUB_REPO or GITHUB_REPO= in local.properties.
-        val repo = secret("DEBFORGE_GITHUB_REPO", localProps, "GITHUB_REPO") ?: "abhinavxt/debforge"
-        buildConfigField("String", "GITHUB_REPO", "\"$repo\"")
+        // A constant (not an env var) so every release build is byte-identical.
+        buildConfigField("String", "GITHUB_REPO", "\"AbhinavXT/debforge\"")
+    }
+
+    // F-Droid rejects the encrypted Google "dependency info" block in APKs.
+    dependenciesInfo {
+        includeInApk = false
+        includeInBundle = false
     }
 
     signingConfigs {
@@ -79,10 +68,23 @@ android {
     }
 
     buildTypes {
+        debug {
+            // Handy for development: TMDB_API_KEY=... in local.properties
+            // (never committed) gives debug builds posters out of the box.
+            val tmdbKey = secret("TMDB_API_KEY", localProps, "TMDB_API_KEY").orEmpty()
+            buildConfigField("String", "TMDB_API_KEY", "\"$tmdbKey\"")
+        }
         release {
             // Unsigned when no keystore is configured; CI and your machine
             // provide one via env vars or keystore.properties.
             if (hasReleaseSigning) signingConfig = signingConfigs.getByName("release")
+            // Reproducible builds: F-Droid rebuilds from the tag and only
+            // publishes our APK if theirs is identical. So nothing machine- or
+            // secret-dependent goes into a release: no bundled TMDB key (users
+            // add their own in Settings), no git metadata, no PNG re-crunching.
+            buildConfigField("String", "TMDB_API_KEY", "\"\"")
+            vcsInfo { include = false }
+            isCrunchPngs = false
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(

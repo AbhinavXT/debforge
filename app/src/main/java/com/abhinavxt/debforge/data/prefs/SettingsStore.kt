@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.abhinavxt.debforge.data.update.InstallSource
 import com.abhinavxt.debforge.domain.SortOrder
 import com.abhinavxt.debforge.domain.ThemeMode
 import kotlinx.coroutines.flow.Flow
@@ -84,8 +85,14 @@ class SettingsStore @Inject constructor(
         )
     }
 
-    /** Look for a new release on launch. On by default; one anonymous GitHub request. */
-    val autoUpdateCheckFlow: Flow<Boolean> = context.settingsDataStore.data.map { it[keyAutoUpdate] ?: true }
+    /**
+     * Look for a new release on launch (one anonymous GitHub request). Defaults
+     * to on for sideloaded installs and off when F-Droid, Obtainium or another
+     * updater installed the app, since that already handles updates.
+     */
+    val autoUpdateCheckFlow: Flow<Boolean> = context.settingsDataStore.data.map {
+        it[keyAutoUpdate] ?: !InstallSource.managedByUpdater(context)
+    }
 
     /** Release tag whose Library banner the user dismissed (Settings still shows it). */
     val dismissedUpdateFlow: Flow<String> = context.settingsDataStore.data.map { it[keyDismissedUpdate].orEmpty() }
