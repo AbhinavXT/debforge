@@ -1,1 +1,0 @@
--keep,allowobfuscation,allowshrinking class com.abhinavxt.debforge.ui.active.ActiveDownloadsViewModel

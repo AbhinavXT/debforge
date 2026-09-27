@@ -1,1 +1,0 @@
-{"className":"com.abhinavxt.debforge.widget.Hilt_DownloadsWidget","classAnnotations":[],"interfaces":[],"superClasses":["android.appwidget.AppWidgetProvider","android.content.BroadcastReceiver","java.lang.Object"]}
