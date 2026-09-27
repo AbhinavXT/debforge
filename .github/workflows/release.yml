@@ -77,7 +77,8 @@ jobs:
           DEBFORGE_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           DEBFORGE_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
-          ./gradlew --stacktrace testReleaseUnitTest assembleRelease
+          # AGP 9 only creates unit-test tasks for the tested build type (debug).
+          ./gradlew --stacktrace testDebugUnitTest assembleRelease
           cp app/build/outputs/apk/release/*.apk "$RUNNER_TEMP/first.apk"
 
       # Cheap guard against non-determinism (the kind that would make F-Droid
