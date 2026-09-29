@@ -489,4 +489,90 @@
         <item quantity="one">Artık %d dizi daha takip ediliyor.</item>
         <item quantity="other">Artık %d dizi daha takip ediliyor.</item>
     </plurals>
+
+    <!-- Picture-in-picture -->
+    <string name="set_pip">Pencere içinde pencere</string>
+    <string name="set_pip_detail">Video oynarken oynatıcıdan çıkarsanız küçük, yüzen bir pencerede devam eder.</string>
+    <string name="player_next_episode">Sonraki bölüm</string>
+
+    <!-- Direct downloads (Pixeldrain, Google Drive, file links) -->
+    <string name="direct_target_name">Doğrudan indirme</string>
+    <string name="direct_title">Doğrudan indir</string>
+    <string name="direct_suggested_hint">Bunlar doğrudan bağlantılar, bu yüzden doğrudan bu cihaza iner. Hizmet gerekmez.</string>
+    <string name="direct_err_web_page">%1$s bir dosya değil, bir web sayfası açıyor.</string>
+    <string name="direct_err_drive">Google Drive bu dosyayı vermiyor: dosya gizli ya da indirme sınırına ulaştı. Daha sonra tekrar deneyin.</string>
+    <string name="direct_err_folder">Klasörler doğrudan indirilemez. Dosyaları tek tek ekleyin.</string>
+    <string name="direct_err_http">%1$s HTTP %2$d yanıtı verdi.</string>
+    <plurals name="direct_added">
+        <item quantity="one">%d dosya indiriliyor</item>
+        <item quantity="other">%d dosya indiriliyor</item>
+    </plurals>
+
+    <!-- Player gestures -->
+    <string name="set_player_gestures">Dokunma hareketleri</string>
+    <string name="set_player_gestures_detail">Atlamak için kenarlara çift dokunun, parlaklık, ses veya sarma için kaydırın, hızlı oynatma için basılı tutun, yakınlaştırmak için sıkıştırın.</string>
+    <plurals name="player_gesture_seek_n">
+        <item quantity="one">%d saniye</item>
+        <item quantity="other">%d saniye</item>
+    </plurals>
+
+    <!-- Player controls -->
+    <string name="player_back">Geri</string>
+    <string name="player_audio">Ses</string>
+    <string name="player_subtitles">Altyazılar</string>
+    <string name="player_subtitles_off">Kapalı</string>
+    <string name="player_speed">Hız</string>
+    <string name="player_lock">Ekranı kilitle</string>
+    <string name="player_slide_to_unlock">Kilidi açmak için kaydırın</string>
+    <string name="player_fit">Sığdır</string>
+    <string name="player_crop">Kırp</string>
+    <string name="player_stretch">Uzat</string>
+    <string name="player_rotate">Döndür</string>
+    <string name="player_no_tracks">Yok</string>
+    <string name="player_normal_speed">Normal</string>
+    <plurals name="player_rewind_n">
+        <item quantity="one">%d saniye geri</item>
+        <item quantity="other">%d saniye geri</item>
+    </plurals>
+    <plurals name="player_forward_n">
+        <item quantity="one">%d saniye ileri</item>
+        <item quantity="other">%d saniye ileri</item>
+    </plurals>
+
+    <!-- Player: languages and subtitle style -->
+    <string name="set_audio_language">Ses dili</string>
+    <string name="set_subtitle_language">Altyazı dili</string>
+    <string name="set_lang_auto">Dosyanın varsayılanı</string>
+    <string name="player_sub_style">Altyazı stili</string>
+    <string name="player_sub_size">Boyut</string>
+    <string name="player_sub_look">Görünüm</string>
+    <string name="player_sub_position">Konum</string>
+    <string name="player_sub_pos_low">Alçak</string>
+    <string name="player_sub_pos_mid">Orta</string>
+    <string name="player_sub_pos_high">Yüksek</string>
+    <string name="player_sub_file_style">Dosyanın kendi stilini koru</string>
+
+    <!-- Player extras: sleep timer, screenshot, A-B loop, background -->
+    <string name="player_more">Daha fazla</string>
+    <string name="player_sleep_timer">Uyku zamanlayıcısı</string>
+    <string name="player_sleep_off">Kapalı</string>
+    <string name="player_sleep_end">Bölüm sonunda</string>
+    <string name="player_sleep_done">Uyku zamanlayıcısı: duraklatıldı</string>
+    <string name="player_screenshot">Ekran görüntüsü</string>
+    <string name="player_screenshot_saved">Ekran görüntüsü Pictures/DebForge klasörüne kaydedildi</string>
+    <string name="player_screenshot_failed">Ekran görüntüsü alınamadı</string>
+    <string name="player_ab_loop">A-B döngüsü</string>
+    <string name="player_ab_set_a">A\'yı (döngü başı) burada ayarla</string>
+    <string name="player_ab_set_b">Döngüyü başlatmak için B\'yi burada ayarla</string>
+    <string name="player_ab_clear">Döngüyü durdur</string>
+    <string name="player_background">Arka planda çalmaya devam et</string>
+    <string name="player_background_detail">Ekran kapalıyken veya başka bir uygulamada ses devam eder</string>
+    <plurals name="player_minutes_n">
+        <item quantity="one">%d dk</item>
+        <item quantity="other">%d dk</item>
+    </plurals>
+    <plurals name="player_sleep_in_n">
+        <item quantity="one">%d dakika sonra duraklatılacak</item>
+        <item quantity="other">%d dakika sonra duraklatılacak</item>
+    </plurals>
 </resources>

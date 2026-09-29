@@ -68,6 +68,8 @@ data class BrowseUiState(
     val expiryWarning: String? = null,
     val renewUrl: String? = null,
     val isInitialLoad: Boolean = true,
+    /** Pull to refresh in progress: the list stays on screen meanwhile. */
+    val isRefreshing: Boolean = false,
     val isAppending: Boolean = false,
     val endReached: Boolean = false,
     val error: String? = null
@@ -90,7 +92,8 @@ class BrowseViewModel @Inject constructor(
     private val followChecker: com.abhinavxt.debforge.download.follow.FollowChecker,
     private val playbackPositions: com.abhinavxt.debforge.data.playback.PlaybackPositions,
     private val subtitleResolver: com.abhinavxt.debforge.player.SubtitleResolver,
-    private val upNext: com.abhinavxt.debforge.player.UpNext
+    private val upNext: com.abhinavxt.debforge.player.UpNext,
+    private val localPlayback: com.abhinavxt.debforge.player.LocalPlayback
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(BrowseUiState())
@@ -222,6 +225,48 @@ class BrowseViewModel @Inject constructor(
                 is DataResult.Error -> {
                     _state.update { it.copy(isInitialLoad = false, error = result.message) }
                 }
+            }
+        }
+    }
+
+    /**
+     * Pull to refresh: reads the list again like [refresh], but keeps the
+     * current one on screen (under the pull indicator) until the new copy
+     * arrives. With nothing shown yet it's a plain [refresh].
+     */
+    fun pullRefresh() {
+        val p = provider ?: return
+        if (_state.value.isInitialLoad || _state.value.items.isEmpty()) {
+            refresh()
+            return
+        }
+        loadJob?.cancel()
+        searchJob?.cancel()
+        quietJob?.cancel()
+        _state.update { it.copy(isRefreshing = true) }
+        loadProcessing()
+        loadJob = viewModelScope.launch {
+            try {
+                when (val result = downloadsRepository.getDownloadsPage(p, 1)) {
+                    is DataResult.Success -> {
+                        nextPage = 2
+                        firstPageCount = result.data.items.size
+                        lastListLoad = SystemClock.elapsedRealtime()
+                        _state.update {
+                            it.copy(
+                                items = result.data.items,
+                                isAppending = false,
+                                endReached = !result.data.hasMore
+                            )
+                        }
+                        if (_state.value.query.isNotBlank()) startSearchFill(debounceMs = 0)
+                        checkFollows(result.data.items)
+                    }
+                    // The old list stays and keeps paging; just say why.
+                    is DataResult.Error -> _events.send(result.message)
+                }
+            } finally {
+                _state.update { it.copy(isRefreshing = false) }
             }
         }
     }
@@ -484,6 +529,11 @@ class BrowseViewModel @Inject constructor(
     /** Resolve a streamable link and hand it to the player. */
     fun play(item: DownloadItem, title: String) {
         viewModelScope.launch {
+            // Downloaded already: play the file on the device (offline, no data).
+            localPlayback.requestFor(item.id)?.let {
+                _playRequests.send(it)
+                return@launch
+            }
             val url = item.downloadUrl ?: when (val r = downloadsRepository.resolveLink(item.provider, item.sourceRef)) {
                 is DataResult.Success -> r.data.url
                 is DataResult.Error -> {
@@ -525,6 +575,11 @@ class BrowseViewModel @Inject constructor(
      */
     fun playSaved(entry: com.abhinavxt.debforge.data.playback.PlaybackEntity) {
         viewModelScope.launch {
+            // Downloaded since (or all along): no link, works offline.
+            localPlayback.requestFor(entry.itemId)?.let {
+                _playRequests.send(it)
+                return@launch
+            }
             val saved = DownloadItem(
                 id = entry.itemId,
                 provider = entry.provider,

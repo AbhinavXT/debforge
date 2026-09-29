@@ -16,6 +16,8 @@ DebForge mengunduh file di akun debrid Anda langsung ke ponsel, tablet, atau And
 <li>Poster dari TMDB (tambahkan API key gratis Anda sendiri di Setelan)</li>
 <li>Tambahkan link magnet, file .torrent, dan link, dari aplikasi atau dengan membagikannya ke aplikasi, lalu unduh otomatis begitu siap jika diinginkan</li>
 <li>Pemutar bawaan yang mengingat posisi terakhir, baris Lanjut menonton, subtitle dari torrent, dan episode berikutnya siap; atau pakai VLC dan lainnya jika mau</li>
+<li>Gestur pemutar (ketuk dua kali untuk melompat, geser untuk kecerahan, volume, dan memajukan, tahan untuk 2×, cubit untuk zoom), gaya subtitel, bahasa audio dan subtitel diingat per serial, timer tidur, loop A-B, tangkapan layar, gambar-dalam-gambar dan putar di latar belakang. File yang diunduh bisa diputar offline</li>
+<li>Tautan Pixeldrain, Google Drive, dan file langsung diunduh langsung ke ponsel, tanpa layanan</li>
 <li>Ikuti serial dan episode baru yang masuk ke akun Anda terunduh otomatis</li>
 <li>Widget layar utama, ubin Setelan Cepat, dan pintasan</li>
 <li>Masuk ke beberapa layanan? Tambahkan ke yang sudah menyimpannya di cache</li>

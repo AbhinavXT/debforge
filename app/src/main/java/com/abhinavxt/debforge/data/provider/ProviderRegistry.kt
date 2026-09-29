@@ -22,15 +22,19 @@ import javax.inject.Singleton
  */
 @Singleton
 class ProviderRegistry @Inject constructor(
-    providers: Set<@JvmSuppressWildcards DebridProvider>
+    providers: Set<@JvmSuppressWildcards DebridProvider>,
+    direct: com.abhinavxt.debforge.data.provider.direct.DirectLinks
 ) {
     private val byId: Map<ProviderId, DebridProvider> = providers.associateBy { it.info.id }
 
-    /** Stable display order = enum order. */
+    /** The debrid services (sign-in, switcher), in enum order. Direct links aren't one. */
     val all: List<DebridProvider> = ProviderId.entries.mapNotNull { byId[it] }
 
+    /** Every service plus direct links, for downloads that name their owner. */
+    private val withDirect: Map<ProviderId, DebridProvider> = byId + (ProviderId.DIRECT to direct)
+
     operator fun get(id: ProviderId): DebridProvider =
-        byId[id] ?: error("No DebridProvider bound for $id — add it to ProviderModule")
+        withDirect[id] ?: error("No DebridProvider bound for $id — add it to ProviderModule")
 }
 
 /**

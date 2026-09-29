@@ -13,7 +13,14 @@ enum class ProviderId {
     TORBOX,
     ALL_DEBRID,
     PREMIUMIZE,
-    DEBRID_LINK;
+    DEBRID_LINK,
+
+    /**
+     * Not a debrid service: links DebForge downloads itself (Pixeldrain,
+     * Google Drive, plain file URLs). Never signed in, never the active
+     * service; only a "Send to" choice and the owner of those downloads.
+     */
+    DIRECT;
 
     companion object {
         fun fromName(name: String?): ProviderId? = entries.firstOrNull { it.name == name }

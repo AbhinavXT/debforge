@@ -465,4 +465,84 @@
     <plurals name="restore_follows_n">
         <item quantity="other">Kini mengikuti %d serial lagi.</item>
     </plurals>
+
+    <!-- Picture-in-picture -->
+    <string name="set_pip">Picture-in-picture</string>
+    <string name="set_pip_detail">Keluar dari pemutar saat video diputar akan membuatnya tetap berjalan di jendela mengambang kecil.</string>
+    <string name="player_next_episode">Episode berikutnya</string>
+
+    <!-- Direct downloads (Pixeldrain, Google Drive, file links) -->
+    <string name="direct_target_name">Unduhan langsung</string>
+    <string name="direct_title">Unduh langsung</string>
+    <string name="direct_suggested_hint">Ini tautan langsung, jadi diunduh langsung ke perangkat ini. Tidak perlu layanan.</string>
+    <string name="direct_err_web_page">%1$s membuka halaman web, bukan file.</string>
+    <string name="direct_err_drive">Google Drive tidak memberikan file ini: file bersifat pribadi, atau batas unduhannya tercapai. Coba lagi nanti.</string>
+    <string name="direct_err_folder">Folder tidak bisa diunduh langsung. Tambahkan filenya satu per satu.</string>
+    <string name="direct_err_http">%1$s menjawab HTTP %2$d.</string>
+    <plurals name="direct_added">
+        <item quantity="other">Mengunduh %d file</item>
+    </plurals>
+
+    <!-- Player gestures -->
+    <string name="set_player_gestures">Gestur sentuh</string>
+    <string name="set_player_gestures_detail">Ketuk dua kali di sisi untuk melompat, geser untuk kecerahan, volume, atau memajukan, tahan untuk putar cepat, cubit untuk zoom.</string>
+    <plurals name="player_gesture_seek_n">
+        <item quantity="other">%d detik</item>
+    </plurals>
+
+    <!-- Player controls -->
+    <string name="player_back">Kembali</string>
+    <string name="player_audio">Audio</string>
+    <string name="player_subtitles">Subtitel</string>
+    <string name="player_subtitles_off">Nonaktif</string>
+    <string name="player_speed">Kecepatan</string>
+    <string name="player_lock">Kunci layar</string>
+    <string name="player_slide_to_unlock">Geser untuk membuka</string>
+    <string name="player_fit">Pas</string>
+    <string name="player_crop">Pangkas</string>
+    <string name="player_stretch">Regangkan</string>
+    <string name="player_rotate">Putar</string>
+    <string name="player_no_tracks">Tidak ada</string>
+    <string name="player_normal_speed">Normal</string>
+    <plurals name="player_rewind_n">
+        <item quantity="other">Mundur %d detik</item>
+    </plurals>
+    <plurals name="player_forward_n">
+        <item quantity="other">Maju %d detik</item>
+    </plurals>
+
+    <!-- Player: languages and subtitle style -->
+    <string name="set_audio_language">Bahasa audio</string>
+    <string name="set_subtitle_language">Bahasa subtitel</string>
+    <string name="set_lang_auto">Bawaan file</string>
+    <string name="player_sub_style">Gaya subtitel</string>
+    <string name="player_sub_size">Ukuran</string>
+    <string name="player_sub_look">Tampilan</string>
+    <string name="player_sub_position">Posisi</string>
+    <string name="player_sub_pos_low">Rendah</string>
+    <string name="player_sub_pos_mid">Tengah</string>
+    <string name="player_sub_pos_high">Tinggi</string>
+    <string name="player_sub_file_style">Pertahankan gaya bawaan file</string>
+
+    <!-- Player extras: sleep timer, screenshot, A-B loop, background -->
+    <string name="player_more">Lainnya</string>
+    <string name="player_sleep_timer">Timer tidur</string>
+    <string name="player_sleep_off">Nonaktif</string>
+    <string name="player_sleep_end">Akhir episode</string>
+    <string name="player_sleep_done">Timer tidur: dijeda</string>
+    <string name="player_screenshot">Tangkapan layar</string>
+    <string name="player_screenshot_saved">Tangkapan layar disimpan di Pictures/DebForge</string>
+    <string name="player_screenshot_failed">Gagal mengambil tangkapan layar</string>
+    <string name="player_ab_loop">Loop A-B</string>
+    <string name="player_ab_set_a">Tetapkan A (awal loop) di sini</string>
+    <string name="player_ab_set_b">Tetapkan B di sini untuk mulai loop</string>
+    <string name="player_ab_clear">Hentikan loop</string>
+    <string name="player_background">Tetap putar di latar belakang</string>
+    <string name="player_background_detail">Suara tetap berjalan saat layar mati atau di aplikasi lain</string>
+    <plurals name="player_minutes_n">
+        <item quantity="other">%d mnt</item>
+    </plurals>
+    <plurals name="player_sleep_in_n">
+        <item quantity="other">Dijeda dalam %d menit</item>
+    </plurals>
 </resources>

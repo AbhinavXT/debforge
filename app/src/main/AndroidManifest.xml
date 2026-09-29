@@ -12,6 +12,8 @@
         tools:ignore="ScopedStorage" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <!-- The player's "keep playing in the background". -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- Android 14+: user-initiated data transfer jobs (no 6h dataSync cap). -->
     <uses-permission android:name="android.permission.RUN_USER_INITIATED_JOBS" />
@@ -127,8 +129,21 @@
         <activity
             android:name=".player.PlayerActivity"
             android:exported="false"
+            android:supportsPictureInPicture="true"
+            android:resizeableActivity="true"
             android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden|navigation"
             android:theme="@style/Theme.Debforge.Player" />
+
+        <!-- Keeps a video's sound playing after leaving the player (if turned on),
+             with the media notification and lock-screen / headset controls. -->
+        <service
+            android:name=".player.BackgroundPlaybackService"
+            android:exported="true"
+            android:foregroundServiceType="mediaPlayback">
+            <intent-filter>
+                <action android:name="androidx.media3.session.MediaSessionService" />
+            </intent-filter>
+        </service>
 
         <!-- Background check for new episodes of followed shows. -->
         <service

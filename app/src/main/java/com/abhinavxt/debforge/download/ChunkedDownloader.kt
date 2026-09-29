@@ -9,6 +9,8 @@ import com.abhinavxt.debforge.data.local.DownloadEntity
 import com.abhinavxt.debforge.data.repository.DownloadsRepository
 import com.abhinavxt.debforge.di.DownloadHttpClient
 import com.abhinavxt.debforge.domain.DataResult
+import com.abhinavxt.debforge.domain.DirectLinkParser
+import com.abhinavxt.debforge.domain.ProviderId
 import com.abhinavxt.debforge.domain.DownloadState
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -22,10 +24,14 @@ import kotlinx.coroutines.launch
 import com.abhinavxt.debforge.download.conditions.DownloadConditions
 import com.abhinavxt.debforge.download.conditions.RateLimiter
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.awaitCancellation
+import okhttp3.Call
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.IOException
 import java.nio.ByteBuffer
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -135,6 +141,9 @@ class ChunkedDownloader @Inject constructor(
             } catch (ce: CancellationException) {
                 throw ce
             } catch (t: Throwable) {
+                // Paused/cancelled mid-request: the error is just the call we
+                // cancelled; leave as a cancellation, not a failed attempt.
+                coroutineContext.ensureActive()
                 DownloadOutcome.Failure(t.message ?: "Unexpected error")
             }
 
@@ -259,6 +268,7 @@ class ChunkedDownloader @Inject constructor(
         } catch (ce: CancellationException) {
             throw ce // pause/cancel from the service — leave .part for resume
         } catch (e: Exception) {
+            coroutineContext.ensureActive() // a chunk's call cancelled by pause
             return DownloadOutcome.Failure(e.message ?: "Download interrupted")
         } finally {
             // Persist the running total so PAUSED/FAILED rows show real
@@ -303,56 +313,59 @@ class ChunkedDownloader @Inject constructor(
         partPath: String,
         finalPath: String
     ): DownloadOutcome = withContext(Dispatchers.IO) {
-        val resp = client.newCall(Request.Builder().url(url).get().build()).execute()
-        resp.use {
-            if (resp.code != 200) return@withContext DownloadOutcome.Failure("Server returned HTTP ${resp.code}")
-            val body = resp.body ?: return@withContext DownloadOutcome.Failure("Empty response body")
-            val announced = body.contentLength().takeIf { it > 0 } ?: 0L
-            val handle = try {
-                DownloadFiles.openTruncated(partPath)
-            } catch (e: java.io.IOException) {
-                return@withContext DownloadOutcome.Failure("Storage error: ${e.message}")
-            }
-            val source = body.source()
-            var written = 0L
-            var lastPush = 0L
-            handle.use { h ->
-                val channel = h.channel
-                val buffer = ByteBuffer.allocateDirect(BUFFER)
-                while (true) {
-                    coroutineContext.ensureActive()
-                    conditions.currentBlock()?.let { throw ConditionLostException(it.message) }
-                    buffer.clear()
-                    val n = source.read(buffer)
-                    if (n == -1) break
-                    buffer.flip()
-                    while (buffer.hasRemaining()) channel.write(buffer)
-                    written += n
-                    usage.add(entity.provider, n)
-                    val throttleMs = rateLimiter.reserve(n)
-                    if (throttleMs > 0) delay(throttleMs)
-                    val now = System.currentTimeMillis()
-                    if (now - lastPush >= PROGRESS_PUSH_MS) {
-                        lastPush = now
-                        progressTracker.update(entity.id, written, announced, DownloadState.DOWNLOADING)
+        val call = client.newCall(Request.Builder().url(url).get().build())
+        cancellableCall(call) {
+            val resp = call.execute()
+            resp.use {
+                if (resp.code != 200) return@cancellableCall DownloadOutcome.Failure("Server returned HTTP ${resp.code}")
+                val body = resp.body ?: return@cancellableCall DownloadOutcome.Failure("Empty response body")
+                val announced = body.contentLength().takeIf { it > 0 } ?: 0L
+                val handle = try {
+                    DownloadFiles.openTruncated(partPath)
+                } catch (e: java.io.IOException) {
+                    return@cancellableCall DownloadOutcome.Failure("Storage error: ${e.message}")
+                }
+                val source = body.source()
+                var written = 0L
+                var lastPush = 0L
+                handle.use { h ->
+                    val channel = h.channel
+                    val buffer = ByteBuffer.allocateDirect(BUFFER)
+                    while (true) {
+                        coroutineContext.ensureActive()
+                        conditions.currentBlock()?.let { throw ConditionLostException(it.message) }
+                        buffer.clear()
+                        val n = source.read(buffer)
+                        if (n == -1) break
+                        buffer.flip()
+                        while (buffer.hasRemaining()) channel.write(buffer)
+                        written += n
+                        usage.add(entity.provider, n)
+                        val throttleMs = rateLimiter.reserve(n)
+                        if (throttleMs > 0) delay(throttleMs)
+                        val now = System.currentTimeMillis()
+                        if (now - lastPush >= PROGRESS_PUSH_MS) {
+                            lastPush = now
+                            progressTracker.update(entity.id, written, announced, DownloadState.DOWNLOADING)
+                        }
                     }
                 }
+                if (announced > 0 && written != announced) {
+                    return@cancellableCall DownloadOutcome.Failure("Truncated download: $written/$announced bytes")
+                }
+                if (written == 0L) return@cancellableCall DownloadOutcome.Failure("Server sent an empty file")
+                if (!DownloadFiles.verifyAndPromote(partPath, finalPath, written)) {
+                    return@cancellableCall DownloadOutcome.Failure("Size verification failed")
+                }
+                withContext(NonCancellable) {
+                    downloadDao.updateLink(entity.id, url, 1, written)
+                    downloadDao.updateBytes(entity.id, written)
+                    downloadDao.updateState(entity.id, DownloadState.COMPLETED)
+                }
+                progressTracker.update(entity.id, written, written, DownloadState.COMPLETED)
+                progressTracker.clear(entity.id)
+                DownloadOutcome.Success
             }
-            if (announced > 0 && written != announced) {
-                return@withContext DownloadOutcome.Failure("Truncated download: $written/$announced bytes")
-            }
-            if (written == 0L) return@withContext DownloadOutcome.Failure("Server sent an empty file")
-            if (!DownloadFiles.verifyAndPromote(partPath, finalPath, written)) {
-                return@withContext DownloadOutcome.Failure("Size verification failed")
-            }
-            withContext(NonCancellable) {
-                downloadDao.updateLink(entity.id, url, 1, written)
-                downloadDao.updateBytes(entity.id, written)
-                downloadDao.updateState(entity.id, DownloadState.COMPLETED)
-            }
-            progressTracker.update(entity.id, written, written, DownloadState.COMPLETED)
-            progressTracker.clear(entity.id)
-            DownloadOutcome.Success
         }
     }
 
@@ -383,9 +396,17 @@ class ChunkedDownloader @Inject constructor(
         repeat(2) {
             coroutineContext.ensureActive()
             val req = Request.Builder().url(current.downloadUrl).header("Range", "bytes=0-0").get().build()
-            val resp = client.newCall(req).execute()
+            val call = client.newCall(req)
+            val resp = cancellableCall(call) { call.execute() }
             try {
                 when {
+                    // A direct link that now answers with a web page (Drive's
+                    // confirmation page, an expired signed link's error page):
+                    // never save that as the file. Rebuild the link once.
+                    current.provider == ProviderId.DIRECT && resp.code in 200..299 &&
+                        DirectLinkParser.isWebPage(resp.header("Content-Type")) -> {
+                        if (refreshed) throw IOException("The link now opens a web page instead of the file (it may have expired)")
+                    }
                     resp.code == 206 -> {
                         val total = parseContentRangeTotal(resp.header("Content-Range"))
                             ?: current.filesize
@@ -492,73 +513,102 @@ class ChunkedDownloader @Inject constructor(
         if (supportsRange) {
             reqBuilder.header("Range", "bytes=$writeOffset-${range.endByte}")
         }
-        val resp = client.newCall(reqBuilder.build()).execute()
+        val call = client.newCall(reqBuilder.build())
+        cancellableCall(call) {
+            val resp = call.execute()
 
-        var written = resumeFrom
-        try {
-            // In range mode the server MUST honor the range (206). A 200 here
-            // would mean it's resending from byte 0 — writing that at our offset
-            // would corrupt the file, so we reject it.
-            if (supportsRange && resp.code != 206) {
-                throw IOException("Range not honored (HTTP ${resp.code})")
-            }
-            if (!supportsRange && resp.code != 200) {
-                throw IOException("Unexpected HTTP ${resp.code}")
-            }
-            val body = resp.body ?: throw IOException("Empty response body")
-            // BufferedSource lets us read directly into a direct ByteBuffer,
-            // skipping the byte[] intermediate that body.byteStream() forces.
-            val source = body.source()
-            val maxForChunk = range.size
+            var written = resumeFrom
+            try {
+                // In range mode the server MUST honor the range (206). A 200 here
+                // would mean it's resending from byte 0 — writing that at our offset
+                // would corrupt the file, so we reject it.
+                if (supportsRange && resp.code != 206) {
+                    throw IOException("Range not honored (HTTP ${resp.code})")
+                }
+                if (!supportsRange && resp.code != 200) {
+                    throw IOException("Unexpected HTTP ${resp.code}")
+                }
+                val body = resp.body ?: throw IOException("Empty response body")
+                // BufferedSource lets us read directly into a direct ByteBuffer,
+                // skipping the byte[] intermediate that body.byteStream() forces.
+                val source = body.source()
+                val maxForChunk = range.size
 
-            // A seekable FileChannel (plain file or folder-picker document);
-            // writing through
-            // the channel with a direct ByteBuffer keeps the bytes off the JVM
-            // heap on the network → disk path. Per-chunk fsync removed — the
-            // single fsync in verifyAndPromote (before rename) is the only one
-            // that matters for the rename-atomic guarantee. Worst case on crash
-            // is re-downloading a few MB of in-flight bytes from the page cache;
-            // chunk OFFSETS are still persisted to Room every 4 MiB.
-            DownloadFiles.openAt(partPath, writeOffset).use { handle ->
-                val channel = handle.channel
-                val buffer = ByteBuffer.allocateDirect(BUFFER)
-                var sincePersist = 0L
-                while (written < maxForChunk) {
-                    coroutineContext.ensureActive() // cooperative cancel point
-                    buffer.clear()
-                    val remaining = maxForChunk - written
-                    val cap = min(buffer.capacity().toLong(), remaining).toInt()
-                    buffer.limit(cap)
-                    val n = source.read(buffer)
-                    if (n == -1) break
-                    buffer.flip()
-                    while (buffer.hasRemaining()) channel.write(buffer)
-                    written += n
-                    sincePersist += n
-                    onDelta(n)
-                    // Global speed limit (Settings → Downloads); 0 ms when off.
-                    val throttleMs = rateLimiter.reserve(n)
-                    if (throttleMs > 0) delay(throttleMs)
-                    if (sincePersist >= PERSIST_INTERVAL) {
-                        chunkDao.updateProgress(entity.id, range.index, written)
-                        sincePersist = 0L
+                // A seekable FileChannel (plain file or folder-picker document);
+                // writing through
+                // the channel with a direct ByteBuffer keeps the bytes off the JVM
+                // heap on the network → disk path. Per-chunk fsync removed — the
+                // single fsync in verifyAndPromote (before rename) is the only one
+                // that matters for the rename-atomic guarantee. Worst case on crash
+                // is re-downloading a few MB of in-flight bytes from the page cache;
+                // chunk OFFSETS are still persisted to Room every 4 MiB.
+                DownloadFiles.openAt(partPath, writeOffset).use { handle ->
+                    val channel = handle.channel
+                    val buffer = ByteBuffer.allocateDirect(BUFFER)
+                    var sincePersist = 0L
+                    while (written < maxForChunk) {
+                        coroutineContext.ensureActive() // cooperative cancel point
+                        buffer.clear()
+                        val remaining = maxForChunk - written
+                        val cap = min(buffer.capacity().toLong(), remaining).toInt()
+                        buffer.limit(cap)
+                        val n = source.read(buffer)
+                        if (n == -1) break
+                        buffer.flip()
+                        while (buffer.hasRemaining()) channel.write(buffer)
+                        written += n
+                        sincePersist += n
+                        onDelta(n)
+                        // Global speed limit (Settings → Downloads); 0 ms when off.
+                        val throttleMs = rateLimiter.reserve(n)
+                        if (throttleMs > 0) delay(throttleMs)
+                        if (sincePersist >= PERSIST_INTERVAL) {
+                            chunkDao.updateProgress(entity.id, range.index, written)
+                            sincePersist = 0L
+                        }
                     }
                 }
-            }
 
-            if (written >= maxForChunk) {
-                chunkDao.markComplete(entity.id, range.index, written)
-            } else {
-                // Short read without hitting our boundary → the stream ended
-                // early; treat as failure so the whole download retries/resumes.
-                throw IOException("Truncated chunk ${range.index}: $written/${maxForChunk}")
+                if (written >= maxForChunk) {
+                    chunkDao.markComplete(entity.id, range.index, written)
+                } else {
+                    // Short read without hitting our boundary → the stream ended
+                    // early; treat as failure so the whole download retries/resumes.
+                    throw IOException("Truncated chunk ${range.index}: $written/${maxForChunk}")
+                }
+            } finally {
+                // Persist the latest offset even under cancellation/failure.
+                withContext(NonCancellable) {
+                    chunkDao.updateProgress(entity.id, range.index, written)
+                }
+                resp.close()
             }
+        }
+    }
+
+    /**
+     * Runs a blocking OkHttp exchange ([block], on [call]) so that pause and
+     * cancel stop it at once. OkHttp blocks the thread in execute() and in
+     * every body read, and coroutine cancellation can't interrupt a blocked
+     * thread: a pause used to wait for the next bytes, up to the 60 s read
+     * timeout on a slow or stalled connection. Here a watcher cancels the
+     * call itself the moment the coroutine is cancelled, so the blocked read
+     * fails immediately (progress is still saved by the callers' finally).
+     */
+    private suspend fun <T> cancellableCall(call: Call, block: suspend () -> T): T = coroutineScope {
+        val done = AtomicBoolean(false)
+        val watcher = launch(start = CoroutineStart.UNDISPATCHED) {
+            try {
+                awaitCancellation()
+            } finally {
+                if (!done.get()) call.cancel()
+            }
+        }
+        try {
+            block()
         } finally {
-            // Persist the latest offset even under cancellation/failure.
-            withContext(NonCancellable) {
-                chunkDao.updateProgress(entity.id, range.index, written)
-            }
-            resp.close()
+            done.set(true)
+            watcher.cancel()
         }
     }
 

@@ -136,27 +136,34 @@ class DownloadQueueRunner @Inject constructor(
     }
 
     fun pause(id: String) {
-        if (id == currentId) {
-            interrupt = Interrupt.PAUSE
-            currentJob?.cancel()
-        } else {
-            scope.launch { downloadDao.updateState(id, DownloadState.PAUSED) }
+        if (interruptIfActive(id, Interrupt.PAUSE)) return
+        scope.launch {
+            downloadDao.updateState(id, DownloadState.PAUSED)
+            // The loop may have picked this file up while the write was in
+            // flight (after its "was it paused?" check): stop it now rather
+            // than let it download until the next tap.
+            interruptIfActive(id, Interrupt.PAUSE)
         }
     }
 
     fun cancel(id: String) {
-        if (id == currentId) {
-            interrupt = Interrupt.CANCEL
-            currentJob?.cancel()
-        } else {
-            scope.launch {
-                val entity = downloadDao.getById(id)
-                chunkDao.deleteForDownload(id)
-                downloadDao.delete(id)
-                DownloadFiles.deletePart(entity?.partFilePath)
-                progressTracker.clear(id)
-            }
+        if (interruptIfActive(id, Interrupt.CANCEL)) return
+        scope.launch {
+            val entity = downloadDao.getById(id)
+            chunkDao.deleteForDownload(id)
+            downloadDao.delete(id)
+            DownloadFiles.deletePart(entity?.partFilePath)
+            progressTracker.clear(id)
+            interruptIfActive(id, Interrupt.CANCEL) // same race as pause
         }
+    }
+
+    /** Interrupts [id] if it's the file downloading now. */
+    private fun interruptIfActive(id: String, why: Interrupt): Boolean {
+        if (id != currentId) return false
+        interrupt = why
+        currentJob?.cancel()
+        return true
     }
 
     // --- loop --------------------------------------------------------------

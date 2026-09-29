@@ -465,4 +465,84 @@
     <plurals name="restore_follows_n">
         <item quantity="other">新增追剧 %d 部。</item>
     </plurals>
+
+    <!-- Picture-in-picture -->
+    <string name="set_pip">画中画</string>
+    <string name="set_pip_detail">播放视频时离开播放器，视频会在小浮窗中继续播放。</string>
+    <string name="player_next_episode">下一集</string>
+
+    <!-- Direct downloads (Pixeldrain, Google Drive, file links) -->
+    <string name="direct_target_name">直接下载</string>
+    <string name="direct_title">直接下载</string>
+    <string name="direct_suggested_hint">这些是直链，会直接下载到本设备，无需任何服务。</string>
+    <string name="direct_err_web_page">%1$s 打开的是网页，不是文件。</string>
+    <string name="direct_err_drive">Google 云端硬盘不提供此文件：文件是私有的，或已达下载上限。请稍后再试。</string>
+    <string name="direct_err_folder">无法直接下载文件夹，请逐个添加文件。</string>
+    <string name="direct_err_http">%1$s 返回了 HTTP %2$d。</string>
+    <plurals name="direct_added">
+        <item quantity="other">正在下载 %d 个文件</item>
+    </plurals>
+
+    <!-- Player gestures -->
+    <string name="set_player_gestures">触摸手势</string>
+    <string name="set_player_gestures_detail">双击两侧快进/快退，滑动调节亮度、音量或拖动进度，长按倍速播放，双指缩放画面。</string>
+    <plurals name="player_gesture_seek_n">
+        <item quantity="other">%d 秒</item>
+    </plurals>
+
+    <!-- Player controls -->
+    <string name="player_back">返回</string>
+    <string name="player_audio">音频</string>
+    <string name="player_subtitles">字幕</string>
+    <string name="player_subtitles_off">关闭</string>
+    <string name="player_speed">速度</string>
+    <string name="player_lock">锁定屏幕</string>
+    <string name="player_slide_to_unlock">滑动解锁</string>
+    <string name="player_fit">适应</string>
+    <string name="player_crop">裁剪</string>
+    <string name="player_stretch">拉伸</string>
+    <string name="player_rotate">旋转</string>
+    <string name="player_no_tracks">无可用项</string>
+    <string name="player_normal_speed">正常</string>
+    <plurals name="player_rewind_n">
+        <item quantity="other">后退 %d 秒</item>
+    </plurals>
+    <plurals name="player_forward_n">
+        <item quantity="other">快进 %d 秒</item>
+    </plurals>
+
+    <!-- Player: languages and subtitle style -->
+    <string name="set_audio_language">音频语言</string>
+    <string name="set_subtitle_language">字幕语言</string>
+    <string name="set_lang_auto">跟随文件默认</string>
+    <string name="player_sub_style">字幕样式</string>
+    <string name="player_sub_size">大小</string>
+    <string name="player_sub_look">外观</string>
+    <string name="player_sub_position">位置</string>
+    <string name="player_sub_pos_low">低</string>
+    <string name="player_sub_pos_mid">中</string>
+    <string name="player_sub_pos_high">高</string>
+    <string name="player_sub_file_style">保留文件自带样式</string>
+
+    <!-- Player extras: sleep timer, screenshot, A-B loop, background -->
+    <string name="player_more">更多</string>
+    <string name="player_sleep_timer">睡眠定时</string>
+    <string name="player_sleep_off">关闭</string>
+    <string name="player_sleep_end">本集结束时</string>
+    <string name="player_sleep_done">睡眠定时：已暂停</string>
+    <string name="player_screenshot">截图</string>
+    <string name="player_screenshot_saved">截图已保存到 Pictures/DebForge</string>
+    <string name="player_screenshot_failed">无法截图</string>
+    <string name="player_ab_loop">A-B 循环</string>
+    <string name="player_ab_set_a">在此设置 A（循环起点）</string>
+    <string name="player_ab_set_b">在此设置 B 开始循环</string>
+    <string name="player_ab_clear">停止循环</string>
+    <string name="player_background">后台继续播放</string>
+    <string name="player_background_detail">屏幕关闭或切到其他应用时声音继续</string>
+    <plurals name="player_minutes_n">
+        <item quantity="other">%d 分钟</item>
+    </plurals>
+    <plurals name="player_sleep_in_n">
+        <item quantity="other">%d 分钟后暂停</item>
+    </plurals>
 </resources>

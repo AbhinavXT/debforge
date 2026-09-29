@@ -489,4 +489,90 @@
         <item quantity="one">ఇప్పుడు మరో %d షోను ఫాలో చేస్తున్నారు.</item>
         <item quantity="other">ఇప్పుడు మరో %d షోలను ఫాలో చేస్తున్నారు.</item>
     </plurals>
+
+    <!-- Picture-in-picture -->
+    <string name="set_pip">పిక్చర్-ఇన్-పిక్చర్</string>
+    <string name="set_pip_detail">వీడియో ప్లే అవుతుండగా ప్లేయర్ నుండి బయటకు వెళ్తే, అది చిన్న ఫ్లోటింగ్ విండోలో కొనసాగుతుంది.</string>
+    <string name="player_next_episode">తర్వాతి ఎపిసోడ్</string>
+
+    <!-- Direct downloads (Pixeldrain, Google Drive, file links) -->
+    <string name="direct_target_name">నేరుగా డౌన్‌లోడ్</string>
+    <string name="direct_title">నేరుగా డౌన్‌లోడ్ చేయండి</string>
+    <string name="direct_suggested_hint">ఇవి నేరుగా లింకులు, కాబట్టి నేరుగా ఈ పరికరంలోకి డౌన్‌లోడ్ అవుతాయి. ఏ సర్వీసూ అవసరం లేదు.</string>
+    <string name="direct_err_web_page">%1$s వెబ్ పేజీని తెరుస్తుంది, ఫైల్‌ను కాదు.</string>
+    <string name="direct_err_drive">Google Drive ఈ ఫైల్‌ను ఇవ్వడం లేదు: ఇది ప్రైవేట్, లేదా దీని డౌన్‌లోడ్ పరిమితి చేరుకుంది. తర్వాత మళ్లీ ప్రయత్నించండి.</string>
+    <string name="direct_err_folder">ఫోల్డర్‌లను నేరుగా డౌన్‌లోడ్ చేయలేరు. ఫైల్‌లను ఒక్కొక్కటిగా జోడించండి.</string>
+    <string name="direct_err_http">%1$s HTTP %2$d అని స్పందించింది.</string>
+    <plurals name="direct_added">
+        <item quantity="one">%d ఫైల్ డౌన్‌లోడ్ అవుతోంది</item>
+        <item quantity="other">%d ఫైల్‌లు డౌన్‌లోడ్ అవుతున్నాయి</item>
+    </plurals>
+
+    <!-- Player gestures -->
+    <string name="set_player_gestures">టచ్ సంజ్ఞలు</string>
+    <string name="set_player_gestures_detail">అంచులపై రెండుసార్లు తట్టి ముందుకు-వెనక్కు వెళ్లండి, స్వైప్‌తో ప్రకాశం, వాల్యూమ్ లేదా వీడియో జరపండి, నొక్కి పట్టుకుంటే వేగంగా ప్లే అవుతుంది, పించ్‌తో జూమ్ చేయండి.</string>
+    <plurals name="player_gesture_seek_n">
+        <item quantity="one">%d సెకను</item>
+        <item quantity="other">%d సెకన్లు</item>
+    </plurals>
+
+    <!-- Player controls -->
+    <string name="player_back">వెనుకకు</string>
+    <string name="player_audio">ఆడియో</string>
+    <string name="player_subtitles">ఉపశీర్షికలు</string>
+    <string name="player_subtitles_off">ఆఫ్</string>
+    <string name="player_speed">వేగం</string>
+    <string name="player_lock">స్క్రీన్ లాక్ చేయండి</string>
+    <string name="player_slide_to_unlock">అన్‌లాక్ చేయడానికి స్లైడ్ చేయండి</string>
+    <string name="player_fit">సరిపోయేలా</string>
+    <string name="player_crop">క్రాప్</string>
+    <string name="player_stretch">సాగదీయి</string>
+    <string name="player_rotate">తిప్పు</string>
+    <string name="player_no_tracks">ఏవీ లేవు</string>
+    <string name="player_normal_speed">సాధారణం</string>
+    <plurals name="player_rewind_n">
+        <item quantity="one">%d సెకను వెనక్కి</item>
+        <item quantity="other">%d సెకన్లు వెనక్కి</item>
+    </plurals>
+    <plurals name="player_forward_n">
+        <item quantity="one">%d సెకను ముందుకు</item>
+        <item quantity="other">%d సెకన్లు ముందుకు</item>
+    </plurals>
+
+    <!-- Player: languages and subtitle style -->
+    <string name="set_audio_language">ఆడియో భాష</string>
+    <string name="set_subtitle_language">ఉపశీర్షికల భాష</string>
+    <string name="set_lang_auto">ఫైల్ డిఫాల్ట్</string>
+    <string name="player_sub_style">ఉపశీర్షికల శైలి</string>
+    <string name="player_sub_size">పరిమాణం</string>
+    <string name="player_sub_look">రూపం</string>
+    <string name="player_sub_position">స్థానం</string>
+    <string name="player_sub_pos_low">కింద</string>
+    <string name="player_sub_pos_mid">మధ్యలో</string>
+    <string name="player_sub_pos_high">పైన</string>
+    <string name="player_sub_file_style">ఫైల్ స్వంత శైలిని ఉంచు</string>
+
+    <!-- Player extras: sleep timer, screenshot, A-B loop, background -->
+    <string name="player_more">మరిన్ని</string>
+    <string name="player_sleep_timer">స్లీప్ టైమర్</string>
+    <string name="player_sleep_off">ఆఫ్</string>
+    <string name="player_sleep_end">ఎపిసోడ్ చివరికి</string>
+    <string name="player_sleep_done">స్లీప్ టైమర్: పాజ్ చేయబడింది</string>
+    <string name="player_screenshot">స్క్రీన్‌షాట్</string>
+    <string name="player_screenshot_saved">స్క్రీన్‌షాట్ Pictures/DebForgeలో సేవ్ అయింది</string>
+    <string name="player_screenshot_failed">స్క్రీన్‌షాట్ తీయలేకపోయాం</string>
+    <string name="player_ab_loop">A-B లూప్</string>
+    <string name="player_ab_set_a">ఇక్కడ A (లూప్ ప్రారంభం) సెట్ చేయండి</string>
+    <string name="player_ab_set_b">లూప్ మొదలుపెట్టడానికి ఇక్కడ B సెట్ చేయండి</string>
+    <string name="player_ab_clear">లూప్ ఆపండి</string>
+    <string name="player_background">బ్యాక్‌గ్రౌండ్‌లో ప్లే చేస్తూ ఉండండి</string>
+    <string name="player_background_detail">స్క్రీన్ ఆఫ్‌లో ఉన్నా లేదా వేరే యాప్‌లో ఉన్నా శబ్దం కొనసాగుతుంది</string>
+    <plurals name="player_minutes_n">
+        <item quantity="one">%d నిమి</item>
+        <item quantity="other">%d నిమి</item>
+    </plurals>
+    <plurals name="player_sleep_in_n">
+        <item quantity="one">%d నిమిషంలో పాజ్ అవుతుంది</item>
+        <item quantity="other">%d నిమిషాల్లో పాజ్ అవుతుంది</item>
+    </plurals>
 </resources>

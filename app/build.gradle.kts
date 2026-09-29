@@ -98,6 +98,15 @@ android {
             )
         }
     }
+    packaging {
+        jniLibs {
+            // The FFmpeg decoder's native libraries go into the APK exactly as
+            // published. Stripping them would depend on which NDK (if any) the
+            // build machine has, and GitHub's and F-Droid's differ: the APKs
+            // wouldn't match and F-Droid's reproducible-build check would fail.
+            keepDebugSymbols += "**/*.so"
+        }
+    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
@@ -168,6 +177,10 @@ dependencies {
     // In-app video player (PlayerView: controls, track pickers, TV D-pad).
     implementation(libs.androidx.media3.exoplayer)
     implementation(libs.androidx.media3.ui)
+    // Background playback: media notification, lock screen and headset controls.
+    implementation(libs.androidx.media3.session)
+    // Audio the phone can't decode itself (E-AC3, AC3, DTS, TrueHD).
+    implementation(libs.jellyfin.media3.ffmpeg.decoder)
 
     testImplementation(libs.junit)
     // Store screenshots on the JVM (app/src/test/.../screenshots)

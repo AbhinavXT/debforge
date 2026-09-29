@@ -16,6 +16,8 @@ DebForge, debrid hesabınızdaki dosyaları doğrudan telefonunuza, tabletinize 
 <li>TMDB'den posterler (Ayarlar'a kendi ücretsiz API anahtarınızı ekleyin)</li>
 <li>Magnet bağlantıları, .torrent dosyaları ve bağlantıları uygulamadan ya da uygulamaya paylaşarak ekleyin; isterseniz hazır olur olmaz indirilsin</li>
 <li>Kaldığınız yeri hatırlayan yerleşik oynatıcı: İzlemeye devam et satırı, torrentteki altyazılar ve hazır bekleyen sonraki bölüm; isterseniz VLC ve diğerleri</li>
+<li>Oynatıcı hareketleri (atlamak için çift dokunma, parlaklık, ses ve sarma için kaydırma, 2× için basılı tutma, yakınlaştırmak için sıkıştırma), altyazı stili, dizi başına hatırlanan ses ve altyazı dilleri, uyku zamanlayıcısı, A-B döngüsü, ekran görüntüsü, resim içinde resim ve arka planda oynatma. İndirilen dosyalar çevrimdışı oynar</li>
+<li>Pixeldrain, Google Drive ve doğrudan dosya bağlantıları hizmet gerekmeden doğrudan telefona iner</li>
 <li>Bir diziyi takip edin, hesabınıza gelen yeni bölümler kendiliğinden insin</li>
 <li>Ana ekran widget'ı, Hızlı Ayarlar kutucuğu ve kısayollar</li>
 <li>Birden fazla hizmette misiniz? Zaten önbellekte olana ekleyin</li>

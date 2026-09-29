@@ -75,7 +75,9 @@ fun AddDialog(viewModel: AddViewModel) {
     AlertDialog(
         onDismissRequest = viewModel::dismiss,
         icon = { Icon(Icons.Rounded.AddLink, contentDescription = null) },
-        title = { Text(stringResource(R.string.add_title, state.providerName)) },
+        title = {
+            Text(if (state.isDirect) stringResource(R.string.direct_title) else stringResource(R.string.add_title, state.providerName))
+        },
         text = {
             Column(
                 modifier = Modifier.verticalScroll(rememberScrollState()),
@@ -150,16 +152,19 @@ fun AddDialog(viewModel: AddViewModel) {
                 // access; without it, offer the grant instead of queueing
                 // downloads that would fail.
                 val hasStorage = state.canWriteStorage
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Checkbox(
-                        checked = state.autoDownload && hasStorage,
-                        onCheckedChange = viewModel::onAutoDownloadChange,
-                        enabled = !state.submitting && hasStorage
-                    )
-                    Text(
-                        stringResource(R.string.add_auto_download),
-                        style = MaterialTheme.typography.bodyMedium
-                    )
+                // Direct links always download now; the choice is for services.
+                if (!state.isDirect) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(
+                            checked = state.autoDownload && hasStorage,
+                            onCheckedChange = viewModel::onAutoDownloadChange,
+                            enabled = !state.submitting && hasStorage
+                        )
+                        Text(
+                            stringResource(R.string.add_auto_download),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
                 }
                 if (!hasStorage) {
                     Text(
@@ -233,7 +238,13 @@ private fun TargetPicker(state: AddUiState, onPick: (ProviderId) -> Unit) {
                 )
             }
         }
-        if (state.targetIsSuggestion) {
+        if (state.directSuggested) {
+            Text(
+                stringResource(R.string.direct_suggested_hint),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        } else if (state.targetIsSuggestion) {
             Text(
                 if (state.activeCanTake) stringResource(R.string.add_target_cached_hint, state.providerName)
                 else stringResource(R.string.add_target_cant_hint, state.activeName, state.providerName),

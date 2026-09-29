@@ -7,6 +7,8 @@ package com.abhinavxt.debforge.domain
  * Order of preference:
  *  1. what the user tapped, as long as that service can take everything in
  *     the dialog;
+ *  1b. [preferred] when it can take the input (direct download for
+ *     Pixeldrain / Google Drive / plain file links);
  *  2. the active service (the one the Library shows), if it has everything
  *     cached, or if no other service does;
  *  3. another service that has everything cached (ready instantly);
@@ -24,9 +26,16 @@ object ServicePicker {
         val allCached: Boolean
     )
 
-    fun pick(active: ProviderId, options: List<Option>, current: ProviderId?, userPicked: Boolean): ProviderId {
+    fun pick(
+        active: ProviderId,
+        options: List<Option>,
+        current: ProviderId?,
+        userPicked: Boolean,
+        preferred: ProviderId? = null
+    ): ProviderId {
         val usable = options.filter { it.supportsInput }
         if (userPicked && usable.any { it.id == current }) return current!!
+        if (preferred != null && usable.any { it.id == preferred }) return preferred
         if (usable.isEmpty()) return active // nothing fits; submitting explains why
         val activeOption = usable.firstOrNull { it.id == active }
         if (activeOption?.allCached == true) return active

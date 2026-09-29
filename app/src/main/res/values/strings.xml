@@ -490,4 +490,90 @@
         <item quantity="one">Now following %d more show.</item>
         <item quantity="other">Now following %d more shows.</item>
     </plurals>
+
+    <!-- Picture-in-picture -->
+    <string name="set_pip">Picture-in-picture</string>
+    <string name="set_pip_detail">Leaving the player while a video plays keeps it in a small floating window.</string>
+    <string name="player_next_episode">Next episode</string>
+
+    <!-- Direct downloads (Pixeldrain, Google Drive, file links) -->
+    <string name="direct_target_name">Direct download</string>
+    <string name="direct_title">Download directly</string>
+    <string name="direct_suggested_hint">These are direct links, so they download straight to this device. No service needed.</string>
+    <string name="direct_err_web_page">%1$s opens a web page, not a file.</string>
+    <string name="direct_err_drive">Google Drive won\'t hand out this file: it\'s private, or it reached its download limit. Try again later.</string>
+    <string name="direct_err_folder">Folders can\'t be downloaded directly. Add the files one by one.</string>
+    <string name="direct_err_http">%1$s answered HTTP %2$d.</string>
+    <plurals name="direct_added">
+        <item quantity="one">Downloading %d file</item>
+        <item quantity="other">Downloading %d files</item>
+    </plurals>
+
+    <!-- Player gestures -->
+    <string name="set_player_gestures">Touch gestures</string>
+    <string name="set_player_gestures_detail">Double-tap the sides to skip, swipe for brightness and volume or to scrub, hold for fast playback, pinch to zoom.</string>
+    <plurals name="player_gesture_seek_n">
+        <item quantity="one">%d second</item>
+        <item quantity="other">%d seconds</item>
+    </plurals>
+
+    <!-- Player controls -->
+    <string name="player_back">Back</string>
+    <string name="player_audio">Audio</string>
+    <string name="player_subtitles">Subtitles</string>
+    <string name="player_subtitles_off">Off</string>
+    <string name="player_speed">Speed</string>
+    <string name="player_lock">Lock screen</string>
+    <string name="player_slide_to_unlock">Slide to unlock</string>
+    <string name="player_fit">Fit</string>
+    <string name="player_crop">Crop</string>
+    <string name="player_stretch">Stretch</string>
+    <string name="player_rotate">Rotate</string>
+    <string name="player_no_tracks">None available</string>
+    <string name="player_normal_speed">Normal</string>
+    <plurals name="player_rewind_n">
+        <item quantity="one">Back %d second</item>
+        <item quantity="other">Back %d seconds</item>
+    </plurals>
+    <plurals name="player_forward_n">
+        <item quantity="one">Forward %d second</item>
+        <item quantity="other">Forward %d seconds</item>
+    </plurals>
+
+    <!-- Player: languages and subtitle style -->
+    <string name="set_audio_language">Audio language</string>
+    <string name="set_subtitle_language">Subtitle language</string>
+    <string name="set_lang_auto">File\'s default</string>
+    <string name="player_sub_style">Subtitle style</string>
+    <string name="player_sub_size">Size</string>
+    <string name="player_sub_look">Look</string>
+    <string name="player_sub_position">Position</string>
+    <string name="player_sub_pos_low">Low</string>
+    <string name="player_sub_pos_mid">Middle</string>
+    <string name="player_sub_pos_high">High</string>
+    <string name="player_sub_file_style">Keep the file\'s own styling</string>
+
+    <!-- Player extras: sleep timer, screenshot, A-B loop, background -->
+    <string name="player_more">More</string>
+    <string name="player_sleep_timer">Sleep timer</string>
+    <string name="player_sleep_off">Off</string>
+    <string name="player_sleep_end">End of episode</string>
+    <string name="player_sleep_done">Sleep timer: paused</string>
+    <string name="player_screenshot">Screenshot</string>
+    <string name="player_screenshot_saved">Screenshot saved to Pictures/DebForge</string>
+    <string name="player_screenshot_failed">Couldn\'t take a screenshot</string>
+    <string name="player_ab_loop">A-B loop</string>
+    <string name="player_ab_set_a">Set A (loop start) here</string>
+    <string name="player_ab_set_b">Set B here to start looping</string>
+    <string name="player_ab_clear">Stop looping</string>
+    <string name="player_background">Keep playing in the background</string>
+    <string name="player_background_detail">The sound goes on with the screen off or in another app</string>
+    <plurals name="player_minutes_n">
+        <item quantity="one">%d min</item>
+        <item quantity="other">%d min</item>
+    </plurals>
+    <plurals name="player_sleep_in_n">
+        <item quantity="one">Pausing in %d minute</item>
+        <item quantity="other">Pausing in %d minutes</item>
+    </plurals>
 </resources>

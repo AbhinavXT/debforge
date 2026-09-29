@@ -16,6 +16,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -32,6 +33,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Description
 import androidx.compose.material.icons.automirrored.rounded.Sort
@@ -59,6 +61,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilledTonalIconButton
@@ -137,6 +140,10 @@ fun BrowseScreen(
     var selected by remember { mutableStateOf(setOf<String>()) }
     val snackbar = remember { SnackbarHostState() }
     val context = LocalContext.current
+    val isTv = remember(context) {
+        (context.resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_TYPE_MASK) ==
+            android.content.res.Configuration.UI_MODE_TYPE_TELEVISION
+    }
     var pendingPermission by remember { mutableStateOf<List<DownloadItem>?>(null) }
     var openGroupKey by remember { mutableStateOf<String?>(null) }
     var openFile by remember { mutableStateOf<ParsedItem?>(null) }
@@ -261,8 +268,12 @@ fun BrowseScreen(
                     title = stringResource(R.string.tab_library),
                     subtitle = state.providerName.ifEmpty { null }
                 ) {
-                    IconButton(onClick = viewModel::refresh) {
-                        Icon(Icons.Rounded.Refresh, contentDescription = stringResource(R.string.action_refresh))
+                    // Pull down to refresh everywhere else; a TV remote can't
+                    // pull, so it keeps the button.
+                    if (isTv) {
+                        IconButton(onClick = viewModel::refresh) {
+                            Icon(Icons.Rounded.Refresh, contentDescription = stringResource(R.string.action_refresh))
+                        }
                     }
                 }
             }
@@ -322,21 +333,29 @@ fun BrowseScreen(
                 onRemove = { job -> confirmRemove = RemoveRequest(job.name, job = job) }
             )
 
+            PullToRefreshBox(
+                isRefreshing = state.isRefreshing,
+                onRefresh = viewModel::pullRefresh,
+                modifier = Modifier.weight(1f).fillMaxWidth()
+            ) {
             when {
                 state.isInitialLoad -> CenteredSpinner()
-                state.error != null && state.items.isEmpty() ->
+                state.error != null && state.items.isEmpty() -> PullableFill {
                     ErrorState(state.error!!) { viewModel.clearError(); viewModel.refresh() }
-                state.items.isEmpty() -> EmptyState(
-                    providerName = state.providerName,
-                    hint = state.emptyHint,
-                    onAdd = onAdd
-                )
+                }
+                state.items.isEmpty() -> PullableFill {
+                    EmptyState(
+                        providerName = state.providerName,
+                        hint = state.emptyHint,
+                        onAdd = onAdd
+                    )
+                }
                 state.posterView -> {
                     val groups = remember(shown, parsed, state.query, state.sort) {
                         buildTitleGroups(shown, parsed, state.query, state.sort)
                     }
                     if (groups.isEmpty()) {
-                        NoMatches(state.query)
+                        PullableFill { NoMatches(state.query) }
                     } else {
                         PosterGrid(
                             groups = groups,
@@ -392,7 +411,7 @@ fun BrowseScreen(
                         buildSections(shown, state.query, state.sort, state.grouped)
                     }
                     if (sections.sumOf { it.items.size } == 0) {
-                        NoMatches(state.query)
+                        PullableFill { NoMatches(state.query) }
                     } else {
                         SectionList(
                             sections = sections,
@@ -415,6 +434,7 @@ fun BrowseScreen(
                         )
                     }
                 }
+            }
             }
         }
     }
@@ -851,6 +871,20 @@ private fun PosterPromptBanner(onSetUp: () -> Unit, onDismiss: () -> Unit) {
         ) { Text(stringResource(R.string.poster_banner_action), fontWeight = FontWeight.Bold) }
         IconButton(onClick = onDismiss) {
             Icon(Icons.Rounded.Close, contentDescription = stringResource(R.string.action_dismiss))
+        }
+    }
+}
+
+/**
+ * Screens with nothing to scroll (empty, error, no matches) inside a
+ * full-height scroll area, so pull to refresh works on them too.
+ */
+@Composable
+private fun PullableFill(content: @Composable () -> Unit) {
+    BoxWithConstraints(Modifier.fillMaxSize()) {
+        val height = maxHeight
+        Box(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+            Box(Modifier.fillMaxWidth().height(height)) { content() }
         }
     }
 }

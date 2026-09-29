@@ -48,6 +48,13 @@ class SettingsStore @Inject constructor(
     private val keyAutoDeleteDays = intPreferencesKey("auto_delete_days")
     private val keyInternalPlayer = booleanPreferencesKey("internal_player")
     private val keyAutoplayNext = booleanPreferencesKey("autoplay_next")
+    private val keyPip = booleanPreferencesKey("picture_in_picture")
+    private val keyPlayerGestures = booleanPreferencesKey("player_gestures")
+    private val keyPlayerShowRemaining = booleanPreferencesKey("player_show_remaining")
+    private val keyAudioLanguage = stringPreferencesKey("player_audio_language")
+    private val keySubtitleLanguage = stringPreferencesKey("player_subtitle_language")
+    private val keySubtitleStyle = stringPreferencesKey("player_subtitle_style")
+    private val keyPlayerBackground = booleanPreferencesKey("player_background")
     private val keyClipboardOffer = booleanPreferencesKey("clipboard_offer")
     private val keyClipboardSeen = androidx.datastore.preferences.core.longPreferencesKey("clipboard_seen_at")
 
@@ -112,6 +119,34 @@ class SettingsStore @Inject constructor(
     /** Next episode starts by itself after the countdown. On by default. */
     val autoplayNextFlow: Flow<Boolean> = context.settingsDataStore.data.map { it[keyAutoplayNext] ?: true }
     suspend fun setAutoplayNext(v: Boolean) = context.settingsDataStore.edit { it[keyAutoplayNext] = v }
+
+    /** Leaving the player while a video plays keeps it in a floating window. On by default. */
+    val pipFlow: Flow<Boolean> = context.settingsDataStore.data.map { it[keyPip] ?: true }
+    suspend fun setPip(v: Boolean) = context.settingsDataStore.edit { it[keyPip] = v }
+
+    /** Player: double-tap seek, swipe brightness/volume, scrub, hold for speed, pinch zoom. */
+    val playerGesturesFlow: Flow<Boolean> = context.settingsDataStore.data.map { it[keyPlayerGestures] ?: true }
+    suspend fun setPlayerGestures(v: Boolean) = context.settingsDataStore.edit { it[keyPlayerGestures] = v }
+
+    /** Player: the right-hand time shows what's left instead of the length (tap it to switch). */
+    val playerShowRemainingFlow: Flow<Boolean> = context.settingsDataStore.data.map { it[keyPlayerShowRemaining] ?: false }
+    suspend fun setPlayerShowRemaining(v: Boolean) = context.settingsDataStore.edit { it[keyPlayerShowRemaining] = v }
+
+    /** Preferred audio language ("" = the file's default), e.g. "ja". */
+    val audioLanguageFlow: Flow<String> = context.settingsDataStore.data.map { it[keyAudioLanguage] ?: "" }
+    suspend fun setAudioLanguage(v: String) = context.settingsDataStore.edit { it[keyAudioLanguage] = v }
+
+    /** Subtitles: "" = the file's default, "off", or a language code. */
+    val subtitleLanguageFlow: Flow<String> = context.settingsDataStore.data.map { it[keySubtitleLanguage] ?: "" }
+    suspend fun setSubtitleLanguage(v: String) = context.settingsDataStore.edit { it[keySubtitleLanguage] = v }
+
+    /** [com.abhinavxt.debforge.player.tracks.SubtitleStyle.encode]d; null = defaults. */
+    val subtitleStyleFlow: Flow<String?> = context.settingsDataStore.data.map { it[keySubtitleStyle] }
+    suspend fun setSubtitleStyle(v: String) = context.settingsDataStore.edit { it[keySubtitleStyle] = v }
+
+    /** Player → More: keep the sound playing after leaving the player. */
+    val playerBackgroundFlow: Flow<Boolean> = context.settingsDataStore.data.map { it[keyPlayerBackground] ?: false }
+    suspend fun setPlayerBackground(v: Boolean) = context.settingsDataStore.edit { it[keyPlayerBackground] = v }
 
     /** Every download condition in one snapshot, so the engine reads them atomically. */
     val downloadRulesFlow: Flow<DownloadRules> = context.settingsDataStore.data.map { p ->
@@ -205,7 +240,7 @@ class SettingsStore @Inject constructor(
     private val backupBooleans get() = listOf(
         keyDynamicColor, keyPosterView, keyOrganize, keyWifiOnly, keyChargingOnly,
         keyScheduleOn, keyAutoUpdate, keyRemoveAfter, keyPureBlack, keyShowExtras, keyClipboardOffer,
-        keyInternalPlayer, keyAutoplayNext
+        keyInternalPlayer, keyAutoplayNext, keyPip
     )
     private val backupInts get() = listOf(keySortOrder, keyThemeMode, keyScheduleStart, keyScheduleEnd, keySpeedLimit, keyAutoDeleteDays)
 

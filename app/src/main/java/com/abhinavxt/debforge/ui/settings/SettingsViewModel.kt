@@ -187,6 +187,30 @@ class SettingsViewModel @Inject constructor(
     )
     fun setAutoplayNext(v: Boolean) = viewModelScope.launch { settingsStore.setAutoplayNext(v) }
 
+    val pip: StateFlow<Boolean> = settingsStore.pipFlow.stateIn(
+        viewModelScope, SharingStarted.WhileSubscribed(5_000), true
+    )
+    fun setPip(v: Boolean) = viewModelScope.launch { settingsStore.setPip(v) }
+
+    val playerGestures: StateFlow<Boolean> = settingsStore.playerGesturesFlow.stateIn(
+        viewModelScope, SharingStarted.WhileSubscribed(5_000), true
+    )
+    fun setPlayerGestures(v: Boolean) = viewModelScope.launch { settingsStore.setPlayerGestures(v) }
+
+    val audioLanguage: StateFlow<String> = settingsStore.audioLanguageFlow.stateIn(
+        viewModelScope, SharingStarted.WhileSubscribed(5_000), ""
+    )
+    fun setAudioLanguage(v: String) = viewModelScope.launch { settingsStore.setAudioLanguage(v) }
+
+    val subtitleLanguage: StateFlow<String> = settingsStore.subtitleLanguageFlow.stateIn(
+        viewModelScope, SharingStarted.WhileSubscribed(5_000), ""
+    )
+    fun setSubtitleLanguage(v: String) = viewModelScope.launch { settingsStore.setSubtitleLanguage(v) }
+
+    /** Picture-in-picture exists here (most TVs and some phones don't have it). */
+    val pipAvailable: Boolean = appContext.packageManager
+        .hasSystemFeature(android.content.pm.PackageManager.FEATURE_PICTURE_IN_PICTURE)
+
     val clipboardOffer: StateFlow<Boolean> = settingsStore.clipboardOfferFlow.stateIn(
         viewModelScope, SharingStarted.WhileSubscribed(5_000), true
     )

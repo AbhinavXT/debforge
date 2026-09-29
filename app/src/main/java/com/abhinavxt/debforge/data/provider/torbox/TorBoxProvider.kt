@@ -20,7 +20,9 @@ import com.abhinavxt.debforge.domain.Page
 import com.abhinavxt.debforge.domain.ProviderId
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.sync.withLock
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -34,10 +36,10 @@ import javax.inject.Singleton
  * Differences from Real-Debrid that this class absorbs:
  *  - The listing is per TORRENT / USENET JOB / WEB DOWNLOAD, each holding many
  *    files. We flatten to one [DownloadItem] per file and only include items
- *    whose files are actually present on TorBox's servers.
- *  - Three separate lists. Each browse page fetches the same offset window from
- *    all three in parallel; there are more pages while ANY list returned a
- *    full window.
+ *    that are ready ([TorBoxStatus.isReady]).
+ *  - Three separate lists. Page 1 reads all three in full (fresh), sorts them
+ *    newest first here, and later pages are slices of that snapshot; the
+ *    processing strip uses the same read.
  *  - Listings carry no direct URL. Links are minted on demand by `requestdl`
  *    at download time ([resolveLink]), so [DownloadItem.downloadUrl] is null
  *    and [DownloadItem.sourceRef] encodes "kind:itemId:fileId".
@@ -77,26 +79,108 @@ class TorBoxProvider @Inject constructor(
         }
     )
 
-    override suspend fun listFiles(page: Int, pageSize: Int): Page<DownloadItem> = coroutineScope {
-        val offset = (page - 1).coerceAtLeast(0) * pageSize
-        val fresh = page == 1
-        val torrents = async { api.torrents(offset, pageSize, fresh).unwrapList() }
-        // Usenet / web downloads are secondary: a failure there (plan limits,
-        // transient 5xx) shouldn't hide the user's torrents. Auth failures
-        // still propagate so a revoked key is reported properly.
-        val usenet = async { secondary { api.usenet(offset, pageSize, fresh).unwrapList() } }
-        val web = async { secondary { api.webDownloads(offset, pageSize, fresh).unwrapList() } }
-
-        val lists = listOf(
-            Kind.TORRENT to torrents.await(),
-            Kind.USENET to usenet.await(),
-            Kind.WEB to web.await()
-        )
-        Page(
-            items = lists.flatMap { (kind, items) -> items.flatMap { it.toFiles(kind) } },
-            hasMore = lists.any { (_, items) -> items.size >= pageSize }
+    /**
+     * Pages of ready items, newest first. Page 1 (every refresh) reads the
+     * whole account fresh and sorts it here; later pages are slices of that
+     * copy. TorBox doesn't document the order `mylist` returns, and asking it
+     * page by page meant a new item could sit on a later page and never
+     * appear at the top, however often the user refreshed.
+     */
+    override suspend fun listFiles(page: Int, pageSize: Int): Page<DownloadItem> {
+        val ready = allItems(fresh = page == 1).filter { (_, item) -> item.isListable() }
+        val from = ((page - 1).coerceAtLeast(0) * pageSize).coerceAtMost(ready.size)
+        val to = (from + pageSize).coerceAtMost(ready.size)
+        return Page(
+            items = ready.subList(from, to).flatMap { (kind, item) -> item.toFiles(kind) },
+            hasMore = to < ready.size
         )
     }
+
+    // --- whole-account snapshot ------------------------------------------------
+
+    private class Snapshot(val takenAt: Long, val items: List<Pair<Kind, TbItemDto>>)
+
+    private val snapshotLock = kotlinx.coroutines.sync.Mutex()
+    @Volatile private var snapshot: Snapshot? = null
+
+    /**
+     * Every torrent, usenet job and web download, newest first. [fresh] reads
+     * TorBox again (bypassing its cache), except within a few seconds of the
+     * last read, so a refresh that loads page 1 and the processing strip
+     * together costs one round of requests, not two.
+     */
+    private suspend fun allItems(fresh: Boolean): List<Pair<Kind, TbItemDto>> = snapshotLock.withLock {
+        val now = android.os.SystemClock.elapsedRealtime()
+        snapshot?.let { s -> if (!fresh || now - s.takenAt < SNAPSHOT_REUSE_MS) return@withLock s.items }
+        val items = coroutineScope {
+            val torrents = async { fetchAll { off, lim -> api.torrents(off, lim, true).unwrapList() } }
+            // Usenet / web downloads are secondary: a failure there (plan
+            // limits, transient 5xx) shouldn't hide the user's torrents. Auth
+            // failures still propagate so a revoked key is reported properly.
+            val usenet = async { secondary { fetchAll { off, lim -> api.usenet(off, lim, true).unwrapList() } } }
+            val web = async { secondary { fetchAll { off, lim -> api.webDownloads(off, lim, true).unwrapList() } } }
+            torrents.await().map { Kind.TORRENT to it } +
+                usenet.await().map { Kind.USENET to it } +
+                web.await().map { Kind.WEB to it }
+        }
+        val sorted = TorBoxStatus.newestFirst(fillMissingFiles(items), { it.second.createdAt }, { it.second.id })
+        snapshot = Snapshot(now, sorted)
+        sorted
+    }
+
+    /**
+     * Asks TorBox directly for ready items the list returned without files
+     * (see [TorBoxStatus.needingFiles]). An item still without files after
+     * that shows in the processing strip until they arrive.
+     */
+    private suspend fun fillMissingFiles(items: List<Pair<Kind, TbItemDto>>): List<Pair<Kind, TbItemDto>> {
+        val wanted = TorBoxStatus.needingFiles(
+            items, MAX_FILE_LOOKUPS,
+            ready = { it.second.isReady() },
+            fileCount = { it.second.files?.size ?: 0 },
+            createdAt = { it.second.createdAt },
+            id = { it.second.id }
+        )
+        if (wanted.isEmpty()) return items
+        val found: Map<Pair<Kind, Long>, TbItemDto> = coroutineScope {
+            wanted.map { (kind, item) -> async { lookup(kind, item.id)?.let { (kind to item.id) to it } } }
+                .awaitAll()
+                .filterNotNull()
+                .toMap()
+        }
+        return items.map { (kind, item) -> kind to (found[kind to item.id] ?: item) }
+    }
+
+    /** One item, fresh. Null on any failure: the list's copy is kept. */
+    private suspend fun lookup(kind: Kind, id: Long): TbItemDto? = try {
+        when (kind) {
+            Kind.TORRENT -> api.torrent(id)
+            Kind.USENET -> api.usenetJob(id)
+            Kind.WEB -> api.webDownload(id)
+        }.unwrap()
+    } catch (ce: CancellationException) {
+        throw ce
+    } catch (e: Exception) {
+        null
+    }
+
+    /** One list in [FETCH_LIMIT]-sized requests until a short one (capped). */
+    private suspend fun fetchAll(page: suspend (offset: Int, limit: Int) -> List<TbItemDto>): List<TbItemDto> {
+        val out = ArrayList<TbItemDto>()
+        var offset = 0
+        while (offset < MAX_ITEMS) {
+            val batch = page(offset, FETCH_LIMIT)
+            out += batch
+            if (batch.size < FETCH_LIMIT) break
+            offset += FETCH_LIMIT
+        }
+        return out
+    }
+
+    private fun TbItemDto.isReady() = TorBoxStatus.isReady(downloadPresent, downloadFinished, downloadState)
+
+    /** Ready and its files known: can be shown in the Library. */
+    private fun TbItemDto.isListable() = isReady() && !files.isNullOrEmpty()
 
     override suspend fun resolveLink(sourceRef: String): ResolvedLink {
         if (sourceRef.startsWith(ZIP_PREFIX)) return resolveZip(sourceRef.removePrefix(ZIP_PREFIX))
@@ -194,16 +278,16 @@ class TorBoxProvider @Inject constructor(
 
     // --- jobs still processing on TorBox ---------------------------------------
 
-    override suspend fun listProcessing(): List<RemoteJob> = coroutineScope {
-        val torrents = async { api.torrents(0, PROCESSING_WINDOW, true).unwrapList() }
-        val usenet = async { secondary { api.usenet(0, PROCESSING_WINDOW, true).unwrapList() } }
-        val web = async { secondary { api.webDownloads(0, PROCESSING_WINDOW, true).unwrapList() } }
-        listOf(Kind.TORRENT to torrents.await(), Kind.USENET to usenet.await(), Kind.WEB to web.await())
-            .flatMap { (kind, items) ->
-                items.filter { !(it.downloadPresent ?: it.downloadFinished ?: false) }
-                    .map { it.toJob(kind) }
-            }
-    }
+    /**
+     * Everything not in the Library yet, from the same whole-account read:
+     * items still downloading, and ready ones whose files TorBox hasn't
+     * listed yet (so they're never invisible; they move to the Library by
+     * themselves once the files arrive).
+     */
+    override suspend fun listProcessing(): List<RemoteJob> =
+        allItems(fresh = true)
+            .filter { (_, item) -> !item.isListable() }
+            .map { (kind, item) -> item.toJob(kind) }
 
     override suspend fun filesForJob(jobRef: String): List<DownloadItem>? {
         val parts = jobRef.split(':')
@@ -217,8 +301,8 @@ class TorBoxProvider @Inject constructor(
             Kind.USENET -> api.usenetJob(id)
             Kind.WEB -> api.webDownload(id)
         }.unwrap()
-        val ready = item.downloadPresent ?: item.downloadFinished ?: false
-        return if (ready) item.toFiles(kind) else null
+        // Ready but no files listed yet counts as "not ready": keep waiting.
+        return if (item.isListable()) item.toFiles(kind) else null
     }
 
     // --- removing ------------------------------------------------------------
@@ -286,7 +370,7 @@ class TorBoxProvider @Inject constructor(
         provider = ProviderId.TORBOX,
         name = name?.takeIf { it.isNotBlank() } ?: "${kind.label} $id",
         progress = progress?.toFloat()?.coerceIn(0f, 1f),
-        status = downloadState?.replace('_', ' ') ?: "processing",
+        status = if (isReady()) "preparing files" else downloadState?.replace('_', ' ') ?: "processing",
         sizeBytes = size ?: 0L,
         etaSeconds = eta?.toLong()?.takeIf { it > 0 },
         bytesPerSecond = downloadSpeed?.toLong()?.takeIf { it > 0 }
@@ -295,8 +379,7 @@ class TorBoxProvider @Inject constructor(
     // --- mapping -----------------------------------------------------------
 
     private fun TbItemDto.toFiles(kind: Kind): List<DownloadItem> {
-        val ready = downloadPresent ?: downloadFinished ?: false
-        if (!ready) return emptyList()
+        if (!isReady()) return emptyList()
         val parent = name.orEmpty().trim()
         return files.orEmpty().map { f ->
             val filename = f.shortName?.takeIf { it.isNotBlank() }
@@ -358,8 +441,14 @@ class TorBoxProvider @Inject constructor(
         /** sourceRef prefix for whole-item zip downloads: "zip:torrent:123". */
         const val ZIP_PREFIX = "zip:"
 
-        /** Newest N of each kind scanned for in-progress jobs. */
-        const val PROCESSING_WINDOW = 50
+        /** Items per `mylist` request when reading the whole account. */
+        const val FETCH_LIMIT = 1000
+        /** Safety cap per list (very large accounts). */
+        const val MAX_ITEMS = 20_000
+        /** A second fresh read within this window reuses the first (page 1 + processing strip). */
+        const val SNAPSHOT_REUSE_MS = 5_000L
+        /** Most single-item lookups per refresh for items listed without files (rate limit). */
+        const val MAX_FILE_LOOKUPS = 10
 
         fun <T> TbEnvelope<T>.unwrap(): T {
             if (!success) throw ProviderException("TorBox: ${detail ?: error ?: "request failed"}")

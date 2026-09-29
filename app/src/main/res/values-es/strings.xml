@@ -513,4 +513,96 @@
         <item quantity="many">Ahora sigues %d series más.</item>
         <item quantity="other">Ahora sigues %d series más.</item>
     </plurals>
+
+    <!-- Picture-in-picture -->
+    <string name="set_pip">Imagen en imagen</string>
+    <string name="set_pip_detail">Si sales del reproductor mientras suena un vídeo, sigue en una pequeña ventana flotante.</string>
+    <string name="player_next_episode">Siguiente episodio</string>
+
+    <!-- Direct downloads (Pixeldrain, Google Drive, file links) -->
+    <string name="direct_target_name">Descarga directa</string>
+    <string name="direct_title">Descargar directamente</string>
+    <string name="direct_suggested_hint">Son enlaces directos, así que se descargan directamente en este dispositivo. No hace falta ningún servicio.</string>
+    <string name="direct_err_web_page">%1$s abre una página web, no un archivo.</string>
+    <string name="direct_err_drive">Google Drive no entrega este archivo: es privado o alcanzó su límite de descargas. Inténtalo más tarde.</string>
+    <string name="direct_err_folder">Las carpetas no se pueden descargar directamente. Añade los archivos uno a uno.</string>
+    <string name="direct_err_http">%1$s respondió HTTP %2$d.</string>
+    <plurals name="direct_added">
+        <item quantity="one">Descargando %d archivo</item>
+        <item quantity="many">Descargando %d archivos</item>
+        <item quantity="other">Descargando %d archivos</item>
+    </plurals>
+
+    <!-- Player gestures -->
+    <string name="set_player_gestures">Gestos táctiles</string>
+    <string name="set_player_gestures_detail">Toca dos veces los lados para saltar, desliza para brillo, volumen o avanzar, mantén pulsado para reproducir rápido, pellizca para hacer zoom.</string>
+    <plurals name="player_gesture_seek_n">
+        <item quantity="one">%d segundo</item>
+        <item quantity="many">%d segundos</item>
+        <item quantity="other">%d segundos</item>
+    </plurals>
+
+    <!-- Player controls -->
+    <string name="player_back">Atrás</string>
+    <string name="player_audio">Audio</string>
+    <string name="player_subtitles">Subtítulos</string>
+    <string name="player_subtitles_off">Desactivados</string>
+    <string name="player_speed">Velocidad</string>
+    <string name="player_lock">Bloquear pantalla</string>
+    <string name="player_slide_to_unlock">Desliza para desbloquear</string>
+    <string name="player_fit">Ajustar</string>
+    <string name="player_crop">Recortar</string>
+    <string name="player_stretch">Estirar</string>
+    <string name="player_rotate">Girar</string>
+    <string name="player_no_tracks">Ninguno disponible</string>
+    <string name="player_normal_speed">Normal</string>
+    <plurals name="player_rewind_n">
+        <item quantity="one">Retroceder %d segundo</item>
+        <item quantity="many">Retroceder %d segundos</item>
+        <item quantity="other">Retroceder %d segundos</item>
+    </plurals>
+    <plurals name="player_forward_n">
+        <item quantity="one">Avanzar %d segundo</item>
+        <item quantity="many">Avanzar %d segundos</item>
+        <item quantity="other">Avanzar %d segundos</item>
+    </plurals>
+
+    <!-- Player: languages and subtitle style -->
+    <string name="set_audio_language">Idioma del audio</string>
+    <string name="set_subtitle_language">Idioma de subtítulos</string>
+    <string name="set_lang_auto">Predeterminado del archivo</string>
+    <string name="player_sub_style">Estilo de subtítulos</string>
+    <string name="player_sub_size">Tamaño</string>
+    <string name="player_sub_look">Aspecto</string>
+    <string name="player_sub_position">Posición</string>
+    <string name="player_sub_pos_low">Baja</string>
+    <string name="player_sub_pos_mid">Media</string>
+    <string name="player_sub_pos_high">Alta</string>
+    <string name="player_sub_file_style">Mantener el estilo del archivo</string>
+
+    <!-- Player extras: sleep timer, screenshot, A-B loop, background -->
+    <string name="player_more">Más</string>
+    <string name="player_sleep_timer">Temporizador</string>
+    <string name="player_sleep_off">Desactivado</string>
+    <string name="player_sleep_end">Al final del episodio</string>
+    <string name="player_sleep_done">Temporizador: en pausa</string>
+    <string name="player_screenshot">Captura</string>
+    <string name="player_screenshot_saved">Captura guardada en Pictures/DebForge</string>
+    <string name="player_screenshot_failed">No se pudo hacer la captura</string>
+    <string name="player_ab_loop">Bucle A-B</string>
+    <string name="player_ab_set_a">Marcar A (inicio del bucle) aquí</string>
+    <string name="player_ab_set_b">Marcar B aquí para repetir</string>
+    <string name="player_ab_clear">Detener el bucle</string>
+    <string name="player_background">Seguir reproduciendo en segundo plano</string>
+    <string name="player_background_detail">El sonido sigue con la pantalla apagada o en otra app</string>
+    <plurals name="player_minutes_n">
+        <item quantity="one">%d min</item>
+        <item quantity="many">%d min</item>
+        <item quantity="other">%d min</item>
+    </plurals>
+    <plurals name="player_sleep_in_n">
+        <item quantity="one">Pausa en %d minuto</item>
+        <item quantity="many">Pausa en %d minutos</item>
+        <item quantity="other">Pausa en %d minutos</item>
+    </plurals>
 </resources>

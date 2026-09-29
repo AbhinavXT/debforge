@@ -537,4 +537,102 @@
         <item quantity="many">Теперь вы следите ещё за %d сериалами.</item>
         <item quantity="other">Теперь вы следите ещё за %d сериала.</item>
     </plurals>
+
+    <!-- Picture-in-picture -->
+    <string name="set_pip">Картинка в картинке</string>
+    <string name="set_pip_detail">Если выйти из плеера во время воспроизведения, видео продолжится в маленьком плавающем окне.</string>
+    <string name="player_next_episode">Следующая серия</string>
+
+    <!-- Direct downloads (Pixeldrain, Google Drive, file links) -->
+    <string name="direct_target_name">Прямая загрузка</string>
+    <string name="direct_title">Скачать напрямую</string>
+    <string name="direct_suggested_hint">Это прямые ссылки, они скачиваются сразу на это устройство. Сервис не нужен.</string>
+    <string name="direct_err_web_page">%1$s открывает веб-страницу, а не файл.</string>
+    <string name="direct_err_drive">Google Диск не отдаёт этот файл: он закрыт или исчерпал лимит скачиваний. Попробуйте позже.</string>
+    <string name="direct_err_folder">Папки нельзя скачать напрямую. Добавьте файлы по одному.</string>
+    <string name="direct_err_http">%1$s ответил HTTP %2$d.</string>
+    <plurals name="direct_added">
+        <item quantity="one">Скачивается %d файл</item>
+        <item quantity="few">Скачиваются %d файла</item>
+        <item quantity="many">Скачиваются %d файлов</item>
+        <item quantity="other">Скачивается %d файла</item>
+    </plurals>
+
+    <!-- Player gestures -->
+    <string name="set_player_gestures">Жесты</string>
+    <string name="set_player_gestures_detail">Двойное касание по краям — перемотка, свайп — яркость, громкость или перемотка, удержание — быстрое воспроизведение, щипок — масштаб.</string>
+    <plurals name="player_gesture_seek_n">
+        <item quantity="one">%d секунда</item>
+        <item quantity="few">%d секунды</item>
+        <item quantity="many">%d секунд</item>
+        <item quantity="other">%d секунды</item>
+    </plurals>
+
+    <!-- Player controls -->
+    <string name="player_back">Назад</string>
+    <string name="player_audio">Аудио</string>
+    <string name="player_subtitles">Субтитры</string>
+    <string name="player_subtitles_off">Выкл.</string>
+    <string name="player_speed">Скорость</string>
+    <string name="player_lock">Заблокировать экран</string>
+    <string name="player_slide_to_unlock">Проведите, чтобы разблокировать</string>
+    <string name="player_fit">Вписать</string>
+    <string name="player_crop">Обрезать</string>
+    <string name="player_stretch">Растянуть</string>
+    <string name="player_rotate">Повернуть</string>
+    <string name="player_no_tracks">Нет доступных</string>
+    <string name="player_normal_speed">Обычная</string>
+    <plurals name="player_rewind_n">
+        <item quantity="one">Назад на %d секунду</item>
+        <item quantity="few">Назад на %d секунды</item>
+        <item quantity="many">Назад на %d секунд</item>
+        <item quantity="other">Назад на %d секунды</item>
+    </plurals>
+    <plurals name="player_forward_n">
+        <item quantity="one">Вперёд на %d секунду</item>
+        <item quantity="few">Вперёд на %d секунды</item>
+        <item quantity="many">Вперёд на %d секунд</item>
+        <item quantity="other">Вперёд на %d секунды</item>
+    </plurals>
+
+    <!-- Player: languages and subtitle style -->
+    <string name="set_audio_language">Язык аудио</string>
+    <string name="set_subtitle_language">Язык субтитров</string>
+    <string name="set_lang_auto">Как в файле</string>
+    <string name="player_sub_style">Стиль субтитров</string>
+    <string name="player_sub_size">Размер</string>
+    <string name="player_sub_look">Вид</string>
+    <string name="player_sub_position">Положение</string>
+    <string name="player_sub_pos_low">Ниже</string>
+    <string name="player_sub_pos_mid">Посередине</string>
+    <string name="player_sub_pos_high">Выше</string>
+    <string name="player_sub_file_style">Сохранять стиль из файла</string>
+
+    <!-- Player extras: sleep timer, screenshot, A-B loop, background -->
+    <string name="player_more">Ещё</string>
+    <string name="player_sleep_timer">Таймер сна</string>
+    <string name="player_sleep_off">Выкл.</string>
+    <string name="player_sleep_end">В конце серии</string>
+    <string name="player_sleep_done">Таймер сна: пауза</string>
+    <string name="player_screenshot">Снимок экрана</string>
+    <string name="player_screenshot_saved">Снимок сохранён в Pictures/DebForge</string>
+    <string name="player_screenshot_failed">Не удалось сделать снимок</string>
+    <string name="player_ab_loop">Повтор A-B</string>
+    <string name="player_ab_set_a">Отметить A (начало повтора)</string>
+    <string name="player_ab_set_b">Отметить B и начать повтор</string>
+    <string name="player_ab_clear">Остановить повтор</string>
+    <string name="player_background">Продолжать в фоне</string>
+    <string name="player_background_detail">Звук продолжится при выключенном экране или в другом приложении</string>
+    <plurals name="player_minutes_n">
+        <item quantity="one">%d мин</item>
+        <item quantity="few">%d мин</item>
+        <item quantity="many">%d мин</item>
+        <item quantity="other">%d мин</item>
+    </plurals>
+    <plurals name="player_sleep_in_n">
+        <item quantity="one">Пауза через %d минуту</item>
+        <item quantity="few">Пауза через %d минуты</item>
+        <item quantity="many">Пауза через %d минут</item>
+        <item quantity="other">Пауза через %d минуты</item>
+    </plurals>
 </resources>

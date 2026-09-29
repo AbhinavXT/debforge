@@ -74,6 +74,14 @@ fun ActiveDownloadsScreen(viewModel: ActiveDownloadsViewModel = hiltViewModel())
     val running = grouped[DownloadState.DOWNLOADING].orEmpty()
     val totalSpeed = running.filterNot { it.waitingForNetwork }.sumOf { it.bytesPerSecond.coerceAtLeast(0) }
 
+    // Finished videos open in DebForge's player (offline, from the file).
+    val context = LocalContext.current
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        viewModel.playRequests.collect { req ->
+            context.startActivity(com.abhinavxt.debforge.player.PlayerActivity.intent(context, req))
+        }
+    }
+
     Scaffold(
         topBar = {
             ScreenHeader(
@@ -307,7 +315,11 @@ private fun CompletedRow(row: ActiveRow, vm: ActiveDownloadsViewModel) {
             if (present && path != null) {
                 val isVideo = LocalFiles.mimeType(LocalFiles.name(path)).startsWith("video/")
                 FilledTonalIconButton(onClick = {
-                    runCatching { LocalFiles.openIntent(context, path)?.let(context::startActivity) }
+                    if (isVideo && vm.useInternalPlayer.value) {
+                        vm.play(row.entity)
+                    } else {
+                        runCatching { LocalFiles.openIntent(context, path)?.let(context::startActivity) }
+                    }
                 }) {
                     Icon(
                         if (isVideo) Icons.Rounded.PlayArrow else Icons.AutoMirrored.Rounded.OpenInNew,

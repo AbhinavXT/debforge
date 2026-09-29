@@ -16,6 +16,8 @@ O DebForge baixa os arquivos da sua conta debrid direto para o seu celular, tabl
 <li>Pôsteres do TMDB (adicione sua própria chave de API gratuita em Configurações)</li>
 <li>Adicione links magnet, arquivos .torrent e links pelo app ou compartilhando com ele, e, se quiser, baixe-os assim que ficarem prontos</li>
 <li>Player integrado que lembra onde você parou, fileira Continuar assistindo, legendas do próprio torrent e o próximo episódio pronto; ou use o VLC e outros, se preferir</li>
+<li>Gestos no player (toque duas vezes para pular, deslize para brilho, volume e avançar, segure para 2×, pince para zoom), estilo das legendas, idiomas de áudio e legendas lembrados por série, timer de desligamento, loop A-B, capturas de tela, picture-in-picture e reprodução em segundo plano. Arquivos baixados tocam offline</li>
+<li>Links do Pixeldrain, Google Drive e de arquivos diretos baixam direto no celular, sem serviço</li>
 <li>Siga uma série e os episódios novos que chegam à sua conta são baixados sozinhos</li>
 <li>Widget na tela inicial, bloco de Configurações rápidas e atalhos</li>
 <li>Conectado a vários serviços? Adicione ao que já tem em cache</li>

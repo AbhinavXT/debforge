@@ -32,8 +32,13 @@ Premiumize and Debrid-Link.
   .torrent links are offered, each copy once (can be turned off in Settings).
 - **Play without downloading.** Stream any file in DebForge's own player
   (seek, speed, audio and subtitle tracks, Android TV remote) or hand it to VLC,
-  mpv or MX Player (Settings → Library → Play videos in). If this device can't
-  decode a file or its audio (e.g. DTS), DebForge offers your other player instead.
+  mpv or MX Player (Settings → Library → Play videos in). Dolby Digital (Plus), DTS
+  and TrueHD audio play even on phones without those decoders (FFmpeg); anything
+  the device still can't decode is offered to your other player instead.
+- **Watch your downloads offline.** Finished videos play in the same player from
+  the Downloads tab, and the Library and Continue watching use the downloaded
+  copy when there is one: no data, same resume point, subtitles and next episode
+  from your downloads.
 - **Continue watching.** DebForge's player remembers where you stopped in every
   file (even though debrid links change each time) and picks up there. A row at
   the top of the Library takes you back in, and episodes show progress or ✓ Watched.
@@ -47,6 +52,8 @@ Premiumize and Debrid-Link.
 - **No dead streams.** When a debrid link expires mid-watch (hours in, or after
   a long pause), the player quietly gets a fresh one and carries on from the
   same second. On Android TV the remote reaches every button.
+- **Picture-in-picture.** Leave the player while a video plays and it keeps going
+  in a floating window, with play/pause and next episode (Settings to turn off).
 - **Download rules.** Wi-Fi only, while charging, a nightly time window, and a speed limit.
 - **Save anywhere.** Pick any folder with the system picker, including SD cards
   and USB drives, with no special permission.
@@ -255,7 +262,12 @@ Steps:
    request using the "App inclusion" template. The pipeline on your merge
    request builds the app and runs the reproducibility check. Reviewers may ask
    for changes; approval usually takes days to a few weeks.
-5. **After it's live,** uncomment the F-Droid badge at the top of this README.
+5. **While the merge request is still open,** each new release also goes into
+   it: after the release job is green, copy `fdroid/com.abhinavxt.debforge.yml`
+   over `metadata/com.abhinavxt.debforge.yml` in your fdroiddata branch, commit,
+   push, and say in a comment what changed (new version, new dependencies or
+   network services). The pipeline builds the new version again.
+6. **After it's live,** uncomment the F-Droid badge at the top of this README.
    From then on F-Droid picks up each new `v*` tag automatically. You only run
    `scripts/release.sh`, and the F-Droid update appears a few days after the
    GitHub release.

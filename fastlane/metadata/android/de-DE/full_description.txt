@@ -16,6 +16,8 @@ DebForge lädt die Dateien aus deinem Debrid-Konto direkt auf dein Handy, Tablet
 <li>Poster von TMDB (eigenen kostenlosen API-Schlüssel in den Einstellungen hinzufügen)</li>
 <li>Magnet-Links, .torrent-Dateien und Links in der App oder per Teilen hinzufügen und auf Wunsch herunterladen, sobald sie bereit sind</li>
 <li>Eingebauter Player, der sich merkt, wo du aufgehört hast, mit „Weiterschauen“, Untertiteln aus dem Torrent und der nächsten Folge bereit; oder VLC & Co., wenn du magst</li>
+<li>Player-Gesten (doppelt tippen zum Springen, wischen für Helligkeit, Lautstärke und Spulen, halten für 2×, zusammenziehen zum Zoomen), Untertitelstil, Audio- und Untertitelsprache pro Serie gemerkt, Sleep-Timer, A-B-Schleife, Screenshots, Bild-im-Bild und Wiedergabe im Hintergrund. Heruntergeladene Dateien spielen offline</li>
+<li>Pixeldrain-, Google-Drive- und direkte Dateilinks laden direkt aufs Handy, ohne Dienst</li>
 <li>Folge einer Serie: neue Folgen, die in deinem Konto ankommen, werden automatisch geladen</li>
 <li>Startbildschirm-Widget, Schnelleinstellungs-Kachel und App-Verknüpfungen</li>
 <li>Bei mehreren Diensten angemeldet? Füge dort hinzu, wo es schon im Cache liegt</li>

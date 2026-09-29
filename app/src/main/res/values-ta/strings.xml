@@ -489,4 +489,90 @@
         <item quantity="one">இப்போது மேலும் %d தொடரைப் பின்தொடர்கிறீர்கள்.</item>
         <item quantity="other">இப்போது மேலும் %d தொடர்களைப் பின்தொடர்கிறீர்கள்.</item>
     </plurals>
+
+    <!-- Picture-in-picture -->
+    <string name="set_pip">படத்தில் படம்</string>
+    <string name="set_pip_detail">வீடியோ இயங்கும்போது பிளேயரை விட்டு வெளியேறினால், அது சிறிய மிதக்கும் சாளரத்தில் தொடரும்.</string>
+    <string name="player_next_episode">அடுத்த எபிசோட்</string>
+
+    <!-- Direct downloads (Pixeldrain, Google Drive, file links) -->
+    <string name="direct_target_name">நேரடி பதிவிறக்கம்</string>
+    <string name="direct_title">நேரடியாகப் பதிவிறக்கு</string>
+    <string name="direct_suggested_hint">இவை நேரடி இணைப்புகள், எனவே நேராக இந்தச் சாதனத்தில் பதிவிறங்கும். எந்தச் சேவையும் தேவையில்லை.</string>
+    <string name="direct_err_web_page">%1$s ஒரு இணையப் பக்கத்தைத் திறக்கிறது, கோப்பை அல்ல.</string>
+    <string name="direct_err_drive">Google Drive இந்தக் கோப்பைத் தரவில்லை: இது தனிப்பட்டது, அல்லது அதன் பதிவிறக்க வரம்பு எட்டிவிட்டது. பின்னர் மீண்டும் முயலவும்.</string>
+    <string name="direct_err_folder">கோப்புறைகளை நேரடியாகப் பதிவிறக்க முடியாது. கோப்புகளை ஒவ்வொன்றாகச் சேர்க்கவும்.</string>
+    <string name="direct_err_http">%1$s HTTP %2$d என பதிலளித்தது.</string>
+    <plurals name="direct_added">
+        <item quantity="one">%d கோப்பு பதிவிறங்குகிறது</item>
+        <item quantity="other">%d கோப்புகள் பதிவிறங்குகின்றன</item>
+    </plurals>
+
+    <!-- Player gestures -->
+    <string name="set_player_gestures">தொடு சைகைகள்</string>
+    <string name="set_player_gestures_detail">ஓரங்களில் இருமுறை தட்டித் தாவலாம், தேய்த்து ஒளிர்வு, ஒலி அல்லது முன்-பின் நகர்த்தலாம், அழுத்திப் பிடித்தால் வேகமாக ஓடும், கிள்ளி பெரிதாக்கலாம்.</string>
+    <plurals name="player_gesture_seek_n">
+        <item quantity="one">%d விநாடி</item>
+        <item quantity="other">%d விநாடிகள்</item>
+    </plurals>
+
+    <!-- Player controls -->
+    <string name="player_back">பின்செல்</string>
+    <string name="player_audio">ஆடியோ</string>
+    <string name="player_subtitles">வசனங்கள்</string>
+    <string name="player_subtitles_off">முடக்கம்</string>
+    <string name="player_speed">வேகம்</string>
+    <string name="player_lock">திரையைப் பூட்டு</string>
+    <string name="player_slide_to_unlock">திறக்க ஸ்லைடு செய்யவும்</string>
+    <string name="player_fit">பொருத்து</string>
+    <string name="player_crop">வெட்டு</string>
+    <string name="player_stretch">நீட்டு</string>
+    <string name="player_rotate">சுழற்று</string>
+    <string name="player_no_tracks">எதுவும் இல்லை</string>
+    <string name="player_normal_speed">இயல்பு</string>
+    <plurals name="player_rewind_n">
+        <item quantity="one">%d விநாடி பின்னால்</item>
+        <item quantity="other">%d விநாடிகள் பின்னால்</item>
+    </plurals>
+    <plurals name="player_forward_n">
+        <item quantity="one">%d விநாடி முன்னால்</item>
+        <item quantity="other">%d விநாடிகள் முன்னால்</item>
+    </plurals>
+
+    <!-- Player: languages and subtitle style -->
+    <string name="set_audio_language">ஆடியோ மொழி</string>
+    <string name="set_subtitle_language">வசன மொழி</string>
+    <string name="set_lang_auto">கோப்பின் இயல்புநிலை</string>
+    <string name="player_sub_style">வசன பாணி</string>
+    <string name="player_sub_size">அளவு</string>
+    <string name="player_sub_look">தோற்றம்</string>
+    <string name="player_sub_position">நிலை</string>
+    <string name="player_sub_pos_low">கீழே</string>
+    <string name="player_sub_pos_mid">நடுவில்</string>
+    <string name="player_sub_pos_high">மேலே</string>
+    <string name="player_sub_file_style">கோப்பின் சொந்த பாணியை வைத்திரு</string>
+
+    <!-- Player extras: sleep timer, screenshot, A-B loop, background -->
+    <string name="player_more">மேலும்</string>
+    <string name="player_sleep_timer">தூக்க நேரக் கட்டுப்பாடு</string>
+    <string name="player_sleep_off">முடக்கம்</string>
+    <string name="player_sleep_end">எபிசோட் முடிவில்</string>
+    <string name="player_sleep_done">தூக்க நேரம்: இடைநிறுத்தப்பட்டது</string>
+    <string name="player_screenshot">திரைப்பிடிப்பு</string>
+    <string name="player_screenshot_saved">திரைப்பிடிப்பு Pictures/DebForge-இல் சேமிக்கப்பட்டது</string>
+    <string name="player_screenshot_failed">திரைப்பிடிப்பு எடுக்க முடியவில்லை</string>
+    <string name="player_ab_loop">A-B சுழற்சி</string>
+    <string name="player_ab_set_a">இங்கே A (தொடக்கம்) அமை</string>
+    <string name="player_ab_set_b">சுழற்சியைத் தொடங்க இங்கே B அமை</string>
+    <string name="player_ab_clear">சுழற்சியை நிறுத்து</string>
+    <string name="player_background">பின்னணியில் தொடர்ந்து இயக்கு</string>
+    <string name="player_background_detail">திரை அணைந்தாலும் அல்லது வேறு ஆப்பிலும் ஒலி தொடரும்</string>
+    <plurals name="player_minutes_n">
+        <item quantity="one">%d நிமி</item>
+        <item quantity="other">%d நிமி</item>
+    </plurals>
+    <plurals name="player_sleep_in_n">
+        <item quantity="one">%d நிமிடத்தில் நிறுத்தப்படும்</item>
+        <item quantity="other">%d நிமிடங்களில் நிறுத்தப்படும்</item>
+    </plurals>
 </resources>

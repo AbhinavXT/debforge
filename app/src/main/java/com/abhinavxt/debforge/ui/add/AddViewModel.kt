@@ -15,6 +15,7 @@ import com.abhinavxt.debforge.domain.AddInputParser
 import com.abhinavxt.debforge.domain.AddKind
 import com.abhinavxt.debforge.domain.AddRequest
 import com.abhinavxt.debforge.domain.DataResult
+import com.abhinavxt.debforge.domain.DirectLinkParser
 import com.abhinavxt.debforge.domain.ExtraFiles
 import com.abhinavxt.debforge.domain.ProviderId
 import com.abhinavxt.debforge.domain.ServicePicker
@@ -64,6 +65,10 @@ data class AddUiState(
     val activeName: String = "",
     /** The active service can take what's in the dialog (else that's why another was picked). */
     val activeCanTake: Boolean = true,
+    /** Downloading straight to the device (no service): Pixeldrain, Drive, file links. */
+    val isDirect: Boolean = false,
+    /** Direct download was picked for the user because the links are direct ones. */
+    val directSuggested: Boolean = false,
     val text: String = "",
     val torrentUri: Uri? = null,
     val torrentName: String? = null,
@@ -206,11 +211,11 @@ class AddViewModel @Inject constructor(
         val active = provider ?: return
         val hashes = currentHashes()
         val kinds = inputKinds()
-        val all = signedIn.ifEmpty { listOf(active) }
+        val all = signedIn.ifEmpty { listOf(active) } + ProviderId.DIRECT
         val targets = all.map { p ->
             AddTarget(
                 id = p,
-                name = auth.info(p).displayName,
+                name = if (p == ProviderId.DIRECT) context.getString(R.string.direct_target_name) else auth.info(p).displayName,
                 supportsInput = repository.addCapabilities(p).containsAll(kinds),
                 cache = cacheOn(p, hashes)
             )
@@ -219,7 +224,8 @@ class AddViewModel @Inject constructor(
             active = active,
             options = targets.map { ServicePicker.Option(it.id, it.supportsInput, it.cache?.allCached == true) },
             current = target,
-            userPicked = userPickedTarget
+            userPicked = userPickedTarget,
+            preferred = ProviderId.DIRECT.takeIf { directPreferred() }
         )
         target = picked
         // The active service can briefly be missing from the signed-in set
@@ -232,11 +238,24 @@ class AddViewModel @Inject constructor(
                 targets = if (targets.size > 1) targets else emptyList(),
                 target = picked,
                 targetIsSuggestion = !userPickedTarget && picked != active,
+                isDirect = picked == ProviderId.DIRECT,
+                directSuggested = !userPickedTarget && picked == ProviderId.DIRECT,
                 activeName = auth.info(active).displayName,
                 activeCanTake = targets.firstOrNull { t -> t.id == active }?.supportsInput != false,
                 cache = chosen.cache
             )
         }
+    }
+
+    /**
+     * Only links, and every one is better downloaded directly (Pixeldrain,
+     * Google Drive, a file URL): suggest direct download over the service.
+     */
+    private fun directPreferred(): Boolean {
+        val s = _state.value
+        if (s.torrentUri != null) return false
+        val requests = AddInputParser.parse(s.text).requests
+        return requests.isNotEmpty() && requests.all { it is AddRequest.Link && DirectLinkParser.prefersDirect(it.url) }
     }
 
     /** The user tapped a service under "Send to". */
@@ -376,19 +395,27 @@ class AddViewModel @Inject constructor(
                 return@launch
             }
 
-            val auto = s.autoDownload &&
-                StorageAccess.canWrite(context, settings.downloadDirFlow.first())
+            val canWrite = StorageAccess.canWrite(context, settings.downloadDirFlow.first())
+            val direct = p == ProviderId.DIRECT
+            // Direct links download right away: nowhere to keep them otherwise.
+            if (direct && !canWrite) {
+                _state.update { it.copy(submitting = false, error = context.getString(R.string.add_needs_storage)) }
+                return@launch
+            }
+            val auto = (s.autoDownload || direct) && canWrite
             val keepExtras = settings.showExtraFilesFlow.first()
 
             // Sequential on purpose: TorBox limits uncached creations to
             // 60/hour, and sequential failures are easier to report.
             var added = 0
+            var directFiles = 0
             var lastMessage = ""
             val failures = mutableListOf<String>()
             requests.forEach { req ->
                 when (val r = repository.add(p, req)) {
                     is DataResult.Success -> {
                         added++
+                        directFiles += r.data.readyFiles.size
                         lastMessage = r.data.message
                         if (auto) {
                             // Ready now (e.g. RD link): queue immediately.
@@ -408,9 +435,10 @@ class AddViewModel @Inject constructor(
 
             if (failures.isEmpty()) {
                 val msg = if (added == 1) lastMessage
+                else if (direct) context.resources.getQuantityString(R.plurals.direct_added, directFiles, directFiles)
                 else context.resources.getQuantityString(R.plurals.add_added_n, added, added, s.providerName)
                 // Sent somewhere the Library isn't showing: say where it went.
-                val elsewhere = if (active != null && p != active) {
+                val elsewhere = if (active != null && p != active && !direct) {
                     " " + context.getString(R.string.add_sent_elsewhere, s.providerName, auth.info(active).displayName)
                 } else ""
                 events.notifyListChanged(msg + elsewhere)

@@ -16,6 +16,8 @@ DebForge downloads the files in your debrid account straight to your phone, tabl
 <li>Posters from TMDB (add your own free API key in Settings)</li>
 <li>Add magnet links, .torrent files and links, from the app or by sharing to it, and optionally download them as soon as they're ready</li>
 <li>Built-in player that remembers where you stopped, a Continue watching row, subtitles from the torrent and the next episode ready to go, or play in VLC and others if you prefer</li>
+<li>Player gestures (double-tap to skip, swipe for brightness, volume and seeking, hold for 2×, pinch to zoom), subtitle style, audio and subtitle languages remembered per show, sleep timer, A-B loop, screenshots, picture-in-picture and background play. Downloaded files play offline</li>
+<li>Pixeldrain, Google Drive and direct file links download straight to your phone, no service needed</li>
 <li>Follow a show and new episodes that reach your account download by themselves</li>
 <li>Home-screen widget, Quick Settings tile and launcher shortcuts</li>
 <li>Signed in to several services? Add to the one that already has it cached</li>

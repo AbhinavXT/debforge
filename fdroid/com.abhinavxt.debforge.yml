@@ -5,8 +5,8 @@ AntiFeatures:
     NonFreeNet:
         en-US: >-
             Needs an account with a proprietary debrid service (TorBox, Real-Debrid,
-            AllDebrid, Premiumize or Debrid-Link). Posters come from TMDB if you add
-            a key.
+            AllDebrid, Premiumize or Debrid-Link). Can also download from Pixeldrain
+            and Google Drive links you add. Posters come from TMDB if you add a key.
 Categories:
     - Download
 License: GPL-3.0-or-later
@@ -36,6 +36,13 @@ Builds:
       prebuild:
           - sed -i -e '/foojay/d' ../settings.gradle.kts
 
+    # 1.2.0 adds a built-in player: AndroidX Media3 (exoplayer, ui, session;
+    # Google Maven) and Jellyfin's Media3 FFmpeg audio decoder
+    # (org.jellyfin.media3:media3-ffmpeg-decoder, Maven Central, GPL-3.0,
+    # built from https://github.com/jellyfin/jellyfin-androidx-media). Its
+    # native libraries keep their debug symbols in the APK
+    # (packaging.jniLibs.keepDebugSymbols), so stripping can't make the
+    # rebuild differ.
     - versionName: 1.2.0
       versionCode: 10200
       commit: v1.2.0

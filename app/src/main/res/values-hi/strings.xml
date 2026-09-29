@@ -489,4 +489,90 @@
         <item quantity="one">अब %d और शो फ़ॉलो कर रहे हैं।</item>
         <item quantity="other">अब %d और शो फ़ॉलो कर रहे हैं।</item>
     </plurals>
+
+    <!-- Picture-in-picture -->
+    <string name="set_pip">पिक्चर-इन-पिक्चर</string>
+    <string name="set_pip_detail">वीडियो चलते समय प्लेयर छोड़ने पर वह एक छोटी फ़्लोटिंग विंडो में चलता रहता है।</string>
+    <string name="player_next_episode">अगला एपिसोड</string>
+
+    <!-- Direct downloads (Pixeldrain, Google Drive, file links) -->
+    <string name="direct_target_name">सीधा डाउनलोड</string>
+    <string name="direct_title">सीधे डाउनलोड करें</string>
+    <string name="direct_suggested_hint">ये सीधे लिंक हैं, इसलिए सीधे इसी डिवाइस पर डाउनलोड होंगे। किसी सर्विस की ज़रूरत नहीं।</string>
+    <string name="direct_err_web_page">%1$s एक वेब पेज खोलता है, फ़ाइल नहीं।</string>
+    <string name="direct_err_drive">Google Drive यह फ़ाइल नहीं दे रहा: यह प्राइवेट है, या इसकी डाउनलोड सीमा पूरी हो गई है। बाद में फिर कोशिश करें।</string>
+    <string name="direct_err_folder">फ़ोल्डर सीधे डाउनलोड नहीं हो सकते। फ़ाइलें एक-एक करके जोड़ें।</string>
+    <string name="direct_err_http">%1$s ने HTTP %2$d जवाब दिया।</string>
+    <plurals name="direct_added">
+        <item quantity="one">%d फ़ाइल डाउनलोड हो रही है</item>
+        <item quantity="other">%d फ़ाइलें डाउनलोड हो रही हैं</item>
+    </plurals>
+
+    <!-- Player gestures -->
+    <string name="set_player_gestures">टच जेस्चर</string>
+    <string name="set_player_gestures_detail">किनारों पर दो बार टैप करके आगे-पीछे करें, स्वाइप करके चमक, आवाज़ या वीडियो आगे-पीछे करें, दबाकर रखें तो तेज़ चलेगा, पिंच करके ज़ूम करें।</string>
+    <plurals name="player_gesture_seek_n">
+        <item quantity="one">%d सेकंड</item>
+        <item quantity="other">%d सेकंड</item>
+    </plurals>
+
+    <!-- Player controls -->
+    <string name="player_back">वापस</string>
+    <string name="player_audio">ऑडियो</string>
+    <string name="player_subtitles">सबटाइटल</string>
+    <string name="player_subtitles_off">बंद</string>
+    <string name="player_speed">गति</string>
+    <string name="player_lock">स्क्रीन लॉक करें</string>
+    <string name="player_slide_to_unlock">अनलॉक करने के लिए स्लाइड करें</string>
+    <string name="player_fit">फ़िट</string>
+    <string name="player_crop">क्रॉप</string>
+    <string name="player_stretch">खींचें</string>
+    <string name="player_rotate">घुमाएँ</string>
+    <string name="player_no_tracks">कोई उपलब्ध नहीं</string>
+    <string name="player_normal_speed">सामान्य</string>
+    <plurals name="player_rewind_n">
+        <item quantity="one">%d सेकंड पीछे</item>
+        <item quantity="other">%d सेकंड पीछे</item>
+    </plurals>
+    <plurals name="player_forward_n">
+        <item quantity="one">%d सेकंड आगे</item>
+        <item quantity="other">%d सेकंड आगे</item>
+    </plurals>
+
+    <!-- Player: languages and subtitle style -->
+    <string name="set_audio_language">ऑडियो की भाषा</string>
+    <string name="set_subtitle_language">सबटाइटल की भाषा</string>
+    <string name="set_lang_auto">फ़ाइल का डिफ़ॉल्ट</string>
+    <string name="player_sub_style">सबटाइटल स्टाइल</string>
+    <string name="player_sub_size">आकार</string>
+    <string name="player_sub_look">रूप</string>
+    <string name="player_sub_position">स्थिति</string>
+    <string name="player_sub_pos_low">नीचे</string>
+    <string name="player_sub_pos_mid">बीच में</string>
+    <string name="player_sub_pos_high">ऊपर</string>
+    <string name="player_sub_file_style">फ़ाइल की अपनी स्टाइल रखें</string>
+
+    <!-- Player extras: sleep timer, screenshot, A-B loop, background -->
+    <string name="player_more">और</string>
+    <string name="player_sleep_timer">स्लीप टाइमर</string>
+    <string name="player_sleep_off">बंद</string>
+    <string name="player_sleep_end">एपिसोड के अंत में</string>
+    <string name="player_sleep_done">स्लीप टाइमर: रोका गया</string>
+    <string name="player_screenshot">स्क्रीनशॉट</string>
+    <string name="player_screenshot_saved">स्क्रीनशॉट Pictures/DebForge में सेव हुआ</string>
+    <string name="player_screenshot_failed">स्क्रीनशॉट नहीं लिया जा सका</string>
+    <string name="player_ab_loop">A-B लूप</string>
+    <string name="player_ab_set_a">यहाँ A (लूप की शुरुआत) सेट करें</string>
+    <string name="player_ab_set_b">लूप शुरू करने के लिए यहाँ B सेट करें</string>
+    <string name="player_ab_clear">लूप बंद करें</string>
+    <string name="player_background">बैकग्राउंड में चलाते रहें</string>
+    <string name="player_background_detail">स्क्रीन बंद होने पर या दूसरे ऐप में भी आवाज़ चलती रहेगी</string>
+    <plurals name="player_minutes_n">
+        <item quantity="one">%d मिनट</item>
+        <item quantity="other">%d मिनट</item>
+    </plurals>
+    <plurals name="player_sleep_in_n">
+        <item quantity="one">%d मिनट में रुकेगा</item>
+        <item quantity="other">%d मिनट में रुकेगा</item>
+    </plurals>
 </resources>

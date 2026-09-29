@@ -28,6 +28,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.Logout
 import androidx.compose.material.icons.automirrored.rounded.Sort
 import androidx.compose.material.icons.rounded.AutoDelete
+import androidx.compose.material.icons.rounded.TouchApp
+import androidx.compose.material.icons.rounded.Audiotrack
+import androidx.compose.material.icons.rounded.ClosedCaption
 import androidx.compose.material.icons.rounded.BatteryChargingFull
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.ContentPaste
@@ -38,6 +41,7 @@ import androidx.compose.material.icons.rounded.Folder
 import androidx.compose.material.icons.rounded.FolderOpen
 import androidx.compose.material.icons.rounded.Image
 import androidx.compose.material.icons.rounded.Language
+import androidx.compose.material.icons.rounded.PictureInPictureAlt
 import androidx.compose.material.icons.rounded.PlayCircle
 import androidx.compose.material.icons.rounded.SkipNext
 import androidx.compose.material.icons.rounded.NotificationsActive
@@ -118,6 +122,10 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
     val follows by viewModel.follows.collectAsStateWithLifecycle()
     val internalPlayer by viewModel.internalPlayer.collectAsStateWithLifecycle()
     val autoplayNext by viewModel.autoplayNext.collectAsStateWithLifecycle()
+    val pip by viewModel.pip.collectAsStateWithLifecycle()
+    val playerGestures by viewModel.playerGestures.collectAsStateWithLifecycle()
+    val audioLanguage by viewModel.audioLanguage.collectAsStateWithLifecycle()
+    val subtitleLanguage by viewModel.subtitleLanguage.collectAsStateWithLifecycle()
     var followsOpen by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val uriHandler = LocalUriHandler.current
@@ -280,6 +288,40 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
                             onChange = viewModel::setAutoplayNext
                         )
                         RowDivider()
+                        SwitchSettingRow(
+                            icon = Icons.Rounded.TouchApp,
+                            title = stringResource(R.string.set_player_gestures),
+                            subtitle = stringResource(R.string.set_player_gestures_detail),
+                            checked = playerGestures,
+                            onChange = viewModel::setPlayerGestures
+                        )
+                        RowDivider()
+                        LanguageRow(
+                            icon = Icons.Rounded.Audiotrack,
+                            title = stringResource(R.string.set_audio_language),
+                            current = audioLanguage,
+                            offOption = false,
+                            onPick = viewModel::setAudioLanguage
+                        )
+                        RowDivider()
+                        LanguageRow(
+                            icon = Icons.Rounded.ClosedCaption,
+                            title = stringResource(R.string.set_subtitle_language),
+                            current = subtitleLanguage,
+                            offOption = true,
+                            onPick = viewModel::setSubtitleLanguage
+                        )
+                        RowDivider()
+                        if (viewModel.pipAvailable) {
+                            SwitchSettingRow(
+                                icon = Icons.Rounded.PictureInPictureAlt,
+                                title = stringResource(R.string.set_pip),
+                                subtitle = stringResource(R.string.set_pip_detail),
+                                checked = pip,
+                                onChange = viewModel::setPip
+                            )
+                            RowDivider()
+                        }
                     }
                     SwitchSettingRow(
                         icon = Icons.Rounded.FilterList,
@@ -636,6 +678,44 @@ private fun SortRow(current: SortOrder, onPick: (SortOrder) -> Unit) {
                     text = { Text(option.label()) },
                     leadingIcon = { if (option == current) Icon(Icons.Rounded.Check, contentDescription = null) },
                     onClick = { onPick(option); open = false }
+                )
+            }
+        }
+    }
+}
+
+/**
+ * Player audio / subtitle language: the file's default, a language, or (for
+ * subtitles) off. The player also remembers what you pick per show.
+ */
+@Composable
+private fun LanguageRow(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    title: String,
+    current: String,
+    offOption: Boolean,
+    onPick: (String) -> Unit
+) {
+    var open by remember { mutableStateOf(false) }
+    @Composable
+    fun label(v: String) = when (v) {
+        com.abhinavxt.debforge.player.tracks.TrackPicker.AUTO -> stringResource(R.string.set_lang_auto)
+        com.abhinavxt.debforge.player.tracks.TrackPicker.OFF -> stringResource(R.string.player_subtitles_off)
+        else -> com.abhinavxt.debforge.player.tracks.PlayerLanguages.displayName(v)
+    }
+    val options = buildList {
+        add(com.abhinavxt.debforge.player.tracks.TrackPicker.AUTO)
+        if (offOption) add(com.abhinavxt.debforge.player.tracks.TrackPicker.OFF)
+        addAll(com.abhinavxt.debforge.player.tracks.PlayerLanguages.CODES)
+    }
+    Box {
+        SettingRow(icon = icon, title = title, subtitle = label(current), onClick = { open = true })
+        DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
+            options.forEach { v ->
+                DropdownMenuItem(
+                    text = { Text(label(v)) },
+                    leadingIcon = { if (v == current) Icon(Icons.Rounded.Check, contentDescription = null) },
+                    onClick = { onPick(v); open = false }
                 )
             }
         }

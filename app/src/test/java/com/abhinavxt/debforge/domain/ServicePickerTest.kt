@@ -40,4 +40,20 @@ class ServicePickerTest {
 
     @Test fun nobodyCanTakeItFallsBackToActive() =
         assertEquals(REAL_DEBRID, ServicePicker.pick(REAL_DEBRID, listOf(opt(REAL_DEBRID, supports = false)), null, false))
+
+    // --- direct download ---------------------------------------------------------
+
+    private val direct = ProviderId.DIRECT
+
+    @Test fun directLinksPreferDirect() =
+        assertEquals(direct, ServicePicker.pick(TORBOX, listOf(opt(TORBOX), opt(direct)), null, false, preferred = direct))
+
+    @Test fun directNeverChosenWithoutPreference() =
+        assertEquals(TORBOX, ServicePicker.pick(TORBOX, listOf(opt(TORBOX), opt(direct)), null, false))
+
+    @Test fun userPickBeatsDirectPreference() =
+        assertEquals(TORBOX, ServicePicker.pick(TORBOX, listOf(opt(TORBOX), opt(direct)), TORBOX, true, preferred = direct))
+
+    @Test fun directPreferenceIgnoredWhenItCantTakeInput() =
+        assertEquals(TORBOX, ServicePicker.pick(TORBOX, listOf(opt(TORBOX), opt(direct, supports = false)), null, false, preferred = direct))
 }

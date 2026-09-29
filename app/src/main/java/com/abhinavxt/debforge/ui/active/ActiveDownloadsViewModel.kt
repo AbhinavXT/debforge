@@ -1,5 +1,6 @@
 package com.abhinavxt.debforge.ui.active
 
+import kotlinx.coroutines.flow.receiveAsFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.abhinavxt.debforge.data.local.DownloadDao
@@ -57,8 +58,25 @@ class ActiveDownloadsViewModel @Inject constructor(
     private val downloadDao: DownloadDao,
     progressTracker: DownloadProgressTracker,
     private val controller: DownloadController,
-    conditions: DownloadConditions
+    conditions: DownloadConditions,
+    private val localPlayback: com.abhinavxt.debforge.player.LocalPlayback,
+    settings: com.abhinavxt.debforge.data.prefs.SettingsStore
 ) : ViewModel() {
+
+    /** Settings → "Play videos in": DebForge's player, or the "open with" chooser. */
+    val useInternalPlayer: StateFlow<Boolean> = settings.internalPlayerFlow
+        .stateIn(viewModelScope, SharingStarted.Eagerly, true)
+
+    private val _playRequests = kotlinx.coroutines.channels.Channel<com.abhinavxt.debforge.ui.browse.PlayRequest>(
+        kotlinx.coroutines.channels.Channel.BUFFERED
+    )
+    val playRequests: kotlinx.coroutines.flow.Flow<com.abhinavxt.debforge.ui.browse.PlayRequest> =
+        _playRequests.receiveAsFlow()
+
+    /** Plays a finished download in DebForge's player: offline, with its subtitles and next episodes. */
+    fun play(entity: DownloadEntity) {
+        viewModelScope.launch { localPlayback.requestFor(entity)?.let { _playRequests.send(it) } }
+    }
 
     /**
      * Start hour of the download window while the schedule is holding the
