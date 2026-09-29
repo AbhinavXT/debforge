@@ -467,7 +467,12 @@ class PlayerActivity : ComponentActivity() {
     /**
      * Keys go to PlayerView (D-pad shows the controls, media keys play and
      * pause), except while one of DebForge's own overlays has focus.
+     *
+     * RestrictedApi is a lint false positive: this is Activity's public
+     * dispatchKeyEvent, which androidx.core's ComponentActivity overrides and
+     * marks library-internal.
      */
+    @android.annotation.SuppressLint("RestrictedApi")
     override fun dispatchKeyEvent(event: android.view.KeyEvent): Boolean {
         if (!isTv && handlePhoneKey(event)) return true
         val focus = currentFocus

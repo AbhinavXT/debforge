@@ -107,7 +107,9 @@
                 android:textSize="13sp" />
         </LinearLayout>
 
-        <View
+        <!-- Spacer. FrameLayout, not View: a widget (RemoteViews) only allows
+             certain view classes, and a bare View isn't one of them. -->
+        <FrameLayout
             android:layout_width="0dp"
             android:layout_height="1dp"
             android:layout_weight="1" />
