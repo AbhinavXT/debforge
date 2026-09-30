@@ -62,6 +62,9 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilledTonalIconButton
@@ -333,10 +336,33 @@ fun BrowseScreen(
                 onRemove = { job -> confirmRemove = RemoveRequest(job.name, job = job) }
             )
 
+            // Material3 1.3.0's pull-to-refresh can leave its arrow stuck on
+            // screen: a position update from the last drag event can land
+            // after the release animation started and cancel it. Once the
+            // finger is up and nothing is refreshing, put it away ourselves.
+            val pullState = rememberPullToRefreshState()
+            var fingerDown by remember { mutableStateOf(false) }
+            LaunchedEffect(fingerDown, state.isRefreshing) {
+                if (fingerDown || state.isRefreshing) return@LaunchedEffect
+                kotlinx.coroutines.delay(PULL_SETTLE_MS)
+                if (pullState.distanceFraction > 0f) pullState.animateToHidden()
+            }
             PullToRefreshBox(
                 isRefreshing = state.isRefreshing,
                 onRefresh = viewModel::pullRefresh,
-                modifier = Modifier.weight(1f).fillMaxWidth()
+                state = pullState,
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    // Only watches whether a finger is down; never consumes.
+                    .pointerInput(Unit) {
+                        awaitPointerEventScope {
+                            while (true) {
+                                val event = awaitPointerEvent(PointerEventPass.Initial)
+                                fingerDown = event.changes.any { it.pressed }
+                            }
+                        }
+                    }
             ) {
             when {
                 state.isInitialLoad -> CenteredSpinner()
@@ -1028,3 +1054,5 @@ private data class RemoveRequest(
     val job: com.abhinavxt.debforge.data.provider.RemoteJob? = null
 )
 
+/** After the finger lifts, give the pull indicator this long to settle by itself. */
+private const val PULL_SETTLE_MS = 400L
