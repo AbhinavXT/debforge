@@ -1,14 +1,9 @@
-# Draft recipe for F-Droid. Submit it as metadata/com.abhinavxt.debforge.yml in
-# a merge request to https://gitlab.com/fdroid/fdroiddata (see README
-# "Publishing on F-Droid"). F-Droid reviewers may adjust it.
 AntiFeatures:
-    NonFreeNet:
-        en-US: >-
-            Needs an account with a proprietary debrid service (TorBox, Real-Debrid,
-            AllDebrid, Premiumize or Debrid-Link). Can also download from Pixeldrain
-            and Google Drive links you add. Posters come from TMDB if you add a key.
+  NonFreeNet:
+    en-US: Needs an account with a proprietary debrid service (TorBox, Real-Debrid,
+      AllDebrid, Premiumize or Debrid-Link). Posters come from TMDB if you add a key.
 Categories:
-    - Download
+  - Download
 License: GPL-3.0-or-later
 AuthorName: AbhinavXT
 AuthorWebSite: https://github.com/AbhinavXT
@@ -20,43 +15,21 @@ AutoName: DebForge
 
 RepoType: git
 Repo: https://github.com/AbhinavXT/debforge.git
-# Reproducible build: F-Droid builds the tag itself, compares the result with
-# this APK, and publishes our developer-signed APK only if they match.
 Binaries: https://github.com/AbhinavXT/debforge/releases/download/v%v/DebForge-v%v.apk
 
 Builds:
-    - versionName: 1.1.2
-      versionCode: 10102
-      commit: v1.1.2
-      subdir: app
-      gradle:
-          - yes
-      # Toolchain auto-download isn't allowed on the build server; JDK 21 is
-      # already installed there. Removing the plugin doesn't change the APK.
-      prebuild:
-          - sed -i -e '/foojay/d' ../settings.gradle.kts
+  - versionName: 1.3.1
+    versionCode: 10301
+    commit: aff101d640714812cf593e2b0aea801126a125e2
+    subdir: app
+    gradle:
+      - yes
+    prebuild: sed -i -e '/foojay/d' ../settings.gradle.kts
 
-    # 1.2.0 adds a built-in player: AndroidX Media3 (exoplayer, ui, session;
-    # Google Maven) and Jellyfin's Media3 FFmpeg audio decoder
-    # (org.jellyfin.media3:media3-ffmpeg-decoder, Maven Central, GPL-3.0,
-    # built from https://github.com/jellyfin/jellyfin-androidx-media). Its
-    # native libraries keep their debug symbols in the APK
-    # (packaging.jniLibs.keepDebugSymbols), so stripping can't make the
-    # rebuild differ.
-    - versionName: 1.2.0
-      versionCode: 10200
-      commit: v1.2.0
-      subdir: app
-      gradle:
-          - yes
-      prebuild:
-          - sed -i -e '/foojay/d' ../settings.gradle.kts
-
-# From the "Signing certificate SHA-256" line in the GitHub release job
-# summary (or: apksigner verify --print-certs DebForge-v1.1.2.apk).
 AllowedAPKSigningKeys: 75f1308204db823d984cea82b35d7aeceb7cee22e84705ae45d5e8359f042b5e
 
 AutoUpdateMode: Version
 UpdateCheckMode: Tags ^v[0-9]+\.[0-9]+\.[0-9]+$
-CurrentVersion: 1.2.0
-CurrentVersionCode: 10200
+CurrentVersion: 1.3.1
+CurrentVersionCode: 10301
+
