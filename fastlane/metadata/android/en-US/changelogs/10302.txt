@@ -1,0 +1,2 @@
+• updated fdroid file
+• updated refresh bug
