@@ -2,3 +2,11 @@ build/
 .gradle/
 .kotlin/
 local.properties
+
+# Release artifacts (upload to GitHub releases instead)
+*.apk
+*.apk.sha256
+
+# OS / IDE noise
+.DS_Store
+.idea/caches/
