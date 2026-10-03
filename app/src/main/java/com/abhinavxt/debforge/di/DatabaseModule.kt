@@ -26,15 +26,7 @@ object DatabaseModule {
             DebForgeDatabase::class.java,
             DebForgeDatabase.NAME
         )
-            .addMigrations(
-                DebForgeDatabase.MIGRATION_1_2,
-                DebForgeDatabase.MIGRATION_2_3,
-                DebForgeDatabase.MIGRATION_3_4,
-                DebForgeDatabase.MIGRATION_4_5,
-                DebForgeDatabase.MIGRATION_5_6,
-                DebForgeDatabase.MIGRATION_6_7,
-                DebForgeDatabase.MIGRATION_7_8
-            )
+            .addMigrations(*DebForgeDatabase.ALL_MIGRATIONS)
             .build()
 
     @Provides

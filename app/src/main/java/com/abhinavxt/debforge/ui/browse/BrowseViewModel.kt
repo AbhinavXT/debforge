@@ -18,6 +18,8 @@ import com.abhinavxt.debforge.data.repository.AuthRepository
 import com.abhinavxt.debforge.data.repository.DownloadsRepository
 import com.abhinavxt.debforge.domain.DataResult
 import com.abhinavxt.debforge.domain.DownloadItem
+import com.abhinavxt.debforge.domain.MediaKind
+import com.abhinavxt.debforge.domain.ReleaseNameParser
 import com.abhinavxt.debforge.domain.DownloadState
 import com.abhinavxt.debforge.domain.ProviderId
 import com.abhinavxt.debforge.domain.ReleaseInfo
@@ -93,7 +95,8 @@ class BrowseViewModel @Inject constructor(
     private val playbackPositions: com.abhinavxt.debforge.data.playback.PlaybackPositions,
     private val subtitleResolver: com.abhinavxt.debforge.player.SubtitleResolver,
     private val upNext: com.abhinavxt.debforge.player.UpNext,
-    private val localPlayback: com.abhinavxt.debforge.player.LocalPlayback
+    private val localPlayback: com.abhinavxt.debforge.player.LocalPlayback,
+    private val trakt: com.abhinavxt.debforge.data.trakt.TraktRepository
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(BrowseUiState())
@@ -153,6 +156,8 @@ class BrowseViewModel @Inject constructor(
     private var quietJob: Job? = null
 
     init {
+        // Watched on Trakt (another app, the website): show it here. Rate-limited inside.
+        viewModelScope.launch { trakt.syncWatched() }
         // Something was added from the Add dialog: confirm it and reload so
         // cached torrents (ready instantly on TorBox) appear right away.
         viewModelScope.launch {
@@ -563,6 +568,10 @@ class BrowseViewModel @Inject constructor(
         .map { list -> list.associateBy { it.itemId } }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyMap())
 
+    /** [com.abhinavxt.debforge.domain.TraktMatch] keys watched on Trakt (empty when not signed in). */
+    val traktWatched: StateFlow<Set<String>> = trakt.watchedFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptySet())
+
     /** Started but not finished, most recent first. */
     val continueWatching: StateFlow<List<com.abhinavxt.debforge.data.playback.PlaybackEntity>> = playbackPositions.all
         .map { list -> com.abhinavxt.debforge.domain.Resume.continueWatching(list, { it.resumeEntry }) }
@@ -634,6 +643,47 @@ class BrowseViewModel @Inject constructor(
                 showKey = c.info.groupKey,
                 subtitles = com.abhinavxt.debforge.domain.Subtitles.forVideo(c.item, pool)
             )
+        }
+    }
+
+    /**
+     * Library → select → Mark watched / unwatched. Saved like a finished play
+     * in DebForge's player (so "✓ Watched" and Continue watching agree), and
+     * sent to Trakt when signed in. Unwatched also forgets where you were.
+     */
+    fun markWatched(items: List<DownloadItem>, watched: Boolean) {
+        val videos = items.map { it to ReleaseNameParser.parse(it.filename) }.filter { (_, info) -> info.isVideo }
+        if (videos.isEmpty()) return
+        viewModelScope.launch {
+            val now = System.currentTimeMillis()
+            videos.forEach { (item, info) ->
+                if (watched) {
+                    val old = playback.value[item.id]
+                    playbackPositions.save(
+                        com.abhinavxt.debforge.data.playback.PlaybackEntity(
+                            itemId = item.id,
+                            provider = item.provider,
+                            sourceRef = item.sourceRef,
+                            filename = item.filename,
+                            title = info.displayTitle,
+                            showKey = info.groupKey.takeIf { info.kind == MediaKind.SHOW },
+                            parentRef = item.parentRef,
+                            positionMs = old?.durationMs ?: 0L,
+                            durationMs = old?.durationMs ?: 0L,
+                            finished = true,
+                            updatedAt = now
+                        )
+                    )
+                } else {
+                    playbackPositions.forget(item.id)
+                }
+            }
+            val synced = trakt.markWatched(videos.map { it.second }, watched)
+            val message = appContext.resources.getQuantityString(
+                if (watched) R.plurals.msg_marked_watched_n else R.plurals.msg_marked_unwatched_n,
+                videos.size, videos.size
+            )
+            _events.send(if (synced) appContext.getString(R.string.msg_with_trakt, message) else message)
         }
     }
 

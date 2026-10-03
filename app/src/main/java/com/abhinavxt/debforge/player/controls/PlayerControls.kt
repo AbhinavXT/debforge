@@ -51,6 +51,7 @@ import androidx.compose.material.icons.rounded.Headphones
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.PhotoCamera
 import androidx.compose.material.icons.rounded.Repeat
+import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.Audiotrack
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.ClosedCaption
@@ -113,6 +114,8 @@ interface ControlsActions {
     fun back()
     fun playPause()
     fun seekBy(ms: Long)
+    /** The "+85" button: skip ahead and remember where this show's intro is. */
+    fun skipIntro()
     fun scrubStart()
     fun scrubTo(ms: Long)
     fun scrubEnd()
@@ -125,6 +128,10 @@ interface ControlsActions {
     fun tracks(type: Int): List<TrackChoice>
     /** null = subtitles off. */
     fun selectTrack(type: Int, choice: TrackChoice?)
+    /** Look for subtitles on OpenSubtitles: the preferred language, or [anyLanguage]. */
+    fun searchOnlineSubtitles(anyLanguage: Boolean)
+    /** Download [sub], add it to the file and switch to it. */
+    fun pickOnlineSubtitle(sub: com.abhinavxt.debforge.data.subtitles.OnlineSubtitle)
     fun setSpeed(speed: Float)
     fun setShowRemaining(show: Boolean)
     fun setSubtitleStyle(style: SubtitleStyle)
@@ -429,7 +436,7 @@ private fun BottomBar(state: ControlsState, actions: ControlsActions, modifier: 
                     .background(Color(0x33FFFFFF), RoundedCornerShape(18.dp))
                     .clickable {
                         state.touch()
-                        actions.seekBy(SKIP_INTRO_SECONDS * 1000L)
+                        actions.skipIntro()
                     }
                     .padding(horizontal = 12.dp, vertical = 6.dp),
                 verticalAlignment = Alignment.CenterVertically
@@ -642,6 +649,7 @@ private fun SidePanel(panel: Panel, state: ControlsState, actions: ControlsActio
                 when (panel) {
                     Panel.AUDIO -> R.string.player_audio
                     Panel.SUBTITLES -> R.string.player_subtitles
+                    Panel.ONLINE_SUBTITLES -> R.string.player_subs_online
                     Panel.SPEED -> R.string.player_speed
                     Panel.MORE -> R.string.player_more
                 }
@@ -671,12 +679,21 @@ private fun SidePanel(panel: Panel, state: ControlsState, actions: ControlsActio
                         }
                     }
                     items(choices) { c -> ChoiceRow(c.label, c.selected) { actions.selectTrack(type, c) } }
+                    if (panel == Panel.SUBTITLES && state.onlineSubsAvailable) {
+                        item {
+                            MoreRow(Icons.Rounded.Search, stringResource(R.string.player_subs_search_online)) {
+                                state.panel = Panel.ONLINE_SUBTITLES
+                                if (state.onlineSubs !is OnlineSubs.Results) actions.searchOnlineSubtitles(anyLanguage = false)
+                            }
+                        }
+                    }
                     if (panel == Panel.SUBTITLES) {
                         item { StyleSection(state.subStyle, actions::setSubtitleStyle) }
                     }
                 }
             }
             Panel.MORE -> MorePanel(state, actions)
+            Panel.ONLINE_SUBTITLES -> OnlineSubtitlesPanel(state.onlineSubs, actions)
             Panel.SPEED -> {
                 val current = state.snapshot.speed
                 LazyColumn {
@@ -685,6 +702,77 @@ private fun SidePanel(panel: Panel, state: ControlsState, actions: ControlsActio
                         else GestureMath.speedLabel(s)
                         ChoiceRow(label, s == current) { actions.setSpeed(s) }
                     }
+                }
+            }
+        }
+    }
+}
+
+/** OpenSubtitles results: exact matches for this file first, then the most downloaded. */
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+@Composable
+private fun OnlineSubtitlesPanel(online: OnlineSubs, actions: ControlsActions) {
+    val anyLanguage = when (online) {
+        is OnlineSubs.Results -> online.anyLanguage
+        is OnlineSubs.Downloading -> online.anyLanguage
+        is OnlineSubs.Failed -> online.anyLanguage
+        else -> false
+    }
+    val subs = when (online) {
+        is OnlineSubs.Results -> online.subs
+        is OnlineSubs.Downloading -> online.subs
+        else -> emptyList()
+    }
+    val dim = Color.White.copy(alpha = 0.6f)
+    LazyColumn {
+        item {
+            Row(Modifier.padding(horizontal = 20.dp, vertical = 4.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                StyleChip(selected = !anyLanguage, onClick = { actions.searchOnlineSubtitles(anyLanguage = false) }) {
+                    Text(stringResource(R.string.player_subs_my_language), color = Color.White, fontSize = 13.sp)
+                }
+                StyleChip(selected = anyLanguage, onClick = { actions.searchOnlineSubtitles(anyLanguage = true) }) {
+                    Text(stringResource(R.string.player_subs_any_language), color = Color.White, fontSize = 13.sp)
+                }
+            }
+        }
+        when (online) {
+            OnlineSubs.Idle, OnlineSubs.Searching -> item {
+                Box(Modifier.fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) {
+                    androidx.compose.material3.CircularProgressIndicator(Modifier.size(28.dp), strokeWidth = 3.dp)
+                }
+            }
+            is OnlineSubs.Failed -> item {
+                Text(stringResource(online.message), color = dim, modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp))
+            }
+            else -> if (subs.isEmpty()) item {
+                Text(stringResource(R.string.player_subs_none_found), color = dim, modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp))
+            }
+        }
+        items(subs, key = { it.fileId }) { sub ->
+            val downloading = online is OnlineSubs.Downloading && online.fileId == sub.fileId
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .clickable(enabled = online !is OnlineSubs.Downloading) { actions.pickOnlineSubtitle(sub) }
+                    .padding(horizontal = 20.dp, vertical = 10.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(Modifier.weight(1f)) {
+                    Text(sub.release, color = Color.White, fontSize = 14.sp, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                    val tags = listOfNotNull(
+                        sub.language?.let { java.util.Locale.forLanguageTag(it).displayName.ifBlank { it } },
+                        if (sub.hashMatch) stringResource(R.string.player_subs_exact) else null,
+                        if (sub.hearingImpaired) stringResource(R.string.player_subs_hi) else null,
+                        pluralRes(R.plurals.player_subs_downloads_n, sub.downloads, sub.downloads)
+                    )
+                    Text(
+                        tags.joinToString(" · "),
+                        color = if (sub.hashMatch) MaterialTheme.colorScheme.primary else dim,
+                        fontSize = 12.sp
+                    )
+                }
+                if (downloading) {
+                    androidx.compose.material3.CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
                 }
             }
         }

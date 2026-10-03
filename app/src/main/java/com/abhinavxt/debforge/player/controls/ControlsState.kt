@@ -14,7 +14,18 @@ import androidx.media3.common.TrackGroup
 enum class Fill { FIT, CROP, STRETCH }
 
 /** A side panel over the video. */
-enum class Panel { AUDIO, SUBTITLES, SPEED, MORE }
+enum class Panel { AUDIO, SUBTITLES, ONLINE_SUBTITLES, SPEED, MORE }
+
+/** Searching OpenSubtitles from the Subtitles panel. */
+sealed interface OnlineSubs {
+    data object Idle : OnlineSubs
+    data object Searching : OnlineSubs
+    /** [anyLanguage]: searched every language, not just the preferred one. */
+    data class Results(val subs: List<com.abhinavxt.debforge.data.subtitles.OnlineSubtitle>, val anyLanguage: Boolean) : OnlineSubs
+    /** Fetching the one picked (the list stays). */
+    data class Downloading(val subs: List<com.abhinavxt.debforge.data.subtitles.OnlineSubtitle>, val anyLanguage: Boolean, val fileId: Long) : OnlineSubs
+    data class Failed(val message: Int, val anyLanguage: Boolean) : OnlineSubs
+}
 
 /** One audio or subtitle track the user can pick. */
 data class TrackChoice(val group: TrackGroup, val index: Int, val label: String, val selected: Boolean)
@@ -48,6 +59,9 @@ class ControlsState {
     var showRemaining by mutableStateOf(false)
     var fill by mutableStateOf(Fill.FIT)
     var subStyle by mutableStateOf(com.abhinavxt.debforge.player.tracks.SubtitleStyle())
+    /** OpenSubtitles is set up (Settings): the Subtitles panel offers "Search online". */
+    var onlineSubsAvailable by mutableStateOf(false)
+    var onlineSubs by mutableStateOf<OnlineSubs>(OnlineSubs.Idle)
     /** Sleep timer: pause at this elapsedRealtime (0 = off)… */
     var sleepEndsAt by mutableLongStateOf(0L)
     /** …or at the end of this episode (no autoplay of the next). */

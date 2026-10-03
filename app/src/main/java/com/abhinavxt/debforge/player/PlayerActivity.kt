@@ -51,6 +51,8 @@ import com.abhinavxt.debforge.data.playback.PlaybackEntity
 import com.abhinavxt.debforge.data.playback.PlaybackPositions
 import com.abhinavxt.debforge.data.repository.DownloadsRepository
 import com.abhinavxt.debforge.domain.DataResult
+import com.abhinavxt.debforge.domain.IntroSkip
+import com.abhinavxt.debforge.player.controls.SKIP_INTRO_SECONDS
 import com.abhinavxt.debforge.domain.LinkRefresh
 import com.abhinavxt.debforge.domain.ProviderId
 import com.abhinavxt.debforge.domain.Resume
@@ -112,6 +114,10 @@ class PlayerActivity : ComponentActivity() {
     @Inject lateinit var repository: DownloadsRepository
     @Inject lateinit var settings: com.abhinavxt.debforge.data.prefs.SettingsStore
     @Inject lateinit var trackMemory: com.abhinavxt.debforge.data.playback.TrackMemory
+    @Inject lateinit var scrobbler: TraktScrobbler
+    @Inject lateinit var openSubtitles: com.abhinavxt.debforge.data.subtitles.OpenSubtitlesRepository
+    @Inject lateinit var movieHasher: MovieHasher
+    @Inject lateinit var chapterReader: ChapterReader
 
     /** Settings → "Autoplay next episode". Off: the card still offers Play now, without a countdown. */
     private var autoplay = true
@@ -178,6 +184,25 @@ class PlayerActivity : ComponentActivity() {
     /** Volume past the phone's maximum (1 = none, up to [GestureMath.MAX_VOLUME_LEVEL]). */
     private var boostLevel = 1f
     private var loudness: android.media.audiofx.LoudnessEnhancer? = null
+    /** This file's OpenSubtitles hash, worked out on the first search. */
+    private var movieHash: kotlinx.coroutines.Deferred<String?>? = null
+    private var onlineSubsJob: Job? = null
+    /** A subtitle just added from OpenSubtitles: switch to it once the reloaded file lists it. */
+    private var pendingTextLabel: String? = null
+
+    // --- skip intro / recap / credits ---
+    /** This file's chapters (Matroska only); intro, recap and credits come from their names. */
+    private var chapters: List<com.abhinavxt.debforge.domain.MkvChapters.Chapter> = emptyList()
+    private var segments: List<IntroSkip.Segment> = emptyList()
+    private var segmentsFor = -1L
+    /** Where the intro was skipped in an earlier episode of this show. */
+    private var learntIntroAt: Long? = null
+    /** Start of each segment already skipped or passed on in this file ([LEARNT_SKIP] for the learnt one). */
+    private val doneSkips = HashSet<Long>()
+    private var autoSkipIntro = false
+    /** Bumped per file, so a slow chapter read for the last one is dropped. */
+    private var fileGeneration = 0
+    private lateinit var skipView: TextView
 
     // --- extras ---
     /** The player was handed to [BackgroundPlaybackService]: the sound goes on while we're away. */
@@ -249,6 +274,8 @@ class PlayerActivity : ComponentActivity() {
             controls.showRemaining = settings.playerShowRemainingFlow.first()
             controls.subStyle = SubtitleStyle.decode(settings.subtitleStyleFlow.first())
             controls.background = settings.playerBackgroundFlow.first()
+            controls.onlineSubsAvailable = !isTv && openSubtitles.enabled.first()
+            autoSkipIntro = settings.autoSkipIntroFlow.first()
             applySubtitleStyle()
             controls.pipAvailable = pipSupported && pipAllowed
             updatePip()
@@ -323,6 +350,18 @@ class PlayerActivity : ComponentActivity() {
 
         nextCard = buildNextCard()
 
+        // "Skip intro" / "Skip recap" / "Skip credits": focusable for the TV remote.
+        skipView = TextView(this).apply {
+            setTextColor(Color.WHITE)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f)
+            typeface = android.graphics.Typeface.DEFAULT_BOLD
+            val h = dp(20); val v = dp(12)
+            setPadding(h, v, h, v)
+            background = focusable(0xE6202020.toInt(), dp(24))
+            visibility = View.GONE
+            isFocusable = true
+        }
+
         // What the gestures show (seek taps, levels, speed…). Never takes touches.
         gestureOverlay = androidx.compose.ui.platform.ComposeView(this).apply {
             setContent {
@@ -360,6 +399,11 @@ class PlayerActivity : ComponentActivity() {
                 startOverView,
                 FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM or Gravity.START)
                     .apply { setMargins(dp(24), 0, 0, dp(if (isTv) 96 else 150)) }
+            )
+            addView(
+                skipView,
+                FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM or Gravity.END)
+                    .apply { setMargins(0, 0, dp(24), dp(if (isTv) 96 else 150)) }
             )
             addView(
                 nextCard,
@@ -410,8 +454,95 @@ class PlayerActivity : ComponentActivity() {
                 if (ticks % SAVE_EVERY_TICKS == 0 && player?.isPlaying == true) savePosition()
                 controls.hasNext = queue.isNotEmpty()
                 updateNextEpisode()
+                updateSkip()
             }
         }
+    }
+
+    /**
+     * Once a second: offer to skip the intro / recap / credits playing now
+     * (from the file's chapters, or where the user skipped this show's intro
+     * before), or skip it by itself when Settings say so.
+     */
+    private fun updateSkip() {
+        val p = player
+        val duration = durationOrNull()
+        if (p == null || duration == null || switching || cardShownAt != null || isInPictureInPictureMode) {
+            hideSkip()
+            return
+        }
+        if (segmentsFor != duration && chapters.isNotEmpty()) {
+            segments = IntroSkip.fromChapters(chapters, duration)
+            segmentsFor = duration
+        }
+        val position = p.currentPosition
+        val segment = IntroSkip.at(segments, position)?.takeIf { it.startMs !in doneSkips }
+        if (segment != null) {
+            if (autoSkipIntro && (segment.kind == IntroSkip.Kind.INTRO || segment.kind == IntroSkip.Kind.RECAP)) {
+                doneSkips += segment.startMs
+                hideSkip()
+                skipSegment(segment)
+                showMessage(getString(if (segment.kind == IntroSkip.Kind.INTRO) R.string.player_skipped_intro else R.string.player_skipped_recap))
+                return
+            }
+            showSkip(
+                when (segment.kind) {
+                    IntroSkip.Kind.INTRO -> R.string.player_skip_intro
+                    IntroSkip.Kind.RECAP -> R.string.player_skip_recap
+                    IntroSkip.Kind.CREDITS -> R.string.player_skip_credits
+                    IntroSkip.Kind.PREVIEW -> R.string.player_skip_preview
+                }
+            ) {
+                doneSkips += segment.startMs
+                skipSegment(segment)
+            }
+            return
+        }
+        // No intro chapter: offer it where this show's intro was skipped before.
+        val learnt = learntIntroAt
+        if (learnt != null && LEARNT_SKIP !in doneSkips && segments.none { it.kind == IntroSkip.Kind.INTRO } &&
+            IntroSkip.inLearntWindow(learnt, position)
+        ) {
+            showSkip(R.string.player_skip_intro) {
+                val at = player?.currentPosition ?: return@showSkip
+                rememberIntro(at)
+                player?.seekTo((at + SKIP_INTRO_SECONDS * 1000L).coerceAtMost(duration))
+            }
+            return
+        }
+        hideSkip()
+    }
+
+    /** Jumps past [segment]; credits running to the end go straight to the next episode. */
+    private fun skipSegment(segment: IntroSkip.Segment) {
+        val duration = durationOrNull() ?: return
+        if (segment.endMs >= duration - END_SLACK_MS && queue.isNotEmpty()) playNext()
+        else player?.seekTo(segment.endMs.coerceAtMost(duration))
+    }
+
+    /** The intro of this show is around [positionMs]: offer the skip there in the next episodes. */
+    private fun rememberIntro(positionMs: Long) {
+        doneSkips += LEARNT_SKIP
+        if (identity?.showKey == null || !IntroSkip.isLikelyIntro(positionMs, durationOrNull() ?: 0)) return
+        learntIntroAt = positionMs
+        remember { it.copy(introAtMs = positionMs) }
+    }
+
+    private fun showSkip(textRes: Int, onSkip: () -> Unit) {
+        val text = getString(textRes)
+        skipView.setOnClickListener {
+            hideSkip()
+            onSkip()
+        }
+        if (skipView.visibility == View.VISIBLE && skipView.text == text) return
+        skipView.text = text
+        skipView.visibility = View.VISIBLE
+        // TV: reachable with OK at once, unless the user is busy in the controller.
+        if (isTv && !playerView.isControllerFullyVisible) skipView.requestFocus()
+    }
+
+    private fun hideSkip() {
+        if (skipView.visibility != View.GONE) skipView.visibility = View.GONE
     }
 
     /** Prefetch near the end, then show the card and count down to the next episode. */
@@ -637,6 +768,12 @@ class PlayerActivity : ComponentActivity() {
             hideLater("seek", 600) { gestureUi.seekTaps = null }
         }
 
+        override fun skipIntro() {
+            val p = player ?: return
+            rememberIntro(p.currentPosition)
+            seekBy(SKIP_INTRO_SECONDS * 1000L)
+        }
+
         override fun scrubStart() = beginScrub()
         override fun scrubTo(ms: Long) = this@PlayerActivity.scrubTo(ms)
         override fun scrubEnd() = endScrub(cancel = false)
@@ -697,6 +834,11 @@ class PlayerActivity : ComponentActivity() {
                 remember { it.copy(textOff = f == null, textLanguage = f?.language, textLabel = f?.label) }
             }
         }
+
+        override fun searchOnlineSubtitles(anyLanguage: Boolean) = this@PlayerActivity.searchOnlineSubtitles(anyLanguage)
+
+        override fun pickOnlineSubtitle(sub: com.abhinavxt.debforge.data.subtitles.OnlineSubtitle) =
+            this@PlayerActivity.pickOnlineSubtitle(sub)
 
         override fun setSpeed(speed: Float) {
             player?.setPlaybackSpeed(speed)
@@ -860,8 +1002,27 @@ class PlayerActivity : ComponentActivity() {
     private fun startFile() {
         tracksApplied = false
         clearLoop()
+        movieHash = null
+        chapters = emptyList()
+        segmentsFor = -1L
+        learntIntroAt = null
+        doneSkips.clear()
+        val file = identity?.filename?.takeIf { it.isNotBlank() } ?: uri.lastPathSegment.orEmpty()
+        val source = uri
+        val generation = ++fileGeneration
+        lifecycleScope.launch {
+            val found = runCatching { chapterReader.chapters(source, file) }.getOrDefault(emptyList())
+            if (generation == fileGeneration) chapters = found // still the same file
+        }
+        onlineSubsJob?.cancel()
+        controls.onlineSubs = com.abhinavxt.debforge.player.controls.OnlineSubs.Idle
+        pendingTextLabel = null
         val key = identity?.let { it.showKey ?: it.itemId }
         remembered = key?.let { k -> lifecycleScope.async { trackMemory.get(k) } }
+        if (identity?.showKey != null) {
+            val memory = remembered
+            lifecycleScope.launch { learntIntroAt = memory?.await()?.introAtMs }
+        }
     }
 
     private fun remember(change: (TrackPicker.Remembered) -> TrackPicker.Remembered) {
@@ -910,6 +1071,84 @@ class PlayerActivity : ComponentActivity() {
         }
         p.trackSelectionParameters = params.build()
         memory?.speed?.let { if (it != p.playbackParameters.speed) p.setPlaybackSpeed(it) }
+    }
+
+    /**
+     * Searches OpenSubtitles for this file: by its hash (exact timing) and
+     * name, in the subtitle language from Settings (else the phone's), or
+     * in any language.
+     */
+    private fun searchOnlineSubtitles(anyLanguage: Boolean) {
+        onlineSubsJob?.cancel()
+        controls.onlineSubs = com.abhinavxt.debforge.player.controls.OnlineSubs.Searching
+        val info = com.abhinavxt.debforge.domain.ReleaseNameParser.parse(identity?.filename?.takeIf { it.isNotBlank() } ?: title)
+        val source = uri
+        onlineSubsJob = lifecycleScope.launch {
+            val languages = if (anyLanguage) emptyList() else OnlineSubtitleLanguages.forSetting(
+                settings.subtitleLanguageFlow.first(), java.util.Locale.getDefault()
+            )
+            controls.onlineSubs = try {
+                // Not a child of this search: switching language mid-search mustn't cancel the shared hash.
+                val hash = (movieHash ?: lifecycleScope.async { movieHasher.hashOf(source) }.also { movieHash = it }).await()
+                com.abhinavxt.debforge.player.controls.OnlineSubs.Results(openSubtitles.search(info, hash, languages), anyLanguage)
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                com.abhinavxt.debforge.player.controls.OnlineSubs.Failed(R.string.player_subs_search_failed, anyLanguage)
+            }
+        }
+    }
+
+    /** Downloads [sub], adds it to the file (reloaded at the same second) and switches to it. */
+    private fun pickOnlineSubtitle(sub: com.abhinavxt.debforge.data.subtitles.OnlineSubtitle) {
+        val results = controls.onlineSubs as? com.abhinavxt.debforge.player.controls.OnlineSubs.Results ?: return
+        controls.onlineSubs = com.abhinavxt.debforge.player.controls.OnlineSubs.Downloading(results.subs, results.anyLanguage, sub.fileId)
+        onlineSubsJob = lifecycleScope.launch {
+            val file = try {
+                openSubtitles.download(sub)
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
+            } catch (e: com.abhinavxt.debforge.data.subtitles.OpenSubtitlesRepository.QuotaException) {
+                controls.onlineSubs = com.abhinavxt.debforge.player.controls.OnlineSubs.Failed(R.string.player_subs_quota, results.anyLanguage)
+                return@launch
+            } catch (e: Exception) {
+                controls.onlineSubs = results
+                showMessage(getString(R.string.player_subs_download_failed))
+                return@launch
+            }
+            controls.onlineSubs = results
+            val language = sub.language?.let { java.util.Locale.forLanguageTag(it).displayName.ifBlank { it } }
+            val label = getString(R.string.player_subs_online_label, language ?: getString(R.string.player_subtitles))
+            // One online subtitle per label: picking another English one replaces the last.
+            subtitles = subtitles.filterNot { it.label == label } + SubtitleLink(
+                url = Uri.fromFile(file).toString(),
+                mimeType = "application/x-subrip",
+                language = sub.language?.substringBefore('-'),
+                label = label,
+                forced = false
+            )
+            pendingTextLabel = label
+            controls.panel = null
+            player?.let { p ->
+                p.setMediaItem(buildMediaItem(), p.currentPosition)
+                p.prepare()
+            }
+        }
+    }
+
+    /** After an OpenSubtitles file was added: turn it on as soon as it's listed. */
+    private fun selectPendingSubtitle(tracks: Tracks) {
+        val label = pendingTextLabel ?: return
+        val p = player ?: return
+        val target = tracks.groups.filter { it.type == C.TRACK_TYPE_TEXT }.firstNotNullOfOrNull { g ->
+            (0 until g.length).firstOrNull { g.getTrackFormat(it).label == label }?.let { g to it }
+        } ?: return
+        pendingTextLabel = null
+        p.trackSelectionParameters = p.trackSelectionParameters.buildUpon()
+            .clearOverridesOfType(C.TRACK_TYPE_TEXT)
+            .setTrackTypeDisabled(C.TRACK_TYPE_TEXT, false)
+            .setOverrideForType(androidx.media3.common.TrackSelectionOverride(target.first.mediaTrackGroup, target.second))
+            .build()
     }
 
     /** Size, colours and height of subtitles (the Subtitles panel). */
@@ -1201,6 +1440,7 @@ class PlayerActivity : ComponentActivity() {
         switching = true
         hideNextCard()
         savePosition(ended = true)
+        scrobble(scrobbler::stopped, ended = true)
         player?.pause()
         lifecycleScope.launch {
             try {
@@ -1393,6 +1633,14 @@ class PlayerActivity : ComponentActivity() {
         }
     }
 
+    /** Tells Trakt (if signed in) about the current file; [ended] reports it as played to the end. */
+    private fun scrobble(send: (String, Long, Long) -> Unit, ended: Boolean = false) {
+        val p = player ?: return
+        val duration = durationOrNull() ?: return
+        val name = identity?.filename?.takeIf { it.isNotBlank() } ?: return
+        send(name, if (ended) duration else p.currentPosition.coerceIn(0, duration), duration)
+    }
+
     private fun savePosition(ended: Boolean = false) {
         val id = identity ?: return
         val p = player ?: return
@@ -1529,6 +1777,7 @@ class PlayerActivity : ComponentActivity() {
 
     private fun releasePlayer() {
         val exo = player ?: return
+        if (exo.playbackState != Player.STATE_ENDED) scrobble(scrobbler::stopped)
         resumePosition = exo.currentPosition
         resumePlayWhenReady = exo.playWhenReady
         savedTrackParams = exo.trackSelectionParameters.buildUpon().setTrackTypeDisabled(C.TRACK_TYPE_VIDEO, false).build()
@@ -1544,7 +1793,15 @@ class PlayerActivity : ComponentActivity() {
 
     private val listener = object : Player.Listener {
         /** Portrait video (phone recordings, shorts): allow portrait instead. */
-        override fun onIsPlayingChanged(isPlaying: Boolean) = updatePip()
+        override fun onIsPlayingChanged(isPlaying: Boolean) {
+            updatePip()
+            if (isPlaying) scrobble(scrobbler::playing)
+        }
+
+        // The user's pause, not buffering (which also stops isPlaying for a moment).
+        override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
+            if (!playWhenReady && player?.playbackState != Player.STATE_ENDED) scrobble(scrobbler::paused)
+        }
 
         override fun onVideoSizeChanged(videoSize: androidx.media3.common.VideoSize) {
             if (videoSize.width <= 0 || videoSize.height <= 0) return
@@ -1561,6 +1818,7 @@ class PlayerActivity : ComponentActivity() {
         override fun onPlaybackStateChanged(state: Int) {
             if (state == Player.STATE_ENDED) {
                 savePosition(ended = true)
+                scrobble(scrobbler::stopped, ended = true)
                 // Reached the end before the countdown did (e.g. seeked there).
                 if (controls.sleepAtEnd) {
                     sleepNow()
@@ -1587,6 +1845,7 @@ class PlayerActivity : ComponentActivity() {
 
         override fun onTracksChanged(tracks: Tracks) {
             controls.tracksVersion++
+            selectPendingSubtitle(tracks)
             if (!tracksApplied && !tracks.isEmpty) {
                 tracksApplied = true
                 val memory = remembered
@@ -1614,7 +1873,8 @@ class PlayerActivity : ComponentActivity() {
     }
 
     private fun openExternally() {
-        if (!playExternally(PlayRequest(uri, title, subtitles = subtitles))) {
+        // Subtitles saved in DebForge's cache (OpenSubtitles) aren't readable by other apps.
+        if (!playExternally(PlayRequest(uri, title, subtitles = subtitles.filterNot { it.url.startsWith("file:") }))) {
             Toast.makeText(this, R.string.msg_no_player, Toast.LENGTH_LONG).show()
             player?.play()
             return
@@ -1688,6 +1948,10 @@ class PlayerActivity : ComponentActivity() {
         private const val ACTION_PIP_PLAY_PAUSE = "com.abhinavxt.debforge.player.PIP_PLAY_PAUSE"
         private const val ACTION_PIP_NEXT = "com.abhinavxt.debforge.player.PIP_NEXT"
         private const val SAVE_EVERY_TICKS = 5
+        /** [doneSkips] entry for the learnt intro (chapter segments use their start). */
+        private const val LEARNT_SKIP = -1L
+        /** Credits ending this close to the end of the file count as "to the end". */
+        private const val END_SLACK_MS = 3_000L
         /** Fetch the next episode's links this long before the end. */
         private const val PREFETCH_BEFORE_END_MS = 90_000L
         /** Show "Next: …" this long before the end (end credits). */

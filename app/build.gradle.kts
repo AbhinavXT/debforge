@@ -129,6 +129,11 @@ android {
     }
 }
 
+ksp {
+    // Room writes each database version's schema here (see DebForgeDatabase).
+    arg("room.schemaLocation", "$projectDir/schemas")
+}
+
 dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -183,6 +188,7 @@ dependencies {
     implementation(libs.jellyfin.media3.ffmpeg.decoder)
 
     testImplementation(libs.junit)
+    testImplementation(libs.androidx.junit)
     // Store screenshots on the JVM (app/src/test/.../screenshots)
     testImplementation(libs.robolectric)
     testImplementation(libs.roborazzi)

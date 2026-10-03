@@ -8,6 +8,7 @@ import com.abhinavxt.debforge.ui.pluralRes
 import androidx.compose.ui.res.stringResource
 import com.abhinavxt.debforge.R
 import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -91,7 +92,10 @@ fun PosterGrid(
     onOpen: (TitleGroup) -> Unit,
     onLoadMore: () -> Unit,
     /** Full-width content above the posters (the Continue watching row). */
-    header: (@Composable () -> Unit)? = null
+    header: (@Composable () -> Unit)? = null,
+    /** Titles selected (multi-select); empty = not selecting. */
+    selectedKeys: Set<String> = emptySet(),
+    onLongPress: (TitleGroup) -> Unit = {}
 ) {
     val gridState = rememberLazyGridState()
 
@@ -122,7 +126,9 @@ fun PosterGrid(
                 group = group,
                 meta = meta[group.key],
                 allDone = group.files.all { downloadStates[it.item.id] == DownloadState.COMPLETED },
-                onClick = { onOpen(group) }
+                onClick = { onOpen(group) },
+                selected = group.key in selectedKeys,
+                onLongClick = { onLongPress(group) }
             )
         }
         item(span = { GridItemSpan(maxLineSpan) }, key = "footer") {
@@ -140,19 +146,41 @@ fun PosterGrid(
     }
 }
 
+@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 private fun PosterCard(
     group: TitleGroup,
     meta: MediaMeta?,
     allDone: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    selected: Boolean = false,
+    onLongClick: () -> Unit = {}
 ) {
     Column(
         modifier = Modifier
             .clip(RoundedCornerShape(16.dp))
-            .clickable(onClick = onClick)
+            .background(if (selected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent)
+            .combinedClickable(onClick = onClick, onLongClick = onLongClick)
     ) {
-        Poster(group = group, meta = meta, done = allDone, modifier = Modifier.fillMaxWidth())
+        Box {
+            Poster(group = group, meta = meta, done = allDone, modifier = Modifier.fillMaxWidth())
+            if (selected) {
+                Box(
+                    Modifier
+                        .matchParentSize()
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.35f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        Icons.Rounded.CheckCircle,
+                        contentDescription = stringResource(R.string.browse_selected_cd),
+                        tint = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier.size(40.dp)
+                    )
+                }
+            }
+        }
         Spacer(Modifier.height(8.dp))
         Text(
             text = meta?.title ?: group.title,
@@ -264,7 +292,9 @@ fun TitleSheet(
     following: Boolean? = null,
     onToggleFollow: () -> Unit = {},
     /** Saved positions by item id: progress bars and "Watched". */
-    playback: Map<String, com.abhinavxt.debforge.data.playback.PlaybackEntity> = emptyMap()
+    playback: Map<String, com.abhinavxt.debforge.data.playback.PlaybackEntity> = emptyMap(),
+    /** Watched on Trakt ([com.abhinavxt.debforge.domain.TraktMatch] keys). */
+    traktWatched: Set<String> = emptySet()
 ) {
     val files = remember(group) { group.sortedFiles }
     // One "whole torrent as .zip" option per multi-file torrent in this title
@@ -435,7 +465,9 @@ fun TitleSheet(
                         state = downloadStates[f.item.id],
                         onDownload = { onDownload(listOf(f.item)) },
                         onPlay = { onPlay(f) },
-                        playback = playback[f.item.id]
+                        playback = playback[f.item.id],
+                        watchedOnTrakt = traktWatched.isNotEmpty() &&
+                            com.abhinavxt.debforge.domain.TraktMatch.keyOf(f.info) in traktWatched
                     )
                 }
             }
@@ -463,7 +495,8 @@ private fun FileRow(
     state: DownloadState?,
     onDownload: () -> Unit,
     onPlay: () -> Unit,
-    playback: com.abhinavxt.debforge.data.playback.PlaybackEntity? = null
+    playback: com.abhinavxt.debforge.data.playback.PlaybackEntity? = null,
+    watchedOnTrakt: Boolean = false
 ) {
     Row(
         Modifier
@@ -488,14 +521,15 @@ private fun FileRow(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
-            // Watched, or how far along, in DebForge's player.
+            // Watched (in DebForge's player or on Trakt), or how far along.
             when {
-                playback == null -> Unit
-                playback.finished -> Text(
+                playback?.finished == true ||
+                    (watchedOnTrakt && (playback == null || playback.positionMs < com.abhinavxt.debforge.domain.Resume.MIN_RESUME_MS)) -> Text(
                     stringResource(R.string.watched),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.primary
                 )
+                playback == null -> Unit
                 playback.progress != null && playback.positionMs >= com.abhinavxt.debforge.domain.Resume.MIN_RESUME_MS ->
                     LinearProgressIndicator(
                         progress = { playback.progress ?: 0f },

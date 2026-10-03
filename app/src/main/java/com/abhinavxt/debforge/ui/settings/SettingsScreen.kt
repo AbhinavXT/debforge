@@ -29,6 +29,7 @@ import androidx.compose.material.icons.automirrored.rounded.Logout
 import androidx.compose.material.icons.automirrored.rounded.Sort
 import androidx.compose.material.icons.rounded.AutoDelete
 import androidx.compose.material.icons.rounded.TouchApp
+import androidx.compose.material.icons.rounded.FastForward
 import androidx.compose.material.icons.rounded.Audiotrack
 import androidx.compose.material.icons.rounded.ClosedCaption
 import androidx.compose.material.icons.rounded.BatteryChargingFull
@@ -123,6 +124,7 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
     val internalPlayer by viewModel.internalPlayer.collectAsStateWithLifecycle()
     val autoplayNext by viewModel.autoplayNext.collectAsStateWithLifecycle()
     val pip by viewModel.pip.collectAsStateWithLifecycle()
+    val autoSkipIntro by viewModel.autoSkipIntro.collectAsStateWithLifecycle()
     val playerGestures by viewModel.playerGestures.collectAsStateWithLifecycle()
     val audioLanguage by viewModel.audioLanguage.collectAsStateWithLifecycle()
     val subtitleLanguage by viewModel.subtitleLanguage.collectAsStateWithLifecycle()
@@ -289,6 +291,14 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
                         )
                         RowDivider()
                         SwitchSettingRow(
+                            icon = Icons.Rounded.FastForward,
+                            title = stringResource(R.string.set_auto_skip_intro),
+                            subtitle = stringResource(R.string.set_auto_skip_intro_detail),
+                            checked = autoSkipIntro,
+                            onChange = viewModel::setAutoSkipIntro
+                        )
+                        RowDivider()
+                        SwitchSettingRow(
                             icon = Icons.Rounded.TouchApp,
                             title = stringResource(R.string.set_player_gestures),
                             subtitle = stringResource(R.string.set_player_gestures_detail),
@@ -380,6 +390,8 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
                     )
                 }
             }
+            item(key = "trakt") { TraktSection() }
+            item(key = "opensubtitles") { OpenSubtitlesSection() }
             item(key = "usage") { DataUsageSection() }
             item(key = "backup") { BackupSection() }
             item(key = "about") { AboutSection() }

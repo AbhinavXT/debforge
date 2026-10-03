@@ -38,7 +38,9 @@ class Converters {
         com.abhinavxt.debforge.data.playback.PlaybackEntity::class
     ],
     version = 8,
-    exportSchema = false
+    // Schemas land in app/schemas (commit them): DatabaseMigrationTest checks
+    // every migration against them. v1–v7 were rebuilt from the migrations.
+    exportSchema = true
 )
 @TypeConverters(Converters::class)
 abstract class DebForgeDatabase : RoomDatabase() {
@@ -51,6 +53,11 @@ abstract class DebForgeDatabase : RoomDatabase() {
 
     companion object {
         const val NAME = "debforge.db"
+
+        /** Every migration, oldest first. A new one goes here (and DatabaseMigrationTest checks it). Lazy: they are declared below. */
+        val ALL_MIGRATIONS: Array<Migration> by lazy {
+            arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8)
+        }
 
         /**
          * v1 -> v2: add an index on `downloads.state`. The Active screen reads

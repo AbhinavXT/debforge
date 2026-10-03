@@ -49,6 +49,7 @@ class SettingsStore @Inject constructor(
     private val keyInternalPlayer = booleanPreferencesKey("internal_player")
     private val keyAutoplayNext = booleanPreferencesKey("autoplay_next")
     private val keyPip = booleanPreferencesKey("picture_in_picture")
+    private val keyAutoSkipIntro = booleanPreferencesKey("auto_skip_intro")
     private val keyPlayerGestures = booleanPreferencesKey("player_gestures")
     private val keyPlayerShowRemaining = booleanPreferencesKey("player_show_remaining")
     private val keyAudioLanguage = stringPreferencesKey("player_audio_language")
@@ -123,6 +124,10 @@ class SettingsStore @Inject constructor(
     /** Leaving the player while a video plays keeps it in a floating window. On by default. */
     val pipFlow: Flow<Boolean> = context.settingsDataStore.data.map { it[keyPip] ?: true }
     suspend fun setPip(v: Boolean) = context.settingsDataStore.edit { it[keyPip] = v }
+
+    /** Player: jump over chapters marked intro / recap as they start, instead of offering a button. Off by default. */
+    val autoSkipIntroFlow: Flow<Boolean> = context.settingsDataStore.data.map { it[keyAutoSkipIntro] ?: false }
+    suspend fun setAutoSkipIntro(v: Boolean) = context.settingsDataStore.edit { it[keyAutoSkipIntro] = v }
 
     /** Player: double-tap seek, swipe brightness/volume, scrub, hold for speed, pinch zoom. */
     val playerGesturesFlow: Flow<Boolean> = context.settingsDataStore.data.map { it[keyPlayerGestures] ?: true }
@@ -240,7 +245,7 @@ class SettingsStore @Inject constructor(
     private val backupBooleans get() = listOf(
         keyDynamicColor, keyPosterView, keyOrganize, keyWifiOnly, keyChargingOnly,
         keyScheduleOn, keyAutoUpdate, keyRemoveAfter, keyPureBlack, keyShowExtras, keyClipboardOffer,
-        keyInternalPlayer, keyAutoplayNext, keyPip
+        keyInternalPlayer, keyAutoplayNext, keyPip, keyAutoSkipIntro
     )
     private val backupInts get() = listOf(keySortOrder, keyThemeMode, keyScheduleStart, keyScheduleEnd, keySpeedLimit, keyAutoDeleteDays)
 

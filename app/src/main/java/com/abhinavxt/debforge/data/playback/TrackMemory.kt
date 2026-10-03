@@ -54,6 +54,7 @@ class TrackMemory @Inject constructor(@ApplicationContext private val context: C
         r.textLanguage?.let { put("tl", it) }
         r.textLabel?.let { put("tb", it) }
         r.speed?.let { put("sp", it.toDouble()) }
+        r.introAtMs?.let { put("ia", it) }
         put("t", System.currentTimeMillis())
     }
 
@@ -63,7 +64,8 @@ class TrackMemory @Inject constructor(@ApplicationContext private val context: C
         textOff = o.optBoolean("to", false),
         textLanguage = o.optString("tl").ifEmpty { null },
         textLabel = o.optString("tb").ifEmpty { null },
-        speed = if (o.has("sp")) o.optDouble("sp").toFloat().takeIf { it in 0.1f..8f } else null
+        speed = if (o.has("sp")) o.optDouble("sp").toFloat().takeIf { it in 0.1f..8f } else null,
+        introAtMs = if (o.has("ia")) o.optLong("ia").takeIf { it >= 0 } else null
     )
 
     private companion object {

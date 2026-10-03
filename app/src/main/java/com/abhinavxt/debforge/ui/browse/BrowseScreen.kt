@@ -3,6 +3,7 @@ package com.abhinavxt.debforge.ui.browse
 import androidx.compose.ui.res.stringResource
 import com.abhinavxt.debforge.R
 import com.abhinavxt.debforge.ui.update.UpdateBanner
+import com.abhinavxt.debforge.ui.pluralRes
 import android.content.Intent
 import androidx.activity.compose.BackHandler
 import android.net.Uri
@@ -50,6 +51,10 @@ import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material.icons.rounded.Layers
 import androidx.compose.material.icons.rounded.Movie
 import androidx.compose.material.icons.rounded.Refresh
+import androidx.compose.material.icons.rounded.DoneAll
+import androidx.compose.material.icons.rounded.MoreVert
+import androidx.compose.material.icons.rounded.RemoveDone
+import androidx.compose.material.icons.rounded.SelectAll
 import androidx.compose.material.icons.rounded.SearchOff
 import androidx.compose.material.icons.rounded.Tv
 import androidx.compose.material.icons.rounded.VideoLibrary
@@ -136,11 +141,13 @@ fun BrowseScreen(
     val followed by viewModel.followed.collectAsStateWithLifecycle()
     val continueWatching by viewModel.continueWatching.collectAsStateWithLifecycle()
     val playback by viewModel.playback.collectAsStateWithLifecycle()
+    val traktWatched by viewModel.traktWatched.collectAsStateWithLifecycle()
     var posterSetupOpen by remember { mutableStateOf(false) }
     val lifecycleOwner = LocalLifecycleOwner.current
     val uriHandler = LocalUriHandler.current
-    // Multi-select (list view): ids of selected files. Empty = not selecting.
+    // Multi-select: ids of selected files (posters select a whole title). Empty = not selecting.
     var selected by remember { mutableStateOf(setOf<String>()) }
+    var selectionMenu by remember { mutableStateOf(false) }
     val snackbar = remember { SnackbarHostState() }
     val context = LocalContext.current
     val isTv = remember(context) {
@@ -181,9 +188,9 @@ fun BrowseScreen(
             }
         }
     }
-    // Back exits multi-select; switching to posters clears it.
+    // Back exits multi-select; switching between posters and the list clears it.
     BackHandler(enabled = selected.isNotEmpty()) { selected = emptySet() }
-    LaunchedEffect(state.posterView) { if (state.posterView) selected = emptySet() }
+    LaunchedEffect(state.posterView) { selected = emptySet() }
 
     // Poll processing jobs / auto-downloads only while the screen is visible.
     LaunchedEffect(lifecycleOwner) {
@@ -224,6 +231,13 @@ fun BrowseScreen(
 
     val addDescription = stringResource(R.string.browse_add_cd)
 
+    // Everything "Select all" picks: what the current view shows (search included).
+    val selectable: List<String> = remember(shown, parsed, state.query, state.sort, state.posterView, state.grouped) {
+        if (state.posterView) buildTitleGroups(shown, parsed, state.query, state.sort).flatMap { g -> g.files.map { it.item.id } }
+        else buildSections(shown, state.query, state.sort, state.grouped).flatMap { sec -> sec.items.map { it.id } }
+    }
+    val pickedItems = remember(selected, state.items) { state.items.filter { it.id in selected } }
+
     Scaffold(
         snackbarHost = { SnackbarHost(snackbar) },
         floatingActionButton = {
@@ -252,9 +266,45 @@ fun BrowseScreen(
                         }
                     },
                     actions = {
+                        if (selected.size < selectable.size) {
+                            IconButton(onClick = { selected = selectable.toSet() }) {
+                                Icon(Icons.Rounded.SelectAll, contentDescription = stringResource(R.string.browse_select_all))
+                            }
+                        }
+                        if (viewModel.canRemove(pickedItems)) {
+                            val label = pluralRes(R.plurals.n_files, pickedItems.size, pickedItems.size)
+                            IconButton(onClick = { confirmRemove = RemoveRequest(label, items = pickedItems) }) {
+                                Icon(Icons.Rounded.DeleteOutline, contentDescription = stringResource(R.string.action_remove))
+                            }
+                        }
+                        Box {
+                            IconButton(onClick = { selectionMenu = true }) {
+                                Icon(Icons.Rounded.MoreVert, contentDescription = stringResource(R.string.browse_more_actions))
+                            }
+                            DropdownMenu(expanded = selectionMenu, onDismissRequest = { selectionMenu = false }) {
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.browse_mark_watched)) },
+                                    leadingIcon = { Icon(Icons.Rounded.DoneAll, contentDescription = null) },
+                                    onClick = {
+                                        viewModel.markWatched(pickedItems, watched = true)
+                                        selectionMenu = false
+                                        selected = emptySet()
+                                    }
+                                )
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.browse_mark_unwatched)) },
+                                    leadingIcon = { Icon(Icons.Rounded.RemoveDone, contentDescription = null) },
+                                    onClick = {
+                                        viewModel.markWatched(pickedItems, watched = false)
+                                        selectionMenu = false
+                                        selected = emptySet()
+                                    }
+                                )
+                            }
+                        }
                         Button(
                             onClick = {
-                                val picked = state.items.filter { it.id in selected && downloadStates[it.id] == null }
+                                val picked = pickedItems.filter { downloadStates[it.id] == null }
                                 handleEnqueue(picked)
                                 selected = emptySet()
                             },
@@ -390,8 +440,19 @@ fun BrowseScreen(
                             isAppending = state.isAppending,
                             endReached = state.endReached,
                             onRequestMeta = { viewModel.requestMeta(it.info) },
-                            onOpen = { openGroupKey = it.key },
+                            onOpen = { group ->
+                                if (selected.isNotEmpty()) {
+                                    val ids = group.files.map { it.item.id }
+                                    selected = if (ids.all { it in selected }) selected - ids.toSet() else selected + ids
+                                } else {
+                                    openGroupKey = group.key
+                                }
+                            },
                             onLoadMore = viewModel::loadMore,
+                            selectedKeys = remember(groups, selected) {
+                                groups.filter { g -> g.files.isNotEmpty() && g.files.all { it.item.id in selected } }.map { it.key }.toSet()
+                            },
+                            onLongPress = { group -> selected = selected + group.files.map { it.item.id } },
                             // Not while searching: results come first then.
                             header = if (state.query.isBlank() && continueWatching.isNotEmpty()) {
                                 {
@@ -427,7 +488,8 @@ fun BrowseScreen(
                                     ?.takeIf { group.kind == MediaKind.SHOW }
                                     ?.let { "${it.item.provider.name}|${group.info.groupKey}" in followed },
                                 onToggleFollow = { viewModel.toggleFollow(group) },
-                                playback = playback
+                                playback = playback,
+                                traktWatched = traktWatched
                             )
                         }
                     }
@@ -514,6 +576,7 @@ fun BrowseScreen(
                     req.job?.let(viewModel::removeJob)
                     confirmRemove = null
                     openGroupKey = null
+                    if (req.items != null) selected = selected - req.items.map { it.id }.toSet()
                 }) { Text(stringResource(R.string.action_remove), color = MaterialTheme.colorScheme.error) }
             },
             dismissButton = {
