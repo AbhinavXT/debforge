@@ -1,0 +1,1 @@
+• Fixed the pull-to-refresh arrow staying on screen when there was nothing to refresh
