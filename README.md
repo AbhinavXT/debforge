@@ -46,12 +46,23 @@ Premiumize and Debrid-Link.
   .ass / .vtt files that came with it (".en.srt", "Subs/<episode>/2_English.srt"),
   labelled by language. External players never see those when streaming a link;
   MX Player and VLC get them passed along too.
+- **Subtitles online.** No subtitles in the torrent? Subtitles → Search online
+  in the player finds them on OpenSubtitles (free API key of your own, Settings
+  → OpenSubtitles). Files are matched by hash first, so the top results are
+  timed for exactly your release.
 - **Next episode.** Near the end of an episode, "Next: S03E03" counts down and
   the next one starts in the same player, its link fetched ahead of time. It
   prefers the same release and quality, and goes on into the next season.
 - **No dead streams.** When a debrid link expires mid-watch (hours in, or after
   a long pause), the player quietly gets a fresh one and carries on from the
   same second. On Android TV the remote reaches every button.
+- **Skip intro, recap and credits.** When an .mkv's chapters mark the opening,
+  recap, credits or preview, a Skip button appears (or the intro is skipped by
+  itself, Settings → Library). Without chapters, DebForge remembers where you
+  skipped a show's intro and offers it there in the next episodes, TV remote included.
+- **Trakt.** Connect your Trakt account (Settings → Trakt, with a free Trakt
+  app of your own): what you watch in DebForge's player is scrobbled, and
+  episodes and movies watched anywhere show ✓ Watched in the Library.
 - **Picture-in-picture.** Leave the player while a video plays and it keeps going
   in a floating window, with play/pause and next episode (Settings to turn off).
 - **Download rules.** Wi-Fi only, while charging, a nightly time window, and a speed limit.
@@ -63,6 +74,8 @@ Premiumize and Debrid-Link.
   deleted after 7–60 days (off by default, asks before deleting anything).
 - **Keep your service tidy.** Remove torrents from the service in the app, or
   automatically once every file in one has downloaded, to free up slots.
+- **Select many at once.** Long-press a poster or a file to select it, then
+  download, remove from the service, or mark watched / unwatched together.
 - **Several services, one Add button.** Signed in to more than one? The Add
   dialog checks every service that can tell whether a torrent is cached, picks
   one that has it (or one that can take magnets when Real-Debrid is active),

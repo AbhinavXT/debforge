@@ -1,1 +1,5 @@
-• Trakt sync, subtitle search, Library multi-select, skip introresolved bugs
+• Trakt: scrobble what you watch, see what you watched anywhere as ✓ Watched
+• Search subtitles on OpenSubtitles from the player, exact matches first
+• Skip intro, recap, credits and preview (from .mkv chapters, or where you skipped before)
+• Library: long-press to select posters or files; download, remove or mark watched together
+• Database upgrades are now tested from every earlier version

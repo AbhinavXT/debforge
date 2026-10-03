@@ -19,6 +19,8 @@ DebForge downloads the files in your debrid account straight to your phone, tabl
 <li>Player gestures (double-tap to skip, swipe for brightness, volume and seeking, hold for 2×, pinch to zoom), subtitle style, audio and subtitle languages remembered per show, sleep timer, A-B loop, screenshots, picture-in-picture and background play. Downloaded files play offline</li>
 <li>Pixeldrain, Google Drive and direct file links download straight to your phone, no service needed</li>
 <li>Follow a show and new episodes that reach your account download by themselves</li>
+<li>Skip intros, recaps and credits; find missing subtitles on OpenSubtitles</li>
+<li>Trakt sync: scrobble what you watch and see what you watched elsewhere</li>
 <li>Home-screen widget, Quick Settings tile and launcher shortcuts</li>
 <li>Signed in to several services? Add to the one that already has it cached</li>
 <li>Free-space check before downloading, and optional auto-delete of old downloads</li>
