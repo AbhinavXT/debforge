@@ -670,4 +670,6 @@
     <string name="player_software_decoding">Yazılımla çözme</string>
     <string name="player_software_decoding_detail">Görüntü takılıyor, bloklanıyor veya siyah kalıyorsa bunu dene. Daha çok pil harcar.</string>
     <string name="player_try_software">Yazılımla çözmeyi dene</string>
+    <string name="set_stream_previews">Akışlarda sarma önizlemesi</string>
+    <string name="set_stream_previews_detail">Sürüklerken varacağın yerden bir kare göster, yalnızca bırakınca atla. Her önizleme biraz veri harcar. İndirilen videolarda önizleme her zaman var.</string>
 </resources>

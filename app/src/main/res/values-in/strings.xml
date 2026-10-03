@@ -637,4 +637,6 @@
     <string name="player_software_decoding">Decoding perangkat lunak</string>
     <string name="player_software_decoding_detail">Coba ini jika gambar tersendat, kotak-kotak, atau tetap hitam. Lebih boros baterai.</string>
     <string name="player_try_software">Coba decoding perangkat lunak</string>
+    <string name="set_stream_previews">Pratinjau saat menggeser stream</string>
+    <string name="set_stream_previews_detail">Saat menggeser, tampilkan frame dari titik tujuan dan lompat hanya saat dilepas. Memakai sedikit data per pratinjau. Video unduhan selalu punya pratinjau.</string>
 </resources>

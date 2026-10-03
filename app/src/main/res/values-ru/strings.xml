@@ -736,4 +736,6 @@
     <string name="player_software_decoding">Программное декодирование</string>
     <string name="player_software_decoding_detail">Попробуйте, если картинка дёргается, рассыпается на блоки или остаётся чёрной. Расходует больше заряда.</string>
     <string name="player_try_software">Попробовать программное декодирование</string>
+    <string name="set_stream_previews">Превью при перемотке потоков</string>
+    <string name="set_stream_previews_detail">При перетаскивании показывать кадр из точки назначения и перематывать только при отпускании. Каждое превью расходует немного трафика. У скачанных видео превью есть всегда.</string>
 </resources>

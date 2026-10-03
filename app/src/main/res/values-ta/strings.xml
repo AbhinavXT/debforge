@@ -670,4 +670,6 @@
     <string name="player_software_decoding">மென்பொருள் டிகோடிங்</string>
     <string name="player_software_decoding_detail">படம் தடுமாறினால், கட்டங்கள் தெரிந்தால் அல்லது கருப்பாக இருந்தால் இதை முயலவும். அதிக பேட்டரி செலவாகும்.</string>
     <string name="player_try_software">மென்பொருள் டிகோடிங்கை முயல்</string>
+    <string name="set_stream_previews">ஸ்ட்ரீம்களில் தேடல் முன்னோட்டம்</string>
+    <string name="set_stream_previews_detail">இழுக்கும்போது சென்றடையும் இடத்தின் ஃப்ரேமைக் காட்டி, விடும்போது மட்டும் தாவும். ஒவ்வொரு முன்னோட்டத்துக்கும் சிறிது டேட்டா செலவாகும். பதிவிறக்கிய வீடியோக்களில் எப்போதும் உண்டு.</string>
 </resources>

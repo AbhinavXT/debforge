@@ -703,4 +703,6 @@
     <string name="player_software_decoding">Decodificación por software</string>
     <string name="player_software_decoding_detail">Pruébalo si la imagen se entrecorta, muestra bloques o queda en negro. Gasta más batería.</string>
     <string name="player_try_software">Probar decodificación por software</string>
+    <string name="set_stream_previews">Vistas previas al buscar en streams</string>
+    <string name="set_stream_previews_detail">Al arrastrar, muestra un fotograma de donde caerías y salta solo al soltar. Gasta algo de datos por vista previa. Los vídeos descargados siempre tienen vistas previas.</string>
 </resources>

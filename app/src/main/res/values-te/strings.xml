@@ -670,4 +670,6 @@
     <string name="player_software_decoding">సాఫ్ట్‌వేర్ డీకోడింగ్</string>
     <string name="player_software_decoding_detail">చిత్రం ఆగిపోతున్నా, బ్లాక్‌లు కనిపిస్తున్నా లేదా నల్లగా ఉన్నా దీన్ని ప్రయత్నించండి. ఎక్కువ బ్యాటరీ ఖర్చవుతుంది.</string>
     <string name="player_try_software">సాఫ్ట్‌వేర్ డీకోడింగ్ ప్రయత్నించండి</string>
+    <string name="set_stream_previews">స్ట్రీమ్‌లలో సీక్ ప్రివ్యూలు</string>
+    <string name="set_stream_previews_detail">లాగుతున్నప్పుడు చేరే చోటి ఫ్రేమ్ చూపించి, వదిలినప్పుడే జంప్ చేస్తుంది. ప్రతి ప్రివ్యూకు కొంత డేటా ఖర్చవుతుంది. డౌన్‌లోడ్ చేసిన వీడియోలకు ఎప్పుడూ ఉంటాయి.</string>
 </resources>

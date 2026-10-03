@@ -637,4 +637,6 @@
     <string name="player_software_decoding">软件解码</string>
     <string name="player_software_decoding_detail">画面卡顿、出现色块或黑屏时可尝试。更耗电。</string>
     <string name="player_try_software">尝试软件解码</string>
+    <string name="set_stream_previews">串流拖动预览</string>
+    <string name="set_stream_previews_detail">拖动时显示目标位置的画面，松手后才跳转。每次预览会消耗少量流量。已下载的视频始终有预览。</string>
 </resources>

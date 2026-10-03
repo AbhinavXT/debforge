@@ -670,4 +670,6 @@
     <string name="player_software_decoding">Software-Decodierung</string>
     <string name="player_software_decoding_detail">Hilft, wenn das Bild ruckelt, Blöcke zeigt oder schwarz bleibt. Braucht mehr Akku.</string>
     <string name="player_try_software">Software-Decodierung versuchen</string>
+    <string name="set_stream_previews">Vorschaubilder beim Spulen in Streams</string>
+    <string name="set_stream_previews_detail">Beim Ziehen ein Bild der Zielstelle zeigen und erst beim Loslassen springen. Kostet pro Vorschau etwas Datenvolumen. Heruntergeladene Videos haben immer Vorschauen.</string>
 </resources>

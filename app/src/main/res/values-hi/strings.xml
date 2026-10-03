@@ -670,4 +670,6 @@
     <string name="player_software_decoding">सॉफ़्टवेयर डिकोडिंग</string>
     <string name="player_software_decoding_detail">तस्वीर अटकती है, ब्लॉक दिखते हैं या काली रहती है तो इसे आज़माएँ। बैटरी ज़्यादा लगती है।</string>
     <string name="player_try_software">सॉफ़्टवेयर डिकोडिंग आज़माएँ</string>
+    <string name="set_stream_previews">स्ट्रीम पर सीक प्रीव्यू</string>
+    <string name="set_stream_previews_detail">खींचते समय वहाँ का फ़्रेम दिखाएँ जहाँ पहुँचेंगे, और छोड़ने पर ही जाएँ। हर प्रीव्यू में कुछ डेटा लगता है। डाउनलोड किए वीडियो में प्रीव्यू हमेशा रहते हैं।</string>
 </resources>

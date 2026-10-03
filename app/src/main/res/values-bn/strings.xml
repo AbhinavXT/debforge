@@ -670,4 +670,6 @@
     <string name="player_software_decoding">সফটওয়্যার ডিকোডিং</string>
     <string name="player_software_decoding_detail">ছবি আটকে গেলে, ব্লক দেখালে বা কালো থাকলে এটি চেষ্টা করুন। ব্যাটারি বেশি খরচ হয়।</string>
     <string name="player_try_software">সফটওয়্যার ডিকোডিং চেষ্টা করুন</string>
+    <string name="set_stream_previews">স্ট্রিমে সিক প্রিভিউ</string>
+    <string name="set_stream_previews_detail">টানার সময় যেখানে পৌঁছাবেন সেখানকার ফ্রেম দেখান, ছাড়লে তবেই যান। প্রতিটি প্রিভিউতে কিছু ডেটা লাগে। ডাউনলোড করা ভিডিওতে প্রিভিউ সবসময় থাকে।</string>
 </resources>

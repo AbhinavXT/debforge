@@ -30,6 +30,7 @@ import androidx.compose.material.icons.automirrored.rounded.Sort
 import androidx.compose.material.icons.rounded.AutoDelete
 import androidx.compose.material.icons.rounded.TouchApp
 import androidx.compose.material.icons.rounded.FastForward
+import androidx.compose.material.icons.rounded.Image
 import androidx.compose.material.icons.rounded.Audiotrack
 import androidx.compose.material.icons.rounded.ClosedCaption
 import androidx.compose.material.icons.rounded.BatteryChargingFull
@@ -125,6 +126,7 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
     val autoplayNext by viewModel.autoplayNext.collectAsStateWithLifecycle()
     val pip by viewModel.pip.collectAsStateWithLifecycle()
     val autoSkipIntro by viewModel.autoSkipIntro.collectAsStateWithLifecycle()
+    val streamPreviews by viewModel.streamPreviews.collectAsStateWithLifecycle()
     val playerGestures by viewModel.playerGestures.collectAsStateWithLifecycle()
     val audioLanguage by viewModel.audioLanguage.collectAsStateWithLifecycle()
     val subtitleLanguage by viewModel.subtitleLanguage.collectAsStateWithLifecycle()
@@ -296,6 +298,14 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
                             subtitle = stringResource(R.string.set_auto_skip_intro_detail),
                             checked = autoSkipIntro,
                             onChange = viewModel::setAutoSkipIntro
+                        )
+                        RowDivider()
+                        SwitchSettingRow(
+                            icon = Icons.Rounded.Image,
+                            title = stringResource(R.string.set_stream_previews),
+                            subtitle = stringResource(R.string.set_stream_previews_detail),
+                            checked = streamPreviews,
+                            onChange = viewModel::setStreamPreviews
                         )
                         RowDivider()
                         SwitchSettingRow(

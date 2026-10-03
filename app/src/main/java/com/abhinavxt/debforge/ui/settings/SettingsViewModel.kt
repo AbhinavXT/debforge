@@ -197,6 +197,11 @@ class SettingsViewModel @Inject constructor(
     )
     fun setAutoSkipIntro(v: Boolean) = viewModelScope.launch { settingsStore.setAutoSkipIntro(v) }
 
+    val streamPreviews: StateFlow<Boolean> = settingsStore.streamPreviewsFlow.stateIn(
+        viewModelScope, SharingStarted.WhileSubscribed(5_000), false
+    )
+    fun setStreamPreviews(v: Boolean) = viewModelScope.launch { settingsStore.setStreamPreviews(v) }
+
     val playerGestures: StateFlow<Boolean> = settingsStore.playerGesturesFlow.stateIn(
         viewModelScope, SharingStarted.WhileSubscribed(5_000), true
     )

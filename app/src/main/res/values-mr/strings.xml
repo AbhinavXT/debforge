@@ -670,4 +670,6 @@
     <string name="player_software_decoding">सॉफ्टवेअर डिकोडिंग</string>
     <string name="player_software_decoding_detail">चित्र अडखळत असेल, ब्लॉक दिसत असतील किंवा काळे राहत असेल तर हे वापरून पाहा. बॅटरी जास्त लागते.</string>
     <string name="player_try_software">सॉफ्टवेअर डिकोडिंग वापरून पाहा</string>
+    <string name="set_stream_previews">स्ट्रीमवर सीक प्रिव्ह्यू</string>
+    <string name="set_stream_previews_detail">ओढताना जिथे पोहोचाल तिथली फ्रेम दाखवा, सोडल्यावरच जा. प्रत्येक प्रिव्ह्यूला थोडा डेटा लागतो. डाउनलोड केलेल्या व्हिडिओंना प्रिव्ह्यू नेहमी असतात.</string>
 </resources>

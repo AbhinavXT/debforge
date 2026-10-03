@@ -69,6 +69,7 @@ import com.abhinavxt.debforge.player.gestures.GestureEngine
 import com.abhinavxt.debforge.player.tracks.SubtitleStyle
 import com.abhinavxt.debforge.player.tracks.TrackPicker
 import kotlinx.coroutines.async
+import androidx.compose.ui.graphics.asImageBitmap
 import com.abhinavxt.debforge.player.gestures.GestureMath
 import com.abhinavxt.debforge.player.gestures.GestureOverlay
 import com.abhinavxt.debforge.player.gestures.GestureUiState
@@ -199,6 +200,12 @@ class PlayerActivity : ComponentActivity() {
     /** While watching; the background service has its own while away. */
     private var session: androidx.media3.session.MediaSession? = null
 
+    // --- seek previews ---
+    private val thumbnails by lazy { ThumbnailLoader(applicationContext) }
+    private var previewJob: Job? = null
+    /** Settings: previews on streams too (they cost data); downloaded files always have them. */
+    private var streamPreviews = false
+
     // --- stats for nerds ---
     private lateinit var statsView: TextView
     private var videoDecoder: String? = null
@@ -303,6 +310,7 @@ class PlayerActivity : ComponentActivity() {
             controls.onlineSubsAvailable = !isTv && openSubtitles.enabled.first()
             autoSkipIntro = settings.autoSkipIntroFlow.first()
             controls.nightMode = settings.nightModeFlow.first()
+            streamPreviews = settings.streamPreviewsFlow.first()
             applyNightMode()
             applySubtitleStyle()
             controls.pipAvailable = pipSupported && pipAllowed
@@ -767,6 +775,11 @@ class PlayerActivity : ComponentActivity() {
         val p = player ?: return
         scrubTarget = target
         gestureUi.scrub = GestureUiState.Scrub(target, target - scrubAnchor)
+        val previews = previewsOn()
+        if (previews) requestPreview(target)
+        // A stream with previews: the frame shows where it'd land, and the
+        // video jumps once, on release (no re-buffering at every move).
+        if (previews && !isLocalFile()) return
         val now = android.os.SystemClock.uptimeMillis()
         if (now - lastScrubSeek >= SCRUB_SEEK_EVERY_MS) {
             lastScrubSeek = now
@@ -780,7 +793,27 @@ class PlayerActivity : ComponentActivity() {
         p.setSeekParameters(androidx.media3.exoplayer.SeekParameters.DEFAULT)
         p.seekTo(if (cancel) scrubAnchor else scrubTarget)
         if (scrubWasPlaying) p.play()
-        hideLater("scrub", 400) { gestureUi.scrub = null }
+        previewJob?.cancel()
+        hideLater("scrub", 400) {
+            gestureUi.scrub = null
+            gestureUi.scrubPreview = null
+        }
+    }
+
+    private fun isLocalFile() = uri.scheme == "content" || uri.scheme == "file"
+
+    /** Previews for this file: downloaded ones always, streams if Settings allow, and only while they work. */
+    private fun previewsOn() = (isLocalFile() || streamPreviews) && !thumbnails.failed
+
+    /** The frame at [target] for the scrub bubble; a newer request replaces an older one. */
+    private fun requestPreview(target: Long) {
+        val duration = durationOrNull() ?: return
+        val source = uri
+        previewJob?.cancel()
+        previewJob = lifecycleScope.launch {
+            val frame = thumbnails.frame(source, target, duration)
+            if (gestureUi.scrub != null) gestureUi.scrubPreview = frame?.asImageBitmap()
+        }
     }
 
     /** Brief text over the video ("Crop", "Fit"…). */
@@ -1083,6 +1116,9 @@ class PlayerActivity : ComponentActivity() {
         tracksApplied = false
         clearLoop()
         movieHash = null
+        previewJob?.cancel()
+        gestureUi.scrubPreview = null
+        lifecycleScope.launch { thumbnails.reset() }
         chapters = emptyList()
         segmentsFor = -1L
         learntIntroAt = null
@@ -1778,6 +1814,7 @@ class PlayerActivity : ComponentActivity() {
             savePosition()
         }
         releasePlayer() // no-op if already released in onStop
+        thumbnails.release()
         gestureHandler.removeCallbacksAndMessages(null)
         runCatching { unregisterReceiver(pipReceiver) }
         super.onDestroy()

@@ -51,6 +51,7 @@ class SettingsStore @Inject constructor(
     private val keyPip = booleanPreferencesKey("picture_in_picture")
     private val keyAutoSkipIntro = booleanPreferencesKey("auto_skip_intro")
     private val keyNightMode = booleanPreferencesKey("player_night_mode")
+    private val keyStreamPreviews = booleanPreferencesKey("player_stream_previews")
     private val keyPlayerGestures = booleanPreferencesKey("player_gestures")
     private val keyPlayerShowRemaining = booleanPreferencesKey("player_show_remaining")
     private val keyAudioLanguage = stringPreferencesKey("player_audio_language")
@@ -129,6 +130,10 @@ class SettingsStore @Inject constructor(
     /** Player: jump over chapters marked intro / recap as they start, instead of offering a button. Off by default. */
     val autoSkipIntroFlow: Flow<Boolean> = context.settingsDataStore.data.map { it[keyAutoSkipIntro] ?: false }
     suspend fun setAutoSkipIntro(v: Boolean) = context.settingsDataStore.edit { it[keyAutoSkipIntro] = v }
+
+    /** Player: preview frames while seeking a stream (costs data; downloaded files always have them). Off by default. */
+    val streamPreviewsFlow: Flow<Boolean> = context.settingsDataStore.data.map { it[keyStreamPreviews] ?: false }
+    suspend fun setStreamPreviews(v: Boolean) = context.settingsDataStore.edit { it[keyStreamPreviews] = v }
 
     /** Player → More: night mode (dynamic range compression). Off by default. */
     val nightModeFlow: Flow<Boolean> = context.settingsDataStore.data.map { it[keyNightMode] ?: false }
@@ -250,7 +255,7 @@ class SettingsStore @Inject constructor(
     private val backupBooleans get() = listOf(
         keyDynamicColor, keyPosterView, keyOrganize, keyWifiOnly, keyChargingOnly,
         keyScheduleOn, keyAutoUpdate, keyRemoveAfter, keyPureBlack, keyShowExtras, keyClipboardOffer,
-        keyInternalPlayer, keyAutoplayNext, keyPip, keyAutoSkipIntro, keyNightMode
+        keyInternalPlayer, keyAutoplayNext, keyPip, keyAutoSkipIntro, keyNightMode, keyStreamPreviews
     )
     private val backupInts get() = listOf(keySortOrder, keyThemeMode, keyScheduleStart, keyScheduleEnd, keySpeedLimit, keyAutoDeleteDays)
 

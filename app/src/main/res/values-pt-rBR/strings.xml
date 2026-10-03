@@ -703,4 +703,6 @@
     <string name="player_software_decoding">Decodificação por software</string>
     <string name="player_software_decoding_detail">Experimente se a imagem trava, mostra blocos ou fica preta. Gasta mais bateria.</string>
     <string name="player_try_software">Tentar decodificação por software</string>
+    <string name="set_stream_previews">Prévias ao buscar em streams</string>
+    <string name="set_stream_previews_detail">Ao arrastar, mostra um quadro de onde você vai parar e só pula ao soltar. Usa alguns dados por prévia. Vídeos baixados sempre têm prévias.</string>
 </resources>

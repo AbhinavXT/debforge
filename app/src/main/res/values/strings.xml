@@ -671,4 +671,6 @@
     <string name="player_software_decoding">Software decoding</string>
     <string name="player_software_decoding_detail">Try this if the picture stutters, shows blocks or stays black. Uses more battery.</string>
     <string name="player_try_software">Try software decoding</string>
+    <string name="set_stream_previews">Seek previews on streams</string>
+    <string name="set_stream_previews_detail">While dragging, show a frame from where you\'d land and jump only on release. Uses some data per preview. Downloaded videos always have previews.</string>
 </resources>

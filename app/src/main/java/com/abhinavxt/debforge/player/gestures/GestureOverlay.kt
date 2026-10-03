@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -56,6 +58,8 @@ class GestureUiState {
     var seekTaps by mutableStateOf<SeekTaps?>(null)
     var level by mutableStateOf<Level?>(null)
     var scrub by mutableStateOf<Scrub?>(null)
+    /** A frame from where the scrub would land (see ThumbnailLoader), if there is one. */
+    var scrubPreview by mutableStateOf<androidx.compose.ui.graphics.ImageBitmap?>(null)
     /** Long-press speed while held. */
     var speed by mutableStateOf<Float?>(null)
     /** Zoom in percent while pinching / just after. */
@@ -65,6 +69,7 @@ class GestureUiState {
 }
 
 private val Pill = Color(0xB3000000)
+private val PREVIEW_WIDTH = 200.dp
 
 @Composable
 fun GestureOverlay(state: GestureUiState) {
@@ -132,6 +137,17 @@ fun GestureOverlay(state: GestureUiState) {
                     .padding(horizontal = 24.dp, vertical = 14.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                state.scrubPreview?.let { frame ->
+                    androidx.compose.foundation.Image(
+                        frame,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .width(PREVIEW_WIDTH)
+                            .aspectRatio(frame.width.toFloat() / frame.height.coerceAtLeast(1))
+                            .clip(RoundedCornerShape(10.dp))
+                    )
+                    Spacer(Modifier.height(10.dp))
+                }
                 Text(GestureMath.time(scrub.targetMs), color = Color.White, fontSize = 28.sp, fontWeight = FontWeight.Bold)
                 Text(GestureMath.delta(scrub.deltaMs), color = Color.White.copy(alpha = 0.8f), fontSize = 16.sp)
             }
