@@ -14,7 +14,7 @@ import androidx.media3.common.TrackGroup
 enum class Fill { FIT, CROP, STRETCH }
 
 /** A side panel over the video. */
-enum class Panel { AUDIO, SUBTITLES, ONLINE_SUBTITLES, SPEED, MORE }
+enum class Panel { AUDIO, SUBTITLES, ONLINE_SUBTITLES, SPEED, MORE, CHAPTERS }
 
 /** Searching OpenSubtitles from the Subtitles panel. */
 sealed interface OnlineSubs {
@@ -54,6 +54,14 @@ class ControlsState {
     var panel by mutableStateOf<Panel?>(null)
     var title by mutableStateOf("")
     var hasNext by mutableStateOf(false)
+    var hasPrevious by mutableStateOf(false)
+    /** Subtitle / audio sync (ms, + = later), set in the Subtitles and Audio panels. */
+    var subtitleDelayMs by mutableLongStateOf(0L)
+    var audioDelayMs by mutableLongStateOf(0L)
+    /** Night mode: loud parts quieter, quiet parts louder (More). */
+    var nightMode by mutableStateOf(false)
+    /** The file's chapters (Matroska): marks on the seek bar and the Chapters list. */
+    var chapters by mutableStateOf<List<com.abhinavxt.debforge.domain.MkvChapters.Chapter>>(emptyList())
     var pipAvailable by mutableStateOf(false)
     /** Right-hand time shows "−12:34" (left) instead of the length. */
     var showRemaining by mutableStateOf(false)

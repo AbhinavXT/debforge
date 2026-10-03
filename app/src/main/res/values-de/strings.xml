@@ -654,4 +654,15 @@
     <string name="player_skipped_recap">Rückblick übersprungen</string>
     <string name="set_auto_skip_intro">Intros automatisch überspringen</string>
     <string name="set_auto_skip_intro_detail">Wenn die Kapitel einer Datei Intro oder Rückblick markieren, wird darüber gesprungen statt einen Knopf zu zeigen.</string>
+    <string name="player_previous_episode">Vorherige Folge</string>
+    <string name="player_sync">Synchronisation</string>
+    <string name="player_sync_subs_hint">Untertitel zu früh? Drück +. Zu spät? Drück −.</string>
+    <string name="player_sync_audio_hint">Ton vor dem Bild? Drück +. Hinterher? Drück −.</string>
+    <string name="player_sync_value">%1$s s</string>
+    <string name="player_sync_reset">Zum Zurücksetzen auf die Zeit tippen</string>
+    <string name="player_night_mode">Nachtmodus</string>
+    <string name="player_night_mode_detail">Laute Szenen leiser, Dialoge klarer</string>
+    <string name="player_night_mode_unavailable">Nachtmodus ist auf diesem Gerät nicht verfügbar</string>
+    <string name="player_chapters">Kapitel</string>
+    <string name="player_chapter_n">Kapitel %1$d</string>
 </resources>

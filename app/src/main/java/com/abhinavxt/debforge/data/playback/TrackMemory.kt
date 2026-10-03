@@ -55,6 +55,8 @@ class TrackMemory @Inject constructor(@ApplicationContext private val context: C
         r.textLabel?.let { put("tb", it) }
         r.speed?.let { put("sp", it.toDouble()) }
         r.introAtMs?.let { put("ia", it) }
+        r.subtitleDelayMs?.let { put("sd", it) }
+        r.audioDelayMs?.let { put("ad", it) }
         put("t", System.currentTimeMillis())
     }
 
@@ -65,10 +67,13 @@ class TrackMemory @Inject constructor(@ApplicationContext private val context: C
         textLanguage = o.optString("tl").ifEmpty { null },
         textLabel = o.optString("tb").ifEmpty { null },
         speed = if (o.has("sp")) o.optDouble("sp").toFloat().takeIf { it in 0.1f..8f } else null,
-        introAtMs = if (o.has("ia")) o.optLong("ia").takeIf { it >= 0 } else null
+        introAtMs = if (o.has("ia")) o.optLong("ia").takeIf { it >= 0 } else null,
+        subtitleDelayMs = if (o.has("sd")) o.optLong("sd").takeIf { it in -MAX_DELAY_MS..MAX_DELAY_MS } else null,
+        audioDelayMs = if (o.has("ad")) o.optLong("ad").takeIf { it in -MAX_DELAY_MS..MAX_DELAY_MS } else null
     )
 
     private companion object {
         const val MAX_ENTRIES = 300
+        const val MAX_DELAY_MS = 10_000L
     }
 }

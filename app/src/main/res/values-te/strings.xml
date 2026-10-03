@@ -654,4 +654,15 @@
     <string name="player_skipped_recap">రీక్యాప్ దాటవేయబడింది</string>
     <string name="set_auto_skip_intro">ఇంట్రోలను ఆటోమేటిక్‌గా దాటవేయండి</string>
     <string name="set_auto_skip_intro_detail">ఫైల్ చాప్టర్‌లు ఇంట్రో లేదా రీక్యాప్‌ను గుర్తిస్తే, బటన్ చూపకుండా దాన్ని దాటవేయండి.</string>
+    <string name="player_previous_episode">మునుపటి ఎపిసోడ్</string>
+    <string name="player_sync">సింక్</string>
+    <string name="player_sync_subs_hint">సబ్‌టైటిల్స్ ముందుగా వస్తున్నాయా? + నొక్కండి. ఆలస్యమా? − నొక్కండి.</string>
+    <string name="player_sync_audio_hint">శబ్దం చిత్రం కంటే ముందుందా? + నొక్కండి. వెనకుందా? − నొక్కండి.</string>
+    <string name="player_sync_value">%1$s సె.</string>
+    <string name="player_sync_reset">రీసెట్ చేయడానికి సమయంపై నొక్కండి</string>
+    <string name="player_night_mode">నైట్ మోడ్</string>
+    <string name="player_night_mode_detail">పెద్ద శబ్దాలు తగ్గి, సంభాషణ స్పష్టంగా</string>
+    <string name="player_night_mode_unavailable">ఈ పరికరంలో నైట్ మోడ్ అందుబాటులో లేదు</string>
+    <string name="player_chapters">అధ్యాయాలు</string>
+    <string name="player_chapter_n">అధ్యాయం %1$d</string>
 </resources>

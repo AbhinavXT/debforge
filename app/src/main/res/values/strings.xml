@@ -655,4 +655,15 @@
     <string name="player_skipped_recap">Skipped the recap</string>
     <string name="set_auto_skip_intro">Skip intros automatically</string>
     <string name="set_auto_skip_intro_detail">When a file\'s chapters mark the intro or recap, jump over it instead of showing a button.</string>
+    <string name="player_previous_episode">Previous episode</string>
+    <string name="player_sync">Sync</string>
+    <string name="player_sync_subs_hint">Subtitles too early? Press +. Too late? Press −.</string>
+    <string name="player_sync_audio_hint">Sound ahead of the picture? Press +. Behind? Press −.</string>
+    <string name="player_sync_value">%1$s s</string>
+    <string name="player_sync_reset">Tap the time to reset</string>
+    <string name="player_night_mode">Night mode</string>
+    <string name="player_night_mode_detail">Loud scenes quieter, dialogue clearer</string>
+    <string name="player_night_mode_unavailable">Night mode isn\'t available on this device</string>
+    <string name="player_chapters">Chapters</string>
+    <string name="player_chapter_n">Chapter %1$d</string>
 </resources>

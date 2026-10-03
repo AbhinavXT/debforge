@@ -29,7 +29,10 @@ object TrackPicker {
         val textLabel: String? = null,
         val speed: Float? = null,
         /** Where the intro was skipped last time (shows only): offer "Skip intro" around there. */
-        val introAtMs: Long? = null
+        val introAtMs: Long? = null,
+        /** Subtitle / audio sync last set (ms, + = later). */
+        val subtitleDelayMs: Long? = null,
+        val audioDelayMs: Long? = null
     )
 
     sealed interface Choice {

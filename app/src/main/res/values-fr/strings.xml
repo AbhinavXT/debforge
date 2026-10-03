@@ -687,4 +687,15 @@
     <string name="player_skipped_recap">Résumé passé</string>
     <string name="set_auto_skip_intro">Passer les génériques automatiquement</string>
     <string name="set_auto_skip_intro_detail">Quand les chapitres du fichier indiquent le générique ou le résumé, les passer au lieu d’afficher un bouton.</string>
+    <string name="player_previous_episode">Épisode précédent</string>
+    <string name="player_sync">Synchronisation</string>
+    <string name="player_sync_subs_hint">Sous-titres en avance ? Appuie sur +. En retard ? Appuie sur −.</string>
+    <string name="player_sync_audio_hint">Le son est en avance sur l’image ? Appuie sur +. En retard ? Appuie sur −.</string>
+    <string name="player_sync_value">%1$s s</string>
+    <string name="player_sync_reset">Touche la durée pour réinitialiser</string>
+    <string name="player_night_mode">Mode nuit</string>
+    <string name="player_night_mode_detail">Scènes bruyantes adoucies, dialogues plus clairs</string>
+    <string name="player_night_mode_unavailable">Le mode nuit n’est pas disponible sur cet appareil</string>
+    <string name="player_chapters">Chapitres</string>
+    <string name="player_chapter_n">Chapitre %1$d</string>
 </resources>

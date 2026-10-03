@@ -654,4 +654,15 @@
     <string name="player_skipped_recap">রিক্যাপ বাদ দেওয়া হয়েছে</string>
     <string name="set_auto_skip_intro">ইন্ট্রো নিজে থেকে বাদ দিন</string>
     <string name="set_auto_skip_intro_detail">ফাইলের চ্যাপ্টারে ইন্ট্রো বা রিক্যাপ চিহ্নিত থাকলে বোতাম না দেখিয়ে সেটি বাদ দিন।</string>
+    <string name="player_previous_episode">আগের পর্ব</string>
+    <string name="player_sync">সিঙ্ক</string>
+    <string name="player_sync_subs_hint">সাবটাইটেল আগে আসছে? + চাপুন। দেরিতে? − চাপুন।</string>
+    <string name="player_sync_audio_hint">শব্দ ছবির আগে? + চাপুন। পিছনে? − চাপুন।</string>
+    <string name="player_sync_value">%1$s সে.</string>
+    <string name="player_sync_reset">রিসেট করতে সময়ে ট্যাপ করুন</string>
+    <string name="player_night_mode">নাইট মোড</string>
+    <string name="player_night_mode_detail">জোরালো দৃশ্য নরম, সংলাপ স্পষ্ট</string>
+    <string name="player_night_mode_unavailable">এই ডিভাইসে নাইট মোড নেই</string>
+    <string name="player_chapters">অধ্যায়</string>
+    <string name="player_chapter_n">অধ্যায় %1$d</string>
 </resources>

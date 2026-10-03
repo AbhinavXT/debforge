@@ -63,15 +63,20 @@ class LocalPlayback @Inject constructor(
         }
 
         val candidates = pool.map { NextEpisode.Candidate(it, ReleaseNameParser.parse(it.filename)) }
-        val upcoming = NextEpisode.upcoming(video, info, candidates).map { c ->
-            QueuedEpisode(
-                item = c.item.copy(parentRef = null),
-                title = c.info.displayTitle,
-                showKey = c.info.groupKey,
-                subtitles = Subtitles.forVideo(c.item, pool)
+        fun queued(c: NextEpisode.Candidate) = QueuedEpisode(
+            item = c.item.copy(parentRef = null),
+            title = c.info.displayTitle,
+            showKey = c.info.groupKey.takeIf { c.info.kind == MediaKind.SHOW },
+            subtitles = Subtitles.forVideo(c.item, pool)
+        )
+        upNext.set(
+            video.id,
+            UpNext.Queue(
+                current = queued(NextEpisode.Candidate(video, info)),
+                next = NextEpisode.upcoming(video, info, candidates).map(::queued),
+                previous = NextEpisode.previous(video, info, candidates).map(::queued)
             )
-        }
-        upNext.set(video.id, upcoming)
+        )
 
         PlayRequest(
             uri = uri,

@@ -67,6 +67,9 @@ import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Replay10
 import androidx.compose.material.icons.rounded.ScreenRotation
 import androidx.compose.material.icons.rounded.SkipNext
+import androidx.compose.material.icons.rounded.SkipPrevious
+import androidx.compose.material.icons.rounded.NightsStay
+import androidx.compose.material.icons.automirrored.rounded.List
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -120,6 +123,14 @@ interface ControlsActions {
     fun scrubTo(ms: Long)
     fun scrubEnd()
     fun next()
+    fun previous()
+    /** Subtitles later (+) or earlier (−), in ms; remembered for the show. */
+    fun setSubtitleDelay(ms: Long)
+    /** Sound later (+) or earlier (−) than the picture, in ms; remembered for the show. */
+    fun setAudioDelay(ms: Long)
+    fun setNightMode(on: Boolean)
+    /** Jump to a chapter. */
+    fun seekTo(ms: Long)
     fun openExternal()
     fun rotate()
     fun setFill(fill: Fill)
@@ -362,6 +373,7 @@ private fun BottomBar(state: ControlsState, actions: ControlsActions, modifier: 
         Row(verticalAlignment = Alignment.CenterVertically) {
             TimeText(GestureMath.time(snap.positionMs))
             SeekBar(
+                chapters = state.chapters,
                 loopA = state.loopA,
                 loopB = state.loopB,
                 positionMs = snap.positionMs,
@@ -429,6 +441,10 @@ private fun BottomBar(state: ControlsState, actions: ControlsActions, modifier: 
                     )
                 }
             }
+            if (state.hasPrevious) {
+                ControlIcon(state, "previous", Icons.Rounded.SkipPrevious, stringResource(R.string.player_previous_episode)) { actions.previous() }
+                Spacer(Modifier.width(4.dp))
+            }
             // Skip an opening / recap.
             Row(
                 Modifier
@@ -478,6 +494,7 @@ private fun TimeText(text: String, modifier: Modifier = Modifier) {
 /** Thin seek bar with the buffered part; drag or tap to move. */
 @Composable
 private fun SeekBar(
+    chapters: List<com.abhinavxt.debforge.domain.MkvChapters.Chapter>,
     loopA: Long?,
     loopB: Long?,
     positionMs: Long,
@@ -535,6 +552,14 @@ private fun SeekBar(
             drawLine(Color(0x4DFFFFFF), Offset(0f, y), Offset(size.width, y), stroke, StrokeCap.Round)
             drawLine(Color(0x80FFFFFF), Offset(0f, y), Offset(size.width * buffered, y), stroke, StrokeCap.Round)
             drawLine(accent, Offset(0f, y), Offset(size.width * played.coerceIn(0f, 1f), y), stroke, StrokeCap.Round)
+            // Chapters: a small gap in the bar where each one starts.
+            if (enabled) {
+                chapters.forEach { c ->
+                    if (c.startMs <= 0 || c.startMs >= durationMs) return@forEach
+                    val x = size.width * (c.startMs.toFloat() / durationMs)
+                    drawLine(Color(0xCC000000), Offset(x, y - stroke / 2), Offset(x, y + stroke / 2), 2.dp.toPx())
+                }
+            }
             // A-B loop: the looped stretch in amber, with its ends marked.
             if (enabled && loopA != null) {
                 val amber = Color(0xFFFFB300)
@@ -650,6 +675,7 @@ private fun SidePanel(panel: Panel, state: ControlsState, actions: ControlsActio
                     Panel.AUDIO -> R.string.player_audio
                     Panel.SUBTITLES -> R.string.player_subtitles
                     Panel.ONLINE_SUBTITLES -> R.string.player_subs_online
+                    Panel.CHAPTERS -> R.string.player_chapters
                     Panel.SPEED -> R.string.player_speed
                     Panel.MORE -> R.string.player_more
                 }
@@ -679,6 +705,17 @@ private fun SidePanel(panel: Panel, state: ControlsState, actions: ControlsActio
                         }
                     }
                     items(choices) { c -> ChoiceRow(c.label, c.selected) { actions.selectTrack(type, c) } }
+                    // Sync, once there's something to sync.
+                    if (panel == Panel.AUDIO && choices.isNotEmpty()) {
+                        item {
+                            DelayRow(stringResource(R.string.player_sync_audio_hint), state.audioDelayMs, actions::setAudioDelay)
+                        }
+                    }
+                    if (panel == Panel.SUBTITLES && choices.any { it.selected }) {
+                        item {
+                            DelayRow(stringResource(R.string.player_sync_subs_hint), state.subtitleDelayMs, actions::setSubtitleDelay)
+                        }
+                    }
                     if (panel == Panel.SUBTITLES && state.onlineSubsAvailable) {
                         item {
                             MoreRow(Icons.Rounded.Search, stringResource(R.string.player_subs_search_online)) {
@@ -694,6 +731,17 @@ private fun SidePanel(panel: Panel, state: ControlsState, actions: ControlsActio
             }
             Panel.MORE -> MorePanel(state, actions)
             Panel.ONLINE_SUBTITLES -> OnlineSubtitlesPanel(state.onlineSubs, actions)
+            Panel.CHAPTERS -> {
+                val position = state.snapshot.positionMs
+                val current = state.chapters.indexOfLast { it.startMs <= position }
+                LazyColumn {
+                    items(state.chapters.size) { i ->
+                        val c = state.chapters[i]
+                        val name = c.title ?: stringResource(R.string.player_chapter_n, i + 1)
+                        ChoiceRow("${GestureMath.time(c.startMs)}  $name", i == current) { actions.seekTo(c.startMs) }
+                    }
+                }
+            }
             Panel.SPEED -> {
                 val current = state.snapshot.speed
                 LazyColumn {
@@ -707,6 +755,49 @@ private fun SidePanel(panel: Panel, state: ControlsState, actions: ControlsActio
         }
     }
 }
+
+/** "Subtitles too early? Press +": −/+ 100 ms, tap the value to reset. */
+@Composable
+private fun DelayRow(hint: String, delayMs: Long, onChange: (Long) -> Unit) {
+    fun step(by: Long) = onChange((delayMs + by).coerceIn(-MAX_DELAY_MS, MAX_DELAY_MS))
+    Column(Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 12.dp)) {
+        Text(stringResource(R.string.player_sync), color = Color.White, style = MaterialTheme.typography.titleSmall)
+        Text(hint, color = Color.White.copy(alpha = 0.6f), fontSize = 12.sp)
+        Spacer(Modifier.height(8.dp))
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            StyleChip(selected = false, onClick = { step(-DELAY_STEP_MS) }) {
+                Text("\u2212", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            }
+            Box(
+                Modifier
+                    .weight(1f)
+                    .clickable(enabled = delayMs != 0L) { onChange(0L) },
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    stringResource(R.string.player_sync_value, String.format(java.util.Locale.getDefault(), "%+.1f", delayMs / 1000f)),
+                    color = if (delayMs == 0L) Color.White else MaterialTheme.colorScheme.primary,
+                    fontSize = 16.sp,
+                    fontFamily = FontFamily.Monospace
+                )
+            }
+            StyleChip(selected = false, onClick = { step(DELAY_STEP_MS) }) {
+                Text("+", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            }
+        }
+        if (delayMs != 0L) {
+            Text(
+                stringResource(R.string.player_sync_reset),
+                color = Color.White.copy(alpha = 0.6f),
+                fontSize = 12.sp,
+                modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = 4.dp)
+            )
+        }
+    }
+}
+
+private const val DELAY_STEP_MS = 100L
+private const val MAX_DELAY_MS = 10_000L
 
 /** OpenSubtitles results: exact matches for this file first, then the most downloaded. */
 @OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
@@ -821,6 +912,28 @@ private fun MorePanel(state: ControlsState, actions: ControlsActions) {
                         Text(stringResource(R.string.player_sleep_end), color = Color.White, fontSize = 13.sp)
                     }
                 }
+            }
+        }
+        if (state.chapters.size >= 2) {
+            item {
+                MoreRow(Icons.AutoMirrored.Rounded.List, stringResource(R.string.player_chapters)) { state.panel = Panel.CHAPTERS }
+            }
+        }
+        item {
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .clickable { actions.setNightMode(!state.nightMode) }
+                    .padding(horizontal = 20.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(Icons.Rounded.NightsStay, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
+                Spacer(Modifier.width(12.dp))
+                Column(Modifier.weight(1f)) {
+                    Text(stringResource(R.string.player_night_mode), color = Color.White, fontSize = 15.sp)
+                    Text(stringResource(R.string.player_night_mode_detail), color = Color.White.copy(alpha = 0.6f), fontSize = 12.sp)
+                }
+                androidx.compose.material3.Switch(checked = state.nightMode, onCheckedChange = { actions.setNightMode(it) })
             }
         }
         item {

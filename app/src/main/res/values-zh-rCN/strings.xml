@@ -621,4 +621,15 @@
     <string name="player_skipped_recap">已跳过前情提要</string>
     <string name="set_auto_skip_intro">自动跳过片头</string>
     <string name="set_auto_skip_intro_detail">文件章节标出片头或前情提要时，直接跳过而不是显示按钮。</string>
+    <string name="player_previous_episode">上一集</string>
+    <string name="player_sync">同步</string>
+    <string name="player_sync_subs_hint">字幕太早？按 +。太晚？按 −。</string>
+    <string name="player_sync_audio_hint">声音比画面早？按 +。晚？按 −。</string>
+    <string name="player_sync_value">%1$s 秒</string>
+    <string name="player_sync_reset">点按时间可重置</string>
+    <string name="player_night_mode">夜间模式</string>
+    <string name="player_night_mode_detail">压低巨响，对白更清晰</string>
+    <string name="player_night_mode_unavailable">此设备不支持夜间模式</string>
+    <string name="player_chapters">章节</string>
+    <string name="player_chapter_n">第 %1$d 章</string>
 </resources>

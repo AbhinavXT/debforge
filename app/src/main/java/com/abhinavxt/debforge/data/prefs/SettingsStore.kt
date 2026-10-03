@@ -50,6 +50,7 @@ class SettingsStore @Inject constructor(
     private val keyAutoplayNext = booleanPreferencesKey("autoplay_next")
     private val keyPip = booleanPreferencesKey("picture_in_picture")
     private val keyAutoSkipIntro = booleanPreferencesKey("auto_skip_intro")
+    private val keyNightMode = booleanPreferencesKey("player_night_mode")
     private val keyPlayerGestures = booleanPreferencesKey("player_gestures")
     private val keyPlayerShowRemaining = booleanPreferencesKey("player_show_remaining")
     private val keyAudioLanguage = stringPreferencesKey("player_audio_language")
@@ -128,6 +129,10 @@ class SettingsStore @Inject constructor(
     /** Player: jump over chapters marked intro / recap as they start, instead of offering a button. Off by default. */
     val autoSkipIntroFlow: Flow<Boolean> = context.settingsDataStore.data.map { it[keyAutoSkipIntro] ?: false }
     suspend fun setAutoSkipIntro(v: Boolean) = context.settingsDataStore.edit { it[keyAutoSkipIntro] = v }
+
+    /** Player → More: night mode (dynamic range compression). Off by default. */
+    val nightModeFlow: Flow<Boolean> = context.settingsDataStore.data.map { it[keyNightMode] ?: false }
+    suspend fun setNightMode(v: Boolean) = context.settingsDataStore.edit { it[keyNightMode] = v }
 
     /** Player: double-tap seek, swipe brightness/volume, scrub, hold for speed, pinch zoom. */
     val playerGesturesFlow: Flow<Boolean> = context.settingsDataStore.data.map { it[keyPlayerGestures] ?: true }
@@ -245,7 +250,7 @@ class SettingsStore @Inject constructor(
     private val backupBooleans get() = listOf(
         keyDynamicColor, keyPosterView, keyOrganize, keyWifiOnly, keyChargingOnly,
         keyScheduleOn, keyAutoUpdate, keyRemoveAfter, keyPureBlack, keyShowExtras, keyClipboardOffer,
-        keyInternalPlayer, keyAutoplayNext, keyPip, keyAutoSkipIntro
+        keyInternalPlayer, keyAutoplayNext, keyPip, keyAutoSkipIntro, keyNightMode
     )
     private val backupInts get() = listOf(keySortOrder, keyThemeMode, keyScheduleStart, keyScheduleEnd, keySpeedLimit, keyAutoDeleteDays)
 

@@ -68,4 +68,23 @@ class NextEpisodeTest {
         val all = (1..20).map { f("Show.S01E%02d.mkv".format(it)) }
         assertEquals(3, next(all.first(), all, limit = 3).size)
     }
+
+    private fun previous(current: DownloadItem, all: List<DownloadItem>) =
+        NextEpisode.previous(current, ReleaseNameParser.parse(current.filename), all.map(::c))
+            .map { it.item.filename }
+
+    @Test fun previousNearestFirst() {
+        val e1 = f("Show.S01E01.mkv"); val e2 = f("Show.S01E02.mkv"); val e3 = f("Show.S01E03.mkv")
+        assertEquals(listOf("Show.S01E02.mkv", "Show.S01E01.mkv"), previous(e3, listOf(e1, e3, e2)))
+    }
+
+    @Test fun previousCrossesBackIntoTheLastSeason() {
+        val s1 = f("Show.S01E10.mkv", parent = "t:1"); val s2 = f("Show.S02E01.mkv", parent = "t:2")
+        assertEquals(listOf("Show.S01E10.mkv"), previous(s2, listOf(s1, s2)))
+    }
+
+    @Test fun firstEpisodeHasNoPrevious() {
+        val e1 = f("Show.S01E01.mkv")
+        assertTrue(previous(e1, listOf(e1, f("Show.S01E02.mkv"))).isEmpty())
+    }
 }

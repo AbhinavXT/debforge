@@ -654,4 +654,15 @@
     <string name="player_skipped_recap">முன்கதை தவிர்க்கப்பட்டது</string>
     <string name="set_auto_skip_intro">அறிமுகங்களைத் தானாகத் தவிர்</string>
     <string name="set_auto_skip_intro_detail">கோப்பின் அத்தியாயங்கள் அறிமுகம் அல்லது முன்கதையைக் குறித்தால், பொத்தானைக் காட்டாமல் அதைத் தாண்டிச் செல்லவும்.</string>
+    <string name="player_previous_episode">முந்தைய எபிசோடு</string>
+    <string name="player_sync">ஒத்திசைவு</string>
+    <string name="player_sync_subs_hint">வசனங்கள் முன்னதாக வருகிறதா? + அழுத்தவும். தாமதமா? − அழுத்தவும்.</string>
+    <string name="player_sync_audio_hint">ஒலி படத்துக்கு முன்னதாகவா? + அழுத்தவும். பின்னதாகவா? − அழுத்தவும்.</string>
+    <string name="player_sync_value">%1$s வி.</string>
+    <string name="player_sync_reset">மீட்டமைக்க நேரத்தைத் தட்டவும்</string>
+    <string name="player_night_mode">இரவு பயன்முறை</string>
+    <string name="player_night_mode_detail">சத்தமான காட்சிகள் மென்மையாக, உரையாடல் தெளிவாக</string>
+    <string name="player_night_mode_unavailable">இந்தச் சாதனத்தில் இரவு பயன்முறை இல்லை</string>
+    <string name="player_chapters">அத்தியாயங்கள்</string>
+    <string name="player_chapter_n">அத்தியாயம் %1$d</string>
 </resources>

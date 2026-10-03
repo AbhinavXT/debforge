@@ -15,23 +15,30 @@ data class QueuedEpisode(
 )
 
 /**
- * Hands the "what comes next" list from the Library to the player, in
- * memory: a few episodes with their subtitle files don't belong in an
+ * Hands the episodes around the one playing from the Library to the player,
+ * in memory: a few episodes with their subtitle files don't belong in an
  * Intent. Keyed by the file that started playing, so a stale list is never
  * used for another video. Lost if Android kills the process mid-episode;
- * the player then simply has no next episode.
+ * the player then simply has no next or previous episode.
  */
 @Singleton
 class UpNext @Inject constructor() {
-    @Volatile private var forItemId: String? = null
-    @Volatile private var episodes: List<QueuedEpisode> = emptyList()
 
-    fun set(forItemId: String, episodes: List<QueuedEpisode>) {
+    /** [current] is the file starting; [next] and [previous] nearest first. */
+    data class Queue(
+        val current: QueuedEpisode? = null,
+        val next: List<QueuedEpisode> = emptyList(),
+        val previous: List<QueuedEpisode> = emptyList()
+    )
+
+    @Volatile private var forItemId: String? = null
+    @Volatile private var queue = Queue()
+
+    fun set(forItemId: String, queue: Queue) {
         this.forItemId = forItemId
-        this.episodes = episodes
+        this.queue = queue
     }
 
     /** The queue for [itemId], or empty if it was set for something else. */
-    fun take(itemId: String): List<QueuedEpisode> =
-        if (itemId == forItemId) episodes else emptyList()
+    fun take(itemId: String): Queue = if (itemId == forItemId) queue else Queue()
 }

@@ -654,4 +654,15 @@
     <string name="player_skipped_recap">रीकॅप वगळला</string>
     <string name="set_auto_skip_intro">इंट्रो आपोआप वगळा</string>
     <string name="set_auto_skip_intro_detail">फाइलच्या चॅप्टरमध्ये इंट्रो किंवा रीकॅप असल्यास बटण न दाखवता तो वगळा.</string>
+    <string name="player_previous_episode">मागील भाग</string>
+    <string name="player_sync">सिंक</string>
+    <string name="player_sync_subs_hint">सबटायटल लवकर येतात? + दाबा. उशिरा? − दाबा.</string>
+    <string name="player_sync_audio_hint">आवाज चित्राच्या पुढे? + दाबा. मागे? − दाबा.</string>
+    <string name="player_sync_value">%1$s से.</string>
+    <string name="player_sync_reset">रीसेट करण्यासाठी वेळेवर टॅप करा</string>
+    <string name="player_night_mode">नाइट मोड</string>
+    <string name="player_night_mode_detail">मोठे आवाज कमी, संवाद स्पष्ट</string>
+    <string name="player_night_mode_unavailable">या डिव्हाइसवर नाइट मोड उपलब्ध नाही</string>
+    <string name="player_chapters">प्रकरणे</string>
+    <string name="player_chapter_n">प्रकरण %1$d</string>
 </resources>

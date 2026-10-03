@@ -621,4 +621,15 @@
     <string name="player_skipped_recap">Rekap dilewati</string>
     <string name="set_auto_skip_intro">Lewati intro otomatis</string>
     <string name="set_auto_skip_intro_detail">Jika bab file menandai intro atau rekap, langsung dilewati alih-alih menampilkan tombol.</string>
+    <string name="player_previous_episode">Episode sebelumnya</string>
+    <string name="player_sync">Sinkronisasi</string>
+    <string name="player_sync_subs_hint">Subtitle terlalu cepat? Tekan +. Terlambat? Tekan −.</string>
+    <string name="player_sync_audio_hint">Suara mendahului gambar? Tekan +. Tertinggal? Tekan −.</string>
+    <string name="player_sync_value">%1$s dtk</string>
+    <string name="player_sync_reset">Ketuk waktu untuk mengatur ulang</string>
+    <string name="player_night_mode">Mode malam</string>
+    <string name="player_night_mode_detail">Adegan keras lebih pelan, dialog lebih jelas</string>
+    <string name="player_night_mode_unavailable">Mode malam tidak tersedia di perangkat ini</string>
+    <string name="player_chapters">Bab</string>
+    <string name="player_chapter_n">Bab %1$d</string>
 </resources>

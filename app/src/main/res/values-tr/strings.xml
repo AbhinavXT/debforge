@@ -654,4 +654,15 @@
     <string name="player_skipped_recap">Özet atlandı</string>
     <string name="set_auto_skip_intro">Girişleri otomatik atla</string>
     <string name="set_auto_skip_intro_detail">Dosyanın bölümleri girişi veya özeti işaretliyorsa düğme göstermek yerine atla.</string>
+    <string name="player_previous_episode">Önceki bölüm</string>
+    <string name="player_sync">Senkron</string>
+    <string name="player_sync_subs_hint">Altyazı erken mi? + bas. Geç mi? − bas.</string>
+    <string name="player_sync_audio_hint">Ses görüntünün önünde mi? + bas. Gerisinde mi? − bas.</string>
+    <string name="player_sync_value">%1$s sn</string>
+    <string name="player_sync_reset">Sıfırlamak için süreye dokun</string>
+    <string name="player_night_mode">Gece modu</string>
+    <string name="player_night_mode_detail">Yüksek sahneler kısılır, diyaloglar netleşir</string>
+    <string name="player_night_mode_unavailable">Gece modu bu cihazda kullanılamıyor</string>
+    <string name="player_chapters">Bölümler</string>
+    <string name="player_chapter_n">Bölüm %1$d</string>
 </resources>

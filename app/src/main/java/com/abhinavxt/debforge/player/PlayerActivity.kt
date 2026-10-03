@@ -149,6 +149,10 @@ class PlayerActivity : ComponentActivity() {
     // --- next episode ---
     /** Episodes after this one (same show), best copy of each. */
     private val queue = ArrayDeque<QueuedEpisode>()
+    /** Episodes before this one, nearest first ("Previous episode"). */
+    private val previousQueue = ArrayDeque<QueuedEpisode>()
+    /** The episode playing, so going to the next or previous one can come back to it. */
+    private var currentEpisode: QueuedEpisode? = null
     /** The next episode with its links fetched ahead of time. */
     private var prepared: Prepared? = null
     private var prefetchJob: Job? = null
@@ -184,6 +188,10 @@ class PlayerActivity : ComponentActivity() {
     /** Volume past the phone's maximum (1 = none, up to [GestureMath.MAX_VOLUME_LEVEL]). */
     private var boostLevel = 1f
     private var loudness: android.media.audiofx.LoudnessEnhancer? = null
+    private var nightMode: NightMode? = null
+    private var audioSessionId = C.AUDIO_SESSION_ID_UNSET
+    /** Subtitle / audio sync, read by the renderers ([SyncedRenderersFactory]). */
+    private val avSync = AvSync()
     /** This file's OpenSubtitles hash, worked out on the first search. */
     private var movieHash: kotlinx.coroutines.Deferred<String?>? = null
     private var onlineSubsJob: Job? = null
@@ -265,7 +273,12 @@ class PlayerActivity : ComponentActivity() {
         title = intent.getStringExtra(EXTRA_TITLE).orEmpty()
         identity = Identity.from(intent)
         subtitles = subtitlesFrom(intent)
-        identity?.let { queue.addAll(upNext.take(it.itemId)) }
+        identity?.let { id ->
+            val q = upNext.take(id.itemId)
+            queue.addAll(q.next)
+            previousQueue.addAll(q.previous)
+            currentEpisode = q.current
+        }
         startFile()
         lifecycleScope.launch {
             autoplay = settings.autoplayNextFlow.first()
@@ -276,6 +289,8 @@ class PlayerActivity : ComponentActivity() {
             controls.background = settings.playerBackgroundFlow.first()
             controls.onlineSubsAvailable = !isTv && openSubtitles.enabled.first()
             autoSkipIntro = settings.autoSkipIntroFlow.first()
+            controls.nightMode = settings.nightModeFlow.first()
+            applyNightMode()
             applySubtitleStyle()
             controls.pipAvailable = pipSupported && pipAllowed
             updatePip()
@@ -453,6 +468,7 @@ class PlayerActivity : ComponentActivity() {
                 ticks++
                 if (ticks % SAVE_EVERY_TICKS == 0 && player?.isPlaying == true) savePosition()
                 controls.hasNext = queue.isNotEmpty()
+                controls.hasPrevious = previousQueue.isNotEmpty()
                 updateNextEpisode()
                 updateSkip()
             }
@@ -607,7 +623,14 @@ class PlayerActivity : ComponentActivity() {
     override fun dispatchKeyEvent(event: android.view.KeyEvent): Boolean {
         if (!isTv && handlePhoneKey(event)) return true
         val focus = currentFocus
-        val overlayFocused = focus != null && (focus === startOverView || isInside(focus, nextCard))
+        // Media keys (remote, headset, keyboard): next / previous episode.
+        if (event.action == android.view.KeyEvent.ACTION_DOWN) {
+            when (event.keyCode) {
+                android.view.KeyEvent.KEYCODE_MEDIA_NEXT -> if (queue.isNotEmpty()) { playNext(); return true }
+                android.view.KeyEvent.KEYCODE_MEDIA_PREVIOUS -> if (previousQueue.isNotEmpty()) { playPrevious(); return true }
+            }
+        }
+        val overlayFocused = focus != null && (focus === startOverView || focus === skipView || isInside(focus, nextCard))
         if (!overlayFocused && ::playerView.isInitialized && playerView.dispatchKeyEvent(event)) return true
         return super.dispatchKeyEvent(event)
     }
@@ -778,6 +801,28 @@ class PlayerActivity : ComponentActivity() {
         override fun scrubTo(ms: Long) = this@PlayerActivity.scrubTo(ms)
         override fun scrubEnd() = endScrub(cancel = false)
         override fun next() = playNext()
+        override fun previous() = playPrevious()
+
+        override fun setSubtitleDelay(ms: Long) {
+            applyDelays(ms, controls.audioDelayMs)
+            remember { it.copy(subtitleDelayMs = ms.takeIf { d -> d != 0L }) }
+        }
+
+        override fun setAudioDelay(ms: Long) {
+            applyDelays(controls.subtitleDelayMs, ms)
+            remember { it.copy(audioDelayMs = ms.takeIf { d -> d != 0L }) }
+        }
+
+        override fun setNightMode(on: Boolean) {
+            controls.nightMode = on
+            applyNightMode()
+            lifecycleScope.launch { settings.setNightMode(on) }
+        }
+
+        override fun seekTo(ms: Long) {
+            player?.seekTo(ms)
+            controls.panel = null
+        }
         override fun openExternal() = openExternally()
 
         override fun rotate() {
@@ -1010,9 +1055,18 @@ class PlayerActivity : ComponentActivity() {
         val file = identity?.filename?.takeIf { it.isNotBlank() } ?: uri.lastPathSegment.orEmpty()
         val source = uri
         val generation = ++fileGeneration
+        controls.chapters = emptyList()
+        if (isTv && ::playerView.isInitialized) playerView.setExtraAdGroupMarkers(null, null)
         lifecycleScope.launch {
             val found = runCatching { chapterReader.chapters(source, file) }.getOrDefault(emptyList())
-            if (generation == fileGeneration) chapters = found // still the same file
+            if (generation != fileGeneration) return@launch // another file by now
+            chapters = found
+            controls.chapters = found
+            // TV: Media3's seek bar marks them (its ad markers).
+            if (isTv && ::playerView.isInitialized) {
+                val marks = found.map { it.startMs }.filter { it > 0 }
+                playerView.setExtraAdGroupMarkers(marks.toLongArray(), BooleanArray(marks.size))
+            }
         }
         onlineSubsJob?.cancel()
         controls.onlineSubs = com.abhinavxt.debforge.player.controls.OnlineSubs.Idle
@@ -1022,6 +1076,15 @@ class PlayerActivity : ComponentActivity() {
         if (identity?.showKey != null) {
             val memory = remembered
             lifecycleScope.launch { learntIntroAt = memory?.await()?.introAtMs }
+        }
+        // Sync starts at zero, then last time's for this show (or file).
+        applyDelays(0, 0)
+        remembered?.let { memory ->
+            val generation = fileGeneration
+            lifecycleScope.launch {
+                val r = memory.await() ?: return@launch
+                if (generation == fileGeneration) applyDelays(r.subtitleDelayMs ?: 0, r.audioDelayMs ?: 0)
+            }
         }
     }
 
@@ -1179,11 +1242,32 @@ class PlayerActivity : ComponentActivity() {
 
     /** Volume boost past the phone's maximum, on the player's audio session. */
     private fun attachLoudness(sessionId: Int) {
+        audioSessionId = sessionId
         loudness?.release()
         loudness = null
+        applyNightMode()
         if (sessionId == C.AUDIO_SESSION_ID_UNSET) return
         loudness = runCatching { android.media.audiofx.LoudnessEnhancer(sessionId) }.getOrNull()
         applyBoost()
+    }
+
+    /** Night mode on the current audio session (re-attached when the session changes). */
+    private fun applyNightMode() {
+        nightMode?.release()
+        nightMode = null
+        if (!controls.nightMode || audioSessionId == C.AUDIO_SESSION_ID_UNSET) return
+        nightMode = NightMode.attach(audioSessionId)
+        if (nightMode == null) {
+            controls.nightMode = false
+            showMessage(getString(R.string.player_night_mode_unavailable))
+        }
+    }
+
+    private fun applyDelays(subtitleMs: Long, audioMs: Long) {
+        avSync.subtitleDelayMs = subtitleMs
+        avSync.audioDelayMs = audioMs
+        controls.subtitleDelayMs = subtitleMs
+        controls.audioDelayMs = audioMs
     }
 
     private fun applyBoost() {
@@ -1451,7 +1535,25 @@ class PlayerActivity : ComponentActivity() {
         }
     }
 
-    private suspend fun switchTo(episode: QueuedEpisode) {
+    /** Back to the episode before this one, from where it was left (like [playNext], backwards). */
+    private fun playPrevious() {
+        if (switching) return
+        val episode = previousQueue.firstOrNull() ?: return
+        switching = true
+        hideNextCard()
+        savePosition()
+        scrobble(scrobbler::stopped)
+        player?.pause()
+        lifecycleScope.launch {
+            try {
+                switchTo(episode, backwards = true)
+            } finally {
+                switching = false
+            }
+        }
+    }
+
+    private suspend fun switchTo(episode: QueuedEpisode, backwards: Boolean = false) {
         prefetchJob?.join()
         val ready = prepared?.takeIf { it.episode == episode } ?: prepare(episode)
         prepared = null
@@ -1459,7 +1561,15 @@ class PlayerActivity : ComponentActivity() {
             Toast.makeText(this@PlayerActivity, R.string.player_next_failed, Toast.LENGTH_LONG).show()
             return
         }
-        queue.removeFirst()
+        // This episode moves to the other side: Previous after going forward, Next after going back.
+        if (backwards) {
+            previousQueue.removeFirst()
+            currentEpisode?.let { queue.addFirst(it) }
+        } else {
+            queue.removeFirst()
+            currentEpisode?.let { previousQueue.addFirst(it) }
+        }
+        currentEpisode = episode
         val item = episode.item
         identity = Identity(item.id, item.provider, item.sourceRef, item.filename, episode.showKey, item.parentRef)
         uri = Uri.parse(ready.url)
@@ -1730,7 +1840,7 @@ class PlayerActivity : ComponentActivity() {
         // for what the device can't do: E-AC3/AC3 on phones without a Dolby
         // licence, DTS, TrueHD. Decoder fallback tries another codec
         // instance if the first one fails to start.
-        val renderers = DefaultRenderersFactory(this)
+        val renderers = SyncedRenderersFactory(this, avSync)
             .setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON)
             .setEnableDecoderFallback(true)
         val exo = ExoPlayer.Builder(this, renderers)
@@ -1785,6 +1895,9 @@ class PlayerActivity : ComponentActivity() {
         savedSpeed = exo.playbackParameters.speed
         loudness?.release()
         loudness = null
+        nightMode?.release()
+        nightMode = null
+        audioSessionId = C.AUDIO_SESSION_ID_UNSET
         exo.removeListener(listener)
         exo.release()
         playerView.player = null

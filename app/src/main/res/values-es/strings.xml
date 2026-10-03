@@ -687,4 +687,15 @@
     <string name="player_skipped_recap">Resumen saltado</string>
     <string name="set_auto_skip_intro">Saltar intros automáticamente</string>
     <string name="set_auto_skip_intro_detail">Si los capítulos del archivo marcan la intro o el resumen, sáltalos en vez de mostrar un botón.</string>
+    <string name="player_previous_episode">Episodio anterior</string>
+    <string name="player_sync">Sincronización</string>
+    <string name="player_sync_subs_hint">¿Subtítulos adelantados? Pulsa +. ¿Retrasados? Pulsa −.</string>
+    <string name="player_sync_audio_hint">¿El sonido va por delante de la imagen? Pulsa +. ¿Por detrás? Pulsa −.</string>
+    <string name="player_sync_value">%1$s s</string>
+    <string name="player_sync_reset">Toca el tiempo para restablecer</string>
+    <string name="player_night_mode">Modo nocturno</string>
+    <string name="player_night_mode_detail">Escenas fuertes más suaves, diálogos más claros</string>
+    <string name="player_night_mode_unavailable">El modo nocturno no está disponible en este dispositivo</string>
+    <string name="player_chapters">Capítulos</string>
+    <string name="player_chapter_n">Capítulo %1$d</string>
 </resources>

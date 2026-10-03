@@ -632,18 +632,22 @@ class BrowseViewModel @Inject constructor(
      * Episodes after [video] from [pool] (same show and service), best copy
      * of each, with their subtitle files, for the player's "Next episode".
      */
-    private fun upNextFor(video: DownloadItem, pool: List<DownloadItem>): List<com.abhinavxt.debforge.player.QueuedEpisode> {
+    private fun upNextFor(video: DownloadItem, pool: List<DownloadItem>): com.abhinavxt.debforge.player.UpNext.Queue {
         val parse = com.abhinavxt.debforge.domain.ReleaseNameParser::parse
+        val info = parse(video.filename)
         val candidates = com.abhinavxt.debforge.domain.ExtraFiles.hide(pool)
             .map { com.abhinavxt.debforge.domain.NextEpisode.Candidate(it, parse(it.filename)) }
-        return com.abhinavxt.debforge.domain.NextEpisode.upcoming(video, parse(video.filename), candidates).map { c ->
-            com.abhinavxt.debforge.player.QueuedEpisode(
-                item = c.item,
-                title = c.info.displayTitle,
-                showKey = c.info.groupKey,
-                subtitles = com.abhinavxt.debforge.domain.Subtitles.forVideo(c.item, pool)
-            )
-        }
+        fun queued(item: DownloadItem, i: ReleaseInfo) = com.abhinavxt.debforge.player.QueuedEpisode(
+            item = item,
+            title = i.displayTitle,
+            showKey = i.groupKey.takeIf { i.kind == MediaKind.SHOW },
+            subtitles = com.abhinavxt.debforge.domain.Subtitles.forVideo(item, pool)
+        )
+        return com.abhinavxt.debforge.player.UpNext.Queue(
+            current = queued(video, info),
+            next = com.abhinavxt.debforge.domain.NextEpisode.upcoming(video, info, candidates).map { queued(it.item, it.info) },
+            previous = com.abhinavxt.debforge.domain.NextEpisode.previous(video, info, candidates).map { queued(it.item, it.info) }
+        )
     }
 
     /**

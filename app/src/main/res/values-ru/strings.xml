@@ -720,4 +720,15 @@
     <string name="player_skipped_recap">Пересказ пропущен</string>
     <string name="set_auto_skip_intro">Пропускать заставки автоматически</string>
     <string name="set_auto_skip_intro_detail">Если главы файла отмечают заставку или пересказ, перескакивать их вместо показа кнопки.</string>
+    <string name="player_previous_episode">Предыдущая серия</string>
+    <string name="player_sync">Синхронизация</string>
+    <string name="player_sync_subs_hint">Субтитры спешат? Нажмите +. Отстают? Нажмите −.</string>
+    <string name="player_sync_audio_hint">Звук опережает картинку? Нажмите +. Отстаёт? Нажмите −.</string>
+    <string name="player_sync_value">%1$s с</string>
+    <string name="player_sync_reset">Нажмите на время, чтобы сбросить</string>
+    <string name="player_night_mode">Ночной режим</string>
+    <string name="player_night_mode_detail">Громкие сцены тише, диалоги разборчивее</string>
+    <string name="player_night_mode_unavailable">Ночной режим недоступен на этом устройстве</string>
+    <string name="player_chapters">Главы</string>
+    <string name="player_chapter_n">Глава %1$d</string>
 </resources>

@@ -654,4 +654,15 @@
     <string name="player_skipped_recap">रीकैप छोड़ दिया</string>
     <string name="set_auto_skip_intro">इंट्रो अपने-आप छोड़ें</string>
     <string name="set_auto_skip_intro_detail">जब फ़ाइल के चैप्टर इंट्रो या रीकैप बताते हैं, तो बटन दिखाने के बजाय उसे छोड़ दें।</string>
+    <string name="player_previous_episode">पिछला एपिसोड</string>
+    <string name="player_sync">सिंक</string>
+    <string name="player_sync_subs_hint">सबटाइटल बहुत जल्दी? + दबाएँ। देर से? − दबाएँ।</string>
+    <string name="player_sync_audio_hint">आवाज़ तस्वीर से आगे? + दबाएँ। पीछे? − दबाएँ।</string>
+    <string name="player_sync_value">%1$s से.</string>
+    <string name="player_sync_reset">रीसेट करने के लिए समय पर टैप करें</string>
+    <string name="player_night_mode">नाइट मोड</string>
+    <string name="player_night_mode_detail">तेज़ दृश्य धीमे, संवाद साफ़</string>
+    <string name="player_night_mode_unavailable">इस डिवाइस पर नाइट मोड उपलब्ध नहीं है</string>
+    <string name="player_chapters">चैप्टर</string>
+    <string name="player_chapter_n">चैप्टर %1$d</string>
 </resources>

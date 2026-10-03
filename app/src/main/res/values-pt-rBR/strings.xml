@@ -687,4 +687,15 @@
     <string name="player_skipped_recap">Recapitulação pulada</string>
     <string name="set_auto_skip_intro">Pular aberturas automaticamente</string>
     <string name="set_auto_skip_intro_detail">Quando os capítulos do arquivo marcam a abertura ou a recapitulação, pula direto em vez de mostrar um botão.</string>
+    <string name="player_previous_episode">Episódio anterior</string>
+    <string name="player_sync">Sincronia</string>
+    <string name="player_sync_subs_hint">Legendas adiantadas? Toque em +. Atrasadas? Toque em −.</string>
+    <string name="player_sync_audio_hint">O som está adiantado em relação à imagem? Toque em +. Atrasado? Toque em −.</string>
+    <string name="player_sync_value">%1$s s</string>
+    <string name="player_sync_reset">Toque no tempo para redefinir</string>
+    <string name="player_night_mode">Modo noturno</string>
+    <string name="player_night_mode_detail">Cenas altas mais baixas, diálogos mais claros</string>
+    <string name="player_night_mode_unavailable">O modo noturno não está disponível neste aparelho</string>
+    <string name="player_chapters">Capítulos</string>
+    <string name="player_chapter_n">Capítulo %1$d</string>
 </resources>
