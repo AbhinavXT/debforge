@@ -37,8 +37,7 @@
     <string name="add_choose_torrent">选择 .torrent 文件</string>
     <string name="add_remove_file">移除文件</string>
     <string name="add_auto_download">准备就绪后自动下载到本机</string>
-    <string name="add_needs_storage">请先选择下载文件夹，或允许文件访问权限。</string>
-    <string name="add_allow_file_access">允许文件访问</string>
+    <string name="add_needs_storage">请先选择下载文件夹。</string>
     <string name="add_hint_both">磁力链接或网址，每行一个</string>
     <string name="add_hint_magnet">磁力链接，每行一个</string>
     <string name="add_hint_links">网盘链接，每行一个</string>
@@ -69,8 +68,7 @@
     <string name="browse_your_service">你的服务</string>
     <string name="browse_empty_add">添加磁力、种子或链接</string>
     <string name="storage_title">文件保存到哪里？</string>
-    <string name="storage_body">选择一个文件夹：内部存储、SD 卡或 USB 存储设备均可，无需特殊权限。也可以允许“所有文件访问权限”以按路径保存到 Movies，或使用 DebForge 自己的存储空间（卸载应用时会被删除）。</string>
-    <string name="storage_grant">授予权限</string>
+    <string name="storage_body">选择一个文件夹：内部存储、SD 卡或 USB 存储设备均可，无需特殊权限。也可以使用 DebForge 自己的存储空间（卸载应用时会被删除）。</string>
     <string name="storage_use_app">使用应用存储</string>
     <string name="poster_downloaded">✓ 已下载</string>
     <string name="poster_series_tag">剧集</string>
@@ -133,7 +131,7 @@
     <string name="set_sign_out">退出登录</string>
     <string name="set_change">更改</string>
     <string name="set_choose_folder">选择文件夹</string>
-    <string name="set_folder_note">可通过系统选择器选择任意文件夹，或从以下选项中选择。按路径使用共享文件夹需要“所有文件访问权限”。</string>
+    <string name="set_folder_note">可通过系统选择器选择任意文件夹，或使用 DebForge 自己的存储空间。</string>
     <string name="set_app_storage">应用存储（无需权限）</string>
     <string name="set_sort_newest">最新优先</string>
     <string name="set_sort_oldest">最早优先</string>
@@ -322,6 +320,7 @@
     <string name="set_pick_any_folder_detail">内部存储、SD 卡或 USB 存储设备。无需特殊权限。</string>
     <string name="storage_internal">内部存储</string>
     <string name="storage_sd">SD 卡</string>
+    <string name="storage_not_chosen">未选择文件夹</string>
     <string name="msg_folder_set">下载内容将保存到 %1$s</string>
     <!-- Service sign-in credential names -->
     <string name="token_api_key">API 密钥</string>

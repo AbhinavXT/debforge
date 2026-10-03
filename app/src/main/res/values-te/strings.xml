@@ -37,8 +37,7 @@
     <string name="add_choose_torrent">.torrent ఫైల్‌ను ఎంచుకోండి</string>
     <string name="add_remove_file">ఫైల్‌ను తీసివేయి</string>
     <string name="add_auto_download">సిద్ధమైన వెంటనే ఈ ఫోన్‌కు ఆటోమేటిక్‌గా డౌన్‌లోడ్ చేయి</string>
-    <string name="add_needs_storage">ముందుగా డౌన్‌లోడ్ ఫోల్డర్‌ను ఎంచుకోండి, లేదా ఫైల్ యాక్సెస్‌ను అనుమతించండి.</string>
-    <string name="add_allow_file_access">ఫైల్ యాక్సెస్‌ను అనుమతించు</string>
+    <string name="add_needs_storage">ముందుగా డౌన్‌లోడ్ ఫోల్డర్‌ను ఎంచుకోండి.</string>
     <string name="add_hint_both">మాగ్నెట్ లింక్‌లు లేదా URLలు, ఒక్కో లైన్‌కు ఒకటి</string>
     <string name="add_hint_magnet">మాగ్నెట్ లింక్‌లు, ఒక్కో లైన్‌కు ఒకటి</string>
     <string name="add_hint_links">హోస్టర్ లింక్‌లు, ఒక్కో లైన్‌కు ఒకటి</string>
@@ -69,8 +68,7 @@
     <string name="browse_your_service">మీ సర్వీస్</string>
     <string name="browse_empty_add">మాగ్నెట్, టొరెంట్ లేదా లింక్‌ను జోడించండి</string>
     <string name="storage_title">ఫైల్‌లు ఎక్కడ సేవ్ కావాలి?</string>
-    <string name="storage_body">ఒక ఫోల్డర్‌ను ఎంచుకోండి: ఇంటర్నల్ స్టోరేజ్, SD కార్డ్ లేదా USB డ్రైవ్, ప్రత్యేక అనుమతి అవసరం లేదు. లేదా పాత్ ద్వారా Moviesలో సేవ్ చేయడానికి \"All files access\" ఇవ్వండి, లేదా DebForge సొంత స్టోరేజ్‌ను ఉపయోగించండి (యాప్‌ను అన్‌ఇన్‌స్టాల్ చేస్తే తొలగించబడుతుంది).</string>
-    <string name="storage_grant">యాక్సెస్ ఇవ్వు</string>
+    <string name="storage_body">ఒక ఫోల్డర్‌ను ఎంచుకోండి: ఇంటర్నల్ స్టోరేజ్, SD కార్డ్ లేదా USB డ్రైవ్, ప్రత్యేక అనుమతి అవసరం లేదు. లేదా DebForge సొంత స్టోరేజ్‌ను ఉపయోగించండి (యాప్‌ను అన్‌ఇన్‌స్టాల్ చేస్తే తొలగించబడుతుంది).</string>
     <string name="storage_use_app">యాప్ స్టోరేజ్‌ను ఉపయోగించు</string>
     <string name="poster_downloaded">✓ డౌన్‌లోడ్ అయింది</string>
     <string name="poster_series_tag">సిరీస్</string>
@@ -133,7 +131,7 @@
     <string name="set_sign_out">సైన్ అవుట్</string>
     <string name="set_change">మార్చు</string>
     <string name="set_choose_folder">ఫోల్డర్‌ను ఎంచుకోండి</string>
-    <string name="set_folder_note">సిస్టమ్ పికర్‌తో ఏదైనా ఫోల్డర్‌ను ఎంచుకోండి, లేదా వీటిలో ఒకదాన్ని. పాత్ ద్వారా షేర్ చేసిన ఫోల్డర్‌లకు All files access అవసరం.</string>
+    <string name="set_folder_note">సిస్టమ్ పికర్‌తో ఏదైనా ఫోల్డర్‌ను ఎంచుకోండి, లేదా DebForge సొంత స్టోరేజ్‌ను ఉపయోగించండి.</string>
     <string name="set_app_storage">యాప్ స్టోరేజ్ (అనుమతి అవసరం లేదు)</string>
     <string name="set_sort_newest">కొత్తవి ముందు</string>
     <string name="set_sort_oldest">పాతవి ముందు</string>
@@ -334,6 +332,7 @@
     <string name="set_pick_any_folder_detail">ఇంటర్నల్ స్టోరేజ్, SD కార్డ్ లేదా USB డ్రైవ్. ప్రత్యేక అనుమతి అవసరం లేదు.</string>
     <string name="storage_internal">ఇంటర్నల్ స్టోరేజ్</string>
     <string name="storage_sd">SD కార్డ్</string>
+    <string name="storage_not_chosen">ఫోల్డర్ ఏదీ ఎంచుకోలేదు</string>
     <string name="msg_folder_set">డౌన్‌లోడ్‌లు %1$sలో సేవ్ చేయబడతాయి</string>
     <!-- Service sign-in credential names -->
     <string name="token_api_key">API key</string>

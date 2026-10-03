@@ -37,8 +37,7 @@
     <string name="add_choose_torrent">.torrent கோப்பைத் தேர்ந்தெடு</string>
     <string name="add_remove_file">கோப்பை அகற்று</string>
     <string name="add_auto_download">தயாரானதும் இந்த ஃபோனில் தானாகப் பதிவிறக்கு</string>
-    <string name="add_needs_storage">முதலில் ஒரு பதிவிறக்கக் கோப்புறையைத் தேர்ந்தெடுக்கவும், அல்லது கோப்பு அணுகலை அனுமதிக்கவும்.</string>
-    <string name="add_allow_file_access">கோப்பு அணுகலை அனுமதி</string>
+    <string name="add_needs_storage">முதலில் ஒரு பதிவிறக்கக் கோப்புறையைத் தேர்ந்தெடுக்கவும்.</string>
     <string name="add_hint_both">மேக்னெட் லிங்க் அல்லது URL, ஒரு வரிக்கு ஒன்று</string>
     <string name="add_hint_magnet">மேக்னெட் லிங்க், ஒரு வரிக்கு ஒன்று</string>
     <string name="add_hint_links">ஹோஸ்டர் லிங்க், ஒரு வரிக்கு ஒன்று</string>
@@ -69,8 +68,7 @@
     <string name="browse_your_service">உங்கள் சேவை</string>
     <string name="browse_empty_add">மேக்னெட், டோரன்ட் அல்லது லிங்க் சேர்க்கவும்</string>
     <string name="storage_title">கோப்புகள் எங்கே சேமிக்கப்பட வேண்டும்?</string>
-    <string name="storage_body">ஒரு கோப்புறையைத் தேர்ந்தெடுக்கவும்: இன்டர்னல் ஸ்டோரேஜ், SD கார்டு அல்லது USB டிரைவ், சிறப்பு அனுமதி எதுவும் தேவையில்லை. அல்லது பாதை மூலம் Movies-இல் சேமிக்க \"All files access\" அனுமதியை வழங்கவும், அல்லது DebForge-இன் சொந்த ஸ்டோரேஜைப் பயன்படுத்தவும் (ஆப்ஸை அன்இன்ஸ்டால் செய்தால் நீக்கப்படும்).</string>
-    <string name="storage_grant">அணுகலை வழங்கு</string>
+    <string name="storage_body">ஒரு கோப்புறையைத் தேர்ந்தெடுக்கவும்: இன்டர்னல் ஸ்டோரேஜ், SD கார்டு அல்லது USB டிரைவ், சிறப்பு அனுமதி எதுவும் தேவையில்லை. அல்லது DebForge-இன் சொந்த ஸ்டோரேஜைப் பயன்படுத்தவும் (ஆப்ஸை அன்இன்ஸ்டால் செய்தால் நீக்கப்படும்).</string>
     <string name="storage_use_app">ஆப்ஸ் ஸ்டோரேஜைப் பயன்படுத்து</string>
     <string name="poster_downloaded">✓ பதிவிறக்கப்பட்டது</string>
     <string name="poster_series_tag">தொடர்</string>
@@ -133,7 +131,7 @@
     <string name="set_sign_out">வெளியேறு</string>
     <string name="set_change">மாற்று</string>
     <string name="set_choose_folder">கோப்புறையைத் தேர்ந்தெடு</string>
-    <string name="set_folder_note">சிஸ்டம் பிக்கர் மூலம் எந்தக் கோப்புறையையும் தேர்ந்தெடுக்கவும், அல்லது இவற்றில் ஒன்றை. பாதை மூலம் பகிரப்பட்ட கோப்புறைகளுக்கு All files access தேவை.</string>
+    <string name="set_folder_note">சிஸ்டம் பிக்கர் மூலம் எந்தக் கோப்புறையையும் தேர்ந்தெடுக்கவும், அல்லது DebForge-இன் சொந்த ஸ்டோரேஜைப் பயன்படுத்தவும்.</string>
     <string name="set_app_storage">ஆப்ஸ் ஸ்டோரேஜ் (அனுமதி தேவையில்லை)</string>
     <string name="set_sort_newest">புதியவை முதலில்</string>
     <string name="set_sort_oldest">பழையவை முதலில்</string>
@@ -334,6 +332,7 @@
     <string name="set_pick_any_folder_detail">இன்டர்னல் ஸ்டோரேஜ், SD கார்டு அல்லது USB டிரைவ். சிறப்பு அனுமதி தேவையில்லை.</string>
     <string name="storage_internal">இன்டர்னல் ஸ்டோரேஜ்</string>
     <string name="storage_sd">SD கார்டு</string>
+    <string name="storage_not_chosen">கோப்புறை எதுவும் தேர்ந்தெடுக்கப்படவில்லை</string>
     <string name="msg_folder_set">பதிவிறக்கங்கள் %1$s-இல் சேமிக்கப்படும்</string>
     <!-- Service sign-in credential names -->
     <string name="token_api_key">API key</string>

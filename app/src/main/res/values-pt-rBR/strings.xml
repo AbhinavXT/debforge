@@ -37,8 +37,7 @@
     <string name="add_choose_torrent">Escolher arquivo .torrent</string>
     <string name="add_remove_file">Remover arquivo</string>
     <string name="add_auto_download">Baixar neste celular automaticamente quando estiver pronto</string>
-    <string name="add_needs_storage">Escolha uma pasta de downloads primeiro ou permita o acesso aos arquivos.</string>
-    <string name="add_allow_file_access">Permitir acesso aos arquivos</string>
+    <string name="add_needs_storage">Escolha uma pasta de downloads primeiro.</string>
     <string name="add_hint_both">Links magnet ou URLs, um por linha</string>
     <string name="add_hint_magnet">Links magnet, um por linha</string>
     <string name="add_hint_links">Links de servidores de arquivos, um por linha</string>
@@ -69,8 +68,7 @@
     <string name="browse_your_service">seu serviço</string>
     <string name="browse_empty_add">Adicione um magnet, torrent ou link</string>
     <string name="storage_title">Onde salvar os arquivos?</string>
-    <string name="storage_body">Escolha uma pasta: armazenamento interno, cartão SD ou pendrive USB, sem permissão especial. Ou permita \"Acesso a todos os arquivos\" para salvar em Movies pelo caminho, ou use o armazenamento próprio do DebForge (apagado se você desinstalar o app).</string>
-    <string name="storage_grant">Conceder acesso</string>
+    <string name="storage_body">Escolha uma pasta: armazenamento interno, cartão SD ou pendrive USB, sem permissão especial. Ou use o armazenamento próprio do DebForge (apagado se você desinstalar o app).</string>
     <string name="storage_use_app">Usar armazenamento do app</string>
     <string name="poster_downloaded">✓ Baixado</string>
     <string name="poster_series_tag">SÉRIE</string>
@@ -133,7 +131,7 @@
     <string name="set_sign_out">Sair</string>
     <string name="set_change">Alterar</string>
     <string name="set_choose_folder">Escolher pasta</string>
-    <string name="set_folder_note">Escolha qualquer pasta pelo seletor do sistema ou uma destas. Pastas compartilhadas pelo caminho precisam de Acesso a todos os arquivos.</string>
+    <string name="set_folder_note">Escolha qualquer pasta pelo seletor do sistema ou use o armazenamento próprio do DebForge.</string>
     <string name="set_app_storage">Armazenamento do app (sem permissão)</string>
     <string name="set_sort_newest">Mais recentes primeiro</string>
     <string name="set_sort_oldest">Mais antigos primeiro</string>
@@ -346,6 +344,7 @@
     <string name="set_pick_any_folder_detail">Armazenamento interno, cartão SD ou pendrive USB. Sem permissão especial.</string>
     <string name="storage_internal">Armazenamento interno</string>
     <string name="storage_sd">Cartão SD</string>
+    <string name="storage_not_chosen">Nenhuma pasta escolhida</string>
     <string name="msg_folder_set">Os downloads serão salvos em %1$s</string>
     <!-- Service sign-in credential names -->
     <string name="token_api_key">código de API</string>

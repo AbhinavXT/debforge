@@ -8,7 +8,7 @@ import java.io.File
 /**
  * Free space where downloads go. Works for every kind of download location:
  *
- *  - a plain path (app storage, or shared storage with All files access):
+ *  - a plain path (app storage):
  *    the nearest folder that exists, measured with StatFs;
  *  - a folder picked with the system picker (tree URI, or a "saf:" path
  *    inside one): its storage volume ("primary" = internal storage, else an

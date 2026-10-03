@@ -4,7 +4,6 @@ import android.app.LocaleManager
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
-import android.os.Environment
 import android.os.LocaleList
 import android.provider.Settings
 import androidx.annotation.RequiresApi
@@ -97,7 +96,6 @@ import com.abhinavxt.debforge.ui.components.SwitchSettingRow
 import com.abhinavxt.debforge.ui.pluralRes
 import com.abhinavxt.debforge.ui.browse.formatSize
 import com.abhinavxt.debforge.domain.Housekeeping
-import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -551,7 +549,6 @@ private fun FolderPickerDialog(
 ) {
     val context = LocalContext.current
     val appDir = remember { StorageAccess.appStorageDir(context) }
-    val presets = remember { buildPresetFolders() + appDir }
     AlertDialog(
         onDismissRequest = onDismiss,
         icon = { Icon(Icons.Rounded.FolderOpen, contentDescription = null) },
@@ -586,27 +583,14 @@ private fun FolderPickerDialog(
                     )
                 }
                 Spacer(Modifier.height(8.dp))
-                presets.forEach { preset ->
-                    ChoiceRow(
-                        label = if (preset == appDir) stringResource(R.string.set_app_storage) + "\n" + preset else preset,
-                        selected = preset == current,
-                        onClick = { onPick(preset) }
-                    )
-                }
+                ChoiceRow(
+                    label = stringResource(R.string.set_app_storage) + "\n" + appDir,
+                    selected = appDir == current,
+                    onClick = { onPick(appDir) }
+                )
             }
         },
         confirmButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_done)) } }
-    )
-}
-
-/** A few common destinations under shared storage. */
-private fun buildPresetFolders(): List<String> {
-    fun publicDir(name: String) =
-        File(Environment.getExternalStoragePublicDirectory(name), "DebForge").absolutePath
-    return listOf(
-        publicDir(Environment.DIRECTORY_MOVIES),
-        publicDir(Environment.DIRECTORY_DOWNLOADS),
-        publicDir(Environment.DIRECTORY_PICTURES)
     )
 }
 

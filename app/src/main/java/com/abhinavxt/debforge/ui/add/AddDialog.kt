@@ -8,8 +8,6 @@ import android.net.Uri
 import android.os.Environment
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.compose.ui.platform.LocalContext
-import com.abhinavxt.debforge.download.StorageAccess
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -63,7 +61,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 fun AddDialog(viewModel: AddViewModel) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     if (!state.visible) return
-    val context = LocalContext.current
 
     val pickTorrent = rememberLauncherForActivityResult(
         ActivityResultContracts.OpenDocument()
@@ -148,9 +145,8 @@ fun AddDialog(viewModel: AddViewModel) {
 
                 state.cache?.let { CacheLine(it, state.providerName) }
 
-                // Auto-download writes to shared storage, so it needs all-files
-                // access; without it, offer the grant instead of queueing
-                // downloads that would fail.
+                // Auto-download needs a download folder; without one, offer
+                // the picker instead of queueing downloads that would fail.
                 val hasStorage = state.canWriteStorage
                 // Direct links always download now; the choice is for services.
                 if (!state.isDirect) {
@@ -172,14 +168,8 @@ fun AddDialog(viewModel: AddViewModel) {
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    Row {
-                        TextButton(onClick = { pickFolder.launch(null) }) {
-                            Text(stringResource(R.string.storage_pick_folder))
-                        }
-                        TextButton(onClick = {
-                            StorageAccess.requestAllFiles(context)
-                            viewModel.refreshStorageAccess()
-                        }) { Text(stringResource(R.string.add_allow_file_access)) }
+                    TextButton(onClick = { pickFolder.launch(null) }) {
+                        Text(stringResource(R.string.storage_pick_folder))
                     }
                 }
 

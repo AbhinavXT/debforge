@@ -18,8 +18,8 @@ import java.nio.channels.FileChannel
  * Dispatchers.IO.
  *
  * Paths come in two kinds, and every function here handles both:
- *  - ordinary absolute paths ("/storage/emulated/0/Movies/DebForge/x.mkv"),
- *    written with java.io (app storage, or shared storage with All files access);
+ *  - ordinary absolute paths, written with java.io: app storage, or (read
+ *    only) shared folders that older versions saved to with All files access;
  *  - [SafPaths] ("saf:<tree>#dir/x.mkv") inside a folder the user picked with
  *    the system folder picker — SD cards, USB drives, any folder, no special
  *    permission. Written through file descriptors from the Storage Access

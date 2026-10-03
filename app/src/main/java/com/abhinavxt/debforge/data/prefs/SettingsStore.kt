@@ -18,8 +18,9 @@ import javax.inject.Singleton
 private val Context.settingsDataStore by preferencesDataStore(name = "debforge_settings")
 
 /**
- * App settings. Download folder is stored as an absolute filesystem path
- * (we hold MANAGE_EXTERNAL_STORAGE, so we write via plain File I/O, not SAF).
+ * App settings. The download folder is a folder picked with the system
+ * picker (a SAF tree URI) or a path inside the app's own storage; see
+ * [com.abhinavxt.debforge.download.StorageAccess].
  */
 @Singleton
 class SettingsStore @Inject constructor(
@@ -61,7 +62,7 @@ class SettingsStore @Inject constructor(
     private val keyClipboardOffer = booleanPreferencesKey("clipboard_offer")
     private val keyClipboardSeen = androidx.datastore.preferences.core.longPreferencesKey("clipboard_seen_at")
 
-    /** Defaults to the public Movies directory if unset. */
+    /** Blank until the user chooses a folder. */
     val downloadDirFlow: Flow<String> = context.settingsDataStore.data
         .map { it[keyDownloadDir] ?: DEFAULT_DOWNLOAD_DIR }
 
@@ -300,7 +301,11 @@ class SettingsStore @Inject constructor(
     suspend fun tmdbKeyForBackup(): String? = tmdbKeyFlow.first().takeIf { it.isNotBlank() }
 
     companion object {
-        const val DEFAULT_DOWNLOAD_DIR = "/storage/emulated/0/Movies/DebForge"
+        /**
+         * No folder: the first download asks for one. DebForge doesn't hold
+         * All files access, so there's no shared folder it could default to.
+         */
+        const val DEFAULT_DOWNLOAD_DIR = ""
     }
 }
 

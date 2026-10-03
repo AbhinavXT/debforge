@@ -37,8 +37,7 @@
     <string name="add_choose_torrent">.torrent dosyası seç</string>
     <string name="add_remove_file">Dosyayı kaldır</string>
     <string name="add_auto_download">Hazır olunca bu telefona otomatik indir</string>
-    <string name="add_needs_storage">Önce bir indirme klasörü seçin veya dosya erişimine izin verin.</string>
-    <string name="add_allow_file_access">Dosya erişimine izin ver</string>
+    <string name="add_needs_storage">Önce bir indirme klasörü seçin.</string>
     <string name="add_hint_both">Magnet bağlantıları veya URL\'ler, her satıra bir tane</string>
     <string name="add_hint_magnet">Magnet bağlantıları, her satıra bir tane</string>
     <string name="add_hint_links">Hoster bağlantıları, her satıra bir tane</string>
@@ -69,8 +68,7 @@
     <string name="browse_your_service">hizmet</string>
     <string name="browse_empty_add">Magnet, torrent veya bağlantı ekleyin</string>
     <string name="storage_title">Dosyalar nereye kaydedilsin?</string>
-    <string name="storage_body">Bir klasör seçin: dahili depolama, SD kart veya USB sürücü; özel izin gerekmez. Ya da Movies klasörüne yol ile kaydetmek için \"Tüm dosyalara erişim\" izni verin veya DebForge\'un kendi depolama alanını kullanın (uygulamayı kaldırırsanız silinir).</string>
-    <string name="storage_grant">Erişim izni ver</string>
+    <string name="storage_body">Bir klasör seçin: dahili depolama, SD kart veya USB sürücü; özel izin gerekmez. Ya da DebForge\'un kendi depolama alanını kullanın (uygulamayı kaldırırsanız silinir).</string>
     <string name="storage_use_app">Uygulama depolamasını kullan</string>
     <string name="poster_downloaded">✓ İndirildi</string>
     <string name="poster_series_tag">DİZİ</string>
@@ -133,7 +131,7 @@
     <string name="set_sign_out">Çıkış yap</string>
     <string name="set_change">Değiştir</string>
     <string name="set_choose_folder">Klasör seç</string>
-    <string name="set_folder_note">Sistem seçiciyle herhangi bir klasörü veya bunlardan birini seçin. Paylaşılan klasörlere yol ile erişmek için Tüm dosyalara erişim gerekir.</string>
+    <string name="set_folder_note">Sistem seçiciyle herhangi bir klasörü seçin veya DebForge\'un kendi depolama alanını kullanın.</string>
     <string name="set_app_storage">Uygulama depolaması (izin gerekmez)</string>
     <string name="set_sort_newest">Önce en yeni</string>
     <string name="set_sort_oldest">Önce en eski</string>
@@ -334,6 +332,7 @@
     <string name="set_pick_any_folder_detail">Dahili depolama, SD kart veya USB sürücü. Özel izin gerekmez.</string>
     <string name="storage_internal">Dahili depolama</string>
     <string name="storage_sd">SD kart</string>
+    <string name="storage_not_chosen">Klasör seçilmedi</string>
     <string name="msg_folder_set">İndirilenler şuraya kaydedilecek: %1$s</string>
     <!-- Service sign-in credential names -->
     <string name="token_api_key">API anahtarı</string>

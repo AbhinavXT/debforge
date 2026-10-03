@@ -38,8 +38,7 @@
     <string name="add_choose_torrent">Choose .torrent file</string>
     <string name="add_remove_file">Remove file</string>
     <string name="add_auto_download">Download to this phone automatically when ready</string>
-    <string name="add_needs_storage">Choose a download folder first, or allow file access.</string>
-    <string name="add_allow_file_access">Allow file access</string>
+    <string name="add_needs_storage">Choose a download folder first.</string>
     <string name="add_hint_both">Magnet links or URLs, one per line</string>
     <string name="add_hint_magnet">Magnet links, one per line</string>
     <string name="add_hint_links">Hoster links, one per line</string>
@@ -70,8 +69,7 @@
     <string name="browse_your_service">your service</string>
     <string name="browse_empty_add">Add a magnet, torrent or link</string>
     <string name="storage_title">Where should files go?</string>
-    <string name="storage_body">Choose a folder: internal storage, an SD card or a USB drive, with no special permission. Or allow \"All files access\" to save to Movies by path, or use DebForge\'s own storage (removed if you uninstall the app).</string>
-    <string name="storage_grant">Grant access</string>
+    <string name="storage_body">Choose a folder: internal storage, an SD card or a USB drive, with no special permission. Or use DebForge\'s own storage (removed if you uninstall the app).</string>
     <string name="storage_use_app">Use app storage</string>
     <string name="poster_downloaded">✓ Downloaded</string>
     <string name="poster_series_tag">SERIES</string>
@@ -134,7 +132,7 @@
     <string name="set_sign_out">Sign out</string>
     <string name="set_change">Change</string>
     <string name="set_choose_folder">Choose folder</string>
-    <string name="set_folder_note">Pick any folder with the system picker, or one of these. Shared folders by path need All files access.</string>
+    <string name="set_folder_note">Pick any folder with the system picker, or use DebForge\'s own storage.</string>
     <string name="set_app_storage">App storage (no permission needed)</string>
     <string name="set_sort_newest">Newest first</string>
     <string name="set_sort_oldest">Oldest first</string>
@@ -335,6 +333,7 @@
     <string name="set_pick_any_folder_detail">Internal storage, SD card or USB drive. No special permission.</string>
     <string name="storage_internal">Internal storage</string>
     <string name="storage_sd">SD card</string>
+    <string name="storage_not_chosen">No folder chosen</string>
     <string name="msg_folder_set">Downloads will be saved to %1$s</string>
     <!-- Service sign-in credential names -->
     <string name="token_api_key">API key</string>

@@ -37,8 +37,7 @@
     <string name="add_choose_torrent">.torrent फाइल निवडा</string>
     <string name="add_remove_file">फाइल काढा</string>
     <string name="add_auto_download">तयार झाल्यावर या फोनवर आपोआप डाउनलोड करा</string>
-    <string name="add_needs_storage">आधी डाउनलोड फोल्डर निवडा, किंवा फाइल ॲक्सेसला परवानगी द्या.</string>
-    <string name="add_allow_file_access">फाइल ॲक्सेसला परवानगी द्या</string>
+    <string name="add_needs_storage">आधी डाउनलोड फोल्डर निवडा.</string>
     <string name="add_hint_both">मॅग्नेट लिंक किंवा URL, प्रत्येक ओळीत एक</string>
     <string name="add_hint_magnet">मॅग्नेट लिंक, प्रत्येक ओळीत एक</string>
     <string name="add_hint_links">होस्टर लिंक, प्रत्येक ओळीत एक</string>
@@ -69,8 +68,7 @@
     <string name="browse_your_service">तुमची सेवा</string>
     <string name="browse_empty_add">मॅग्नेट, टॉरेंट किंवा लिंक जोडा</string>
     <string name="storage_title">फाइल कुठे सेव्ह करायच्या?</string>
-    <string name="storage_body">फोल्डर निवडा: अंतर्गत स्टोरेज, SD कार्ड किंवा USB ड्राइव्ह, कोणत्याही विशेष परवानगीशिवाय. किंवा पाथद्वारे Movies मध्ये सेव्ह करण्यासाठी \"सर्व फाइलचा ॲक्सेस\" द्या, किंवा DebForge चे स्वतःचे स्टोरेज वापरा (ॲप अनइंस्टॉल केल्यास काढले जाते).</string>
-    <string name="storage_grant">ॲक्सेस द्या</string>
+    <string name="storage_body">फोल्डर निवडा: अंतर्गत स्टोरेज, SD कार्ड किंवा USB ड्राइव्ह, कोणत्याही विशेष परवानगीशिवाय. किंवा DebForge चे स्वतःचे स्टोरेज वापरा (ॲप अनइंस्टॉल केल्यास काढले जाते).</string>
     <string name="storage_use_app">ॲप स्टोरेज वापरा</string>
     <string name="poster_downloaded">✓ डाउनलोड झाले</string>
     <string name="poster_series_tag">सिरीज</string>
@@ -133,7 +131,7 @@
     <string name="set_sign_out">साइन आउट करा</string>
     <string name="set_change">बदला</string>
     <string name="set_choose_folder">फोल्डर निवडा</string>
-    <string name="set_folder_note">सिस्टम पिकरने कोणताही फोल्डर निवडा, किंवा यांपैकी एक. पाथद्वारे शेअर केलेल्या फोल्डरसाठी सर्व फाइलचा ॲक्सेस लागतो.</string>
+    <string name="set_folder_note">सिस्टम पिकरने कोणताही फोल्डर निवडा, किंवा DebForge चे स्वतःचे स्टोरेज वापरा.</string>
     <string name="set_app_storage">ॲप स्टोरेज (परवानगीची गरज नाही)</string>
     <string name="set_sort_newest">आधी सर्वात नवीन</string>
     <string name="set_sort_oldest">आधी सर्वात जुने</string>
@@ -334,6 +332,7 @@
     <string name="set_pick_any_folder_detail">अंतर्गत स्टोरेज, SD कार्ड किंवा USB ड्राइव्ह. कोणत्याही विशेष परवानगीशिवाय.</string>
     <string name="storage_internal">अंतर्गत स्टोरेज</string>
     <string name="storage_sd">SD कार्ड</string>
+    <string name="storage_not_chosen">कोणताही फोल्डर निवडलेला नाही</string>
     <string name="msg_folder_set">डाउनलोड %1$s मध्ये सेव्ह केले जातील</string>
     <!-- Service sign-in credential names -->
     <string name="token_api_key">API key</string>

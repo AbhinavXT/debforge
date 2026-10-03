@@ -37,8 +37,7 @@
     <string name="add_choose_torrent">Pilih file .torrent</string>
     <string name="add_remove_file">Hapus file</string>
     <string name="add_auto_download">Unduh otomatis ke ponsel ini saat siap</string>
-    <string name="add_needs_storage">Pilih folder unduhan terlebih dahulu, atau izinkan akses file.</string>
-    <string name="add_allow_file_access">Izinkan akses file</string>
+    <string name="add_needs_storage">Pilih folder unduhan terlebih dahulu.</string>
     <string name="add_hint_both">Link magnet atau URL, satu per baris</string>
     <string name="add_hint_magnet">Link magnet, satu per baris</string>
     <string name="add_hint_links">Link hoster, satu per baris</string>
@@ -69,8 +68,7 @@
     <string name="browse_your_service">layanan Anda</string>
     <string name="browse_empty_add">Tambah magnet, torrent, atau link</string>
     <string name="storage_title">Simpan file di mana?</string>
-    <string name="storage_body">Pilih folder: penyimpanan internal, kartu SD, atau drive USB, tanpa izin khusus. Atau izinkan \"Akses semua file\" untuk menyimpan ke Movies lewat path, atau gunakan penyimpanan milik DebForge (dihapus jika aplikasi di-uninstal).</string>
-    <string name="storage_grant">Berikan akses</string>
+    <string name="storage_body">Pilih folder: penyimpanan internal, kartu SD, atau drive USB, tanpa izin khusus. Atau gunakan penyimpanan milik DebForge (dihapus jika aplikasi di-uninstal).</string>
     <string name="storage_use_app">Gunakan penyimpanan aplikasi</string>
     <string name="poster_downloaded">✓ Terunduh</string>
     <string name="poster_series_tag">SERIAL</string>
@@ -133,7 +131,7 @@
     <string name="set_sign_out">Keluar</string>
     <string name="set_change">Ubah</string>
     <string name="set_choose_folder">Pilih folder</string>
-    <string name="set_folder_note">Pilih folder apa pun dengan pemilih sistem, atau salah satu dari ini. Folder bersama lewat path memerlukan Akses semua file.</string>
+    <string name="set_folder_note">Pilih folder apa pun dengan pemilih sistem, atau gunakan penyimpanan milik DebForge.</string>
     <string name="set_app_storage">Penyimpanan aplikasi (tanpa izin)</string>
     <string name="set_sort_newest">Terbaru dulu</string>
     <string name="set_sort_oldest">Terlama dulu</string>
@@ -322,6 +320,7 @@
     <string name="set_pick_any_folder_detail">Penyimpanan internal, kartu SD, atau drive USB. Tanpa izin khusus.</string>
     <string name="storage_internal">Penyimpanan internal</string>
     <string name="storage_sd">Kartu SD</string>
+    <string name="storage_not_chosen">Belum ada folder yang dipilih</string>
     <string name="msg_folder_set">Unduhan akan disimpan ke %1$s</string>
     <!-- Service sign-in credential names -->
     <string name="token_api_key">API key</string>

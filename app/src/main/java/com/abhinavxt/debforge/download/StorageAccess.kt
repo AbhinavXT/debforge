@@ -1,24 +1,22 @@
 package com.abhinavxt.debforge.download
 
-import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Environment
-import android.provider.Settings
 import java.io.File
 
 /**
- * Where downloads may go and what permission that needs.
- *
- * Three options, easiest first:
+ * Where downloads may go. Neither option needs a permission:
  *  - A folder picked with the system folder picker (internal storage, SD
- *    card, USB): no special permission, access granted by the user's pick.
- *  - Shared folders (Movies/, Download/) by path: need "All files access".
- *  - The app's own external folder (Android/data/<pkg>/files): no
- *    permission at all, but files there are removed if the app is
- *    uninstalled. The fallback for devices without a folder picker or the
- *    All-files settings screen (some Android TVs).
+ *    card, USB): access granted by the user's pick.
+ *  - The app's own external folder (Android/data/<pkg>/files): files there
+ *    are removed if the app is uninstalled. The fallback for devices
+ *    without a folder picker (some Android TVs).
+ *
+ * Shared folders by path (Movies/DebForge, the old default) needed "All
+ * files access", which DebForge no longer asks for. Such a setting counts
+ * as not writable, so the user is asked to choose a folder again.
  */
 object StorageAccess {
 
@@ -30,10 +28,11 @@ object StorageAccess {
         return dir.startsWith(root) || dir.startsWith(context.filesDir.absolutePath)
     }
 
-    /** True if saving to [dir] can work right now. */
+    /** True if saving to [dir] can work right now. False while no folder is chosen. */
     fun canWrite(context: Context, dir: String): Boolean = when {
+        dir.isBlank() -> false
         SafPaths.isTreeUri(dir) -> SafStore.hasAccess(context, dir)
-        else -> isAppStorage(context, dir) || Environment.isExternalStorageManager()
+        else -> isAppStorage(context, dir)
     }
 
     /**
@@ -50,34 +49,18 @@ object StorageAccess {
         context.contentResolver.takePersistableUriPermission(tree, flags)
     }
 
-    /** What to show for a download folder: the path, or "SD card (…)/Movies" for a picked folder. */
+    /**
+     * What to show for a download folder: the path, "SD card (…)/Movies" for
+     * a picked folder, or "No folder chosen".
+     */
     fun label(context: Context, dir: String): String =
-        if (SafPaths.isTreeUri(dir)) {
+        if (dir.isBlank()) {
+            context.getString(com.abhinavxt.debforge.R.string.storage_not_chosen)
+        } else if (SafPaths.isTreeUri(dir)) {
             SafPaths.displayName(
                 dir,
                 internalLabel = context.getString(com.abhinavxt.debforge.R.string.storage_internal),
                 sdLabel = context.getString(com.abhinavxt.debforge.R.string.storage_sd)
             )
         } else dir
-
-    /**
-     * Opens the "All files access" screen. Returns false where it doesn't
-     * exist (common on Android TV) so the caller can offer app storage.
-     */
-    fun requestAllFiles(context: Context): Boolean {
-        val specific = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
-            .setData(Uri.parse("package:${context.packageName}"))
-            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        val generic = Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)
-            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        for (intent in listOf(specific, generic)) {
-            try {
-                context.startActivity(intent)
-                return true
-            } catch (e: ActivityNotFoundException) {
-                // try the next one
-            }
-        }
-        return false
-    }
 }

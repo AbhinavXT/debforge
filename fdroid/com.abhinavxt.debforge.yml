@@ -1,9 +1,12 @@
 AntiFeatures:
   NonFreeNet:
     en-US: Needs an account with a proprietary debrid service (TorBox, Real-Debrid,
-      AllDebrid, Premiumize or Debrid-Link). Posters come from TMDB if you add a key.
+      AllDebrid, Premiumize or Debrid-Link). Optionally uses TMDB for posters if you
+      add a key, Trakt (api.trakt.tv) for scrobbling and watch history, and OpenSubtitles
+      (api.opensubtitles.com) for subtitles, all proprietary services.
 Categories:
   - Download
+  - Online Media Player
 License: GPL-3.0-or-later
 AuthorName: AbhinavXT
 AuthorWebSite: https://github.com/AbhinavXT

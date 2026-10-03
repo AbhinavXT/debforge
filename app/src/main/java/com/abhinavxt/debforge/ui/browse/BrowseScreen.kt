@@ -592,13 +592,6 @@ fun BrowseScreen(
                 pendingPermission = null
                 pickFolder.launch(null)
             },
-            onGrant = {
-                if (!StorageAccess.requestAllFiles(context)) {
-                    // No such settings screen (e.g. Android TV): use app storage.
-                    viewModel.useAppStorage(StorageAccess.appStorageDir(context), items)
-                }
-                pendingPermission = null
-            },
             onUseAppStorage = {
                 viewModel.useAppStorage(StorageAccess.appStorageDir(context), items)
                 pendingPermission = null
@@ -1033,7 +1026,6 @@ private fun ErrorState(message: String, onRetry: () -> Unit) {
 @Composable
 private fun AllFilesAccessDialog(
     onPickFolder: () -> Unit,
-    onGrant: () -> Unit,
     onUseAppStorage: () -> Unit,
     onDismiss: () -> Unit
 ) {
@@ -1045,12 +1037,9 @@ private fun AllFilesAccessDialog(
             Column {
                 Text(stringResource(R.string.storage_body))
                 Spacer(Modifier.height(16.dp))
-                // Three choices, easiest first; buttons stacked so long labels fit.
+                // Two choices, easiest first; buttons stacked so long labels fit.
                 Button(onClick = onPickFolder, modifier = Modifier.fillMaxWidth()) {
                     Text(stringResource(R.string.storage_pick_folder))
-                }
-                OutlinedButton(onClick = onGrant, modifier = Modifier.fillMaxWidth()) {
-                    Text(stringResource(R.string.storage_grant))
                 }
                 OutlinedButton(onClick = onUseAppStorage, modifier = Modifier.fillMaxWidth()) {
                     Text(stringResource(R.string.storage_use_app))

@@ -37,8 +37,7 @@
     <string name="add_choose_torrent">Выбрать файл .torrent</string>
     <string name="add_remove_file">Убрать файл</string>
     <string name="add_auto_download">Автоматически скачать на телефон, когда будет готово</string>
-    <string name="add_needs_storage">Сначала выберите папку для загрузок или разрешите доступ к файлам.</string>
-    <string name="add_allow_file_access">Разрешить доступ к файлам</string>
+    <string name="add_needs_storage">Сначала выберите папку для загрузок.</string>
     <string name="add_hint_both">Magnet-ссылки или URL, по одной в строке</string>
     <string name="add_hint_magnet">Magnet-ссылки, по одной в строке</string>
     <string name="add_hint_links">Ссылки на файлообменники, по одной в строке</string>
@@ -69,8 +68,7 @@
     <string name="browse_your_service">ваш сервис</string>
     <string name="browse_empty_add">Добавить magnet, торрент или ссылку</string>
     <string name="storage_title">Куда сохранять файлы?</string>
-    <string name="storage_body">Выберите папку: внутренняя память, SD-карта или USB-накопитель, без особых разрешений. Или разрешите \"Доступ ко всем файлам\", чтобы сохранять в Movies по пути, или используйте собственное хранилище DebForge (удаляется вместе с приложением).</string>
-    <string name="storage_grant">Предоставить доступ</string>
+    <string name="storage_body">Выберите папку: внутренняя память, SD-карта или USB-накопитель, без особых разрешений. Или используйте собственное хранилище DebForge (удаляется вместе с приложением).</string>
     <string name="storage_use_app">Хранилище приложения</string>
     <string name="poster_downloaded">✓ Скачано</string>
     <string name="poster_series_tag">СЕРИАЛ</string>
@@ -133,7 +131,7 @@
     <string name="set_sign_out">Выйти</string>
     <string name="set_change">Изменить</string>
     <string name="set_choose_folder">Выбрать папку</string>
-    <string name="set_folder_note">Выберите любую папку через системный выбор или одну из этих. Для общих папок по пути нужен доступ ко всем файлам.</string>
+    <string name="set_folder_note">Выберите любую папку через системный выбор или используйте собственное хранилище DebForge.</string>
     <string name="set_app_storage">Хранилище приложения (без разрешений)</string>
     <string name="set_sort_newest">Сначала новые</string>
     <string name="set_sort_oldest">Сначала старые</string>
@@ -358,6 +356,7 @@
     <string name="set_pick_any_folder_detail">Внутренняя память, SD-карта или USB-накопитель. Без особых разрешений.</string>
     <string name="storage_internal">Внутренняя память</string>
     <string name="storage_sd">SD-карта</string>
+    <string name="storage_not_chosen">Папка не выбрана</string>
     <string name="msg_folder_set">Загрузки будут сохраняться в %1$s</string>
     <!-- Service sign-in credential names -->
     <string name="token_api_key">API-ключ</string>

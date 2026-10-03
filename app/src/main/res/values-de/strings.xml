@@ -37,8 +37,7 @@
     <string name="add_choose_torrent">.torrent-Datei auswählen</string>
     <string name="add_remove_file">Datei entfernen</string>
     <string name="add_auto_download">Automatisch auf dieses Handy laden, sobald bereit</string>
-    <string name="add_needs_storage">Wähle zuerst einen Download-Ordner oder erlaube den Dateizugriff.</string>
-    <string name="add_allow_file_access">Dateizugriff erlauben</string>
+    <string name="add_needs_storage">Wähle zuerst einen Download-Ordner.</string>
     <string name="add_hint_both">Magnet-Links oder URLs, einer pro Zeile</string>
     <string name="add_hint_magnet">Magnet-Links, einer pro Zeile</string>
     <string name="add_hint_links">Hoster-Links, einer pro Zeile</string>
@@ -69,8 +68,7 @@
     <string name="browse_your_service">deinem Dienst</string>
     <string name="browse_empty_add">Magnet, Torrent oder Link hinzufügen</string>
     <string name="storage_title">Wo sollen Dateien gespeichert werden?</string>
-    <string name="storage_body">Wähle einen Ordner: interner Speicher, SD-Karte oder USB-Stick, ohne besondere Berechtigung. Oder erlaube \"Zugriff auf alle Dateien\", um per Pfad in Movies zu speichern, oder nutze den eigenen Speicher von DebForge (wird beim Deinstallieren der App gelöscht).</string>
-    <string name="storage_grant">Zugriff gewähren</string>
+    <string name="storage_body">Wähle einen Ordner: interner Speicher, SD-Karte oder USB-Stick, ohne besondere Berechtigung. Oder nutze den eigenen Speicher von DebForge (wird beim Deinstallieren der App gelöscht).</string>
     <string name="storage_use_app">App-Speicher verwenden</string>
     <string name="poster_downloaded">✓ Heruntergeladen</string>
     <string name="poster_series_tag">SERIE</string>
@@ -133,7 +131,7 @@
     <string name="set_sign_out">Abmelden</string>
     <string name="set_change">Ändern</string>
     <string name="set_choose_folder">Ordner wählen</string>
-    <string name="set_folder_note">Wähle einen beliebigen Ordner über die Systemauswahl oder einen dieser Ordner. Freigegebene Ordner per Pfad benötigen Zugriff auf alle Dateien.</string>
+    <string name="set_folder_note">Wähle einen beliebigen Ordner über die Systemauswahl oder nutze den eigenen Speicher von DebForge.</string>
     <string name="set_app_storage">App-Speicher (keine Berechtigung nötig)</string>
     <string name="set_sort_newest">Neueste zuerst</string>
     <string name="set_sort_oldest">Älteste zuerst</string>
@@ -334,6 +332,7 @@
     <string name="set_pick_any_folder_detail">Interner Speicher, SD-Karte oder USB-Stick. Keine besondere Berechtigung.</string>
     <string name="storage_internal">Interner Speicher</string>
     <string name="storage_sd">SD-Karte</string>
+    <string name="storage_not_chosen">Kein Ordner gewählt</string>
     <string name="msg_folder_set">Downloads werden in %1$s gespeichert</string>
     <!-- Service sign-in credential names -->
     <string name="token_api_key">API-Schlüssel</string>

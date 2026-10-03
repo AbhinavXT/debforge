@@ -37,8 +37,7 @@
     <string name="add_choose_torrent">.torrent ফাইল বেছে নিন</string>
     <string name="add_remove_file">ফাইল সরান</string>
     <string name="add_auto_download">তৈরি হলেই এই ফোনে নিজে থেকে ডাউনলোড করুন</string>
-    <string name="add_needs_storage">আগে একটি ডাউনলোড ফোল্ডার বেছে নিন, অথবা ফাইল অ্যাক্সেসের অনুমতি দিন।</string>
-    <string name="add_allow_file_access">ফাইল অ্যাক্সেসের অনুমতি দিন</string>
+    <string name="add_needs_storage">আগে একটি ডাউনলোড ফোল্ডার বেছে নিন।</string>
     <string name="add_hint_both">ম্যাগনেট লিংক বা URL, প্রতি লাইনে একটি</string>
     <string name="add_hint_magnet">ম্যাগনেট লিংক, প্রতি লাইনে একটি</string>
     <string name="add_hint_links">হোস্টার লিংক, প্রতি লাইনে একটি</string>
@@ -69,8 +68,7 @@
     <string name="browse_your_service">আপনার সার্ভিস</string>
     <string name="browse_empty_add">একটি ম্যাগনেট, টরেন্ট বা লিংক যোগ করুন</string>
     <string name="storage_title">ফাইলগুলো কোথায় রাখা হবে?</string>
-    <string name="storage_body">একটি ফোল্ডার বেছে নিন: ইন্টারনাল স্টোরেজ, SD কার্ড বা USB ড্রাইভ, কোনো বিশেষ অনুমতি ছাড়াই। অথবা পাথ দিয়ে Movies-এ সেভ করতে \"All files access\" দিন, কিংবা DebForge-এর নিজস্ব স্টোরেজ ব্যবহার করুন (অ্যাপ আনইনস্টল করলে মুছে যায়)।</string>
-    <string name="storage_grant">অ্যাক্সেস দিন</string>
+    <string name="storage_body">একটি ফোল্ডার বেছে নিন: ইন্টারনাল স্টোরেজ, SD কার্ড বা USB ড্রাইভ, কোনো বিশেষ অনুমতি ছাড়াই। অথবা DebForge-এর নিজস্ব স্টোরেজ ব্যবহার করুন (অ্যাপ আনইনস্টল করলে মুছে যায়)।</string>
     <string name="storage_use_app">অ্যাপ স্টোরেজ ব্যবহার করুন</string>
     <string name="poster_downloaded">✓ ডাউনলোড হয়েছে</string>
     <string name="poster_series_tag">সিরিজ</string>
@@ -133,7 +131,7 @@
     <string name="set_sign_out">সাইন আউট</string>
     <string name="set_change">পরিবর্তন করুন</string>
     <string name="set_choose_folder">ফোল্ডার বেছে নিন</string>
-    <string name="set_folder_note">সিস্টেম পিকার দিয়ে যেকোনো ফোল্ডার বেছে নিন, অথবা এগুলোর একটি। পাথ দিয়ে শেয়ার করা ফোল্ডারের জন্য All files access লাগবে।</string>
+    <string name="set_folder_note">সিস্টেম পিকার দিয়ে যেকোনো ফোল্ডার বেছে নিন, অথবা DebForge-এর নিজস্ব স্টোরেজ ব্যবহার করুন।</string>
     <string name="set_app_storage">অ্যাপ স্টোরেজ (কোনো অনুমতি লাগবে না)</string>
     <string name="set_sort_newest">নতুনগুলো আগে</string>
     <string name="set_sort_oldest">পুরনোগুলো আগে</string>
@@ -334,6 +332,7 @@
     <string name="set_pick_any_folder_detail">ইন্টারনাল স্টোরেজ, SD কার্ড বা USB ড্রাইভ। কোনো বিশেষ অনুমতি লাগবে না।</string>
     <string name="storage_internal">ইন্টারনাল স্টোরেজ</string>
     <string name="storage_sd">SD কার্ড</string>
+    <string name="storage_not_chosen">কোনো ফোল্ডার বেছে নেওয়া হয়নি</string>
     <string name="msg_folder_set">ডাউনলোড %1$s-এ সেভ হবে</string>
     <!-- Service sign-in credential names -->
     <string name="token_api_key">API key</string>
