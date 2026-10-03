@@ -1,0 +1,4 @@
+• Seekbar thumbnail
+• Player: media controls while watching, stats for nerds, software decoding
+• Player: subtitle/audio sync, chapters, previous episode, night mode
+• Document v1.4.0 features and tidy its changelog
