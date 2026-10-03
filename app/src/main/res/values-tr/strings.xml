@@ -665,4 +665,9 @@
     <string name="player_night_mode_unavailable">Gece modu bu cihazda kullanılamıyor</string>
     <string name="player_chapters">Bölümler</string>
     <string name="player_chapter_n">Bölüm %1$d</string>
+    <string name="player_stats">Teknik istatistikler</string>
+    <string name="player_stats_detail">Codec, çözücü, arabellek ve atlanan kareler ekranda</string>
+    <string name="player_software_decoding">Yazılımla çözme</string>
+    <string name="player_software_decoding_detail">Görüntü takılıyor, bloklanıyor veya siyah kalıyorsa bunu dene. Daha çok pil harcar.</string>
+    <string name="player_try_software">Yazılımla çözmeyi dene</string>
 </resources>

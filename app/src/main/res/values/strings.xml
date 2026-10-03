@@ -666,4 +666,9 @@
     <string name="player_night_mode_unavailable">Night mode isn\'t available on this device</string>
     <string name="player_chapters">Chapters</string>
     <string name="player_chapter_n">Chapter %1$d</string>
+    <string name="player_stats">Stats for nerds</string>
+    <string name="player_stats_detail">Codecs, decoders, buffer and dropped frames on screen</string>
+    <string name="player_software_decoding">Software decoding</string>
+    <string name="player_software_decoding_detail">Try this if the picture stutters, shows blocks or stays black. Uses more battery.</string>
+    <string name="player_try_software">Try software decoding</string>
 </resources>

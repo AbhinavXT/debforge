@@ -632,4 +632,9 @@
     <string name="player_night_mode_unavailable">Mode malam tidak tersedia di perangkat ini</string>
     <string name="player_chapters">Bab</string>
     <string name="player_chapter_n">Bab %1$d</string>
+    <string name="player_stats">Statistik teknis</string>
+    <string name="player_stats_detail">Codec, decoder, buffer, dan frame terlewat di layar</string>
+    <string name="player_software_decoding">Decoding perangkat lunak</string>
+    <string name="player_software_decoding_detail">Coba ini jika gambar tersendat, kotak-kotak, atau tetap hitam. Lebih boros baterai.</string>
+    <string name="player_try_software">Coba decoding perangkat lunak</string>
 </resources>

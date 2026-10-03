@@ -698,4 +698,9 @@
     <string name="player_night_mode_unavailable">El modo nocturno no está disponible en este dispositivo</string>
     <string name="player_chapters">Capítulos</string>
     <string name="player_chapter_n">Capítulo %1$d</string>
+    <string name="player_stats">Estadísticas para nerds</string>
+    <string name="player_stats_detail">Códecs, decodificadores, búfer y fotogramas perdidos en pantalla</string>
+    <string name="player_software_decoding">Decodificación por software</string>
+    <string name="player_software_decoding_detail">Pruébalo si la imagen se entrecorta, muestra bloques o queda en negro. Gasta más batería.</string>
+    <string name="player_try_software">Probar decodificación por software</string>
 </resources>

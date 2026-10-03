@@ -12,24 +12,37 @@ import androidx.media3.exoplayer.mediacodec.MediaCodecSelector
 import androidx.media3.exoplayer.text.TextOutput
 import androidx.media3.exoplayer.video.VideoRendererEventListener
 
-/** Subtitle and audio sync set in the player (milliseconds; + = later). Read on the playback thread. */
-class AvSync {
+/** Player settings the renderers read on the playback thread. */
+class RendererTuning {
+    /** Subtitle and audio sync (milliseconds; + = later). */
     @Volatile var subtitleDelayMs = 0L
     @Volatile var audioDelayMs = 0L
+    /** Video on Android's software decoders first (takes effect when a decoder starts). */
+    @Volatile var preferSoftwareVideo = false
 }
 
 /**
- * Media3 has no subtitle or audio delay, so the renderers are handed a
- * shifted clock:
- *  - subtitles [AvSync.subtitleDelayMs] later: the text renderer is told
- *    it's that much earlier than it is;
- *  - audio [AvSync.audioDelayMs] later: the same as the picture that much
+ * Renderers with two additions. Software video decoding on request (see
+ * [RendererTuning.preferSoftwareVideo]), and sync: Media3 has no subtitle
+ * or audio delay, so the renderers are handed a shifted clock:
+ *  - subtitles [RendererTuning.subtitleDelayMs] later: the text renderer is
+ *    told it's that much earlier than it is;
+ *  - audio [RendererTuning.audioDelayMs] later: the same as the picture that much
  *    earlier, so the video renderer is told it's later than it is. The
  *    audio renderer drives the playback clock and is left alone.
  * A change takes effect from the next frame / subtitle.
  */
 @OptIn(UnstableApi::class)
-class SyncedRenderersFactory(context: Context, private val sync: AvSync) : DefaultRenderersFactory(context) {
+class SyncedRenderersFactory(context: Context, private val tuning: RendererTuning) : DefaultRenderersFactory(context) {
+
+    init {
+        // "Software decoding" (More): the device's own CPU decoders before the
+        // hardware ones, for files a chipset decodes badly. Audio is unaffected.
+        setMediaCodecSelector { mimeType, secure, tunneling ->
+            val all = MediaCodecSelector.DEFAULT.getDecoderInfos(mimeType, secure, tunneling)
+            if (tuning.preferSoftwareVideo && mimeType.startsWith("video/")) all.sortedByDescending { it.softwareOnly } else all
+        }
+    }
 
     override fun buildTextRenderers(
         context: Context,
@@ -40,7 +53,7 @@ class SyncedRenderersFactory(context: Context, private val sync: AvSync) : Defau
     ) {
         val from = out.size
         super.buildTextRenderers(context, output, outputLooper, extensionRendererMode, out)
-        shift(out, from) { sync.subtitleDelayMs * 1000 }
+        shift(out, from) { tuning.subtitleDelayMs * 1000 }
     }
 
     override fun buildVideoRenderers(
@@ -58,7 +71,7 @@ class SyncedRenderersFactory(context: Context, private val sync: AvSync) : Defau
             context, extensionRendererMode, mediaCodecSelector, enableDecoderFallback,
             eventHandler, eventListener, allowedVideoJoiningTimeMs, out
         )
-        shift(out, from) { -sync.audioDelayMs * 1000 }
+        shift(out, from) { -tuning.audioDelayMs * 1000 }
     }
 
     private fun shift(out: ArrayList<Renderer>, from: Int, delayUs: () -> Long) {

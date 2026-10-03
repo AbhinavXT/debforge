@@ -32,7 +32,9 @@ object TrackPicker {
         val introAtMs: Long? = null,
         /** Subtitle / audio sync last set (ms, + = later). */
         val subtitleDelayMs: Long? = null,
-        val audioDelayMs: Long? = null
+        val audioDelayMs: Long? = null,
+        /** Video was switched to software decoding for this show / file. */
+        val softwareDecoding: Boolean? = null
     )
 
     sealed interface Choice {

@@ -665,4 +665,9 @@
     <string name="player_night_mode_unavailable">இந்தச் சாதனத்தில் இரவு பயன்முறை இல்லை</string>
     <string name="player_chapters">அத்தியாயங்கள்</string>
     <string name="player_chapter_n">அத்தியாயம் %1$d</string>
+    <string name="player_stats">தொழில்நுட்ப விவரங்கள்</string>
+    <string name="player_stats_detail">கோடெக், டிகோடர், பஃபர், விடுபட்ட ஃப்ரேம்கள் திரையில்</string>
+    <string name="player_software_decoding">மென்பொருள் டிகோடிங்</string>
+    <string name="player_software_decoding_detail">படம் தடுமாறினால், கட்டங்கள் தெரிந்தால் அல்லது கருப்பாக இருந்தால் இதை முயலவும். அதிக பேட்டரி செலவாகும்.</string>
+    <string name="player_try_software">மென்பொருள் டிகோடிங்கை முயல்</string>
 </resources>

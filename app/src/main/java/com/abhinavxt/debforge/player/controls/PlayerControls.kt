@@ -69,6 +69,8 @@ import androidx.compose.material.icons.rounded.ScreenRotation
 import androidx.compose.material.icons.rounded.SkipNext
 import androidx.compose.material.icons.rounded.SkipPrevious
 import androidx.compose.material.icons.rounded.NightsStay
+import androidx.compose.material.icons.rounded.Memory
+import androidx.compose.material.icons.rounded.QueryStats
 import androidx.compose.material.icons.automirrored.rounded.List
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -129,6 +131,9 @@ interface ControlsActions {
     /** Sound later (+) or earlier (−) than the picture, in ms; remembered for the show. */
     fun setAudioDelay(ms: Long)
     fun setNightMode(on: Boolean)
+    fun setStats(on: Boolean)
+    /** Video on the CPU instead of the chip (reloads at the same second). */
+    fun setSoftwareDecoding(on: Boolean)
     /** Jump to a chapter. */
     fun seekTo(ms: Long)
     fun openExternal()
@@ -920,21 +925,10 @@ private fun MorePanel(state: ControlsState, actions: ControlsActions) {
             }
         }
         item {
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .clickable { actions.setNightMode(!state.nightMode) }
-                    .padding(horizontal = 20.dp, vertical = 12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(Icons.Rounded.NightsStay, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
-                Spacer(Modifier.width(12.dp))
-                Column(Modifier.weight(1f)) {
-                    Text(stringResource(R.string.player_night_mode), color = Color.White, fontSize = 15.sp)
-                    Text(stringResource(R.string.player_night_mode_detail), color = Color.White.copy(alpha = 0.6f), fontSize = 12.sp)
-                }
-                androidx.compose.material3.Switch(checked = state.nightMode, onCheckedChange = { actions.setNightMode(it) })
-            }
+            MoreSwitch(
+                Icons.Rounded.NightsStay, stringResource(R.string.player_night_mode),
+                stringResource(R.string.player_night_mode_detail), state.nightMode, actions::setNightMode
+            )
         }
         item {
             MoreRow(Icons.Rounded.PhotoCamera, stringResource(R.string.player_screenshot)) { actions.screenshot() }
@@ -950,22 +944,43 @@ private fun MorePanel(state: ControlsState, actions: ControlsActions) {
             MoreRow(Icons.Rounded.Repeat, stringResource(R.string.player_ab_loop), label) { actions.abLoop() }
         }
         item {
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .clickable { actions.setBackground(!state.background) }
-                    .padding(horizontal = 20.dp, vertical = 12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(Icons.Rounded.Headphones, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
-                Spacer(Modifier.width(12.dp))
-                Column(Modifier.weight(1f)) {
-                    Text(stringResource(R.string.player_background), color = Color.White, fontSize = 15.sp)
-                    Text(stringResource(R.string.player_background_detail), color = Color.White.copy(alpha = 0.6f), fontSize = 12.sp)
-                }
-                androidx.compose.material3.Switch(checked = state.background, onCheckedChange = { actions.setBackground(it) })
-            }
+            MoreSwitch(
+                Icons.Rounded.Headphones, stringResource(R.string.player_background),
+                stringResource(R.string.player_background_detail), state.background, actions::setBackground
+            )
         }
+        item {
+            MoreSwitch(
+                Icons.Rounded.Memory, stringResource(R.string.player_software_decoding),
+                stringResource(R.string.player_software_decoding_detail), state.softwareDecoding, actions::setSoftwareDecoding
+            )
+        }
+        item {
+            MoreSwitch(
+                Icons.Rounded.QueryStats, stringResource(R.string.player_stats),
+                stringResource(R.string.player_stats_detail), state.stats, actions::setStats
+            )
+        }
+    }
+}
+
+/** A More row with a switch; the whole row toggles it. */
+@Composable
+private fun MoreSwitch(icon: ImageVector, title: String, detail: String, checked: Boolean, onChange: (Boolean) -> Unit) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .clickable { onChange(!checked) }
+            .padding(horizontal = 20.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(icon, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
+        Spacer(Modifier.width(12.dp))
+        Column(Modifier.weight(1f)) {
+            Text(title, color = Color.White, fontSize = 15.sp)
+            Text(detail, color = Color.White.copy(alpha = 0.6f), fontSize = 12.sp)
+        }
+        androidx.compose.material3.Switch(checked = checked, onCheckedChange = onChange)
     }
 }
 

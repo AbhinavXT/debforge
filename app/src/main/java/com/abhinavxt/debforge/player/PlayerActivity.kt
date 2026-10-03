@@ -190,8 +190,21 @@ class PlayerActivity : ComponentActivity() {
     private var loudness: android.media.audiofx.LoudnessEnhancer? = null
     private var nightMode: NightMode? = null
     private var audioSessionId = C.AUDIO_SESSION_ID_UNSET
-    /** Subtitle / audio sync, read by the renderers ([SyncedRenderersFactory]). */
-    private val avSync = AvSync()
+    /** Sync and decoder choice, read by the renderers ([SyncedRenderersFactory]). */
+    private val tuning = RendererTuning()
+
+    // --- media session (headset, watch, lock screen, output switcher) ---
+    /** The player with next / previous mapped to episodes; what sessions control. */
+    private var episodePlayer: EpisodePlayer? = null
+    /** While watching; the background service has its own while away. */
+    private var session: androidx.media3.session.MediaSession? = null
+
+    // --- stats for nerds ---
+    private lateinit var statsView: TextView
+    private var videoDecoder: String? = null
+    private var audioDecoder: String? = null
+    private var droppedFrames = 0
+    private var bandwidthBps = 0L
     /** This file's OpenSubtitles hash, worked out on the first search. */
     private var movieHash: kotlinx.coroutines.Deferred<String?>? = null
     private var onlineSubsJob: Job? = null
@@ -365,6 +378,17 @@ class PlayerActivity : ComponentActivity() {
 
         nextCard = buildNextCard()
 
+        // Stats for nerds (More, or the remote's Info key on TV).
+        statsView = TextView(this).apply {
+            setTextColor(Color.WHITE)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f)
+            typeface = android.graphics.Typeface.MONOSPACE
+            val pad = dp(10)
+            setPadding(pad, pad, pad, pad)
+            setBackgroundColor(0xB3000000.toInt())
+            visibility = View.GONE
+        }
+
         // "Skip intro" / "Skip recap" / "Skip credits": focusable for the TV remote.
         skipView = TextView(this).apply {
             setTextColor(Color.WHITE)
@@ -414,6 +438,11 @@ class PlayerActivity : ComponentActivity() {
                 startOverView,
                 FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM or Gravity.START)
                     .apply { setMargins(dp(24), 0, 0, dp(if (isTv) 96 else 150)) }
+            )
+            addView(
+                statsView,
+                FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.TOP or Gravity.START)
+                    .apply { setMargins(dp(16), dp(72), dp(16), 0) }
             )
             addView(
                 skipView,
@@ -471,6 +500,7 @@ class PlayerActivity : ComponentActivity() {
                 controls.hasPrevious = previousQueue.isNotEmpty()
                 updateNextEpisode()
                 updateSkip()
+                if (controls.stats) updateStats()
             }
         }
     }
@@ -628,6 +658,7 @@ class PlayerActivity : ComponentActivity() {
             when (event.keyCode) {
                 android.view.KeyEvent.KEYCODE_MEDIA_NEXT -> if (queue.isNotEmpty()) { playNext(); return true }
                 android.view.KeyEvent.KEYCODE_MEDIA_PREVIOUS -> if (previousQueue.isNotEmpty()) { playPrevious(); return true }
+                android.view.KeyEvent.KEYCODE_INFO -> { showStats(!controls.stats); return true }
             }
         }
         val overlayFocused = focus != null && (focus === startOverView || focus === skipView || isInside(focus, nextCard))
@@ -823,6 +854,10 @@ class PlayerActivity : ComponentActivity() {
             player?.seekTo(ms)
             controls.panel = null
         }
+
+        override fun setStats(on: Boolean) = showStats(on)
+
+        override fun setSoftwareDecoding(on: Boolean) = this@PlayerActivity.setSoftwareDecoding(on, save = true)
         override fun openExternal() = openExternally()
 
         override fun rotate() {
@@ -1077,14 +1112,16 @@ class PlayerActivity : ComponentActivity() {
             val memory = remembered
             lifecycleScope.launch { learntIntroAt = memory?.await()?.introAtMs }
         }
-        // Sync starts at zero, then last time's for this show (or file).
+        // Sync starts at zero, then last time's for this show (or file); the
+        // decoder choice too (switching only if it differs, which reloads).
         applyDelays(0, 0)
-        remembered?.let { memory ->
-            val generation = fileGeneration
-            lifecycleScope.launch {
-                val r = memory.await() ?: return@launch
-                if (generation == fileGeneration) applyDelays(r.subtitleDelayMs ?: 0, r.audioDelayMs ?: 0)
-            }
+        droppedFrames = 0
+        lifecycleScope.launch {
+            val r = remembered?.await()
+            if (generation != fileGeneration) return@launch
+            if (r != null) applyDelays(r.subtitleDelayMs ?: 0, r.audioDelayMs ?: 0)
+            val software = r?.softwareDecoding == true
+            if (software != tuning.preferSoftwareVideo) setSoftwareDecoding(software, save = false)
         }
     }
 
@@ -1263,9 +1300,62 @@ class PlayerActivity : ComponentActivity() {
         }
     }
 
+    private fun showStats(on: Boolean) {
+        controls.stats = on
+        statsView.visibility = if (on) View.VISIBLE else View.GONE
+        if (on) updateStats()
+    }
+
+    private fun updateStats() {
+        val p = player ?: return
+        fun hdr(f: androidx.media3.common.Format): String? = when {
+            f.sampleMimeType == androidx.media3.common.MimeTypes.VIDEO_DOLBY_VISION -> "Dolby Vision"
+            f.colorInfo?.colorTransfer == C.COLOR_TRANSFER_ST2084 -> "HDR10"
+            f.colorInfo?.colorTransfer == C.COLOR_TRANSFER_HLG -> "HLG"
+            else -> null
+        }
+        val v = p.videoFormat
+        val a = p.audioFormat
+        statsView.text = PlaybackStats.format(
+            PlaybackStats.Snapshot(
+                video = v?.let {
+                    PlaybackStats.Video(it.sampleMimeType, it.codecs, it.width, it.height, it.frameRate, it.bitrate, hdr(it))
+                },
+                videoDecoder = videoDecoder,
+                audio = a?.let { PlaybackStats.Audio(it.sampleMimeType, it.channelCount, it.sampleRate, it.bitrate, it.language) },
+                audioDecoder = audioDecoder,
+                bufferAheadMs = p.bufferedPosition - p.currentPosition,
+                networkBps = bandwidthBps,
+                droppedFrames = droppedFrames,
+                subtitleDelayMs = tuning.subtitleDelayMs,
+                audioDelayMs = tuning.audioDelayMs
+            )
+        )
+    }
+
+    /**
+     * Video on the CPU (Android's own decoders) instead of the chip's, for a
+     * file the hardware decoder shows badly. Decoders are picked when they
+     * start, so the file reloads at the same second. [save]: remember it for
+     * this show (or file).
+     */
+    private fun setSoftwareDecoding(on: Boolean, save: Boolean) {
+        tuning.preferSoftwareVideo = on
+        controls.softwareDecoding = on
+        if (save) remember { it.copy(softwareDecoding = on.takeIf { s -> s }) }
+        val p = player ?: return
+        if (p.mediaItemCount == 0) return
+        val at = p.currentPosition
+        val play = p.playWhenReady
+        p.stop() // releases the decoders
+        p.setMediaItem(buildMediaItem(), at)
+        p.prepare()
+        p.playWhenReady = play
+    }
+
     private fun applyDelays(subtitleMs: Long, audioMs: Long) {
-        avSync.subtitleDelayMs = subtitleMs
-        avSync.audioDelayMs = audioMs
+        tuning.subtitleDelayMs = subtitleMs
+        tuning.audioDelayMs = audioMs
         controls.subtitleDelayMs = subtitleMs
         controls.audioDelayMs = audioMs
     }
@@ -1570,6 +1660,7 @@ class PlayerActivity : ComponentActivity() {
             currentEpisode?.let { previousQueue.addFirst(it) }
         }
         currentEpisode = episode
+        episodePlayer?.queueChanged()
         val item = episode.item
         identity = Identity(item.id, item.provider, item.sourceRef, item.filename, episode.showKey, item.parentRef)
         uri = Uri.parse(ready.url)
@@ -1791,7 +1882,9 @@ class PlayerActivity : ComponentActivity() {
         if (controls.background && !inBackground && player?.isPlaying == true &&
             !isFinishing && !isChangingConfigurations && !isInPictureInPictureMode
         ) {
-            BackgroundPlayback.player = player
+            // The service's session takes over (notification, lock screen).
+            closeSession()
+            BackgroundPlayback.player = episodePlayer ?: player
             startService(Intent(this, BackgroundPlaybackService::class.java))
             inBackground = true
         }
@@ -1820,6 +1913,7 @@ class PlayerActivity : ComponentActivity() {
         inBackground = false
         stopService(Intent(this, BackgroundPlaybackService::class.java))
         BackgroundPlayback.player = null
+        openSession()
         player?.let { it.trackSelectionParameters = it.trackSelectionParameters.buildUpon().setTrackTypeDisabled(C.TRACK_TYPE_VIDEO, false).build() }
     }
 
@@ -1840,7 +1934,7 @@ class PlayerActivity : ComponentActivity() {
         // for what the device can't do: E-AC3/AC3 on phones without a Dolby
         // licence, DTS, TrueHD. Decoder fallback tries another codec
         // instance if the first one fails to start.
-        val renderers = SyncedRenderersFactory(this, avSync)
+        val renderers = SyncedRenderersFactory(this, tuning)
             .setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON)
             .setEnableDecoderFallback(true)
         val exo = ExoPlayer.Builder(this, renderers)
@@ -1862,8 +1956,17 @@ class PlayerActivity : ComponentActivity() {
         exo.seekTo(resumePosition)
         exo.playWhenReady = resumePlayWhenReady
         exo.prepare()
+        exo.addAnalyticsListener(analytics)
         playerView.player = exo
         player = exo
+        episodePlayer = EpisodePlayer(
+            exo,
+            hasNext = { queue.isNotEmpty() },
+            hasPrevious = { previousQueue.isNotEmpty() },
+            onNext = ::playNext,
+            onPrevious = ::playPrevious
+        )
+        openSession()
         attachLoudness(exo.audioSessionId)
         applySubtitleStyle()
         startLoop() // an A-B loop set before leaving the app
@@ -1898,6 +2001,9 @@ class PlayerActivity : ComponentActivity() {
         nightMode?.release()
         nightMode = null
         audioSessionId = C.AUDIO_SESSION_ID_UNSET
+        closeSession()
+        episodePlayer = null
+        exo.removeAnalyticsListener(analytics)
         exo.removeListener(listener)
         exo.release()
         playerView.player = null
@@ -1966,13 +2072,14 @@ class PlayerActivity : ComponentActivity() {
             }
             val audio = tracks.groups.filter { it.type == C.TRACK_TYPE_AUDIO }
             if (audio.isNotEmpty() && audio.none { it.isSupported }) {
-                offerExternal(getString(R.string.player_no_audio_body))
+                offerExternal(getString(R.string.player_no_audio_body), videoProblem = false)
             }
         }
     }
 
     /** "Can't play this here" → hand the same link to VLC & co. */
-    private fun offerExternal(message: String) {
+    /** [videoProblem]: the picture may be the trouble, so software decoding is worth a try first. */
+    private fun offerExternal(message: String, videoProblem: Boolean = true) {
         if (offeredFallback || isFinishing) return
         offeredFallback = true
         player?.pause()
@@ -1981,8 +2088,53 @@ class PlayerActivity : ComponentActivity() {
             .setMessage(message)
             .setPositiveButton(R.string.action_open_other_player) { _, _ -> openExternally() }
             .setNegativeButton(R.string.player_keep_watching) { _, _ -> player?.play() }
+            .apply {
+                if (videoProblem && !tuning.preferSoftwareVideo) {
+                    setNeutralButton(R.string.player_try_software) { _, _ ->
+                        offeredFallback = false // if this fails too, ask again
+                        setSoftwareDecoding(true, save = true)
+                        player?.play()
+                    }
+                }
+            }
             .setOnCancelListener { player?.play() }
             .show()
+    }
+
+    /** Session while watching, so headset / watch / output-switcher controls work here too. */
+    private fun openSession() {
+        if (session != null || inBackground) return
+        val p = episodePlayer ?: return
+        session = runCatching {
+            androidx.media3.session.MediaSession.Builder(this, p).setId(SESSION_ID).build()
+        }.getOrNull()
+    }
+
+    private fun closeSession() {
+        session?.release()
+        session = null
+    }
+
+    /** Decoders and dropped frames for the stats overlay. */
+    private val analytics = object : androidx.media3.exoplayer.analytics.AnalyticsListener {
+        override fun onVideoDecoderInitialized(
+            eventTime: androidx.media3.exoplayer.analytics.AnalyticsListener.EventTime,
+            decoderName: String, initializedTimestampMs: Long, initializationDurationMs: Long
+        ) { videoDecoder = decoderName }
+
+        override fun onAudioDecoderInitialized(
+            eventTime: androidx.media3.exoplayer.analytics.AnalyticsListener.EventTime,
+            decoderName: String, initializedTimestampMs: Long, initializationDurationMs: Long
+        ) { audioDecoder = decoderName }
+
+        override fun onDroppedVideoFrames(
+            eventTime: androidx.media3.exoplayer.analytics.AnalyticsListener.EventTime, droppedFrames: Int, elapsedMs: Long
+        ) { this@PlayerActivity.droppedFrames += droppedFrames }
+
+        override fun onBandwidthEstimate(
+            eventTime: androidx.media3.exoplayer.analytics.AnalyticsListener.EventTime,
+            totalLoadTimeMs: Int, totalBytesLoaded: Long, bitrateEstimate: Long
+        ) { bandwidthBps = bitrateEstimate }
     }
 
     private fun openExternally() {
@@ -2061,6 +2213,8 @@ class PlayerActivity : ComponentActivity() {
         private const val ACTION_PIP_PLAY_PAUSE = "com.abhinavxt.debforge.player.PIP_PLAY_PAUSE"
         private const val ACTION_PIP_NEXT = "com.abhinavxt.debforge.player.PIP_NEXT"
         private const val SAVE_EVERY_TICKS = 5
+        /** The background service's session uses the default id; the two never clash. */
+        private const val SESSION_ID = "player"
         /** [doneSkips] entry for the learnt intro (chapter segments use their start). */
         private const val LEARNT_SKIP = -1L
         /** Credits ending this close to the end of the file count as "to the end". */

@@ -665,4 +665,9 @@
     <string name="player_night_mode_unavailable">इस डिवाइस पर नाइट मोड उपलब्ध नहीं है</string>
     <string name="player_chapters">चैप्टर</string>
     <string name="player_chapter_n">चैप्टर %1$d</string>
+    <string name="player_stats">तकनीकी आँकड़े</string>
+    <string name="player_stats_detail">कोडेक, डिकोडर, बफ़र और छूटे फ़्रेम स्क्रीन पर</string>
+    <string name="player_software_decoding">सॉफ़्टवेयर डिकोडिंग</string>
+    <string name="player_software_decoding_detail">तस्वीर अटकती है, ब्लॉक दिखते हैं या काली रहती है तो इसे आज़माएँ। बैटरी ज़्यादा लगती है।</string>
+    <string name="player_try_software">सॉफ़्टवेयर डिकोडिंग आज़माएँ</string>
 </resources>

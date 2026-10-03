@@ -665,4 +665,9 @@
     <string name="player_night_mode_unavailable">এই ডিভাইসে নাইট মোড নেই</string>
     <string name="player_chapters">অধ্যায়</string>
     <string name="player_chapter_n">অধ্যায় %1$d</string>
+    <string name="player_stats">প্রযুক্তিগত তথ্য</string>
+    <string name="player_stats_detail">কোডেক, ডিকোডার, বাফার ও বাদ পড়া ফ্রেম স্ক্রিনে</string>
+    <string name="player_software_decoding">সফটওয়্যার ডিকোডিং</string>
+    <string name="player_software_decoding_detail">ছবি আটকে গেলে, ব্লক দেখালে বা কালো থাকলে এটি চেষ্টা করুন। ব্যাটারি বেশি খরচ হয়।</string>
+    <string name="player_try_software">সফটওয়্যার ডিকোডিং চেষ্টা করুন</string>
 </resources>

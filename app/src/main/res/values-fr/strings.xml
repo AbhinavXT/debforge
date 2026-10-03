@@ -698,4 +698,9 @@
     <string name="player_night_mode_unavailable">Le mode nuit n’est pas disponible sur cet appareil</string>
     <string name="player_chapters">Chapitres</string>
     <string name="player_chapter_n">Chapitre %1$d</string>
+    <string name="player_stats">Statistiques avancées</string>
+    <string name="player_stats_detail">Codecs, décodeurs, tampon et images perdues à l’écran</string>
+    <string name="player_software_decoding">Décodage logiciel</string>
+    <string name="player_software_decoding_detail">À essayer si l’image saccade, affiche des blocs ou reste noire. Consomme plus de batterie.</string>
+    <string name="player_try_software">Essayer le décodage logiciel</string>
 </resources>

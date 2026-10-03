@@ -665,4 +665,9 @@
     <string name="player_night_mode_unavailable">Nachtmodus ist auf diesem Gerät nicht verfügbar</string>
     <string name="player_chapters">Kapitel</string>
     <string name="player_chapter_n">Kapitel %1$d</string>
+    <string name="player_stats">Statistiken für Nerds</string>
+    <string name="player_stats_detail">Codecs, Decoder, Puffer und verlorene Frames im Bild</string>
+    <string name="player_software_decoding">Software-Decodierung</string>
+    <string name="player_software_decoding_detail">Hilft, wenn das Bild ruckelt, Blöcke zeigt oder schwarz bleibt. Braucht mehr Akku.</string>
+    <string name="player_try_software">Software-Decodierung versuchen</string>
 </resources>

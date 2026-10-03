@@ -665,4 +665,9 @@
     <string name="player_night_mode_unavailable">या डिव्हाइसवर नाइट मोड उपलब्ध नाही</string>
     <string name="player_chapters">प्रकरणे</string>
     <string name="player_chapter_n">प्रकरण %1$d</string>
+    <string name="player_stats">तांत्रिक आकडे</string>
+    <string name="player_stats_detail">कोडेक, डिकोडर, बफर आणि सुटलेल्या फ्रेम स्क्रीनवर</string>
+    <string name="player_software_decoding">सॉफ्टवेअर डिकोडिंग</string>
+    <string name="player_software_decoding_detail">चित्र अडखळत असेल, ब्लॉक दिसत असतील किंवा काळे राहत असेल तर हे वापरून पाहा. बॅटरी जास्त लागते.</string>
+    <string name="player_try_software">सॉफ्टवेअर डिकोडिंग वापरून पाहा</string>
 </resources>

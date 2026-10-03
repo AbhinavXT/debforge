@@ -60,6 +60,10 @@ class ControlsState {
     var audioDelayMs by mutableLongStateOf(0L)
     /** Night mode: loud parts quieter, quiet parts louder (More). */
     var nightMode by mutableStateOf(false)
+    /** Stats for nerds overlay (More). */
+    var stats by mutableStateOf(false)
+    /** Video on software decoders for this file (More). */
+    var softwareDecoding by mutableStateOf(false)
     /** The file's chapters (Matroska): marks on the seek bar and the Chapters list. */
     var chapters by mutableStateOf<List<com.abhinavxt.debforge.domain.MkvChapters.Chapter>>(emptyList())
     var pipAvailable by mutableStateOf(false)

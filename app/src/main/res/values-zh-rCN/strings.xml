@@ -632,4 +632,9 @@
     <string name="player_night_mode_unavailable">此设备不支持夜间模式</string>
     <string name="player_chapters">章节</string>
     <string name="player_chapter_n">第 %1$d 章</string>
+    <string name="player_stats">详细统计信息</string>
+    <string name="player_stats_detail">在屏幕上显示编解码器、解码器、缓冲和丢帧</string>
+    <string name="player_software_decoding">软件解码</string>
+    <string name="player_software_decoding_detail">画面卡顿、出现色块或黑屏时可尝试。更耗电。</string>
+    <string name="player_try_software">尝试软件解码</string>
 </resources>

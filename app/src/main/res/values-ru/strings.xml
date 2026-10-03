@@ -731,4 +731,9 @@
     <string name="player_night_mode_unavailable">Ночной режим недоступен на этом устройстве</string>
     <string name="player_chapters">Главы</string>
     <string name="player_chapter_n">Глава %1$d</string>
+    <string name="player_stats">Статистика для гиков</string>
+    <string name="player_stats_detail">Кодеки, декодеры, буфер и пропущенные кадры на экране</string>
+    <string name="player_software_decoding">Программное декодирование</string>
+    <string name="player_software_decoding_detail">Попробуйте, если картинка дёргается, рассыпается на блоки или остаётся чёрной. Расходует больше заряда.</string>
+    <string name="player_try_software">Попробовать программное декодирование</string>
 </resources>

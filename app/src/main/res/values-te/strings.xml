@@ -665,4 +665,9 @@
     <string name="player_night_mode_unavailable">ఈ పరికరంలో నైట్ మోడ్ అందుబాటులో లేదు</string>
     <string name="player_chapters">అధ్యాయాలు</string>
     <string name="player_chapter_n">అధ్యాయం %1$d</string>
+    <string name="player_stats">సాంకేతిక వివరాలు</string>
+    <string name="player_stats_detail">కోడెక్, డీకోడర్, బఫర్, వదిలేసిన ఫ్రేమ్‌లు తెరపై</string>
+    <string name="player_software_decoding">సాఫ్ట్‌వేర్ డీకోడింగ్</string>
+    <string name="player_software_decoding_detail">చిత్రం ఆగిపోతున్నా, బ్లాక్‌లు కనిపిస్తున్నా లేదా నల్లగా ఉన్నా దీన్ని ప్రయత్నించండి. ఎక్కువ బ్యాటరీ ఖర్చవుతుంది.</string>
+    <string name="player_try_software">సాఫ్ట్‌వేర్ డీకోడింగ్ ప్రయత్నించండి</string>
 </resources>
