@@ -579,10 +579,9 @@
     <string name="trakt_detail">DebForge ప్లేయర్‌లో చూసేవాటిని Trakt‌లో గుర్తించండి, వేరే చోట చూసినవాటిని ✓ చూశారు అని చూపించండి.</string>
     <string name="trakt_connect">కనెక్ట్ చేయండి</string>
     <string name="trakt_setup_title">Trakt కనెక్ట్ చేయండి</string>
-    <string name="trakt_setup_body">Trakt కోసం మీ సొంత యాప్ కావాలి (ఉచితం, ఒక నిమిషం పడుతుంది). Trakt‌లో ఏదైనా పేరుతో, రీడైరెక్ట్ URIగా %1$s ఇచ్చి కొత్త అప్లికేషన్ సృష్టించండి, తర్వాత దాని Client ID, Client Secret ఇక్కడ పేస్ట్ చేయండి.</string>
+    <string name="trakt_setup_body">Trakt కోసం మీ సొంత యాప్ కావాలి (ఉచితం, ఒక నిమిషం పడుతుంది). Trakt‌లో ఏదైనా పేరుతో, రీడైరెక్ట్ URIగా %1$s ఇచ్చి కొత్త అప్లికేషన్ సృష్టించండి, తర్వాత దాని Client ID ఇక్కడ పేస్ట్ చేయండి.</string>
     <string name="trakt_open_new_app">Trakt‌లో యాప్ సృష్టించండి</string>
     <string name="trakt_client_id">Client ID</string>
-    <string name="trakt_client_secret">Client Secret</string>
     <string name="trakt_continue">కొనసాగించండి</string>
     <string name="trakt_code_title">DebForge‌ను ఆమోదించండి</string>
     <string name="trakt_code_body">%1$s‌కి వెళ్లి ఈ కోడ్ నమోదు చేయండి:</string>
@@ -590,7 +589,7 @@
     <string name="trakt_waiting">ఆమోదం కోసం వేచి ఉంది…</string>
     <string name="trakt_expired">కోడ్ గడువు ముగిసింది. మళ్లీ ప్రయత్నించండి.</string>
     <string name="trakt_denied">Trakt‌లో అనుమతి నిరాకరించబడింది.</string>
-    <string name="trakt_failed">Trakt Client ID లేదా Secret‌ను అంగీకరించలేదు. వాటిని తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.</string>
+    <string name="trakt_failed">Trakt Client ID‌ను అంగీకరించలేదు. దాన్ని తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.</string>
     <string name="trakt_unreachable">Trakt‌ను చేరుకోలేకపోయాం. కనెక్షన్ తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.</string>
     <string name="trakt_signed_in">%1$sగా సైన్ ఇన్ అయ్యారు</string>
     <string name="trakt_signed_in_plain">సైన్ ఇన్ అయ్యారు</string>

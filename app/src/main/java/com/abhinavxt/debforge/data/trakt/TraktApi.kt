@@ -13,6 +13,10 @@ import retrofit2.http.Query
  * Trakt v2 (https://trakt.docs.apiary.io): device sign-in, scrobbling and the
  * user's watched history. The `trakt-api-key` / `trakt-api-version` headers
  * and the Bearer token are added by [TraktAuthInterceptor].
+ *
+ * No `client_secret` anywhere: Trakt deprecated it for apps that run on the
+ * user's device (Oct 2026) and new Trakt apps may not get one. The device flow
+ * needs only the Client ID.
  */
 interface TraktApi {
 
@@ -63,7 +67,7 @@ interface TraktApi {
 
     companion object {
         const val BASE_URL = "https://api.trakt.tv/"
-        /** Where users create the app whose Client ID and Secret DebForge asks for. */
+        /** Where users create the app whose Client ID DebForge asks for. */
         const val NEW_APP_URL = "https://trakt.tv/oauth/applications/new"
         /** The redirect URI Trakt's form wants for an app without a web page. */
         const val OOB_REDIRECT = "urn:ietf:wg:oauth:2.0:oob"
@@ -85,15 +89,13 @@ data class TraktDeviceCode(
 @JsonClass(generateAdapter = true)
 data class TraktDeviceTokenRequest(
     @Json(name = "code") val code: String,
-    @Json(name = "client_id") val clientId: String,
-    @Json(name = "client_secret") val clientSecret: String
+    @Json(name = "client_id") val clientId: String
 )
 
 @JsonClass(generateAdapter = true)
 data class TraktRefreshRequest(
     @Json(name = "refresh_token") val refreshToken: String,
     @Json(name = "client_id") val clientId: String,
-    @Json(name = "client_secret") val clientSecret: String,
     @Json(name = "redirect_uri") val redirectUri: String = TraktApi.OOB_REDIRECT,
     @Json(name = "grant_type") val grantType: String = "refresh_token"
 )
@@ -101,8 +103,7 @@ data class TraktRefreshRequest(
 @JsonClass(generateAdapter = true)
 data class TraktRevokeRequest(
     @Json(name = "token") val token: String,
-    @Json(name = "client_id") val clientId: String,
-    @Json(name = "client_secret") val clientSecret: String
+    @Json(name = "client_id") val clientId: String
 )
 
 @JsonClass(generateAdapter = true)

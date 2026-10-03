@@ -43,9 +43,9 @@ class TraktRepository @Inject constructor(
 
     enum class Poll { PENDING, APPROVED, EXPIRED, DENIED, FAILED }
 
-    /** Saves the Client ID / Secret and asks Trakt for a code to show the user. */
-    suspend fun startLogin(clientId: String, clientSecret: String): DeviceCode {
-        store.setCredentials(clientId, clientSecret)
+    /** Saves the Client ID and asks Trakt for a code to show the user. */
+    suspend fun startLogin(clientId: String): DeviceCode {
+        store.setCredentials(clientId)
         val c = api.deviceCode(TraktDeviceCodeRequest(clientId.trim()))
         return DeviceCode(
             userCode = c.userCode,
@@ -60,7 +60,7 @@ class TraktRepository @Inject constructor(
     suspend fun poll(code: DeviceCode): Poll {
         val creds = store.credentials() ?: return Poll.FAILED
         val r = try {
-            api.deviceToken(TraktDeviceTokenRequest(code.handle, creds.clientId, creds.clientSecret))
+            api.deviceToken(TraktDeviceTokenRequest(code.handle, creds.clientId))
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
@@ -79,13 +79,13 @@ class TraktRepository @Inject constructor(
             400, 429 -> Poll.PENDING
             410 -> Poll.EXPIRED
             418 -> Poll.DENIED
-            else -> Poll.FAILED // 401 (wrong secret), 404 (wrong id), 409 (code already used)
+            else -> Poll.FAILED // 401/404 (wrong id), 409 (code already used)
         }
     }
 
     suspend fun signOut() {
         store.session()?.let { s ->
-            runCatching { api.revoke(TraktRevokeRequest(s.accessToken, s.credentials.clientId, s.credentials.clientSecret)) }
+            runCatching { api.revoke(TraktRevokeRequest(s.accessToken, s.credentials.clientId)) }
         }
         store.signOut()
         ids.clear()
@@ -100,7 +100,7 @@ class TraktRepository @Inject constructor(
             if (current.expiresAt - System.currentTimeMillis() > REFRESH_BEFORE_MS) return@withLock current
             val refresh = current.refreshToken ?: return@withLock current
             val r = try {
-                api.refresh(TraktRefreshRequest(refresh, current.credentials.clientId, current.credentials.clientSecret))
+                api.refresh(TraktRefreshRequest(refresh, current.credentials.clientId))
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {

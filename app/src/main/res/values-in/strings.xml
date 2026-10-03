@@ -549,10 +549,9 @@
     <string name="trakt_detail">Tandai di Trakt apa yang kamu tonton di pemutar DebForge, dan tampilkan yang sudah ditonton di tempat lain sebagai ✓ Ditonton.</string>
     <string name="trakt_connect">Hubungkan</string>
     <string name="trakt_setup_title">Hubungkan Trakt</string>
-    <string name="trakt_setup_body">Trakt memerlukan aplikasi milikmu sendiri (gratis, cuma semenit). Di Trakt, buat aplikasi baru dengan nama apa saja dan %1$s sebagai redirect URI, lalu tempel Client ID dan Client Secret-nya di sini.</string>
+    <string name="trakt_setup_body">Trakt memerlukan aplikasi milikmu sendiri (gratis, cuma semenit). Di Trakt, buat aplikasi baru dengan nama apa saja dan %1$s sebagai redirect URI, lalu tempel Client ID-nya di sini.</string>
     <string name="trakt_open_new_app">Buat aplikasi di Trakt</string>
     <string name="trakt_client_id">Client ID</string>
-    <string name="trakt_client_secret">Client Secret</string>
     <string name="trakt_continue">Lanjut</string>
     <string name="trakt_code_title">Setujui DebForge</string>
     <string name="trakt_code_body">Buka %1$s dan masukkan kode ini:</string>
@@ -560,7 +559,7 @@
     <string name="trakt_waiting">Menunggu persetujuan…</string>
     <string name="trakt_expired">Kode kedaluwarsa. Coba lagi.</string>
     <string name="trakt_denied">Akses ditolak di Trakt.</string>
-    <string name="trakt_failed">Trakt tidak menerima Client ID atau Secret. Periksa lalu coba lagi.</string>
+    <string name="trakt_failed">Trakt tidak menerima Client ID. Periksa lalu coba lagi.</string>
     <string name="trakt_unreachable">Tidak bisa menghubungi Trakt. Periksa koneksi lalu coba lagi.</string>
     <string name="trakt_signed_in">Masuk sebagai %1$s</string>
     <string name="trakt_signed_in_plain">Sudah masuk</string>

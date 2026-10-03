@@ -579,10 +579,9 @@
     <string name="trakt_detail">DebForge के प्लेयर में जो देखें उसे Trakt पर दर्ज करें, और कहीं और देखा हुआ ✓ देखा गया दिखाएँ।</string>
     <string name="trakt_connect">जोड़ें</string>
     <string name="trakt_setup_title">Trakt जोड़ें</string>
-    <string name="trakt_setup_body">Trakt के लिए आपका अपना ऐप चाहिए (मुफ़्त, एक मिनट लगता है)। Trakt पर कोई भी नाम और रीडायरेक्ट URI के रूप में %1$s देकर नया ऐप्लिकेशन बनाएँ, फिर उसका Client ID और Client Secret यहाँ पेस्ट करें।</string>
+    <string name="trakt_setup_body">Trakt के लिए आपका अपना ऐप चाहिए (मुफ़्त, एक मिनट लगता है)। Trakt पर कोई भी नाम और रीडायरेक्ट URI के रूप में %1$s देकर नया ऐप्लिकेशन बनाएँ, फिर उसका Client ID यहाँ पेस्ट करें।</string>
     <string name="trakt_open_new_app">Trakt पर ऐप बनाएँ</string>
     <string name="trakt_client_id">Client ID</string>
-    <string name="trakt_client_secret">Client Secret</string>
     <string name="trakt_continue">आगे बढ़ें</string>
     <string name="trakt_code_title">DebForge को अनुमति दें</string>
     <string name="trakt_code_body">%1$s पर जाएँ और यह कोड डालें:</string>
@@ -590,7 +589,7 @@
     <string name="trakt_waiting">अनुमति की प्रतीक्षा…</string>
     <string name="trakt_expired">कोड की समय-सीमा खत्म हो गई। फिर से कोशिश करें।</string>
     <string name="trakt_denied">Trakt पर अनुमति नहीं दी गई।</string>
-    <string name="trakt_failed">Trakt ने Client ID या Secret स्वीकार नहीं किया। जाँचकर फिर से कोशिश करें।</string>
+    <string name="trakt_failed">Trakt ने Client ID स्वीकार नहीं किया। जाँचकर फिर से कोशिश करें।</string>
     <string name="trakt_unreachable">Trakt से संपर्क नहीं हो सका। कनेक्शन जाँचकर फिर से कोशिश करें।</string>
     <string name="trakt_signed_in">%1$s के रूप में साइन इन</string>
     <string name="trakt_signed_in_plain">साइन इन है</string>

@@ -579,10 +579,9 @@
     <string name="trakt_detail">DebForge பிளேயரில் பார்ப்பதை Trakt-இல் குறிக்கவும், வேறு இடத்தில் பார்த்தவற்றை ✓ பார்த்தது எனக் காட்டவும்.</string>
     <string name="trakt_connect">இணை</string>
     <string name="trakt_setup_title">Trakt-ஐ இணை</string>
-    <string name="trakt_setup_body">Trakt-க்கு உங்கள் சொந்த ஆப் தேவை (இலவசம், ஒரு நிமிடம் ஆகும்). Trakt-இல் ஏதேனும் பெயருடனும் ரீடைரக்ட் URI ஆக %1$s உடனும் புதிய அப்ளிகேஷனை உருவாக்கி, அதன் Client ID மற்றும் Client Secret-ஐ இங்கே ஒட்டவும்.</string>
+    <string name="trakt_setup_body">Trakt-க்கு உங்கள் சொந்த ஆப் தேவை (இலவசம், ஒரு நிமிடம் ஆகும்). Trakt-இல் ஏதேனும் பெயருடனும் ரீடைரக்ட் URI ஆக %1$s உடனும் புதிய அப்ளிகேஷனை உருவாக்கி, அதன் Client ID-ஐ இங்கே ஒட்டவும்.</string>
     <string name="trakt_open_new_app">Trakt-இல் ஆப்பை உருவாக்கு</string>
     <string name="trakt_client_id">Client ID</string>
-    <string name="trakt_client_secret">Client Secret</string>
     <string name="trakt_continue">தொடர்</string>
     <string name="trakt_code_title">DebForge-ஐ அனுமதி</string>
     <string name="trakt_code_body">%1$s-க்குச் சென்று இந்தக் குறியீட்டை உள்ளிடவும்:</string>
@@ -590,7 +589,7 @@
     <string name="trakt_waiting">அனுமதிக்காகக் காத்திருக்கிறது…</string>
     <string name="trakt_expired">குறியீடு காலாவதியானது. மீண்டும் முயலவும்.</string>
     <string name="trakt_denied">Trakt-இல் அனுமதி மறுக்கப்பட்டது.</string>
-    <string name="trakt_failed">Trakt, Client ID அல்லது Secret-ஐ ஏற்கவில்லை. சரிபார்த்து மீண்டும் முயலவும்.</string>
+    <string name="trakt_failed">Trakt, Client ID-ஐ ஏற்கவில்லை. சரிபார்த்து மீண்டும் முயலவும்.</string>
     <string name="trakt_unreachable">Trakt-ஐ அணுக முடியவில்லை. இணைப்பைச் சரிபார்த்து மீண்டும் முயலவும்.</string>
     <string name="trakt_signed_in">%1$s ஆக உள்நுழைந்துள்ளீர்கள்</string>
     <string name="trakt_signed_in_plain">உள்நுழைந்துள்ளீர்கள்</string>

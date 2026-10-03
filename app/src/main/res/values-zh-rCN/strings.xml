@@ -549,10 +549,9 @@
     <string name="trakt_detail">在 Trakt 上记录你在 DebForge 播放器中观看的内容，并将在别处看过的内容显示为“✓ 已看”。</string>
     <string name="trakt_connect">连接</string>
     <string name="trakt_setup_title">连接 Trakt</string>
-    <string name="trakt_setup_body">Trakt 需要你自己的应用（免费，约一分钟）。在 Trakt 上新建一个应用，名称随意，重定向 URI 填 %1$s，然后把它的 Client ID 和 Client Secret 粘贴到这里。</string>
+    <string name="trakt_setup_body">Trakt 需要你自己的应用（免费，约一分钟）。在 Trakt 上新建一个应用，名称随意，重定向 URI 填 %1$s，然后把它的 Client ID 粘贴到这里。</string>
     <string name="trakt_open_new_app">在 Trakt 上创建应用</string>
     <string name="trakt_client_id">Client ID</string>
-    <string name="trakt_client_secret">Client Secret</string>
     <string name="trakt_continue">继续</string>
     <string name="trakt_code_title">授权 DebForge</string>
     <string name="trakt_code_body">前往 %1$s 并输入此代码：</string>
@@ -560,7 +559,7 @@
     <string name="trakt_waiting">等待授权…</string>
     <string name="trakt_expired">代码已过期，请重试。</string>
     <string name="trakt_denied">Trakt 上拒绝了授权。</string>
-    <string name="trakt_failed">Trakt 未接受 Client ID 或 Secret，请检查后重试。</string>
+    <string name="trakt_failed">Trakt 未接受 Client ID，请检查后重试。</string>
     <string name="trakt_unreachable">无法连接 Trakt，请检查网络后重试。</string>
     <string name="trakt_signed_in">已登录：%1$s</string>
     <string name="trakt_signed_in_plain">已登录</string>

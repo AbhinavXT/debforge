@@ -579,10 +579,9 @@
     <string name="trakt_detail">DebForge oynatıcısında izlediklerini Trakt\'ta işaretle, başka yerde izlediklerini ✓ İzlendi olarak göster.</string>
     <string name="trakt_connect">Bağlan</string>
     <string name="trakt_setup_title">Trakt\'ı bağla</string>
-    <string name="trakt_setup_body">Trakt için kendi uygulaman gerekiyor (ücretsiz, bir dakika sürer). Trakt\'ta herhangi bir adla ve yönlendirme URI\'si olarak %1$s ile yeni bir uygulama oluştur, sonra Client ID ve Client Secret değerlerini buraya yapıştır.</string>
+    <string name="trakt_setup_body">Trakt için kendi uygulaman gerekiyor (ücretsiz, bir dakika sürer). Trakt\'ta herhangi bir adla ve yönlendirme URI\'si olarak %1$s ile yeni bir uygulama oluştur, sonra Client ID değerini buraya yapıştır.</string>
     <string name="trakt_open_new_app">Uygulamayı Trakt\'ta oluştur</string>
     <string name="trakt_client_id">Client ID</string>
-    <string name="trakt_client_secret">Client Secret</string>
     <string name="trakt_continue">Devam</string>
     <string name="trakt_code_title">DebForge\'a izin ver</string>
     <string name="trakt_code_body">%1$s adresine git ve bu kodu gir:</string>
@@ -590,7 +589,7 @@
     <string name="trakt_waiting">Onay bekleniyor…</string>
     <string name="trakt_expired">Kodun süresi doldu. Tekrar dene.</string>
     <string name="trakt_denied">Trakt\'ta erişim reddedildi.</string>
-    <string name="trakt_failed">Trakt, Client ID veya Secret\'ı kabul etmedi. Kontrol edip tekrar dene.</string>
+    <string name="trakt_failed">Trakt, Client ID\'yi kabul etmedi. Kontrol edip tekrar dene.</string>
     <string name="trakt_unreachable">Trakt\'a ulaşılamadı. Bağlantını kontrol edip tekrar dene.</string>
     <string name="trakt_signed_in">%1$s olarak giriş yapıldı</string>
     <string name="trakt_signed_in_plain">Giriş yapıldı</string>

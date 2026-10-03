@@ -64,7 +64,7 @@ import javax.inject.Inject
 /** Where connecting to Trakt is up to. */
 sealed interface TraktLogin {
     data object Idle : TraktLogin
-    /** Asking for the Client ID and Secret. */
+    /** Asking for the Client ID. */
     data object Setup : TraktLogin
     data object Starting : TraktLogin
     data class Code(val code: DeviceCode) : TraktLogin
@@ -99,12 +99,12 @@ class TraktViewModel @Inject constructor(
         _login.value = TraktLogin.Idle
     }
 
-    fun connect(clientId: String, clientSecret: String) {
+    fun connect(clientId: String) {
         pollJob?.cancel()
         _login.value = TraktLogin.Starting
         pollJob = viewModelScope.launch {
             val code = try {
-                trakt.startLogin(clientId, clientSecret)
+                trakt.startLogin(clientId)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: retrofit2.HttpException) {
@@ -227,18 +227,17 @@ fun TraktSection(viewModel: TraktViewModel = hiltViewModel()) {
     }
 }
 
-/** The user's own Trakt app: how to make one, and its Client ID and Secret. */
+/** The user's own Trakt app: how to make one, and its Client ID. */
 @Composable
 private fun TraktSetupDialog(
     saved: TraktStore.Credentials?,
     starting: Boolean,
-    onConnect: (String, String) -> Unit,
+    onConnect: (String) -> Unit,
     onDismiss: () -> Unit
 ) {
     val uriHandler = LocalUriHandler.current
     var clientId by remember(saved) { mutableStateOf(saved?.clientId.orEmpty()) }
-    var clientSecret by remember(saved) { mutableStateOf(saved?.clientSecret.orEmpty()) }
-    val ok = clientId.isNotBlank() && clientSecret.isNotBlank() && !starting
+    val ok = clientId.isNotBlank() && !starting
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -258,16 +257,10 @@ private fun TraktSetupDialog(
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
-                OutlinedTextField(
-                    value = clientSecret, onValueChange = { clientSecret = it.trim() },
-                    label = { Text(stringResource(R.string.trakt_client_secret)) },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
             }
         },
         confirmButton = {
-            TextButton(onClick = { onConnect(clientId, clientSecret) }, enabled = ok) {
+            TextButton(onClick = { onConnect(clientId) }, enabled = ok) {
                 if (starting) CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
                 else Text(stringResource(R.string.trakt_continue))
             }

@@ -19,14 +19,15 @@ import javax.inject.Singleton
 private val Context.traktDataStore by preferencesDataStore(name = "debforge_trakt")
 
 /**
- * Trakt sign-in and sync state. The app's Client ID / Secret (the user's own
- * Trakt app, like the TMDB key) and the tokens are encrypted with the
+ * Trakt sign-in and sync state. The app's Client ID (the user's own Trakt
+ * app, like the TMDB key) and the tokens are encrypted with the
  * Keystore key ([TokenCipher]); this file is not part of backups.
  */
 @Singleton
 class TraktStore @Inject constructor(private val context: Context) {
 
     private val keyClientId = stringPreferencesKey("client_id")
+    /** Only used to delete it: older versions saved the now-unused secret. */
     private val keyClientSecret = stringPreferencesKey("client_secret")
     private val keyAccess = stringPreferencesKey("access_token")
     private val keyRefresh = stringPreferencesKey("refresh_token")
@@ -38,7 +39,7 @@ class TraktStore @Inject constructor(private val context: Context) {
     private val keyLastActivity = stringPreferencesKey("last_activity")
     private val keyLastSync = longPreferencesKey("last_sync_at")
 
-    data class Credentials(val clientId: String, val clientSecret: String)
+    data class Credentials(val clientId: String)
 
     data class Session(
         val credentials: Credentials,
@@ -50,11 +51,7 @@ class TraktStore @Inject constructor(private val context: Context) {
     private fun Preferences.secret(key: Preferences.Key<String>): String? =
         this[key]?.let(TokenCipher::decrypt)?.takeIf { it.isNotBlank() }
 
-    private fun Preferences.credentials(): Credentials? {
-        val id = secret(keyClientId) ?: return null
-        val secret = secret(keyClientSecret) ?: return null
-        return Credentials(id, secret)
-    }
+    private fun Preferences.credentials(): Credentials? = secret(keyClientId)?.let(::Credentials)
 
     private fun Preferences.session(): Session? {
         val creds = credentials() ?: return null
@@ -89,10 +86,10 @@ class TraktStore @Inject constructor(private val context: Context) {
     suspend fun lastActivity(): String? = context.traktDataStore.data.first()[keyLastActivity]
     suspend fun lastSync(): Long = lastSyncFlow.first()
 
-    suspend fun setCredentials(clientId: String, clientSecret: String) {
+    suspend fun setCredentials(clientId: String) {
         context.traktDataStore.edit {
             it[keyClientId] = TokenCipher.encrypt(clientId.trim())
-            it[keyClientSecret] = TokenCipher.encrypt(clientSecret.trim())
+            it.remove(keyClientSecret)
         }
     }
 
@@ -129,13 +126,13 @@ class TraktStore @Inject constructor(private val context: Context) {
         it[keyWatched] = it[keyWatched].orEmpty() - keys.toSet()
     }
 
-    /** Signs out but keeps the Client ID / Secret, so signing in again is one tap. */
+    /** Signs out but keeps the Client ID, so signing in again is one tap. */
     suspend fun signOut() = context.traktDataStore.edit {
         it.remove(keyAccess); it.remove(keyRefresh); it.remove(keyExpiresAt); it.remove(keyUser)
         it.remove(keyWatched); it.remove(keyLastActivity); it.remove(keyLastSync)
     }
 
-    /** Forgets everything, including the Client ID / Secret. */
+    /** Forgets everything, including the Client ID. */
     suspend fun clearAll() = context.traktDataStore.edit { it.clear() }
 
     private companion object {

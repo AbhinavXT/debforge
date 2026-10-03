@@ -33,3 +33,13 @@
 # Every Moshi DTO (all providers, TMDB, OAuth) — codegen adapters reference
 # fields reflectively by name in some paths; keep them intact.
 -keep @com.squareup.moshi.JsonClass class com.abhinavxt.debforge.** { *; }
+
+# Moshi codegen adapters. Moshi finds each one by reflection (class name +
+# "JsonAdapter"), so nothing references them and R8 strips them unless kept.
+# moshi-kotlin-codegen emits these rules itself, but with AGP 9 built-in Kotlin
+# the KSP-generated META-INF/proguard files never reach R8, and the release APK
+# crashed on launch ("Failed to find the generated JsonAdapter class").
+-keep class com.abhinavxt.debforge.**JsonAdapter {
+    public <init>(com.squareup.moshi.Moshi);
+    public <init>(com.squareup.moshi.Moshi, java.lang.reflect.Type[]);
+}

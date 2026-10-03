@@ -639,10 +639,9 @@
     <string name="trakt_detail">Отмечайте в Trakt то, что смотрите в плеере DebForge, и видьте просмотренное в других местах как ✓ Просмотрено.</string>
     <string name="trakt_connect">Подключить</string>
     <string name="trakt_setup_title">Подключить Trakt</string>
-    <string name="trakt_setup_body">Для Trakt нужно своё приложение (бесплатно, займёт минуту). Создайте на Trakt новое приложение с любым названием и %1$s в качестве Redirect URI, затем вставьте сюда его Client ID и Client Secret.</string>
+    <string name="trakt_setup_body">Для Trakt нужно своё приложение (бесплатно, займёт минуту). Создайте на Trakt новое приложение с любым названием и %1$s в качестве Redirect URI, затем вставьте сюда его Client ID.</string>
     <string name="trakt_open_new_app">Создать приложение на Trakt</string>
     <string name="trakt_client_id">Client ID</string>
-    <string name="trakt_client_secret">Client Secret</string>
     <string name="trakt_continue">Продолжить</string>
     <string name="trakt_code_title">Разрешите доступ DebForge</string>
     <string name="trakt_code_body">Откройте %1$s и введите этот код:</string>
@@ -650,7 +649,7 @@
     <string name="trakt_waiting">Ожидание подтверждения…</string>
     <string name="trakt_expired">Срок действия кода истёк. Попробуйте ещё раз.</string>
     <string name="trakt_denied">В Trakt доступ был отклонён.</string>
-    <string name="trakt_failed">Trakt не принял Client ID или Secret. Проверьте их и попробуйте снова.</string>
+    <string name="trakt_failed">Trakt не принял Client ID. Проверьте его и попробуйте снова.</string>
     <string name="trakt_unreachable">Не удалось связаться с Trakt. Проверьте подключение и попробуйте снова.</string>
     <string name="trakt_signed_in">Вход выполнен: %1$s</string>
     <string name="trakt_signed_in_plain">Вход выполнен</string>

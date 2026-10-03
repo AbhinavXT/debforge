@@ -609,10 +609,9 @@
     <string name="trakt_detail">Marca en Trakt lo que ves en el reproductor de DebForge y muestra como ✓ Visto lo que viste en otro sitio.</string>
     <string name="trakt_connect">Conectar</string>
     <string name="trakt_setup_title">Conectar Trakt</string>
-    <string name="trakt_setup_body">Trakt necesita una app propia (gratis, lleva un minuto). En Trakt, crea una aplicación nueva con cualquier nombre y %1$s como URI de redirección, y pega aquí su Client ID y Client Secret.</string>
+    <string name="trakt_setup_body">Trakt necesita una app propia (gratis, lleva un minuto). En Trakt, crea una aplicación nueva con cualquier nombre y %1$s como URI de redirección, y pega aquí su Client ID.</string>
     <string name="trakt_open_new_app">Crear la app en Trakt</string>
     <string name="trakt_client_id">Client ID</string>
-    <string name="trakt_client_secret">Client Secret</string>
     <string name="trakt_continue">Continuar</string>
     <string name="trakt_code_title">Autoriza DebForge</string>
     <string name="trakt_code_body">Ve a %1$s e introduce este código:</string>
@@ -620,7 +619,7 @@
     <string name="trakt_waiting">Esperando autorización…</string>
     <string name="trakt_expired">El código caducó. Inténtalo de nuevo.</string>
     <string name="trakt_denied">Se denegó el acceso en Trakt.</string>
-    <string name="trakt_failed">Trakt no aceptó el Client ID o el Secret. Revísalos e inténtalo de nuevo.</string>
+    <string name="trakt_failed">Trakt no aceptó el Client ID. Revísalo e inténtalo de nuevo.</string>
     <string name="trakt_unreachable">No se pudo conectar con Trakt. Revisa tu conexión e inténtalo de nuevo.</string>
     <string name="trakt_signed_in">Sesión iniciada como %1$s</string>
     <string name="trakt_signed_in_plain">Sesión iniciada</string>
