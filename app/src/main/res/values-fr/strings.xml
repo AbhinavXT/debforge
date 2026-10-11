@@ -542,6 +542,7 @@
     <string name="page_err_open">Impossible d\'ouvrir %1$s : %2$s</string>
     <plurals name="page_found_n">
         <item quantity="one">%d vidéo trouvée. Cochez celles à télécharger.</item>
+        <item quantity="many">%d vidéos trouvées. Cochez celles à télécharger.</item>
         <item quantity="other">%d vidéos trouvées. Cochez celles à télécharger.</item>
     </plurals>
 
