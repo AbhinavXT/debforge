@@ -1,0 +1,2 @@
+• added find videos on a web page: paste a page link and pick which videos to download
+• fixed skip intro button: taps went to the player gestures instead of the button
