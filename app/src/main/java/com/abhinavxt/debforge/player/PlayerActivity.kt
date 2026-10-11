@@ -715,7 +715,7 @@ class PlayerActivity : ComponentActivity() {
     private fun touchesControl(ev: MotionEvent): Boolean {
         val x = ev.x.toInt()
         val y = ev.y.toInt()
-        if (hit(startOverView, x, y) || hit(nextCard, x, y)) return true
+        if (hit(startOverView, x, y) || hit(skipView, x, y) || hit(nextCard, x, y)) return true
         if (!isTv) return controls.isOnControl(ev.x, ev.y)
         if (!playerView.isControllerFullyVisible) return false
         val content = playerView.findViewById<View>(androidx.media3.ui.R.id.exo_content_frame)
