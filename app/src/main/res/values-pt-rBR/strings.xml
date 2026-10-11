@@ -532,6 +532,19 @@
         <item quantity="other">Baixando %d arquivos</item>
     </plurals>
 
+    <string name="page_find_videos">Procurar vídeos nesta página</string>
+    <string name="page_scanning">Procurando vídeos…</string>
+    <string name="page_download_n">Baixar (%1$d)</string>
+    <string name="page_back">Voltar</string>
+    <string name="page_is_file">Esse link é um arquivo, não uma página. Toque em Adicionar para baixá-lo.</string>
+    <string name="page_none">Nenhum vídeo para baixar encontrado em %1$s. Páginas que carregam o player com JavaScript (YouTube e afins) não podem ser lidas.</string>
+    <string name="page_streams_only">%1$s só transmite seus vídeos (HLS / DASH), que não podem ser baixados como um único arquivo.</string>
+    <string name="page_err_open">Não foi possível abrir %1$s: %2$s</string>
+    <plurals name="page_found_n">
+        <item quantity="one">%d vídeo encontrado. Marque os que quer baixar.</item>
+        <item quantity="other">%d vídeos encontrados. Marque os que quer baixar.</item>
+    </plurals>
+
     <!-- Player gestures -->
     <string name="set_player_gestures">Gestos de toque</string>
     <string name="set_player_gestures_detail">Toque duas vezes nas laterais para pular, deslize para brilho, volume ou avançar, segure para reproduzir rápido, pince para dar zoom.</string>

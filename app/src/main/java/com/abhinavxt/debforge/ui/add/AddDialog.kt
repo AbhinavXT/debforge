@@ -1,6 +1,7 @@
 package com.abhinavxt.debforge.ui.add
 
 import com.abhinavxt.debforge.domain.ProviderId
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import com.abhinavxt.debforge.R
 import android.content.Intent
@@ -30,6 +31,10 @@ import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Description
 import androidx.compose.material.icons.rounded.HourglassEmpty
+import androidx.compose.material.icons.rounded.VideoLibrary
+import androidx.compose.foundation.clickable
+import com.abhinavxt.debforge.domain.DownloadItem
+import com.abhinavxt.debforge.ui.browse.formatSize
 import androidx.compose.material.icons.rounded.UploadFile
 import androidx.compose.material3.Button
 import androidx.compose.material3.LocalContentColor
@@ -73,9 +78,14 @@ fun AddDialog(viewModel: AddViewModel) {
         onDismissRequest = viewModel::dismiss,
         icon = { Icon(Icons.Rounded.AddLink, contentDescription = null) },
         title = {
-            Text(if (state.isDirect) stringResource(R.string.direct_title) else stringResource(R.string.add_title, state.providerName))
+            Text(if (state.isDirect || state.pageVideos != null) stringResource(R.string.direct_title) else stringResource(R.string.add_title, state.providerName))
         },
         text = {
+            val videos = state.pageVideos
+            if (videos != null) {
+                PageVideoList(state, videos, onToggle = viewModel::togglePageVideo)
+                return@AlertDialog
+            }
             Column(
                 modifier = Modifier.verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -89,6 +99,23 @@ fun AddDialog(viewModel: AddViewModel) {
                         shape = MaterialTheme.shapes.medium,
                         enabled = !state.submitting
                     )
+                }
+
+                // A web page rather than a file: list the videos on it to pick from.
+                if (state.canScanPage) {
+                    OutlinedButton(
+                        onClick = viewModel::findPageVideos,
+                        enabled = !state.submitting && !state.scanning,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        if (state.scanning) {
+                            CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
+                        } else {
+                            Icon(Icons.Rounded.VideoLibrary, contentDescription = null, modifier = Modifier.size(18.dp))
+                        }
+                        Spacer(Modifier.width(8.dp))
+                        Text(stringResource(if (state.scanning) R.string.page_scanning else R.string.page_find_videos))
+                    }
                 }
 
                 if (state.acceptsTorrentFile) {
@@ -182,13 +209,19 @@ fun AddDialog(viewModel: AddViewModel) {
             Button(onClick = viewModel::submit, enabled = state.canSubmit) {
                 if (state.submitting) {
                     CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp, color = LocalContentColor.current)
+                } else if (state.pageVideos != null) {
+                    Text(stringResource(R.string.page_download_n, state.pickedVideos.size))
                 } else {
                     Text(stringResource(R.string.action_add))
                 }
             }
         },
         dismissButton = {
-            TextButton(onClick = viewModel::dismiss, enabled = !state.submitting) { Text(stringResource(R.string.action_cancel)) }
+            if (state.pageVideos != null) {
+                TextButton(onClick = viewModel::closePageVideos, enabled = !state.submitting) { Text(stringResource(R.string.page_back)) }
+            } else {
+                TextButton(onClick = viewModel::dismiss, enabled = !state.submitting) { Text(stringResource(R.string.action_cancel)) }
+            }
         }
     )
 }
@@ -281,5 +314,49 @@ private fun CacheLine(cache: CacheSummary, service: String) {
             style = MaterialTheme.typography.bodyMedium,
             color = if (hit) cs.onPrimaryContainer else cs.onSurfaceVariant
         )
+    }
+}
+
+/** The videos found on the pasted page, largest first, each with a tick box. */
+@Composable
+private fun PageVideoList(state: AddUiState, videos: List<DownloadItem>, onToggle: (String) -> Unit) {
+    Column(
+        modifier = Modifier.verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        state.pageTitle?.let {
+            Text(it, style = MaterialTheme.typography.titleSmall, maxLines = 2, overflow = TextOverflow.Ellipsis)
+        }
+        Text(
+            pluralStringResource(R.plurals.page_found_n, videos.size, videos.size),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        videos.forEach { v ->
+            val checked = v.id in state.pickedVideos
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .clip(MaterialTheme.shapes.medium)
+                    .clickable(enabled = !state.submitting) { onToggle(v.id) }
+                    .padding(vertical = 2.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Checkbox(checked = checked, onCheckedChange = { onToggle(v.id) }, enabled = !state.submitting)
+                Column(Modifier.weight(1f)) {
+                    Text(v.filename, style = MaterialTheme.typography.bodyMedium, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                    Text(
+                        if (v.filesize > 0) "${formatSize(v.filesize)} · ${v.host}" else v.host,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+            }
+        }
+        state.error?.let {
+            Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+        }
     }
 }

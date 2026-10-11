@@ -15,9 +15,15 @@ import com.abhinavxt.debforge.domain.DirectLinkParser
 import com.abhinavxt.debforge.domain.DirectLinkParser.Target
 import com.abhinavxt.debforge.domain.DownloadItem
 import com.abhinavxt.debforge.domain.Page
+import com.abhinavxt.debforge.domain.PageVideos
 import com.abhinavxt.debforge.domain.ProviderId
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -171,6 +177,52 @@ class DirectLinks @Inject constructor(
         )
     }
 
+    // --- videos on a web page ---------------------------------------------------
+
+    /** What [scanPage] found: the page's videos, ready to queue, and how many were streams only. */
+    class PageScan(val title: String?, val videos: List<DownloadItem>, val streams: Int)
+
+    /**
+     * The videos [url]'s page links to (see [PageVideos]), each checked for
+     * its name and size; largest first. Null when [url] isn't a web page
+     * (it's a file: add it as usual).
+     */
+    suspend fun scanPage(url: String): PageScan? = withContext(Dispatchers.IO) {
+        val req = Request.Builder().url(url).get().build()
+        val (pageUrl, html) = client.newCall(req).execute().use { resp ->
+            if (!resp.isSuccessful) {
+                throw ProviderException(context.getString(R.string.direct_err_http, DirectLinkParser.hostOf(url), resp.code))
+            }
+            if (!DirectLinkParser.isWebPage(resp.header("Content-Type"))) return@withContext null
+            // After redirects: relative links resolve against where we ended up.
+            resp.request.url.toString() to resp.peekBody(MAX_SCAN_BYTES).string()
+        }
+        val found = PageVideos.find(html, pageUrl)
+        val gate = Semaphore(PROBE_PARALLEL)
+        val videos = coroutineScope {
+            found.videos.take(MAX_CANDIDATES).map { video ->
+                async {
+                    gate.withPermit {
+                        // A dead or forbidden link is just left out.
+                        val p = runCatching { probe(video) }.getOrNull() ?: return@withPermit null
+                        if (p.webPage || !PageVideos.isVideo(p.name, p.contentType)) return@withPermit null
+                        val tag = DirectLinkParser.itemId(video).removePrefix("direct:").take(8)
+                        item(
+                            sourceRef = video,
+                            url = video,
+                            name = p.name ?: DirectLinkParser.fallbackName(p.contentType, tag),
+                            size = p.size,
+                            host = DirectLinkParser.hostOf(video),
+                            parentRef = "page:$pageUrl",
+                            parentName = found.title
+                        )
+                    }
+                }
+            }.awaitAll().filterNotNull()
+        }
+        PageScan(found.title, videos.distinctBy { it.id }.sortedByDescending { it.filesize }, found.streams)
+    }
+
     // --- HTTP -------------------------------------------------------------------
 
     private class Probe(
@@ -246,5 +298,9 @@ class DirectLinks @Inject constructor(
         /** Parallel connections per file: modest, these hosts throttle harder than debrid CDNs. */
         const val CONNECTIONS = 4
         const val MAX_PAGE_BYTES = 512L * 1024
+        /** Pages with big inline scripts keep their player config near the end. */
+        const val MAX_SCAN_BYTES = 4L * 1024 * 1024
+        const val MAX_CANDIDATES = 40
+        const val PROBE_PARALLEL = 6
     }
 }

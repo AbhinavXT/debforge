@@ -507,6 +507,19 @@
         <item quantity="other">%d ఫైల్‌లు డౌన్‌లోడ్ అవుతున్నాయి</item>
     </plurals>
 
+    <string name="page_find_videos">ఈ పేజీలో వీడియోలను కనుగొనండి</string>
+    <string name="page_scanning">వీడియోల కోసం వెతుకుతోంది…</string>
+    <string name="page_download_n">డౌన్‌లోడ్ (%1$d)</string>
+    <string name="page_back">వెనుకకు</string>
+    <string name="page_is_file">ఈ లింక్ పేజీ కాదు, ఫైల్. డౌన్‌లోడ్ చేయడానికి జోడించు నొక్కండి.</string>
+    <string name="page_none">%1$sలో డౌన్‌లోడ్ చేయగల వీడియోలు కనబడలేదు. ప్లేయర్‌ను JavaScriptతో లోడ్ చేసే పేజీలను (YouTube వంటివి) చదవలేము.</string>
+    <string name="page_streams_only">%1$s వీడియోలను స్ట్రీమ్ మాత్రమే చేస్తుంది (HLS / DASH), వాటిని ఒకే ఫైల్‌గా డౌన్‌లోడ్ చేయలేము.</string>
+    <string name="page_err_open">%1$sను తెరవలేకపోయాము: %2$s</string>
+    <plurals name="page_found_n">
+        <item quantity="one">%d వీడియో కనబడింది. డౌన్‌లోడ్ చేయాల్సినవి ఎంచుకోండి.</item>
+        <item quantity="other">%d వీడియోలు కనబడ్డాయి. డౌన్‌లోడ్ చేయాల్సినవి ఎంచుకోండి.</item>
+    </plurals>
+
     <!-- Player gestures -->
     <string name="set_player_gestures">టచ్ సంజ్ఞలు</string>
     <string name="set_player_gestures_detail">అంచులపై రెండుసార్లు తట్టి ముందుకు-వెనక్కు వెళ్లండి, స్వైప్‌తో ప్రకాశం, వాల్యూమ్ లేదా వీడియో జరపండి, నొక్కి పట్టుకుంటే వేగంగా ప్లే అవుతుంది, పించ్‌తో జూమ్ చేయండి.</string>

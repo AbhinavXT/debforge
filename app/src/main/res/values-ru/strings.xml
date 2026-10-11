@@ -557,6 +557,21 @@
         <item quantity="other">Скачивается %d файла</item>
     </plurals>
 
+    <string name="page_find_videos">Найти видео на этой странице</string>
+    <string name="page_scanning">Ищем видео…</string>
+    <string name="page_download_n">Скачать (%1$d)</string>
+    <string name="page_back">Назад</string>
+    <string name="page_is_file">Эта ссылка ведёт на файл, а не на страницу. Нажмите «Добавить», чтобы скачать его.</string>
+    <string name="page_none">На %1$s не найдено видео для скачивания. Страницы, которые загружают плеер через JavaScript (YouTube и подобные), прочитать нельзя.</string>
+    <string name="page_streams_only">%1$s только транслирует видео (HLS / DASH), их нельзя скачать одним файлом.</string>
+    <string name="page_err_open">Не удалось открыть %1$s: %2$s</string>
+    <plurals name="page_found_n">
+        <item quantity="one">Найдено %d видео. Отметьте, какие скачать.</item>
+        <item quantity="few">Найдено %d видео. Отметьте, какие скачать.</item>
+        <item quantity="many">Найдено %d видео. Отметьте, какие скачать.</item>
+        <item quantity="other">Найдено %d видео. Отметьте, какие скачать.</item>
+    </plurals>
+
     <!-- Player gestures -->
     <string name="set_player_gestures">Жесты</string>
     <string name="set_player_gestures_detail">Двойное касание по краям — перемотка, свайп — яркость, громкость или перемотка, удержание — быстрое воспроизведение, щипок — масштаб.</string>

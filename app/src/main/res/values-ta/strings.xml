@@ -507,6 +507,19 @@
         <item quantity="other">%d கோப்புகள் பதிவிறங்குகின்றன</item>
     </plurals>
 
+    <string name="page_find_videos">இந்தப் பக்கத்தில் வீடியோக்களைத் தேடு</string>
+    <string name="page_scanning">வீடியோக்களைத் தேடுகிறது…</string>
+    <string name="page_download_n">பதிவிறக்கு (%1$d)</string>
+    <string name="page_back">பின்செல்</string>
+    <string name="page_is_file">இந்த இணைப்பு பக்கம் அல்ல, ஒரு கோப்பு. பதிவிறக்க சேர் என்பதைத் தட்டவும்.</string>
+    <string name="page_none">%1$s இல் பதிவிறக்கக்கூடிய வீடியோக்கள் இல்லை. JavaScript மூலம் பிளேயரை ஏற்றும் பக்கங்களை (YouTube போன்றவை) படிக்க முடியாது.</string>
+    <string name="page_streams_only">%1$s தன் வீடியோக்களை ஸ்ட்ரீம் மட்டுமே செய்கிறது (HLS / DASH), அவற்றை ஒரே கோப்பாகப் பதிவிறக்க முடியாது.</string>
+    <string name="page_err_open">%1$s ஐத் திறக்க முடியவில்லை: %2$s</string>
+    <plurals name="page_found_n">
+        <item quantity="one">%d வீடியோ கிடைத்தது. பதிவிறக்க வேண்டியவற்றைத் தேர்ந்தெடுக்கவும்.</item>
+        <item quantity="other">%d வீடியோக்கள் கிடைத்தன. பதிவிறக்க வேண்டியவற்றைத் தேர்ந்தெடுக்கவும்.</item>
+    </plurals>
+
     <!-- Player gestures -->
     <string name="set_player_gestures">தொடு சைகைகள்</string>
     <string name="set_player_gestures_detail">ஓரங்களில் இருமுறை தட்டித் தாவலாம், தேய்த்து ஒளிர்வு, ஒலி அல்லது முன்-பின் நகர்த்தலாம், அழுத்திப் பிடித்தால் வேகமாக ஓடும், கிள்ளி பெரிதாக்கலாம்.</string>

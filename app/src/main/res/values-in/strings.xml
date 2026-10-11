@@ -482,6 +482,18 @@
         <item quantity="other">Mengunduh %d file</item>
     </plurals>
 
+    <string name="page_find_videos">Cari video di halaman ini</string>
+    <string name="page_scanning">Mencari video…</string>
+    <string name="page_download_n">Unduh (%1$d)</string>
+    <string name="page_back">Kembali</string>
+    <string name="page_is_file">Tautan itu adalah file, bukan halaman. Ketuk Tambah untuk mengunduhnya.</string>
+    <string name="page_none">Tidak ada video yang bisa diunduh di %1$s. Halaman yang memuat pemutarnya dengan JavaScript (YouTube dan sejenisnya) tidak bisa dibaca.</string>
+    <string name="page_streams_only">%1$s hanya men-stream videonya (HLS / DASH), yang tidak bisa diunduh sebagai satu file.</string>
+    <string name="page_err_open">Tidak bisa membuka %1$s: %2$s</string>
+    <plurals name="page_found_n">
+        <item quantity="other">%d video ditemukan. Centang yang ingin diunduh.</item>
+    </plurals>
+
     <!-- Player gestures -->
     <string name="set_player_gestures">Gestur sentuh</string>
     <string name="set_player_gestures_detail">Ketuk dua kali di sisi untuk melompat, geser untuk kecerahan, volume, atau memajukan, tahan untuk putar cepat, cubit untuk zoom.</string>

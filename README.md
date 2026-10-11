@@ -25,6 +25,10 @@ Premiumize and Debrid-Link.
   Library loads and every couple of hours in the background.
 - **Add from anywhere.** Tap a magnet link, share a URL, or open a `.torrent`
   file. DebForge sends it to your service and, if you want, downloads it when it's ready.
+- **Videos on a web page.** Paste a page's link and tap *Find videos on this page*:
+  DebForge lists the video files the page links to (name and size, largest first)
+  and downloads the ones you tick. Pages that build their player with JavaScript
+  (YouTube and the like) and HLS/DASH-only streams aren't supported.
 - **Widget, tile and shortcuts.** A home-screen widget shows what's downloading
   with Pause all / Resume all and Add; a Quick Settings tile pauses everything in
   one tap; long-press the app icon for Add and Resume all.

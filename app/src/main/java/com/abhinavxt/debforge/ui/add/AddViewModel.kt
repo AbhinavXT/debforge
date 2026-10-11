@@ -11,6 +11,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.abhinavxt.debforge.data.repository.AuthRepository
 import com.abhinavxt.debforge.data.repository.DownloadsRepository
+import com.abhinavxt.debforge.data.provider.ProviderException
+import com.abhinavxt.debforge.data.provider.direct.DirectLinks
+import com.abhinavxt.debforge.domain.DownloadItem
 import com.abhinavxt.debforge.domain.AddInputParser
 import com.abhinavxt.debforge.domain.AddKind
 import com.abhinavxt.debforge.domain.AddRequest
@@ -79,11 +82,32 @@ data class AddUiState(
     /** Current download folder is writable (permission / app storage). */
     val canWriteStorage: Boolean = true,
     /** Cache status of the pasted magnets / picked file; null = nothing to check or unsupported. */
-    val cache: CacheSummary? = null
+    val cache: CacheSummary? = null,
+    /** Looking for videos on the pasted page. */
+    val scanning: Boolean = false,
+    /** Videos found on the pasted page, to pick from; null = not showing the list. */
+    val pageVideos: List<DownloadItem>? = null,
+    val pageTitle: String? = null,
+    /** Ids of the [pageVideos] ticked for download. */
+    val pickedVideos: Set<String> = emptySet()
 ) {
     val acceptsText: Boolean get() = AddKind.MAGNET in capabilities || AddKind.LINK in capabilities
     val acceptsTorrentFile: Boolean get() = AddKind.TORRENT_FILE in capabilities
-    val canSubmit: Boolean get() = !submitting && (text.isNotBlank() || torrentUri != null)
+    val canSubmit: Boolean
+        get() = !submitting && !scanning &&
+            if (pageVideos != null) pickedVideos.isNotEmpty() else text.isNotBlank() || torrentUri != null
+
+    /**
+     * One web link that isn't a file (and nothing else): offer to look for
+     * videos on that page.
+     */
+    val canScanPage: Boolean
+        get() {
+            if (torrentUri != null || pageVideos != null) return false
+            val requests = AddInputParser.parse(text).requests
+            val link = requests.singleOrNull() as? AddRequest.Link ?: return false
+            return !DirectLinkParser.prefersDirect(link.url)
+        }
 
     val textHintRes: Int
         get() = when {
@@ -107,7 +131,8 @@ class AddViewModel @Inject constructor(
     private val events: ProviderEvents,
     private val controller: DownloadController,
     private val watcher: ReadyWatcher,
-    private val settings: SettingsStore
+    private val settings: SettingsStore,
+    private val directLinks: DirectLinks
 ) : ViewModel() {
 
     /** Download folder chosen with the system folder picker from the dialog. */
@@ -319,6 +344,7 @@ class AddViewModel @Inject constructor(
     fun dismiss() {
         if (_state.value.submitting) return
         cacheJob?.cancel()
+        scanJob?.cancel()
         torrentHash = null
         resetForm()
     }
@@ -332,7 +358,7 @@ class AddViewModel @Inject constructor(
     }
 
     fun onTextChange(value: String) {
-        _state.update { it.copy(text = value, error = null) }
+        _state.update { it.copy(text = value, error = null, pageVideos = null, pickedVideos = emptySet()) }
         scheduleCacheCheck()
     }
 
@@ -357,8 +383,82 @@ class AddViewModel @Inject constructor(
         scheduleCacheCheck()
     }
 
+    // --- videos on a web page ----------------------------------------------------
+
+    private var scanJob: kotlinx.coroutines.Job? = null
+
+    /** Opens the pasted page and lists the videos it links to (see [DirectLinks.scanPage]). */
+    fun findPageVideos() {
+        val s = _state.value
+        if (!s.canScanPage || s.scanning || s.submitting) return
+        val url = (AddInputParser.parse(s.text).requests.single() as AddRequest.Link).url
+        val host = DirectLinkParser.hostOf(url)
+        _state.update { it.copy(scanning = true, error = null) }
+        scanJob = viewModelScope.launch {
+            val scan = try {
+                directLinks.scanPage(url)
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
+            } catch (e: ProviderException) {
+                _state.update { it.copy(scanning = false, error = e.message) }
+                return@launch
+            } catch (e: Exception) {
+                _state.update { it.copy(scanning = false, error = context.getString(R.string.page_err_open, host, e.message ?: e.javaClass.simpleName)) }
+                return@launch
+            }
+            // Text changed while looking: the result is for another link.
+            if (_state.value.text != s.text) {
+                _state.update { it.copy(scanning = false) }
+                return@launch
+            }
+            val error = when {
+                scan == null -> context.getString(R.string.page_is_file)
+                scan.videos.isNotEmpty() -> null
+                scan.streams > 0 -> context.getString(R.string.page_streams_only, host)
+                else -> context.getString(R.string.page_none, host)
+            }
+            _state.update {
+                it.copy(
+                    scanning = false,
+                    error = error,
+                    pageVideos = scan?.videos?.takeIf { v -> v.isNotEmpty() },
+                    pageTitle = scan?.title,
+                    // Only one: nothing to choose.
+                    pickedVideos = scan?.videos?.singleOrNull()?.let { v -> setOf(v.id) } ?: emptySet()
+                )
+            }
+        }
+    }
+
+    fun togglePageVideo(id: String) = _state.update {
+        it.copy(pickedVideos = if (id in it.pickedVideos) it.pickedVideos - id else it.pickedVideos + id)
+    }
+
+    /** Back from the list to the link. */
+    fun closePageVideos() = _state.update { it.copy(pageVideos = null, pickedVideos = emptySet(), error = null) }
+
+    /** Queues the ticked videos as direct downloads. */
+    private fun downloadPickedVideos(s: AddUiState) {
+        val picked = s.pageVideos.orEmpty().filter { it.id in s.pickedVideos }
+        if (picked.isEmpty()) return
+        _state.update { it.copy(submitting = true, error = null) }
+        viewModelScope.launch {
+            if (!StorageAccess.canWrite(context, settings.downloadDirFlow.first())) {
+                _state.update { it.copy(submitting = false, error = context.getString(R.string.add_needs_storage)) }
+                return@launch
+            }
+            picked.forEach { controller.enqueue(it) }
+            events.notifyListChanged(context.resources.getQuantityString(R.plurals.direct_added, picked.size, picked.size))
+            resetForm()
+        }
+    }
+
     fun submit() {
         val s = _state.value
+        if (s.pageVideos != null) {
+            if (s.canSubmit) downloadPickedVideos(s)
+            return
+        }
         val p = target ?: provider ?: return
         val active = provider
         if (!s.canSubmit) return

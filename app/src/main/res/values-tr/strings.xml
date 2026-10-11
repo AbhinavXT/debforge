@@ -507,6 +507,19 @@
         <item quantity="other">%d dosya indiriliyor</item>
     </plurals>
 
+    <string name="page_find_videos">Bu sayfadaki videoları bul</string>
+    <string name="page_scanning">Videolar aranıyor…</string>
+    <string name="page_download_n">İndir (%1$d)</string>
+    <string name="page_back">Geri</string>
+    <string name="page_is_file">Bu bağlantı bir sayfa değil, dosya. İndirmek için Ekle\'ye dokun.</string>
+    <string name="page_none">%1$s üzerinde indirilebilir video bulunamadı. Oynatıcısını JavaScript ile yükleyen sayfalar (YouTube vb.) okunamaz.</string>
+    <string name="page_streams_only">%1$s videolarını yalnızca yayınlıyor (HLS / DASH), bunlar tek dosya olarak indirilemez.</string>
+    <string name="page_err_open">%1$s açılamadı: %2$s</string>
+    <plurals name="page_found_n">
+        <item quantity="one">%d video bulundu. İndirmek istediklerini işaretle.</item>
+        <item quantity="other">%d video bulundu. İndirmek istediklerini işaretle.</item>
+    </plurals>
+
     <!-- Player gestures -->
     <string name="set_player_gestures">Dokunma hareketleri</string>
     <string name="set_player_gestures_detail">Atlamak için kenarlara çift dokunun, parlaklık, ses veya sarma için kaydırın, hızlı oynatma için basılı tutun, yakınlaştırmak için sıkıştırın.</string>

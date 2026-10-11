@@ -482,6 +482,18 @@
         <item quantity="other">正在下载 %d 个文件</item>
     </plurals>
 
+    <string name="page_find_videos">查找此页面上的视频</string>
+    <string name="page_scanning">正在查找视频…</string>
+    <string name="page_download_n">下载（%1$d）</string>
+    <string name="page_back">返回</string>
+    <string name="page_is_file">该链接是文件而不是页面。点按“添加”即可下载。</string>
+    <string name="page_none">在 %1$s 上未找到可下载的视频。使用 JavaScript 加载播放器的页面（如 YouTube）无法读取。</string>
+    <string name="page_streams_only">%1$s 仅以流媒体方式提供视频（HLS / DASH），无法作为单个文件下载。</string>
+    <string name="page_err_open">无法打开 %1$s：%2$s</string>
+    <plurals name="page_found_n">
+        <item quantity="other">找到 %d 个视频。勾选要下载的视频。</item>
+    </plurals>
+
     <!-- Player gestures -->
     <string name="set_player_gestures">触摸手势</string>
     <string name="set_player_gestures_detail">双击两侧快进/快退，滑动调节亮度、音量或拖动进度，长按倍速播放，双指缩放画面。</string>

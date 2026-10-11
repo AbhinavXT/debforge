@@ -507,6 +507,19 @@
         <item quantity="other">%d Dateien werden geladen</item>
     </plurals>
 
+    <string name="page_find_videos">Videos auf dieser Seite suchen</string>
+    <string name="page_scanning">Suche nach Videos…</string>
+    <string name="page_download_n">Herunterladen (%1$d)</string>
+    <string name="page_back">Zurück</string>
+    <string name="page_is_file">Dieser Link ist eine Datei, keine Seite. Tippe auf Hinzufügen, um sie herunterzuladen.</string>
+    <string name="page_none">Keine herunterladbaren Videos auf %1$s gefunden. Seiten, die ihren Player mit JavaScript laden (z. B. YouTube), können nicht gelesen werden.</string>
+    <string name="page_streams_only">%1$s streamt seine Videos nur (HLS / DASH), sie lassen sich nicht als eine Datei herunterladen.</string>
+    <string name="page_err_open">%1$s konnte nicht geöffnet werden: %2$s</string>
+    <plurals name="page_found_n">
+        <item quantity="one">%d Video gefunden. Wähle die aus, die du herunterladen willst.</item>
+        <item quantity="other">%d Videos gefunden. Wähle die aus, die du herunterladen willst.</item>
+    </plurals>
+
     <!-- Player gestures -->
     <string name="set_player_gestures">Touch-Gesten</string>
     <string name="set_player_gestures_detail">Seiten doppelt tippen zum Springen, wischen für Helligkeit, Lautstärke oder zum Spulen, halten für schnelle Wiedergabe, zusammenziehen zum Zoomen.</string>

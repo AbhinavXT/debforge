@@ -532,6 +532,19 @@
         <item quantity="other">Descargando %d archivos</item>
     </plurals>
 
+    <string name="page_find_videos">Buscar vídeos en esta página</string>
+    <string name="page_scanning">Buscando vídeos…</string>
+    <string name="page_download_n">Descargar (%1$d)</string>
+    <string name="page_back">Atrás</string>
+    <string name="page_is_file">Ese enlace es un archivo, no una página. Toca Añadir para descargarlo.</string>
+    <string name="page_none">No se encontraron vídeos descargables en %1$s. Las páginas que cargan su reproductor con JavaScript (YouTube y similares) no se pueden leer.</string>
+    <string name="page_streams_only">%1$s solo transmite sus vídeos (HLS / DASH), que no se pueden descargar como un solo archivo.</string>
+    <string name="page_err_open">No se pudo abrir %1$s: %2$s</string>
+    <plurals name="page_found_n">
+        <item quantity="one">%d vídeo encontrado. Marca los que quieras descargar.</item>
+        <item quantity="other">%d vídeos encontrados. Marca los que quieras descargar.</item>
+    </plurals>
+
     <!-- Player gestures -->
     <string name="set_player_gestures">Gestos táctiles</string>
     <string name="set_player_gestures_detail">Toca dos veces los lados para saltar, desliza para brillo, volumen o avanzar, mantén pulsado para reproducir rápido, pellizca para hacer zoom.</string>

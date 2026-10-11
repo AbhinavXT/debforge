@@ -507,6 +507,19 @@
         <item quantity="other">%d फ़ाइलें डाउनलोड हो रही हैं</item>
     </plurals>
 
+    <string name="page_find_videos">इस पेज पर वीडियो खोजें</string>
+    <string name="page_scanning">वीडियो खोजे जा रहे हैं…</string>
+    <string name="page_download_n">डाउनलोड करें (%1$d)</string>
+    <string name="page_back">वापस</string>
+    <string name="page_is_file">यह लिंक एक फ़ाइल है, पेज नहीं। इसे डाउनलोड करने के लिए जोड़ें पर टैप करें।</string>
+    <string name="page_none">%1$s पर डाउनलोड करने लायक कोई वीडियो नहीं मिला। जो पेज अपना प्लेयर JavaScript से लोड करते हैं (जैसे YouTube), उन्हें पढ़ा नहीं जा सकता।</string>
+    <string name="page_streams_only">%1$s अपने वीडियो सिर्फ़ स्ट्रीम करता है (HLS / DASH), जिन्हें एक फ़ाइल के रूप में डाउनलोड नहीं किया जा सकता।</string>
+    <string name="page_err_open">%1$s नहीं खुल सका: %2$s</string>
+    <plurals name="page_found_n">
+        <item quantity="one">%d वीडियो मिला। जिन्हें डाउनलोड करना है उन्हें चुनें।</item>
+        <item quantity="other">%d वीडियो मिले। जिन्हें डाउनलोड करना है उन्हें चुनें।</item>
+    </plurals>
+
     <!-- Player gestures -->
     <string name="set_player_gestures">टच जेस्चर</string>
     <string name="set_player_gestures_detail">किनारों पर दो बार टैप करके आगे-पीछे करें, स्वाइप करके चमक, आवाज़ या वीडियो आगे-पीछे करें, दबाकर रखें तो तेज़ चलेगा, पिंच करके ज़ूम करें।</string>

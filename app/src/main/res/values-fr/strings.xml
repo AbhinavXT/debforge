@@ -532,6 +532,19 @@
         <item quantity="other">Téléchargement de %d fichiers</item>
     </plurals>
 
+    <string name="page_find_videos">Chercher les vidéos de cette page</string>
+    <string name="page_scanning">Recherche de vidéos…</string>
+    <string name="page_download_n">Télécharger (%1$d)</string>
+    <string name="page_back">Retour</string>
+    <string name="page_is_file">Ce lien est un fichier, pas une page. Touchez Ajouter pour le télécharger.</string>
+    <string name="page_none">Aucune vidéo téléchargeable trouvée sur %1$s. Les pages qui chargent leur lecteur en JavaScript (YouTube, etc.) ne peuvent pas être lues.</string>
+    <string name="page_streams_only">%1$s ne fait que diffuser ses vidéos (HLS / DASH), qui ne peuvent pas être téléchargées en un seul fichier.</string>
+    <string name="page_err_open">Impossible d\'ouvrir %1$s : %2$s</string>
+    <plurals name="page_found_n">
+        <item quantity="one">%d vidéo trouvée. Cochez celles à télécharger.</item>
+        <item quantity="other">%d vidéos trouvées. Cochez celles à télécharger.</item>
+    </plurals>
+
     <!-- Player gestures -->
     <string name="set_player_gestures">Gestes tactiles</string>
     <string name="set_player_gestures_detail">Touchez deux fois les côtés pour sauter, glissez pour la luminosité, le volume ou avancer, maintenez pour accélérer, pincez pour zoomer.</string>

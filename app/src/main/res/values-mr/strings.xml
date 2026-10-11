@@ -507,6 +507,19 @@
         <item quantity="other">%d फाइल डाउनलोड होत आहेत</item>
     </plurals>
 
+    <string name="page_find_videos">या पेजवरील व्हिडिओ शोधा</string>
+    <string name="page_scanning">व्हिडिओ शोधत आहे…</string>
+    <string name="page_download_n">डाउनलोड करा (%1$d)</string>
+    <string name="page_back">मागे</string>
+    <string name="page_is_file">ही लिंक पेज नसून फाइल आहे. डाउनलोड करण्यासाठी जोडा वर टॅप करा.</string>
+    <string name="page_none">%1$s वर डाउनलोड करता येणारे व्हिडिओ सापडले नाहीत. जी पेजेस त्यांचा प्लेयर JavaScript ने लोड करतात (उदा. YouTube) ती वाचता येत नाहीत.</string>
+    <string name="page_streams_only">%1$s आपले व्हिडिओ फक्त स्ट्रीम करते (HLS / DASH), ते एका फाइलप्रमाणे डाउनलोड करता येत नाहीत.</string>
+    <string name="page_err_open">%1$s उघडता आले नाही: %2$s</string>
+    <plurals name="page_found_n">
+        <item quantity="one">%d व्हिडिओ सापडला. डाउनलोड करायचे ते निवडा.</item>
+        <item quantity="other">%d व्हिडिओ सापडले. डाउनलोड करायचे ते निवडा.</item>
+    </plurals>
+
     <!-- Player gestures -->
     <string name="set_player_gestures">टच जेश्चर</string>
     <string name="set_player_gestures_detail">बाजूंवर दोनदा टॅप करून पुढे-मागे जा, स्वाइप करून ब्राइटनेस, आवाज किंवा व्हिडिओ पुढे-मागे करा, दाबून ठेवल्यास वेगाने चालेल, पिंच करून झूम करा.</string>

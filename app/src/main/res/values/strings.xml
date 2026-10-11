@@ -508,6 +508,20 @@
         <item quantity="other">Downloading %d files</item>
     </plurals>
 
+    <!-- Videos on a web page -->
+    <string name="page_find_videos">Find videos on this page</string>
+    <string name="page_scanning">Looking for videos…</string>
+    <string name="page_download_n">Download (%1$d)</string>
+    <string name="page_back">Back</string>
+    <string name="page_is_file">That link is a file, not a page. Tap Add to download it.</string>
+    <string name="page_none">No downloadable videos found on %1$s. Pages that load their player with JavaScript (YouTube and the like) can\'t be read.</string>
+    <string name="page_streams_only">%1$s only streams its videos (HLS / DASH), which can\'t be downloaded as one file.</string>
+    <string name="page_err_open">Couldn\'t open %1$s: %2$s</string>
+    <plurals name="page_found_n">
+        <item quantity="one">%d video found. Tick the ones to download.</item>
+        <item quantity="other">%d videos found. Tick the ones to download.</item>
+    </plurals>
+
     <!-- Player gestures -->
     <string name="set_player_gestures">Touch gestures</string>
     <string name="set_player_gestures_detail">Double-tap the sides to skip, swipe for brightness and volume or to scrub, hold for fast playback, pinch to zoom.</string>
