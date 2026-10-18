@@ -59,19 +59,21 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import java.io.ByteArrayInputStream
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.abhinavxt.debforge.R
+import com.abhinavxt.debforge.domain.AdHosts
 import com.abhinavxt.debforge.domain.DirectLinkParser
 import com.abhinavxt.debforge.ui.browse.formatSize
 
 /**
  * A plain browser whose downloads land in DebForge's queue. Magnet links
  * open the Add dialog ([onMagnet]); other app links (intent:, market:) are
- * ignored.
+ * ignored. Ad networks ([AdHosts]) are blocked.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("SetJavaScriptEnabled")
@@ -164,10 +166,13 @@ fun BrowserScreen(onMagnet: (String) -> Unit, viewModel: BrowserViewModel = hilt
                                         onMagnet(url)
                                         return true
                                     }
-                                    return request.url.scheme !in setOf("http", "https")
+                                    // Pop-under redirects to ad networks go nowhere.
+                                    return request.url.scheme !in setOf("http", "https") || AdHosts.blocks(request.url.host)
                                 }
 
                                 override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
+                                    // An empty answer: the ad (and its video) never loads.
+                                    if (AdHosts.blocks(request.url.host)) return WebResourceResponse("text/plain", "utf-8", ByteArrayInputStream(ByteArray(0)))
                                     if (!request.isForMainFrame) viewModel.onRequest(request.url.toString())
                                     return null
                                 }
