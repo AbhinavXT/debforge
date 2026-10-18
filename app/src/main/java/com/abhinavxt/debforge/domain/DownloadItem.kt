@@ -41,7 +41,9 @@ data class DownloadItem(
     val path: String? = null,
     /** Sent with every download request: the page and browser a file was found with (in-app browser only). */
     val referer: String? = null,
-    val userAgent: String? = null
+    val userAgent: String? = null,
+    /** A stream's separate audio playlist; the engine combines it with the video. */
+    val audioUrl: String? = null
 )
 
 /** One page of a provider listing. [hasMore] drives infinite scroll. */

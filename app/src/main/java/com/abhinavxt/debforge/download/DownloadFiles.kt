@@ -158,7 +158,20 @@ object DownloadFiles {
     }
 
     /** Remove a .part file (used on cancel). Safe if absent. */
-    fun deletePart(partPath: String?) = delete(partPath)
+    fun deletePart(partPath: String?) {
+        if (partPath == null) return
+        // A stream with separate audio leaves these beside the .part (see HlsDownloader).
+        listOf(partPath, "$partPath.audio", "$partPath.mux").forEach(::delete)
+    }
+
+    /** Read/write descriptor for [path], created if missing: for the stream muxer, which needs one. */
+    @Throws(IOException::class)
+    fun openFd(path: String): ParcelFileDescriptor {
+        if (SafPaths.isSaf(path)) return openSaf(path, create = true)
+        val file = File(path)
+        ensureParent(file)
+        return ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_WRITE or ParcelFileDescriptor.MODE_CREATE)
+    }
 
     /**
      * Remove the promoted final file. Used when a cancel arrives after the

@@ -6,7 +6,8 @@ import java.net.URI
  * Reads HLS (.m3u8) playlists, the format most sites stream video in: a
  * master playlist lists qualities, a media playlist lists the pieces of one
  * quality. Joined in order the pieces are one playable file (.ts, or .mp4
- * when the playlist has an init section).
+ * when the playlist has an init section). Some qualities keep their audio in
+ * a stream of its own, joined apart and combined with the video afterwards.
  *
  * Pure Kotlin, no Android types: unit-tested in HlsPlaylistTest.
  */
@@ -14,13 +15,11 @@ object HlsPlaylist {
 
     sealed interface Playlist
 
-    /**
-     * Qualities, best first. Ones whose audio is a separate stream are left
-     * out: joining pieces can't put that audio back in.
-     */
-    data class Master(val variants: List<Variant>) : Playlist
+    /** Qualities, best first; [otherUrls]: every other playlist it names (audio, subtitles, trick-play). */
+    data class Master(val variants: List<Variant>, val otherUrls: Set<String> = emptySet()) : Playlist
 
-    data class Variant(val url: String, val bandwidth: Long, val height: Int?)
+    /** [audioUrl]: the media playlist of its separate audio, if it has one. */
+    data class Variant(val url: String, val bandwidth: Long, val height: Int?, val audioUrl: String? = null)
 
     data class Media(
         val segments: List<Segment>,
@@ -47,21 +46,30 @@ object HlsPlaylist {
     }
 
     private fun master(lines: List<String>, base: String): Master {
-        val separateAudio = lines.filter { it.startsWith("#EXT-X-MEDIA:") }.map(::attributes)
-            .filter { it["TYPE"] == "AUDIO" && it["URI"] != null }
-            .mapNotNull { it["GROUP-ID"] }.toSet()
+        val audioTracks = lines.filter { it.startsWith("#EXT-X-MEDIA:") }.map(::attributes)
+            .filter { it["TYPE"] == "AUDIO" && it["URI"] != null && it["GROUP-ID"] != null }
+        // Per audio group, its default track (or the first one).
+        val audio = audioTracks.sortedByDescending { it["DEFAULT"] == "YES" }
+            .groupBy { it.getValue("GROUP-ID") }
+            .mapValues { (_, tracks) -> resolve(base, tracks.first().getValue("URI")) }
         val variants = lines.withIndex().mapNotNull { (i, line) ->
             if (!line.startsWith("#EXT-X-STREAM-INF:")) return@mapNotNull null
             val uri = lines.getOrNull(i + 1)?.takeIf { !it.startsWith("#") } ?: return@mapNotNull null
             val a = attributes(line)
-            if (a["AUDIO"] in separateAudio) return@mapNotNull null
             Variant(
                 url = resolve(base, uri),
                 bandwidth = a["BANDWIDTH"]?.toLongOrNull() ?: 0L,
-                height = a["RESOLUTION"]?.substringAfter('x', "")?.toIntOrNull()
-            )
+                height = a["RESOLUTION"]?.substringAfter('x', "")?.toIntOrNull(),
+                audioUrl = a["AUDIO"]?.let { audio[it] }
+            ) to a["CODECS"].orEmpty()
         }
-        return Master(variants.distinctBy { it.url }.sortedByDescending { it.bandwidth })
+        // One video offered with several audio codecs: AAC first, it's what an MP4 can hold.
+        return Master(
+            variants.sortedByDescending { (_, codecs) -> "mp4a" in codecs }.map { it.first }
+                .distinctBy { it.url }.sortedByDescending { it.bandwidth },
+            lines.filter { it.startsWith("#EXT-X-MEDIA:") || it.startsWith("#EXT-X-I-FRAME-STREAM-INF:") }
+                .mapNotNull { attributes(it)["URI"] }.map { resolve(base, it) }.toSet()
+        )
     }
 
     private fun media(lines: List<String>, base: String): Media {

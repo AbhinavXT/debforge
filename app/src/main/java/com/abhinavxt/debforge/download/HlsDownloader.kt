@@ -20,6 +20,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
+import android.system.Os
 import java.io.IOException
 import java.nio.ByteBuffer
 import java.util.concurrent.ConcurrentHashMap
@@ -33,14 +34,17 @@ import kotlin.coroutines.coroutineContext
 /**
  * Downloads an HLS stream (the row's [DownloadEntity.downloadUrl] is its
  * media playlist) by joining its pieces, in order, into one file. Pieces are
- * fetched [PARALLEL] at a time; AES-128 ones are decrypted on the way.
+ * fetched [PARALLEL] at a time; AES-128 ones are decrypted on the way. A
+ * stream whose audio is apart ([DownloadEntity.audioUrl]) has its audio
+ * joined into "<part>.audio", then both go into one MP4 ([StreamMuxer]).
  *
- * Resume: each piece written is a complete chunk row (its byte range in the
- * file), so a pause or failure continues at the next piece; anything written
- * after the last row is cut off first.
+ * Resume: each piece written is a complete chunk row (its byte range in its
+ * file; video pieces first, then audio), so a pause or failure continues at
+ * the next piece; anything written after the last row is cut off first.
  *
- * shortcut: pieces are joined as they are (.ts or fragmented .mp4), not
- * remuxed; remux with Media3's muxer if players struggle to seek in them.
+ * shortcut: a stream without separate audio is joined as it is (.ts or
+ * fragmented .mp4), not remuxed; send it through [StreamMuxer] too if players
+ * struggle to seek in .ts files.
  */
 @Singleton
 class HlsDownloader @Inject constructor(
@@ -56,61 +60,64 @@ class HlsDownloader @Inject constructor(
         const val PARALLEL = 4
     }
 
+    /** One playlist's pieces and the file they're joined into. */
+    private class Track(val pieces: List<HlsPlaylist.Segment>, val path: String)
+
     suspend fun download(entity: DownloadEntity, partPath: String, finalPath: String): DownloadOutcome = withContext(Dispatchers.IO) {
-        val playlist = try {
-            val call = client.newCall(entity.request(entity.downloadUrl).build())
-            cancellableCall(call) {
-                call.execute().use { resp ->
-                    if (!resp.isSuccessful) throw IOException("HTTP ${resp.code}")
-                    // Pieces are relative to where the playlist ended up after redirects.
-                    HlsPlaylist.parse(resp.body?.string().orEmpty(), resp.request.url.toString())
-                }
-            }
+        val tracks = try {
+            listOfNotNull(
+                Track(pieces(entity, entity.downloadUrl), partPath),
+                entity.audioUrl?.let { Track(pieces(entity, it), "$partPath.audio") }
+            )
         } catch (ce: CancellationException) {
             throw ce
         } catch (e: IOException) {
-            // Signed playlist links expire, and there's no page to get a new one from.
-            return@withContext DownloadOutcome.Failure("Couldn't load the stream (${e.message}). Find the video in the Browser tab again.")
+            return@withContext DownloadOutcome.Failure(e.message ?: "Couldn't load the stream")
         }
-        if (playlist !is HlsPlaylist.Media) return@withContext DownloadOutcome.Failure("Not a stream playlist")
-        if (playlist.drm) return@withContext DownloadOutcome.Failure("This stream is DRM-protected and can't be downloaded")
-        if (playlist.live) return@withContext DownloadOutcome.Failure("Live streams can't be downloaded")
-        val pieces = listOfNotNull(playlist.init) + playlist.segments
-        if (pieces.isEmpty()) return@withContext DownloadOutcome.Failure("The stream is empty")
+        val total = tracks.sumOf { it.pieces.size }
 
         var done = chunkDao.getForDownload(entity.id)
-        // The playlist changed since the last attempt: start over.
-        if (done.size > pieces.size || done.withIndex().any { (i, c) -> c.index != i }) {
+        // The playlists changed since the last attempt: start over.
+        if (done.size > total || done.withIndex().any { (i, c) -> c.index != i }) {
             chunkDao.deleteForDownload(entity.id)
             done = emptyList()
         }
-        var written = done.sumOf { it.bytesWritten }
+        var downloaded = done.sumOf { it.bytesWritten }
+        val sizes = mutableListOf<Long>()
         val keys = ConcurrentHashMap<String, ByteArray>()
 
         try {
-            DownloadFiles.preallocate(partPath, written)
-            DownloadFiles.openAt(partPath, written).use { handle ->
-                pieces.withIndex().drop(done.size).chunked(PARALLEL).forEach { batch ->
-                    coroutineContext.ensureActive()
-                    conditions.currentBlock()?.let { throw IOException(it.message) }
-                    val bodies = coroutineScope {
-                        batch.map { (_, piece) -> async { fetchPiece(entity, piece, keys) } }.awaitAll()
+            var first = 0 // chunk index of this track's first piece
+            for (track in tracks) {
+                val mine = done.filter { it.index - first in track.pieces.indices }
+                var written = mine.sumOf { it.bytesWritten }
+                DownloadFiles.preallocate(track.path, written)
+                DownloadFiles.openAt(track.path, written).use { handle ->
+                    track.pieces.withIndex().drop(mine.size).chunked(PARALLEL).forEach { batch ->
+                        coroutineContext.ensureActive()
+                        conditions.currentBlock()?.let { throw IOException(it.message) }
+                        val bodies = coroutineScope {
+                            batch.map { (_, piece) -> async { fetchPiece(entity, piece, keys) } }.awaitAll()
+                        }
+                        val rows = batch.zip(bodies) { (index, _), bytes ->
+                            val buffer = ByteBuffer.wrap(bytes)
+                            while (buffer.hasRemaining()) handle.channel.write(buffer)
+                            ChunkEntity(entity.id, first + index, written, written + bytes.size - 1, bytes.size.toLong(), complete = true)
+                                .also { written += bytes.size }
+                        }
+                        chunkDao.insertAll(rows)
+                        val batchBytes = bodies.sumOf { it.size }
+                        downloaded += batchBytes
+                        usage.add(entity.provider, batchBytes)
+                        // The total is only known at the end: estimate it from the pieces so far.
+                        val estimate = downloaded * total / (first + batch.last().index + 1)
+                        progressTracker.update(entity.id, downloaded, estimate, DownloadState.DOWNLOADING)
+                        val throttleMs = rateLimiter.reserve(batchBytes)
+                        if (throttleMs > 0) delay(throttleMs)
                     }
-                    val rows = batch.zip(bodies) { (index, _), bytes ->
-                        val buffer = ByteBuffer.wrap(bytes)
-                        while (buffer.hasRemaining()) handle.channel.write(buffer)
-                        ChunkEntity(entity.id, index, written, written + bytes.size - 1, bytes.size.toLong(), complete = true)
-                            .also { written += bytes.size }
-                    }
-                    chunkDao.insertAll(rows)
-                    val batchBytes = bodies.sumOf { it.size }
-                    usage.add(entity.provider, batchBytes)
-                    // The total is only known at the end: estimate it from the pieces so far.
-                    val estimate = written * pieces.size / (batch.last().index + 1)
-                    progressTracker.update(entity.id, written, estimate, DownloadState.DOWNLOADING)
-                    val throttleMs = rateLimiter.reserve(batchBytes)
-                    if (throttleMs > 0) delay(throttleMs)
                 }
+                sizes += written
+                first += track.pieces.size
             }
         } catch (ce: CancellationException) {
             throw ce
@@ -118,20 +125,72 @@ class HlsDownloader @Inject constructor(
             coroutineContext.ensureActive()
             return@withContext DownloadOutcome.Failure(e.message ?: "Download interrupted")
         } finally {
-            withContext(NonCancellable) { downloadDao.updateBytes(entity.id, written) }
+            withContext(NonCancellable) { downloadDao.updateBytes(entity.id, downloaded) }
         }
 
-        if (!DownloadFiles.verifyAndPromote(partPath, finalPath, written)) {
-            return@withContext DownloadOutcome.Failure("Size verification failed")
-        }
+        val size = try {
+            if (tracks.size == 1) {
+                sizes.single().takeIf { DownloadFiles.verifyAndPromote(partPath, finalPath, it) }
+            } else {
+                combine(partPath, finalPath)
+            }
+        } catch (ce: CancellationException) {
+            throw ce
+        } catch (e: IOException) {
+            return@withContext DownloadOutcome.Failure(e.message ?: "Finalize failed")
+        } ?: return@withContext DownloadOutcome.Failure("Size verification failed")
+
         withContext(NonCancellable) {
-            downloadDao.updateLink(entity.id, entity.downloadUrl, 1, written)
-            downloadDao.updateBytes(entity.id, written)
+            downloadDao.updateLink(entity.id, entity.downloadUrl, 1, size)
+            downloadDao.updateBytes(entity.id, size)
             downloadDao.updateState(entity.id, DownloadState.COMPLETED)
         }
-        progressTracker.update(entity.id, written, written, DownloadState.COMPLETED)
+        progressTracker.update(entity.id, size, size, DownloadState.COMPLETED)
         progressTracker.clear(entity.id)
         DownloadOutcome.Success
+    }
+
+    /** The pieces of the media playlist at [url]; a clear IOException when it can't be downloaded. */
+    private suspend fun pieces(entity: DownloadEntity, url: String): List<HlsPlaylist.Segment> {
+        val call = client.newCall(entity.request(url).build())
+        val playlist = try {
+            cancellableCall(call) {
+                call.execute().use { resp ->
+                    if (!resp.isSuccessful) throw IOException("HTTP ${resp.code}")
+                    // Pieces are relative to where the playlist ended up after redirects.
+                    HlsPlaylist.parse(resp.body?.string().orEmpty(), resp.request.url.toString())
+                }
+            }
+        } catch (e: IOException) {
+            // Signed playlist links expire, and there's no page to get a new one from.
+            throw IOException("Couldn't load the stream (${e.message}). Find the video in the Browser tab again.", e)
+        }
+        if (playlist !is HlsPlaylist.Media) throw IOException("Not a stream playlist")
+        if (playlist.drm) throw IOException("This stream is DRM-protected and can't be downloaded")
+        if (playlist.live) throw IOException("Live streams can't be downloaded")
+        return (listOfNotNull(playlist.init) + playlist.segments).ifEmpty { throw IOException("The stream is empty") }
+    }
+
+    /**
+     * Video (.part) and audio (.part.audio) into one MP4 (.part.mux), promoted
+     * to [finalPath]; the joined inputs are deleted after. Returns its size.
+     */
+    private suspend fun combine(partPath: String, finalPath: String): Long? {
+        val muxPath = "$partPath.mux"
+        val size = DownloadFiles.openFd(partPath).use { video ->
+            DownloadFiles.openFd("$partPath.audio").use { audio ->
+                DownloadFiles.openFd(muxPath).use { out ->
+                    // A combine cut short last time leaves its bytes behind.
+                    Os.ftruncate(out.fileDescriptor, 0)
+                    StreamMuxer.mux(video.fileDescriptor, audio.fileDescriptor, out.fileDescriptor)
+                    out.statSize
+                }
+            }
+        }
+        if (!DownloadFiles.verifyAndPromote(muxPath, finalPath, size)) return null
+        // Only the joined inputs are left: .part and .part.audio.
+        DownloadFiles.deletePart(partPath)
+        return size
     }
 
     private suspend fun fetchPiece(entity: DownloadEntity, piece: HlsPlaylist.Segment, keys: MutableMap<String, ByteArray>): ByteArray {
