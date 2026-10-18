@@ -717,4 +717,14 @@
     <string name="player_try_software">Probar decodificación por software</string>
     <string name="set_stream_previews">Vistas previas al buscar en streams</string>
     <string name="set_stream_previews_detail">Al arrastrar, muestra un fotograma de donde caerías y salta solo al soltar. Gasta algo de datos por vista previa. Los vídeos descargados siempre tienen vistas previas.</string>
+    <string name="tab_browser">Navegador</string>
+    <string name="browser_address_hint">Busca o escribe una dirección web</string>
+    <string name="browser_queued">Descargando %1$s</string>
+    <string name="browser_err_blob">Este archivo se crea dentro de la página, DebForge no puede obtenerlo.</string>
+    <string name="browser_videos_title">Vídeos de esta página</string>
+    <plurals name="browser_videos_n">
+        <item quantity="one">%d vídeo</item>
+        <item quantity="many">%d vídeos</item>
+        <item quantity="other">%d vídeos</item>
+    </plurals>
 </resources>

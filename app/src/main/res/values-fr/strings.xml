@@ -717,4 +717,14 @@
     <string name="player_try_software">Essayer le décodage logiciel</string>
     <string name="set_stream_previews">Aperçus lors de la recherche en streaming</string>
     <string name="set_stream_previews_detail">Pendant le glissement, affiche une image de l’endroit visé et ne saute qu’au relâchement. Consomme un peu de données par aperçu. Les vidéos téléchargées ont toujours des aperçus.</string>
+    <string name="tab_browser">Navigateur</string>
+    <string name="browser_address_hint">Rechercher ou saisir une adresse web</string>
+    <string name="browser_queued">Téléchargement de %1$s</string>
+    <string name="browser_err_blob">Ce fichier est créé dans la page, DebForge ne peut pas le récupérer.</string>
+    <string name="browser_videos_title">Vidéos de cette page</string>
+    <plurals name="browser_videos_n">
+        <item quantity="one">%d vidéo</item>
+        <item quantity="many">%d vidéos</item>
+        <item quantity="other">%d vidéos</item>
+    </plurals>
 </resources>

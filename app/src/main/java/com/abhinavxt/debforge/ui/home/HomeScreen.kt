@@ -16,9 +16,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.material.icons.outlined.Download
+import androidx.compose.material.icons.outlined.Public
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.VideoLibrary
 import androidx.compose.material3.MaterialTheme
@@ -48,6 +50,7 @@ import com.abhinavxt.debforge.ui.active.ActiveDownloadsScreen
 import com.abhinavxt.debforge.ui.add.AddDialog
 import com.abhinavxt.debforge.ui.add.AddViewModel
 import com.abhinavxt.debforge.ui.browse.BrowseScreen
+import com.abhinavxt.debforge.ui.browser.BrowserScreen
 import com.abhinavxt.debforge.ui.settings.SettingsScreen
 
 private enum class HomeTab(
@@ -58,12 +61,13 @@ private enum class HomeTab(
 ) {
     Browse("browse", R.string.tab_library, Icons.Outlined.VideoLibrary, Icons.Filled.VideoLibrary),
     Active("active", R.string.tab_downloads, Icons.Outlined.Download, Icons.Filled.Download),
+    Browser("browser", R.string.tab_browser, Icons.Outlined.Public, Icons.Filled.Public),
     Settings("settings", R.string.tab_settings, Icons.Outlined.Settings, Icons.Filled.Settings)
 }
 
 /**
  * The authenticated shell. Bottom-nav switches between Browse / Active /
- * Settings; nav state is saved across tab switches so the user keeps their
+ * Browser / Settings; nav state is saved across tab switches so the user keeps their
  * scroll position and any in-flight loads.
  *
  * The notification permission request runs once on first composition. On
@@ -110,6 +114,7 @@ fun HomeScreen() {
                 )
             }
             composable(HomeTab.Active.route) { ActiveDownloadsScreen() }
+            composable(HomeTab.Browser.route) { BrowserScreen(onMagnet = { addViewModel.open(prefillText = it) }) }
             composable(HomeTab.Settings.route) { SettingsScreen() }
         }
     }
