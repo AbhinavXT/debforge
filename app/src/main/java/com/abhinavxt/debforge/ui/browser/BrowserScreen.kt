@@ -1,7 +1,10 @@
 package com.abhinavxt.debforge.ui.browser
 
 import android.annotation.SuppressLint
+import android.app.Activity
+import android.content.pm.ActivityInfo
 import android.graphics.Bitmap
+import android.view.View
 import android.view.ViewGroup
 import android.webkit.CookieManager
 import android.webkit.WebChromeClient
@@ -48,6 +51,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -56,6 +60,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.abhinavxt.debforge.R
@@ -78,9 +84,32 @@ fun BrowserScreen(onMagnet: (String) -> Unit, viewModel: BrowserViewModel = hilt
     var canGoBack by remember { mutableStateOf(false) }
     var showVideos by remember { mutableStateOf(false) }
     var webView by remember { mutableStateOf<WebView?>(null) }
+    var fullscreen by remember { mutableStateOf<Pair<View, WebChromeClient.CustomViewCallback>?>(null) }
+    val activity = LocalContext.current as Activity
 
     LaunchedEffect(Unit) { viewModel.messages.collect { snackbar.showSnackbar(it) } }
     BackHandler(enabled = canGoBack) { webView?.goBack() }
+    // Declared after the one above, so it wins while a video is full screen.
+    BackHandler(enabled = fullscreen != null) {
+        fullscreen?.second?.onCustomViewHidden()
+        fullscreen = null
+    }
+    // A page's player went full screen: its view covers the whole window, in landscape, bars hidden.
+    DisposableEffect(fullscreen) {
+        val view = fullscreen?.first ?: return@DisposableEffect onDispose {}
+        val decor = activity.window.decorView as ViewGroup
+        val bars = WindowInsetsControllerCompat(activity.window, decor)
+        val orientation = activity.requestedOrientation
+        decor.addView(view, ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
+        bars.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        bars.hide(WindowInsetsCompat.Type.systemBars())
+        activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+        onDispose {
+            decor.removeView(view)
+            bars.show(WindowInsetsCompat.Type.systemBars())
+            activity.requestedOrientation = orientation
+        }
+    }
     DisposableEffect(Unit) { onDispose { webView?.destroy() } }
 
     Scaffold(
@@ -155,6 +184,14 @@ fun BrowserScreen(onMagnet: (String) -> Unit, viewModel: BrowserViewModel = hilt
                             webChromeClient = object : WebChromeClient() {
                                 override fun onProgressChanged(view: WebView, newProgress: Int) {
                                     progress = newProgress
+                                }
+
+                                override fun onShowCustomView(view: View, callback: CustomViewCallback) {
+                                    fullscreen = view to callback
+                                }
+
+                                override fun onHideCustomView() {
+                                    fullscreen = null
                                 }
                             }
                             setDownloadListener { url, _, contentDisposition, mimeType, contentLength ->
