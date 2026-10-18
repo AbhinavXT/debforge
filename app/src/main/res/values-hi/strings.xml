@@ -683,4 +683,13 @@
     <string name="player_try_software">सॉफ़्टवेयर डिकोडिंग आज़माएँ</string>
     <string name="set_stream_previews">स्ट्रीम पर सीक प्रीव्यू</string>
     <string name="set_stream_previews_detail">खींचते समय वहाँ का फ़्रेम दिखाएँ जहाँ पहुँचेंगे, और छोड़ने पर ही जाएँ। हर प्रीव्यू में कुछ डेटा लगता है। डाउनलोड किए वीडियो में प्रीव्यू हमेशा रहते हैं।</string>
+    <string name="tab_browser">ब्राउज़र</string>
+    <string name="browser_address_hint">खोजें या वेब पता लिखें</string>
+    <string name="browser_queued">%1$s डाउनलोड हो रहा है</string>
+    <string name="browser_err_blob">यह फ़ाइल पेज के अंदर बनती है, DebForge इसे नहीं ला सकता।</string>
+    <string name="browser_videos_title">इस पेज के वीडियो</string>
+    <plurals name="browser_videos_n">
+        <item quantity="one">%d वीडियो</item>
+        <item quantity="other">%d वीडियो</item>
+    </plurals>
 </resources>

@@ -751,4 +751,15 @@
     <string name="player_try_software">Попробовать программное декодирование</string>
     <string name="set_stream_previews">Превью при перемотке потоков</string>
     <string name="set_stream_previews_detail">При перетаскивании показывать кадр из точки назначения и перематывать только при отпускании. Каждое превью расходует немного трафика. У скачанных видео превью есть всегда.</string>
+    <string name="tab_browser">Браузер</string>
+    <string name="browser_address_hint">Поиск или веб-адрес</string>
+    <string name="browser_queued">Загрузка %1$s</string>
+    <string name="browser_err_blob">Этот файл создаётся внутри страницы, DebForge не может его получить.</string>
+    <string name="browser_videos_title">Видео на этой странице</string>
+    <plurals name="browser_videos_n">
+        <item quantity="one">%d видео</item>
+        <item quantity="few">%d видео</item>
+        <item quantity="many">%d видео</item>
+        <item quantity="other">%d видео</item>
+    </plurals>
 </resources>

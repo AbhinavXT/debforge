@@ -649,4 +649,12 @@
     <string name="player_try_software">尝试软件解码</string>
     <string name="set_stream_previews">串流拖动预览</string>
     <string name="set_stream_previews_detail">拖动时显示目标位置的画面，松手后才跳转。每次预览会消耗少量流量。已下载的视频始终有预览。</string>
+    <string name="tab_browser">浏览器</string>
+    <string name="browser_address_hint">搜索或输入网址</string>
+    <string name="browser_queued">正在下载 %1$s</string>
+    <string name="browser_err_blob">此文件在页面内部生成，DebForge 无法获取。</string>
+    <string name="browser_videos_title">此页面上的视频</string>
+    <plurals name="browser_videos_n">
+        <item quantity="other">%d 个视频</item>
+    </plurals>
 </resources>

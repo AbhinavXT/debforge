@@ -92,4 +92,11 @@ class DirectLinkParserTest {
         assertFalse(a == DirectLinkParser.itemId("pixeldrain:abd"))
         assertTrue(a.startsWith("direct:") && a.length == "direct:".length + 20)
     }
+
+    @Test fun addressToUrl() {
+        assertEquals("https://example.com/x", DirectLinkParser.addressToUrl("https://example.com/x"))
+        assertEquals("https://example.com/x?y=1", DirectLinkParser.addressToUrl("example.com/x?y=1"))
+        assertEquals("https://duckduckgo.com/?q=big+buck+bunny", DirectLinkParser.addressToUrl("big buck bunny"))
+        assertEquals("https://duckduckgo.com/?q=bunny", DirectLinkParser.addressToUrl("bunny"))
+    }
 }

@@ -649,4 +649,12 @@
     <string name="player_try_software">Coba decoding perangkat lunak</string>
     <string name="set_stream_previews">Pratinjau saat menggeser stream</string>
     <string name="set_stream_previews_detail">Saat menggeser, tampilkan frame dari titik tujuan dan lompat hanya saat dilepas. Memakai sedikit data per pratinjau. Video unduhan selalu punya pratinjau.</string>
+    <string name="tab_browser">Browser</string>
+    <string name="browser_address_hint">Cari atau ketik alamat web</string>
+    <string name="browser_queued">Mengunduh %1$s</string>
+    <string name="browser_err_blob">File ini dibuat di dalam halaman, DebForge tidak bisa mengambilnya.</string>
+    <string name="browser_videos_title">Video di halaman ini</string>
+    <plurals name="browser_videos_n">
+        <item quantity="other">%d video</item>
+    </plurals>
 </resources>

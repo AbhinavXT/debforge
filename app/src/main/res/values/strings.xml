@@ -685,4 +685,13 @@
     <string name="player_try_software">Try software decoding</string>
     <string name="set_stream_previews">Seek previews on streams</string>
     <string name="set_stream_previews_detail">While dragging, show a frame from where you\'d land and jump only on release. Uses some data per preview. Downloaded videos always have previews.</string>
+    <string name="tab_browser">Browser</string>
+    <string name="browser_address_hint">Search or type a web address</string>
+    <string name="browser_queued">Downloading %1$s</string>
+    <string name="browser_err_blob">This file is made inside the page, so DebForge can\'t fetch it.</string>
+    <string name="browser_videos_title">Videos on this page</string>
+    <plurals name="browser_videos_n">
+        <item quantity="one">%d video</item>
+        <item quantity="other">%d videos</item>
+    </plurals>
 </resources>

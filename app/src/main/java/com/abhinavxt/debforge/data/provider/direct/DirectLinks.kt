@@ -177,6 +177,10 @@ class DirectLinks @Inject constructor(
         )
     }
 
+    /** A file the in-app browser started downloading: it already knows the name and size. */
+    fun browserFile(url: String, name: String, size: Long): DownloadItem =
+        item(sourceRef = url, url = url, name = name, size = size, host = DirectLinkParser.hostOf(url))
+
     // --- videos on a web page ---------------------------------------------------
 
     /** What [scanPage] found: the page's videos, ready to queue, and how many were streams only. */

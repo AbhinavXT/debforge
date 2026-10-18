@@ -87,6 +87,12 @@ object PageVideos {
         contentType?.substringBefore(';')?.trim()?.lowercase()?.startsWith("video/") == true ||
             name?.let { extensionOf(it) in VIDEO_EXTS } == true
 
+    /**
+     * A URL the in-app browser saw the page load is a whole video file worth
+     * offering. ".ts" is left out: in a browser those are HLS stream pieces.
+     */
+    fun isSniffable(url: String): Boolean = extensionOf(url).let { it in VIDEO_EXTS && it != "ts" }
+
     private fun attributes(s: String): Map<String, String> =
         ATTR.findAll(s).associate { m ->
             m.groupValues[1].lowercase() to unescape(m.groupValues[2].ifEmpty { m.groupValues[3] }.ifEmpty { m.groupValues[4] })

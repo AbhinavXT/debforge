@@ -1,6 +1,7 @@
 package com.abhinavxt.debforge.di
 
 import android.util.Log
+import android.webkit.CookieManager
 import com.abhinavxt.debforge.BuildConfig
 import com.squareup.moshi.Moshi
 import dagger.Module
@@ -8,6 +9,9 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import okhttp3.ConnectionPool
+import okhttp3.Cookie
+import okhttp3.CookieJar
+import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import java.util.concurrent.TimeUnit
@@ -60,6 +64,9 @@ object NetworkModule {
      * ConnectionPool sized to 32 idle / 5 min keepalive: with 16 parallel chunks
      * per file plus the probe call, the default pool (5 idle) overflows and
      * we'd churn TCP+TLS handshakes between files to the same host.
+     *
+     * Carries the in-app browser's cookies, so a file found behind a site's
+     * login downloads like it would in the browser.
      */
     @Provides
     @Singleton
@@ -70,7 +77,20 @@ object NetworkModule {
             .readTimeout(60, TimeUnit.SECONDS)
             .connectionPool(ConnectionPool(32, 5L, TimeUnit.MINUTES))
             .retryOnConnectionFailure(true)
+            .cookieJar(BrowserCookies)
             .build()
+
+    /** Read-only: downloads never change the browser's cookies. */
+    private object BrowserCookies : CookieJar {
+        override fun loadForRequest(url: HttpUrl): List<Cookie> {
+            // No WebView installed (some TVs): no cookies.
+            val header = runCatching { CookieManager.getInstance().getCookie(url.toString()) }.getOrNull()
+                ?: return emptyList()
+            return header.split(';').mapNotNull { Cookie.parse(url, it.trim()) }
+        }
+
+        override fun saveFromResponse(url: HttpUrl, cookies: List<Cookie>) = Unit
+    }
 
     private val TOKEN_PARAM = Regex("""\b(token|apikey|api_key)=[^&\s]+""", RegexOption.IGNORE_CASE)
 }

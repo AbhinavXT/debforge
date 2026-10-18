@@ -175,6 +175,19 @@ object DirectLinkParser {
         return "direct:" + digest.take(10).joinToString("") { "%02x".format(it) }
     }
 
+    /**
+     * What the browser's address bar opens: a URL as typed, "example.com"
+     * as https, anything else as a web search.
+     */
+    fun addressToUrl(input: String): String {
+        val s = input.trim()
+        return when {
+            Regex("""^https?://\S+$""", RegexOption.IGNORE_CASE).matches(s) -> s
+            ' ' !in s && Regex("""^[\w-]+(\.[\w-]+)+(:\d+)?(/.*)?$""").matches(s) -> "https://$s"
+            else -> "https://duckduckgo.com/?q=" + java.net.URLEncoder.encode(s, "UTF-8")
+        }
+    }
+
     /** "pixeldrain.com" for the Downloads list. */
     fun hostOf(url: String): String =
         runCatching { URI(url.trim()).host }.getOrNull()?.lowercase()?.removePrefix("www.") ?: url

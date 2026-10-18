@@ -69,4 +69,11 @@ class PageVideosTest {
         assertFalse(PageVideos.isVideo("x.jpg", "image/jpeg"))
         assertFalse(PageVideos.isVideo(null, null))
     }
+
+    @Test fun sniffable() {
+        assertTrue(PageVideos.isSniffable("https://cdn.example.com/v/movie.mp4?token=1"))
+        assertFalse(PageVideos.isSniffable("https://cdn.example.com/hls/seg-12.ts"))
+        assertFalse(PageVideos.isSniffable("https://cdn.example.com/hls/index.m3u8"))
+        assertFalse(PageVideos.isSniffable("https://example.com/watch?v=a.mp4"))
+    }
 }

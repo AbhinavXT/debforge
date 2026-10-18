@@ -683,4 +683,13 @@
     <string name="player_try_software">Software-Decodierung versuchen</string>
     <string name="set_stream_previews">Vorschaubilder beim Spulen in Streams</string>
     <string name="set_stream_previews_detail">Beim Ziehen ein Bild der Zielstelle zeigen und erst beim Loslassen springen. Kostet pro Vorschau etwas Datenvolumen. Heruntergeladene Videos haben immer Vorschauen.</string>
+    <string name="tab_browser">Browser</string>
+    <string name="browser_address_hint">Suchen oder Webadresse eingeben</string>
+    <string name="browser_queued">Lade %1$s herunter</string>
+    <string name="browser_err_blob">Diese Datei entsteht in der Seite selbst, DebForge kann sie nicht abrufen.</string>
+    <string name="browser_videos_title">Videos auf dieser Seite</string>
+    <plurals name="browser_videos_n">
+        <item quantity="one">%d Video</item>
+        <item quantity="other">%d Videos</item>
+    </plurals>
 </resources>
