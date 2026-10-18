@@ -188,6 +188,9 @@ object DirectLinkParser {
         }
     }
 
+    /** Source ref of a stream download: this prefix, then its media playlist URL. */
+    const val HLS_PREFIX = "hls:"
+
     /** "pixeldrain.com" for the Downloads list. */
     fun hostOf(url: String): String =
         runCatching { URI(url.trim()).host }.getOrNull()?.lowercase()?.removePrefix("www.") ?: url

@@ -14,6 +14,7 @@ import com.abhinavxt.debforge.domain.AddRequest
 import com.abhinavxt.debforge.domain.DirectLinkParser
 import com.abhinavxt.debforge.domain.DirectLinkParser.Target
 import com.abhinavxt.debforge.domain.DownloadItem
+import com.abhinavxt.debforge.domain.HlsPlaylist
 import com.abhinavxt.debforge.domain.Page
 import com.abhinavxt.debforge.domain.PageVideos
 import com.abhinavxt.debforge.domain.ProviderId
@@ -95,6 +96,9 @@ class DirectLinks @Inject constructor(
                 val (link, probe) = driveResolve(sourceRef.removePrefix(DRIVE))
                 ResolvedLink(link, null, probe.size.takeIf { it > 0 })
             }
+            // The stream downloader reads the playlist itself.
+            sourceRef.startsWith(DirectLinkParser.HLS_PREFIX) ->
+                ResolvedLink(sourceRef.removePrefix(DirectLinkParser.HLS_PREFIX), 1, null)
             // A plain link can't be renewed: if it expired, the engine reports it.
             else -> ResolvedLink(sourceRef, null, null)
         }
@@ -242,6 +246,46 @@ class DirectLinks @Inject constructor(
             )
         }
 
+    /**
+     * The qualities of the HLS stream at [url], best first, ready to queue as
+     * "[title] 1080p.ts". Sizes are estimates (bitrate x length). Empty when
+     * the stream is live, DRM-protected, has its audio apart, or won't load.
+     */
+    suspend fun lookUpStream(url: String, title: String?, referer: String?, userAgent: String?): List<DownloadItem> =
+        withContext(Dispatchers.IO) {
+            val streams = when (val top = runCatching { playlist(url, referer, userAgent) }.getOrNull()) {
+                is HlsPlaylist.Master -> top.variants.take(MAX_QUALITIES).map { v ->
+                    v to runCatching { playlist(v.url, referer, userAgent) }.getOrNull()
+                }
+                is HlsPlaylist.Media -> listOf(HlsPlaylist.Variant(url, 0L, null) to top)
+                null -> emptyList()
+            }
+            // The engine cleans the name; titles can be whole sentences.
+            val name = title?.trim()?.take(80)?.ifBlank { null } ?: DirectLinkParser.hostOf(url)
+            streams.mapNotNull { (v, media) ->
+                if (media !is HlsPlaylist.Media || media.live || media.drm || media.segments.isEmpty()) return@mapNotNull null
+                val quality = v.height?.let { " ${it}p" }.orEmpty()
+                val ext = if (media.init != null) "mp4" else "ts"
+                item(
+                    sourceRef = DirectLinkParser.HLS_PREFIX + v.url,
+                    url = v.url,
+                    name = "$name$quality.$ext",
+                    size = (v.bandwidth / 8 * media.durationSec).toLong(),
+                    host = DirectLinkParser.hostOf(v.url),
+                    referer = referer,
+                    userAgent = userAgent
+                )
+            }
+        }
+
+    private fun playlist(url: String, referer: String?, userAgent: String?): HlsPlaylist.Playlist? {
+        val req = get(url, referer, userAgent).build()
+        return client.newCall(req).execute().use { resp ->
+            if (!resp.isSuccessful) throw ProviderException(context.getString(R.string.direct_err_http, DirectLinkParser.hostOf(url), resp.code))
+            HlsPlaylist.parse(resp.peekBody(MAX_PAGE_BYTES * 8).string(), resp.request.url.toString())
+        }
+    }
+
     // --- HTTP -------------------------------------------------------------------
 
     private class Probe(
@@ -254,10 +298,7 @@ class DirectLinks @Inject constructor(
 
     /** One-byte ranged GET: name, size and type without downloading the file. */
     private fun probe(url: String, referer: String? = null, userAgent: String? = null): Probe {
-        val req = Request.Builder().url(url).header("Range", "bytes=0-0").get().apply {
-            referer?.let { header("Referer", it) }
-            userAgent?.let { header("User-Agent", it) }
-        }.build()
+        val req = get(url, referer, userAgent).header("Range", "bytes=0-0").build()
         return client.newCall(req).execute().use { resp ->
             if (resp.code != 200 && resp.code != 206) {
                 throw ProviderException(context.getString(R.string.direct_err_http, DirectLinkParser.hostOf(url), resp.code))
@@ -275,6 +316,13 @@ class DirectLinks @Inject constructor(
             Probe(false, null, name, size, type)
         }
     }
+
+    /** The in-app browser's Referer / User-Agent go along when there are any. */
+    private fun get(url: String, referer: String?, userAgent: String?): Request.Builder =
+        Request.Builder().url(url).get().apply {
+            referer?.let { header("Referer", it) }
+            userAgent?.let { header("User-Agent", it) }
+        }
 
     private fun getJson(url: String, host: String): JSONObject {
         val req = Request.Builder().url(url).get().build()
@@ -328,5 +376,7 @@ class DirectLinks @Inject constructor(
         const val MAX_SCAN_BYTES = 4L * 1024 * 1024
         const val MAX_CANDIDATES = 40
         const val PROBE_PARALLEL = 6
+        /** Qualities offered per stream (each costs a playlist fetch). */
+        const val MAX_QUALITIES = 5
     }
 }

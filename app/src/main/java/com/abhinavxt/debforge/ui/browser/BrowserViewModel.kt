@@ -27,8 +27,8 @@ import javax.inject.Inject
 
 /**
  * The Browser tab: every download a page starts goes to DebForge's queue
- * instead of the system, and video files the page loads (players built with
- * JavaScript included) are listed to download.
+ * instead of the system, and video files and HLS streams the page loads
+ * (players built with JavaScript included) are listed to download.
  *
  * Kept across tab switches; the WebView itself is not, it reloads [url].
  */
@@ -46,6 +46,9 @@ class BrowserViewModel @Inject constructor(
     /** The WebView's own, sent with this tab's downloads: some hosts refuse other clients. */
     var userAgent: String? = null
 
+    /** The page's title, to name stream downloads by. */
+    @Volatile var title: String? = null
+
     private val _videos = MutableStateFlow<List<DownloadItem>>(emptyList())
     /** Videos the current page loaded, looked up (name, size), largest first: the main video before ad clips. */
     val videos: StateFlow<List<DownloadItem>> = _videos.asStateFlow()
@@ -61,6 +64,7 @@ class BrowserViewModel @Inject constructor(
 
     fun onPageStarted(url: String) {
         this.url = url
+        title = null
         synchronized(seen) {
             seen.clear()
             page++
@@ -70,18 +74,22 @@ class BrowserViewModel @Inject constructor(
 
     /** Every request the page makes, with the page that made it; called off the main thread. */
     fun onRequest(url: String, referer: String?) {
-        if (!PageVideos.isSniffable(url)) return
+        val stream = PageVideos.isHlsPlaylist(url)
+        if (!stream && !PageVideos.isSniffable(url)) return
         val clean = url.substringBefore('#')
         val forPage = synchronized(seen) {
             if (seen.size >= MAX_VIDEOS || !seen.add(clean)) return
             page
         }
         viewModelScope.launch {
-            val video = lookups.withPermit {
-                directLinks.lookUpVideo(clean, referer = referer ?: this@BrowserViewModel.url, userAgent = userAgent)
-            } ?: return@launch
-            if (synchronized(seen) { forPage != page }) return@launch
-            _videos.update { (it + video).distinctBy { v -> v.id }.sortedByDescending { v -> v.filesize } }
+            val from = referer ?: this@BrowserViewModel.url
+            val found = lookups.withPermit {
+                if (stream) directLinks.lookUpStream(clean, title, from, userAgent)
+                else listOfNotNull(directLinks.lookUpVideo(clean, referer = from, userAgent = userAgent))
+            }
+            if (found.isEmpty() || synchronized(seen) { forPage != page }) return@launch
+            // A quality seen both in its stream's list and on its own: keep the entry with the size estimate.
+            _videos.update { (it + found).sortedByDescending { v -> v.filesize }.distinctBy { v -> v.id } }
         }
     }
 
