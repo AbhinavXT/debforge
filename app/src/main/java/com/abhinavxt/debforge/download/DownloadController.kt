@@ -71,7 +71,8 @@ class DownloadController @Inject constructor(
                     partFilePath = partPath,
                     finalFilePath = finalPath,
                     referer = item.referer,
-                    userAgent = item.userAgent
+                    userAgent = item.userAgent,
+                    audioUrl = item.audioUrl
                 )
             )
         }

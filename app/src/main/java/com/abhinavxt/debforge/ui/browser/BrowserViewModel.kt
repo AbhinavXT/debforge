@@ -55,6 +55,8 @@ class BrowserViewModel @Inject constructor(
 
     /** URLs already looked up on this page; guarded by itself (requests arrive on WebView threads). */
     private val seen = HashSet<String>()
+    /** URLs that belong to a stream on this page (its audio, its pieces' files): never listed on their own. Guarded by [seen]. */
+    private val partOfStream = HashSet<String>()
     /** Bumped per page, so a lookup finishing after navigating away is dropped. */
     private var page = 0
     private val lookups = Semaphore(LOOKUPS_PARALLEL)
@@ -67,6 +69,7 @@ class BrowserViewModel @Inject constructor(
         title = null
         synchronized(seen) {
             seen.clear()
+            partOfStream.clear()
             page++
         }
         _videos.value = emptyList()
@@ -78,18 +81,26 @@ class BrowserViewModel @Inject constructor(
         if (!stream && !PageVideos.isSniffable(url)) return
         val clean = url.substringBefore('#')
         val forPage = synchronized(seen) {
-            if (seen.size >= MAX_VIDEOS || !seen.add(clean)) return
+            if (seen.size >= MAX_VIDEOS || clean in partOfStream || !seen.add(clean)) return
             page
         }
         viewModelScope.launch {
             val from = referer ?: this@BrowserViewModel.url
-            val found = lookups.withPermit {
+            val scan = lookups.withPermit {
                 if (stream) directLinks.lookUpStream(clean, title, from, userAgent)
-                else listOfNotNull(directLinks.lookUpVideo(clean, referer = from, userAgent = userAgent))
+                else DirectLinks.StreamScan(listOfNotNull(directLinks.lookUpVideo(clean, referer = from, userAgent = userAgent)), emptySet())
             }
-            if (found.isEmpty() || synchronized(seen) { forPage != page }) return@launch
+            // Lookups finish in any order: a stream's audio or piece file may already be listed.
+            val partOf = synchronized(seen) {
+                if (forPage != page) return@launch
+                partOfStream += scan.partOf
+                partOfStream.toSet()
+            }
             // A quality seen both in its stream's list and on its own: keep the entry with the size estimate.
-            _videos.update { (it + found).sortedByDescending { v -> v.filesize }.distinctBy { v -> v.id } }
+            _videos.update { listed ->
+                (listed + scan.items).filter { v -> v.downloadUrl !in partOf }
+                    .sortedByDescending { v -> v.filesize }.distinctBy { v -> v.id }
+            }
         }
     }
 

@@ -11,10 +11,12 @@ class HlsPlaylistTest {
 
     private val base = "https://cdn.example.com/v/master.m3u8?t=1"
 
-    @Test fun masterBestFirstWithoutSeparateAudio() {
+    @Test fun masterBestFirstWithSeparateAudio() {
         val text = """
             #EXTM3U
-            #EXT-X-MEDIA:TYPE=AUDIO,GROUP-ID="aud",NAME="en",URI="audio/en.m3u8"
+            #EXT-X-MEDIA:TYPE=AUDIO,GROUP-ID="aud",NAME="fr",URI="audio/fr.m3u8"
+            #EXT-X-MEDIA:TYPE=AUDIO,GROUP-ID="aud",NAME="en",DEFAULT=YES,URI="audio/en.m3u8"
+            #EXT-X-MEDIA:TYPE=AUDIO,GROUP-ID="inside",NAME="en",DEFAULT=YES
             #EXT-X-STREAM-INF:BANDWIDTH=800000,RESOLUTION=640x360
             360/index.m3u8
             #EXT-X-STREAM-INF:BANDWIDTH=5000000,RESOLUTION=1920x1080,CODECS="avc1.640028,mp4a.40.2"
@@ -25,11 +27,44 @@ class HlsPlaylistTest {
         val m = HlsPlaylist.parse(text, base) as HlsPlaylist.Master
         assertEquals(
             listOf(
+                HlsPlaylist.Variant("https://cdn.example.com/v/2160/index.m3u8", 9_000_000, 2160, "https://cdn.example.com/v/audio/en.m3u8"),
                 HlsPlaylist.Variant("https://other.example.com/1080/index.m3u8", 5_000_000, 1080),
                 HlsPlaylist.Variant("https://cdn.example.com/v/360/index.m3u8", 800_000, 360)
             ),
             m.variants
         )
+    }
+
+    @Test fun sameVideoPrefersAacAudio() {
+        val text = """
+            #EXTM3U
+            #EXT-X-MEDIA:TYPE=AUDIO,GROUP-ID="ac3",NAME="en",URI="a/ac3.m3u8"
+            #EXT-X-MEDIA:TYPE=AUDIO,GROUP-ID="aac",NAME="en",URI="a/aac.m3u8"
+            #EXT-X-STREAM-INF:BANDWIDTH=2400000,CODECS="avc1.640028,ac-3",AUDIO="ac3"
+            v/1080.m3u8
+            #EXT-X-STREAM-INF:BANDWIDTH=2000000,CODECS="avc1.640028,mp4a.40.2",AUDIO="aac"
+            v/1080.m3u8
+        """.trimIndent()
+        val m = HlsPlaylist.parse(text, base) as HlsPlaylist.Master
+        assertEquals(listOf("https://cdn.example.com/v/a/aac.m3u8"), m.variants.map { it.audioUrl })
+    }
+
+    @Test fun otherPlaylistsAreNamed() {
+        val text = """
+            #EXTM3U
+            #EXT-X-MEDIA:TYPE=AUDIO,GROUP-ID="a",NAME="en",URI="a/en.m3u8"
+            #EXT-X-MEDIA:TYPE=SUBTITLES,GROUP-ID="s",NAME="en",URI="s/en.m3u8"
+            #EXT-X-MEDIA:TYPE=CLOSED-CAPTIONS,GROUP-ID="cc",NAME="en",INSTREAM-ID="CC1"
+            #EXT-X-I-FRAME-STREAM-INF:BANDWIDTH=90000,URI="v/iframes.m3u8"
+            #EXT-X-STREAM-INF:BANDWIDTH=2000000,AUDIO="a",SUBTITLES="s"
+            v/index.m3u8
+        """.trimIndent()
+        val m = HlsPlaylist.parse(text, base) as HlsPlaylist.Master
+        assertEquals(
+            setOf("https://cdn.example.com/v/a/en.m3u8", "https://cdn.example.com/v/s/en.m3u8", "https://cdn.example.com/v/v/iframes.m3u8"),
+            m.otherUrls
+        )
+        assertEquals(listOf("https://cdn.example.com/v/v/index.m3u8"), m.variants.map { it.url })
     }
 
     @Test fun mediaSegmentsDurationAndEnd() {

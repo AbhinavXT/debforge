@@ -247,25 +247,43 @@ class DirectLinks @Inject constructor(
         }
 
     /**
-     * The qualities of the HLS stream at [url], best first, ready to queue as
-     * "[title] 1080p.ts". Sizes are estimates (bitrate x length). Empty when
-     * the stream is live, DRM-protected, has its audio apart, or won't load.
+     * [items]: a stream's qualities, ready to queue. [partOf]: URLs the page
+     * loads for it that aren't to be offered on their own (its audio and
+     * subtitles, the qualities not listed, the files its pieces come from).
      */
-    suspend fun lookUpStream(url: String, title: String?, referer: String?, userAgent: String?): List<DownloadItem> =
+    class StreamScan(val items: List<DownloadItem>, val partOf: Set<String>)
+
+    /**
+     * The qualities of the HLS stream at [url], best first, ready to queue as
+     * "[title] 1080p.ts" (.mp4 for fMP4 pieces or audio kept apart). Sizes are
+     * estimates (bitrate x length). No items when the stream is live,
+     * DRM-protected, or won't load.
+     */
+    suspend fun lookUpStream(url: String, title: String?, referer: String?, userAgent: String?): StreamScan =
         withContext(Dispatchers.IO) {
+            val partOf = HashSet<String>()
             val streams = when (val top = runCatching { playlist(url, referer, userAgent) }.getOrNull()) {
-                is HlsPlaylist.Master -> top.variants.take(MAX_QUALITIES).map { v ->
-                    v to runCatching { playlist(v.url, referer, userAgent) }.getOrNull()
+                is HlsPlaylist.Master -> {
+                    partOf += top.otherUrls
+                    partOf += top.variants.drop(MAX_QUALITIES).map { it.url }
+                    top.variants.take(MAX_QUALITIES).map { v -> v to runCatching { playlist(v.url, referer, userAgent) }.getOrNull() }
                 }
                 is HlsPlaylist.Media -> listOf(HlsPlaylist.Variant(url, 0L, null) to top)
                 null -> emptyList()
             }
+            streams.forEach { (_, media) ->
+                if (media is HlsPlaylist.Media) partOf += (listOfNotNull(media.init) + media.segments).map { it.url }
+            }
             // The engine cleans the name; titles can be whole sentences.
             val name = title?.trim()?.take(80)?.ifBlank { null } ?: DirectLinkParser.hostOf(url)
-            streams.mapNotNull { (v, media) ->
+            val heights = streams.mapNotNull { it.first.height }
+            val items = streams.mapNotNull { (v, media) ->
                 if (media !is HlsPlaylist.Media || media.live || media.drm || media.segments.isEmpty()) return@mapNotNull null
-                val quality = v.height?.let { " ${it}p" }.orEmpty()
-                val ext = if (media.init != null) "mp4" else "ts"
+                // Two qualities at one height (two bitrates): the bitrate tells their files apart.
+                val rate = if (heights.count { it == v.height } > 1) " %.1f Mbps".format(v.bandwidth / 1e6) else ""
+                val quality = v.height?.let { " ${it}p$rate" }.orEmpty()
+                // Separate audio is combined with the video into an MP4.
+                val ext = if (media.init != null || v.audioUrl != null) "mp4" else "ts"
                 item(
                     sourceRef = DirectLinkParser.HLS_PREFIX + v.url,
                     url = v.url,
@@ -274,8 +292,9 @@ class DirectLinks @Inject constructor(
                     host = DirectLinkParser.hostOf(v.url),
                     referer = referer,
                     userAgent = userAgent
-                )
+                ).copy(audioUrl = v.audioUrl)
             }
+            StreamScan(items, partOf)
         }
 
     private fun playlist(url: String, referer: String?, userAgent: String?): HlsPlaylist.Playlist? {
