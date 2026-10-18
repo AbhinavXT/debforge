@@ -43,7 +43,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
-import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
@@ -58,6 +58,8 @@ import javax.inject.Inject
  */
 data class BrowseUiState(
     val providerName: String = "",
+    /** No service signed in: the items are the downloads on this device. */
+    val local: Boolean = false,
     val emptyHint: String = "",
     val items: List<DownloadItem> = emptyList(),
     val query: String = "",
@@ -176,13 +178,15 @@ class BrowseViewModel @Inject constructor(
 
             // Reload whenever the active service changes (Settings switcher).
             // signedInProvider only emits providers that have a token.
-            auth.signedInProvider.filterNotNull().collect { id ->
-                if (id == provider) return@collect
+            auth.signedInProvider.collectLatest { id ->
+                if (id == null) return@collectLatest showLocal()
+                if (id == provider) return@collectLatest
                 provider = id
                 val info = auth.info(id)
                 _state.update {
                     it.copy(
                         providerName = info.displayName,
+                        local = false,
                         emptyHint = str(
                             R.string.browse_empty_hint,
                             android.net.Uri.parse(info.websiteUrl).host?.removePrefix("www.") ?: info.displayName
@@ -193,6 +197,38 @@ class BrowseViewModel @Inject constructor(
                 }
                 refresh()
                 checkExpiry(id)
+            }
+        }
+    }
+
+    /** No service: lists the finished downloads (any source) until one signs in. */
+    private suspend fun showLocal() {
+        provider = null
+        loadJob?.cancel()
+        searchJob?.cancel()
+        quietJob?.cancel()
+        processingJob?.cancel()
+        _processing.value = emptyList()
+        _state.update {
+            it.copy(
+                local = true, providerName = "", emptyHint = str(R.string.browse_local_empty),
+                expiryWarning = null, error = null, isAppending = false, searchingAll = false
+            )
+        }
+        downloadDao.observeByState(DownloadState.COMPLETED).collect { rows ->
+            _state.update { s ->
+                s.copy(
+                    items = rows.map { e ->
+                        DownloadItem(
+                            id = e.id, provider = e.provider, filename = e.filename, sourceRef = e.sourceRef,
+                            downloadUrl = null, host = e.host, filesize = e.filesize, maxConnections = 1,
+                            addedAt = java.time.Instant.ofEpochMilli(e.updatedAt).toString(),
+                            referer = e.referer, userAgent = e.userAgent, audioUrl = e.audioUrl
+                        )
+                    },
+                    isInitialLoad = false,
+                    endReached = true
+                )
             }
         }
     }
@@ -484,7 +520,7 @@ class BrowseViewModel @Inject constructor(
     private fun keyOf(item: DownloadItem): String? = downloadsRepository.removalKey(item.provider, item.id)
 
     /** True if the service can remove at least one of [items]. */
-    fun canRemove(items: List<DownloadItem>): Boolean = items.any { keyOf(it) != null }
+    fun canRemove(items: List<DownloadItem>): Boolean = provider != null && items.any { keyOf(it) != null }
 
     /**
      * Deletes the torrents/entries holding [items] from the service. Files the

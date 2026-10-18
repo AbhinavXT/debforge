@@ -68,6 +68,7 @@
     <string name="browse_empty_body">Tudo o que você adicionar ao %1$s aparece aqui, pronto para baixar na velocidade máxima.</string>
     <string name="browse_your_service">seu serviço</string>
     <string name="browse_empty_add">Adicione um magnet, torrent ou link</string>
+    <string name="browse_local_empty">Os vídeos que você baixar pela aba Navegador ou por um link aparecem aqui. Entre em um serviço debrid nas Configurações para ver os arquivos dele também.</string>
     <string name="storage_title">Onde salvar os arquivos?</string>
     <string name="storage_body">Escolha uma pasta: armazenamento interno, cartão SD ou pendrive USB, sem permissão especial. Ou use o armazenamento próprio do DebForge (apagado se você desinstalar o app).</string>
     <string name="storage_use_app">Usar armazenamento do app</string>

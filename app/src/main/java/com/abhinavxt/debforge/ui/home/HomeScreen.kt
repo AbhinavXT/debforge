@@ -32,9 +32,13 @@ import androidx.compose.material3.NavigationRailItem
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -74,7 +78,8 @@ private enum class HomeTab(
  * The app shell. Bottom-nav switches between Browse / Active / Browser /
  * Settings; nav state is saved across tab switches so the user keeps their
  * scroll position and any in-flight loads. Without a signed-in service
- * ([signedIn] false) the Library tab is Setup, and the app opens on Browser.
+ * ([signedIn] false) the Library lists this device's downloads, shows Setup
+ * only when the user asks to sign in, and the app opens on Browser.
  *
  * The notification permission request runs once on first composition. On
  * pre-API-33 it's no-op (the permission is install-time); on 33+ a denial just
@@ -103,10 +108,19 @@ fun HomeScreen(signedIn: Boolean) {
         }
     }
 
+    // Library shows Setup instead of the device's downloads: the user asked to sign in.
+    var connecting by rememberSaveable { mutableStateOf(false) }
+    fun connect() {
+        connecting = true
+        go(HomeTab.Browse)
+    }
+    LaunchedEffect(signedIn) { if (signedIn) connecting = false }
+    LaunchedEffect(current?.route) { if (current != null && current.route != HomeTab.Browse.route) connecting = false }
+
     // A magnet / torrent waiting for a service: show where to sign in.
     val waitingForService by addViewModel.waitingForService.collectAsStateWithLifecycle()
     // Keyed on the item, not "is anything waiting": each new one shows the way again.
-    LaunchedEffect(waitingForService) { if (waitingForService != null) go(HomeTab.Browse) }
+    LaunchedEffect(waitingForService) { if (waitingForService != null) connect() }
 
     // Decided once: signing in later shouldn't yank the user off the tab they're on.
     val startTab = remember { if (signedIn) HomeTab.Browse else HomeTab.Browser }
@@ -128,18 +142,19 @@ fun HomeScreen(signedIn: Boolean) {
                 modifier = modifier
             ) {
                 composable(HomeTab.Browse.route) {
-                    if (currentSignedIn) {
+                    if (currentSignedIn || !connecting) {
                         BrowseScreen(
                             onAdd = { addViewModel.open() },
                             onAddText = { addViewModel.open(prefillText = it) }
                         )
                     } else {
+                        BackHandler { connecting = false }
                         SetupScreen()
                     }
                 }
                 composable(HomeTab.Active.route) { ActiveDownloadsScreen() }
                 composable(HomeTab.Browser.route) { BrowserScreen(onMagnet = addViewModel::offer) }
-                composable(HomeTab.Settings.route) { SettingsScreen(onConnect = { go(HomeTab.Browse) }) }
+                composable(HomeTab.Settings.route) { SettingsScreen(onConnect = ::connect) }
             }
         }
     }

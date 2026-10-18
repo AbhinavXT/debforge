@@ -68,6 +68,7 @@
     <string name="browse_empty_body">%1$s-এ যা কিছু যোগ করবেন তা এখানে দেখা যাবে, পুরো স্পিডে ডাউনলোডের জন্য তৈরি।</string>
     <string name="browse_your_service">আপনার সার্ভিস</string>
     <string name="browse_empty_add">একটি ম্যাগনেট, টরেন্ট বা লিংক যোগ করুন</string>
+    <string name="browse_local_empty">ব্রাউজার ট্যাব বা কোনো লিংক থেকে ডাউনলোড করা ভিডিও এখানে দেখা যায়। কোনো debrid সার্ভিসের ফাইলও দেখতে সেটিংসে সাইন ইন করুন।</string>
     <string name="storage_title">ফাইলগুলো কোথায় রাখা হবে?</string>
     <string name="storage_body">একটি ফোল্ডার বেছে নিন: ইন্টারনাল স্টোরেজ, SD কার্ড বা USB ড্রাইভ, কোনো বিশেষ অনুমতি ছাড়াই। অথবা DebForge-এর নিজস্ব স্টোরেজ ব্যবহার করুন (অ্যাপ আনইনস্টল করলে মুছে যায়)।</string>
     <string name="storage_use_app">অ্যাপ স্টোরেজ ব্যবহার করুন</string>

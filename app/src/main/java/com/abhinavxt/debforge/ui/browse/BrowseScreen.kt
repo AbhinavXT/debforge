@@ -423,6 +423,7 @@ fun BrowseScreen(
                     EmptyState(
                         providerName = state.providerName,
                         hint = state.emptyHint,
+                        local = state.local,
                         onAdd = onAdd
                     )
                 }
@@ -988,11 +989,11 @@ private fun NoMatches(query: String) {
 
 /** First-run friendly: says what goes here and offers the obvious next step. */
 @Composable
-private fun EmptyState(providerName: String, hint: String, onAdd: () -> Unit) {
+private fun EmptyState(providerName: String, hint: String, local: Boolean, onAdd: () -> Unit) {
     MessageState(
         icon = Icons.Rounded.VideoLibrary,
         title = stringResource(R.string.browse_empty_title),
-        body = stringResource(
+        body = if (local) hint else stringResource(
             R.string.browse_empty_body,
             providerName.ifEmpty { stringResource(R.string.browse_your_service) }
         ) + " " + hint,

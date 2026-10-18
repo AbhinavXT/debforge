@@ -160,8 +160,12 @@ class AddViewModel @Inject constructor(
 
     /** What's waiting for the user to sign in to a service (there's none yet); null when nothing is. */
     val waitingForService: StateFlow<PendingAdd?> =
-        combine(auth.signedInProvider, pendingAdds.pending) { id, add -> add.takeIf { id == null } }
+        combine(auth.signedInProvider, pendingAdds.pending) { id, add -> add?.takeIf { id == null && needsService(it) } }
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
+    /** Magnets and torrents go through a service; plain links can be downloaded straight away. */
+    private fun needsService(add: PendingAdd) =
+        add !is PendingAdd.Text || AddInputParser.parse(add.text).requests.any { it !is AddRequest.Link }
 
     /** A magnet found in the app (Browser tab): the dialog opens now, or right after signing in. */
     fun offer(text: String) = pendingAdds.offer(PendingAdd.Text(text))
@@ -246,7 +250,7 @@ class AddViewModel @Inject constructor(
         val active = provider ?: return
         val hashes = currentHashes()
         val kinds = inputKinds()
-        val all = signedIn.ifEmpty { listOf(active) } + ProviderId.DIRECT
+        val all = (signedIn.ifEmpty { listOf(active) } + ProviderId.DIRECT).distinct()
         val targets = all.map { p ->
             AddTarget(
                 id = p,
@@ -316,15 +320,17 @@ class AddViewModel @Inject constructor(
                 Triple(id, all, add)
             }
                 .collect { (id, all, add) ->
-                    if (id == null) return@collect
+                    // No service yet: the dialog still downloads links straight to the device.
+                    val active = id ?: ProviderId.DIRECT
                     // Registry order, so the "Send to" chips don't jump around.
                     val ordered = ProviderId.entries.filter { it in all }
-                    if (id != provider || ordered != signedIn) {
-                        provider = id
+                    if (active != provider || ordered != signedIn) {
+                        provider = active
                         signedIn = ordered
                         scheduleCacheCheck()
                     }
-                    if (add != null) {
+                    // Magnets and torrents keep waiting for a service (Setup shows meanwhile).
+                    if (add != null && (id != null || !needsService(add))) {
                         when (val consumed = pendingAdds.consume()) {
                             is PendingAdd.Text -> open(prefillText = consumed.text)
                             is PendingAdd.TorrentUri -> open(torrent = consumed.uri)
