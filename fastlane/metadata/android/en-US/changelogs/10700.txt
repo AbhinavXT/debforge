@@ -1,0 +1,4 @@
+• added a Browser tab: downloads a page starts go to DebForge's queue, and videos it plays are listed to download
+• added HLS stream downloads, including streams with separate audio (saved as one MP4)
+• browser blocks common ads, plays video full screen and sends the site's Referer and cookies
+• a debrid service is now optional: add one later in Settings
