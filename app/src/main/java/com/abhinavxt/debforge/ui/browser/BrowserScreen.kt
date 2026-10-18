@@ -157,6 +157,7 @@ fun BrowserScreen(onMagnet: (String) -> Unit, viewModel: BrowserViewModel = hilt
                             layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
                             settings.javaScriptEnabled = true
                             settings.domStorageEnabled = true
+                            viewModel.userAgent = settings.userAgentString
                             // Logins that go through another site (Google, a CDN) need these.
                             CookieManager.getInstance().setAcceptThirdPartyCookies(this, true)
                             webViewClient = object : WebViewClient() {
@@ -173,7 +174,7 @@ fun BrowserScreen(onMagnet: (String) -> Unit, viewModel: BrowserViewModel = hilt
                                 override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
                                     // An empty answer: the ad (and its video) never loads.
                                     if (AdHosts.blocks(request.url.host)) return WebResourceResponse("text/plain", "utf-8", ByteArrayInputStream(ByteArray(0)))
-                                    if (!request.isForMainFrame) viewModel.onRequest(request.url.toString())
+                                    if (!request.isForMainFrame) viewModel.onRequest(request.url.toString(), request.requestHeaders["Referer"])
                                     return null
                                 }
 

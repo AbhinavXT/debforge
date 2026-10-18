@@ -37,7 +37,7 @@ class Converters {
         DownloadEntity::class, ChunkEntity::class, MediaMetaEntity::class, WatchEntity::class, UsageEntity::class,
         com.abhinavxt.debforge.data.playback.PlaybackEntity::class
     ],
-    version = 8,
+    version = 9,
     // Schemas land in app/schemas (commit them): DatabaseMigrationTest checks
     // every migration against them. v1–v7 were rebuilt from the migrations.
     exportSchema = true
@@ -56,7 +56,7 @@ abstract class DebForgeDatabase : RoomDatabase() {
 
         /** Every migration, oldest first. A new one goes here (and DatabaseMigrationTest checks it). Lazy: they are declared below. */
         val ALL_MIGRATIONS: Array<Migration> by lazy {
-            arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8)
+            arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9)
         }
 
         /**
@@ -104,6 +104,14 @@ abstract class DebForgeDatabase : RoomDatabase() {
         val MIGRATION_7_8 = object : Migration(7, 8) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE `playback_positions` ADD COLUMN `parentRef` TEXT")
+            }
+        }
+
+        /** v8 -> v9: the in-app browser's Referer / User-Agent per download (nullable, no default: matches the entity). */
+        val MIGRATION_8_9 = object : Migration(8, 9) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE `downloads` ADD COLUMN `referer` TEXT")
+                db.execSQL("ALTER TABLE `downloads` ADD COLUMN `userAgent` TEXT")
             }
         }
 

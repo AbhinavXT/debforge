@@ -313,7 +313,7 @@ class ChunkedDownloader @Inject constructor(
         partPath: String,
         finalPath: String
     ): DownloadOutcome = withContext(Dispatchers.IO) {
-        val call = client.newCall(Request.Builder().url(url).get().build())
+        val call = client.newCall(entity.request(url).build())
         cancellableCall(call) {
             val resp = call.execute()
             resp.use {
@@ -395,7 +395,7 @@ class ChunkedDownloader @Inject constructor(
         // At most two probes: the stored/just-resolved URL, then one refresh.
         repeat(2) {
             coroutineContext.ensureActive()
-            val req = Request.Builder().url(current.downloadUrl).header("Range", "bytes=0-0").get().build()
+            val req = current.request(current.downloadUrl).header("Range", "bytes=0-0").build()
             val call = client.newCall(req)
             val resp = cancellableCall(call) { call.execute() }
             try {
@@ -509,7 +509,7 @@ class ChunkedDownloader @Inject constructor(
         }
 
         val writeOffset = range.startByte + resumeFrom
-        val reqBuilder = Request.Builder().url(url).get()
+        val reqBuilder = entity.request(url)
         if (supportsRange) {
             reqBuilder.header("Range", "bytes=$writeOffset-${range.endByte}")
         }
@@ -613,6 +613,13 @@ class ChunkedDownloader @Inject constructor(
     }
 
     /** Parses the total size from a "Content-Range: bytes 0-0/123456" header. */
+    /** A GET for this file, with the browser's Referer / User-Agent when it came from the Browser tab. */
+    private fun DownloadEntity.request(url: String): Request.Builder =
+        Request.Builder().url(url).get().apply {
+            referer?.let { header("Referer", it) }
+            userAgent?.let { header("User-Agent", it) }
+        }
+
     private fun parseContentRangeTotal(header: String?): Long? {
         val total = header?.substringAfter('/', "")?.trim()
         return total?.toLongOrNull()?.takeIf { it > 0 }
