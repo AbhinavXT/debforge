@@ -206,26 +206,32 @@ class DirectLinks @Inject constructor(
         val videos = coroutineScope {
             found.videos.take(MAX_CANDIDATES).map { video ->
                 async {
-                    gate.withPermit {
-                        // A dead or forbidden link is just left out.
-                        val p = runCatching { probe(video) }.getOrNull() ?: return@withPermit null
-                        if (p.webPage || !PageVideos.isVideo(p.name, p.contentType)) return@withPermit null
-                        val tag = DirectLinkParser.itemId(video).removePrefix("direct:").take(8)
-                        item(
-                            sourceRef = video,
-                            url = video,
-                            name = p.name ?: DirectLinkParser.fallbackName(p.contentType, tag),
-                            size = p.size,
-                            host = DirectLinkParser.hostOf(video),
-                            parentRef = "page:$pageUrl",
-                            parentName = found.title
-                        )
-                    }
+                    gate.withPermit { lookUpVideo(video, parentRef = "page:$pageUrl", parentName = found.title) }
                 }
             }.awaitAll().filterNotNull()
         }
         PageScan(found.title, videos.distinctBy { it.id }.sortedByDescending { it.filesize }, found.streams)
     }
+
+    /**
+     * [url] as a video ready to queue, with its name and size. Null when the
+     * link is dead or forbidden, or isn't a video: it's just left out.
+     */
+    suspend fun lookUpVideo(url: String, parentRef: String? = null, parentName: String? = null): DownloadItem? =
+        withContext(Dispatchers.IO) {
+            val p = runCatching { probe(url) }.getOrNull() ?: return@withContext null
+            if (p.webPage || !PageVideos.isVideo(p.name, p.contentType)) return@withContext null
+            val tag = DirectLinkParser.itemId(url).removePrefix("direct:").take(8)
+            item(
+                sourceRef = url,
+                url = url,
+                name = p.name ?: DirectLinkParser.fallbackName(p.contentType, tag),
+                size = p.size,
+                host = DirectLinkParser.hostOf(url),
+                parentRef = parentRef,
+                parentName = parentName
+            )
+        }
 
     // --- HTTP -------------------------------------------------------------------
 
