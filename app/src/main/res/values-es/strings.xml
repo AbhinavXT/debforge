@@ -23,6 +23,7 @@
     <string name="action_done">Listo</string>
     <string name="setup_your_service">tu servicio debrid</string>
     <string name="setup_intro">Elige tu servicio e inicia sesión con tu %2$s de %1$s.</string>
+    <string name="setup_optional">Solo hace falta para la biblioteca de tu servicio. La pestaña Navegador descarga de cualquier web sin él.</string>
     <string name="setup_or_paste">o pega tu %1$s</string>
     <string name="setup_paste">Pegar</string>
     <string name="setup_pasted_from">Pegado desde %1$s</string>

@@ -23,6 +23,7 @@
     <string name="action_done">Fertig</string>
     <string name="setup_your_service">deinem Debrid-Dienst</string>
     <string name="setup_intro">Wähle deinen Dienst und melde dich bei %1$s an (mit %2$s).</string>
+    <string name="setup_optional">Nur für die Mediathek deines Dienstes nötig. Der Browser-Tab lädt auch ohne ihn von jeder Website herunter.</string>
     <string name="setup_or_paste">oder %1$s einfügen</string>
     <string name="setup_paste">Einfügen</string>
     <string name="setup_pasted_from">Eingefügt von %1$s</string>

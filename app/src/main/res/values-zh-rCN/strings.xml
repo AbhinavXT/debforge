@@ -23,6 +23,7 @@
     <string name="action_done">完成</string>
     <string name="setup_your_service">你的 debrid 服务</string>
     <string name="setup_intro">选择你的服务，然后使用 %1$s %2$s 登录。</string>
+    <string name="setup_optional">仅在使用服务的媒体库时需要。没有它，“浏览器”标签页也能从任意网站下载。</string>
     <string name="setup_or_paste">或粘贴你的 %1$s</string>
     <string name="setup_paste">粘贴</string>
     <string name="setup_pasted_from">已从 %1$s 粘贴</string>

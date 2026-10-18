@@ -23,6 +23,7 @@
     <string name="action_done">Готово</string>
     <string name="setup_your_service">ваш debrid-сервис</string>
     <string name="setup_intro">Выберите сервис и войдите в %1$s, используя %2$s.</string>
+    <string name="setup_optional">Нужно только для библиотеки вашего сервиса. Вкладка «Браузер» скачивает с любого сайта и без него.</string>
     <string name="setup_or_paste">или вставьте %1$s</string>
     <string name="setup_paste">Вставить</string>
     <string name="setup_pasted_from">Вставлено из %1$s</string>

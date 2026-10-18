@@ -37,11 +37,13 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
@@ -54,6 +56,7 @@ import com.abhinavxt.debforge.ui.add.AddViewModel
 import com.abhinavxt.debforge.ui.browse.BrowseScreen
 import com.abhinavxt.debforge.ui.browser.BrowserScreen
 import com.abhinavxt.debforge.ui.settings.SettingsScreen
+import com.abhinavxt.debforge.ui.setup.SetupScreen
 
 private enum class HomeTab(
     val route: String,
@@ -68,9 +71,10 @@ private enum class HomeTab(
 }
 
 /**
- * The authenticated shell. Bottom-nav switches between Browse / Active /
- * Browser / Settings; nav state is saved across tab switches so the user keeps their
- * scroll position and any in-flight loads.
+ * The app shell. Bottom-nav switches between Browse / Active / Browser /
+ * Settings; nav state is saved across tab switches so the user keeps their
+ * scroll position and any in-flight loads. Without a signed-in service
+ * ([signedIn] false) the Library tab is Setup, and the app opens on Browser.
  *
  * The notification permission request runs once on first composition. On
  * pre-API-33 it's no-op (the permission is install-time); on 33+ a denial just
@@ -79,7 +83,7 @@ private enum class HomeTab(
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun HomeScreen() {
+fun HomeScreen(signedIn: Boolean) {
     NotificationPermissionRequest()
 
     // Scoped to Home so it outlives tab switches; it also receives magnets /
@@ -99,6 +103,16 @@ fun HomeScreen() {
         }
     }
 
+    // A magnet / torrent waiting for a service: show where to sign in.
+    val waitingForService by addViewModel.waitingForService.collectAsStateWithLifecycle()
+    // Keyed on the item, not "is anything waiting": each new one shows the way again.
+    LaunchedEffect(waitingForService) { if (waitingForService != null) go(HomeTab.Browse) }
+
+    // Decided once: signing in later shouldn't yank the user off the tab they're on.
+    val startTab = remember { if (signedIn) HomeTab.Browse else HomeTab.Browser }
+    // Read inside the movable content below, which is built once.
+    val currentSignedIn by rememberUpdatedState(signedIn)
+
     // Tablets, foldables (unfolded), Chromebooks and TVs get a side rail;
     // phones keep the bottom bar. 600dp is Material's "medium" width class.
     val wide = LocalConfiguration.current.screenWidthDp >= 600
@@ -110,18 +124,22 @@ fun HomeScreen() {
         movableContentOf { modifier: Modifier ->
             NavHost(
                 navController = navController,
-                startDestination = HomeTab.Browse.route,
+                startDestination = startTab.route,
                 modifier = modifier
             ) {
                 composable(HomeTab.Browse.route) {
-                    BrowseScreen(
-                        onAdd = { addViewModel.open() },
-                        onAddText = { addViewModel.open(prefillText = it) }
-                    )
+                    if (currentSignedIn) {
+                        BrowseScreen(
+                            onAdd = { addViewModel.open() },
+                            onAddText = { addViewModel.open(prefillText = it) }
+                        )
+                    } else {
+                        SetupScreen()
+                    }
                 }
                 composable(HomeTab.Active.route) { ActiveDownloadsScreen() }
-                composable(HomeTab.Browser.route) { BrowserScreen(onMagnet = { addViewModel.open(prefillText = it) }) }
-                composable(HomeTab.Settings.route) { SettingsScreen() }
+                composable(HomeTab.Browser.route) { BrowserScreen(onMagnet = addViewModel::offer) }
+                composable(HomeTab.Settings.route) { SettingsScreen(onConnect = { go(HomeTab.Browse) }) }
             }
         }
     }

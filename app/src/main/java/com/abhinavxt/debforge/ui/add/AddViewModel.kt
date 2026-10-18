@@ -30,7 +30,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -155,6 +157,14 @@ class AddViewModel @Inject constructor(
 
     private val _state = MutableStateFlow(AddUiState())
     val state: StateFlow<AddUiState> = _state.asStateFlow()
+
+    /** What's waiting for the user to sign in to a service (there's none yet); null when nothing is. */
+    val waitingForService: StateFlow<PendingAdd?> =
+        combine(auth.signedInProvider, pendingAdds.pending) { id, add -> add.takeIf { id == null } }
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
+    /** A magnet found in the app (Browser tab): the dialog opens now, or right after signing in. */
+    fun offer(text: String) = pendingAdds.offer(PendingAdd.Text(text))
 
     /** The active service (the one the Library shows). */
     private var provider: ProviderId? = null

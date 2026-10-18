@@ -13,7 +13,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -61,10 +61,13 @@ class SetupViewModel @Inject constructor(
     private var deviceJob: Job? = null
 
     init {
-        // Preselect the provider the user last chose (e.g. they switched to a
-        // service they aren't signed in to yet from Settings).
+        // Follow the provider the user last chose (e.g. they switched to a
+        // service they aren't signed in to yet from Settings): this screen
+        // lives on in the Library tab, so not just once.
         viewModelScope.launch {
-            auth.activeProvider.first()?.let { active ->
+            auth.activeProvider.filterNotNull().collect { active ->
+                if (active == _state.value.selected || _state.value.isValidating) return@collect
+                cancelDeviceLogin()
                 _state.update {
                     it.copy(selected = active, deviceLoginAvailable = auth.supportsDeviceLogin(active))
                 }

@@ -23,6 +23,7 @@
     <string name="action_done">हो गया</string>
     <string name="setup_your_service">आपकी डेब्रिड सेवा</string>
     <string name="setup_intro">अपनी सेवा चुनें और अपने %1$s %2$s से साइन इन करें।</string>
+    <string name="setup_optional">सिर्फ़ आपकी सेवा की लाइब्रेरी के लिए ज़रूरी है। ब्राउज़र टैब इसके बिना भी किसी भी वेबसाइट से डाउनलोड करता है।</string>
     <string name="setup_or_paste">या अपना %1$s पेस्ट करें</string>
     <string name="setup_paste">पेस्ट करें</string>
     <string name="setup_pasted_from">%1$s से पेस्ट किया गया</string>

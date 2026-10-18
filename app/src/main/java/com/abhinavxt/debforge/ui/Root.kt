@@ -12,27 +12,20 @@ import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.abhinavxt.debforge.ui.home.HomeScreen
-import com.abhinavxt.debforge.ui.setup.SetupScreen
 
 /**
- * App root. Watches [AuthGateViewModel] and renders the right tree:
- *  - Loading → centered spinner (very brief, while the DataStore flow emits its
- *    first value).
- *  - Unauthenticated → [SetupScreen]. When the user validates a token, the auth
- *    flow flips and the composable swaps to [HomeScreen] automatically.
- *  - Authenticated → [HomeScreen] with bottom-nav between Browse / Active /
- *    Settings.
- *
- * We deliberately do NOT thread auth through a NavHost route; logging out
- * doesn't need a "back" path to the previous tree.
+ * App root. A debrid service is optional (the Browser tab downloads without
+ * one), so [HomeScreen] always shows once [AuthGateViewModel] knows whether a
+ * service is signed in; the Library tab shows Setup until one is.
+ * Loading → centered spinner (very brief, while the DataStore flow emits its
+ * first value).
  */
 @Composable
 fun DebForgeRoot(viewModel: AuthGateViewModel = hiltViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     when (state) {
         AuthState.Loading -> SplashGate()
-        AuthState.Unauthenticated -> SetupScreen()
-        AuthState.Authenticated -> HomeScreen()
+        else -> HomeScreen(signedIn = state == AuthState.Authenticated)
     }
 }
 

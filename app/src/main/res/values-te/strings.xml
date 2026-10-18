@@ -23,6 +23,7 @@
     <string name="action_done">పూర్తయింది</string>
     <string name="setup_your_service">మీ డెబ్రిడ్ సర్వీస్</string>
     <string name="setup_intro">మీ సర్వీస్‌ను ఎంచుకుని, మీ %1$s %2$sతో సైన్ ఇన్ చేయండి.</string>
+    <string name="setup_optional">మీ సర్వీస్ లైబ్రరీ కోసం మాత్రమే అవసరం. బ్రౌజర్ ట్యాబ్ ఇది లేకుండానే ఏ వెబ్‌సైట్ నుండైనా డౌన్‌లోడ్ చేస్తుంది.</string>
     <string name="setup_or_paste">లేదా మీ %1$sను పేస్ట్ చేయండి</string>
     <string name="setup_paste">పేస్ట్ చేయి</string>
     <string name="setup_pasted_from">%1$s నుండి పేస్ట్ చేయబడింది</string>
