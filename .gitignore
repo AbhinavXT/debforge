@@ -6,6 +6,7 @@ local.properties
 # Release artifacts (upload to GitHub releases instead)
 *.apk
 *.apk.sha256
+app/release/
 
 # OS / IDE noise
 .DS_Store
