@@ -23,6 +23,7 @@
     <string name="action_done">Selesai</string>
     <string name="setup_your_service">layanan debrid Anda</string>
     <string name="setup_intro">Pilih layanan Anda dan masuk dengan %2$s %1$s Anda.</string>
+    <string name="setup_optional">Hanya diperlukan untuk pustaka layananmu. Tab Browser bisa mengunduh dari situs mana pun tanpanya.</string>
     <string name="setup_or_paste">atau tempel %1$s Anda</string>
     <string name="setup_paste">Tempel</string>
     <string name="setup_pasted_from">Ditempel dari %1$s</string>

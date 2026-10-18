@@ -117,6 +117,11 @@ fun SetupScreen(viewModel: SetupViewModel = hiltViewModel()) {
                 style = MaterialTheme.typography.bodyLarge,
                 color = cs.onSurfaceVariant
             )
+            Text(
+                text = stringResource(R.string.setup_optional),
+                style = MaterialTheme.typography.bodyMedium,
+                color = cs.onSurfaceVariant
+            )
 
             Spacer(Modifier.height(8.dp))
 

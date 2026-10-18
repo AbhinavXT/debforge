@@ -23,6 +23,7 @@
     <string name="action_done">Concluído</string>
     <string name="setup_your_service">seu serviço debrid</string>
     <string name="setup_intro">Escolha seu serviço e faça login com o %2$s do %1$s.</string>
+    <string name="setup_optional">Só é necessário para a biblioteca do seu serviço. A aba Navegador baixa de qualquer site sem ele.</string>
     <string name="setup_or_paste">ou cole o seu %1$s</string>
     <string name="setup_paste">Colar</string>
     <string name="setup_pasted_from">Colado de %1$s</string>

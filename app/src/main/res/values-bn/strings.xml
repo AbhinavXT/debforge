@@ -23,6 +23,7 @@
     <string name="action_done">হয়ে গেছে</string>
     <string name="setup_your_service">আপনার ডেব্রিড সার্ভিস</string>
     <string name="setup_intro">আপনার সার্ভিস বেছে নিন এবং আপনার %1$s %2$s দিয়ে সাইন ইন করুন।</string>
+    <string name="setup_optional">শুধু আপনার সার্ভিসের লাইব্রেরির জন্য দরকার। ব্রাউজার ট্যাব এটি ছাড়াও যেকোনো ওয়েবসাইট থেকে ডাউনলোড করে।</string>
     <string name="setup_or_paste">অথবা আপনার %1$s পেস্ট করুন</string>
     <string name="setup_paste">পেস্ট করুন</string>
     <string name="setup_pasted_from">%1$s থেকে পেস্ট করা হয়েছে</string>

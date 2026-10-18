@@ -23,6 +23,7 @@
     <string name="action_done">முடிந்தது</string>
     <string name="setup_your_service">உங்கள் டெப்ரிட் சேவை</string>
     <string name="setup_intro">உங்கள் சேவையைத் தேர்ந்தெடுத்து, உங்கள் %1$s %2$s மூலம் உள்நுழையவும்.</string>
+    <string name="setup_optional">உங்கள் சேவையின் நூலகத்திற்கு மட்டுமே தேவை. உலாவி தாவல் இது இல்லாமலும் எந்த இணையதளத்திலிருந்தும் பதிவிறக்குகிறது.</string>
     <string name="setup_or_paste">அல்லது உங்கள் %1$s-ஐ ஒட்டவும்</string>
     <string name="setup_paste">ஒட்டு</string>
     <string name="setup_pasted_from">%1$s-இலிருந்து ஒட்டப்பட்டது</string>

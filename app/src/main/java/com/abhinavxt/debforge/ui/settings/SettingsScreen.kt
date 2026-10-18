@@ -99,7 +99,7 @@ import com.abhinavxt.debforge.domain.Housekeeping
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
+fun SettingsScreen(onConnect: () -> Unit, viewModel: SettingsViewModel = hiltViewModel()) {
     val dir by viewModel.downloadDir.collectAsStateWithLifecycle()
     val sort by viewModel.sortDefault.collectAsStateWithLifecycle()
     val theme by viewModel.themeMode.collectAsStateWithLifecycle()
@@ -387,15 +387,21 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
                             name = row.info.displayName,
                             signedIn = row.signedIn,
                             selected = row.active,
-                            onClick = { viewModel.selectProvider(row.info.id) }
+                            onClick = {
+                                viewModel.selectProvider(row.info.id)
+                                // Its sign-in is on the Library tab.
+                                if (!row.signedIn) onConnect()
+                            }
                         )
                     }
-                    RowDivider()
-                    SettingRow(
-                        icon = Icons.AutoMirrored.Rounded.Logout,
-                        title = stringResource(R.string.set_sign_out_of, activeName),
-                        onClick = { showSignOutDialog = true }
-                    )
+                    if (providers.any { it.active && it.signedIn }) {
+                        RowDivider()
+                        SettingRow(
+                            icon = Icons.AutoMirrored.Rounded.Logout,
+                            title = stringResource(R.string.set_sign_out_of, activeName),
+                            onClick = { showSignOutDialog = true }
+                        )
+                    }
                 }
             }
             item(key = "trakt") { TraktSection() }

@@ -23,6 +23,7 @@
     <string name="action_done">OK</string>
     <string name="setup_your_service">votre service debrid</string>
     <string name="setup_intro">Choisissez votre service et connectez-vous à %1$s avec votre %2$s.</string>
+    <string name="setup_optional">Nécessaire uniquement pour la bibliothèque de votre service. L’onglet Navigateur télécharge depuis n’importe quel site sans lui.</string>
     <string name="setup_or_paste">ou collez votre %1$s</string>
     <string name="setup_paste">Coller</string>
     <string name="setup_pasted_from">Collé depuis %1$s</string>

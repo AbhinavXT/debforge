@@ -24,6 +24,7 @@
     <string name="action_done">Done</string>
     <string name="setup_your_service">your debrid service</string>
     <string name="setup_intro">Choose your service and sign in with your %1$s %2$s.</string>
+    <string name="setup_optional">Only needed for your service\'s library. The Browser tab downloads from any website without it.</string>
     <string name="setup_or_paste">or paste your %1$s</string>
     <string name="setup_paste">Paste</string>
     <string name="setup_pasted_from">Pasted from %1$s</string>
