@@ -53,6 +53,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -82,6 +83,7 @@ fun BrowserScreen(onMagnet: (String) -> Unit, viewModel: BrowserViewModel = hilt
     val videos by viewModel.videos.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
     val focus = LocalFocusManager.current
+    val keyboard = LocalSoftwareKeyboardController.current
     var address by remember { mutableStateOf(viewModel.url) }
     var progress by remember { mutableIntStateOf(100) }
     var canGoBack by remember { mutableStateOf(false) }
@@ -141,6 +143,7 @@ fun BrowserScreen(onMagnet: (String) -> Unit, viewModel: BrowserViewModel = hilt
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri, imeAction = ImeAction.Go),
                     keyboardActions = KeyboardActions(onGo = {
                         if (address.isNotBlank()) webView?.loadUrl(DirectLinkParser.addressToUrl(address))
+                        keyboard?.hide()
                         focus.clearFocus()
                     })
                 )
@@ -206,6 +209,9 @@ fun BrowserScreen(onMagnet: (String) -> Unit, viewModel: BrowserViewModel = hilt
                                 }
                             }
                             setDownloadListener { url, _, contentDisposition, mimeType, contentLength ->
+                                // A load that turned into a download never finishes: the page stays as it was.
+                                progress = 100
+                                address = this.url ?: address
                                 viewModel.onDownload(url, contentDisposition, mimeType, contentLength)
                             }
                             loadUrl(viewModel.url)
