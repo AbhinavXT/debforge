@@ -1,0 +1,3 @@
+• the Library works without a debrid service: it lists the videos downloaded to this phone
+• links can be added or shared to DebForge and downloaded without signing in
+• fixed layouts with a large font or display size: buttons no longer squeeze their text one letter per line
