@@ -38,7 +38,10 @@ data class DownloadItem(
      * service reports it; [filename] is only the last part. Used to match
      * subtitle files to their episode.
      */
-    val path: String? = null
+    val path: String? = null,
+    /** Sent with every download request: the page and browser a file was found with (in-app browser only). */
+    val referer: String? = null,
+    val userAgent: String? = null
 )
 
 /** One page of a provider listing. [hasMore] drives infinite scroll. */

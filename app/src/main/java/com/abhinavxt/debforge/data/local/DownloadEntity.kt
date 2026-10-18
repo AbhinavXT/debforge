@@ -25,6 +25,8 @@ import com.abhinavxt.debforge.domain.ProviderId
  *  - [bytesDownloaded] denormalized running total for cheap list display; the
  *                    authoritative per-range progress lives in ChunkEntity.
  *  - [supportsRanges] cached result of the 206-probe. Null = not probed yet.
+ *  - [referer] / [userAgent] sent with every request for this file: what the
+ *                    in-app browser used, for hosts that refuse anything else.
  *
  * Column names `rdId` / `originalLink` are kept from schema v1-2 (Real-Debrid
  * only) so the upgrade is a single ADD COLUMN instead of a table rebuild; the
@@ -49,6 +51,8 @@ data class DownloadEntity(
     val finalFilePath: String? = null,
     val supportsRanges: Boolean? = null,
     val errorMessage: String? = null,
+    val referer: String? = null,
+    val userAgent: String? = null,
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis()
 )

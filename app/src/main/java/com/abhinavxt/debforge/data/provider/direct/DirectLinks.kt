@@ -178,8 +178,8 @@ class DirectLinks @Inject constructor(
     }
 
     /** A file the in-app browser started downloading: it already knows the name and size. */
-    fun browserFile(url: String, name: String, size: Long): DownloadItem =
-        item(sourceRef = url, url = url, name = name, size = size, host = DirectLinkParser.hostOf(url))
+    fun browserFile(url: String, name: String, size: Long, referer: String?, userAgent: String?): DownloadItem =
+        item(sourceRef = url, url = url, name = name, size = size, host = DirectLinkParser.hostOf(url), referer = referer, userAgent = userAgent)
 
     // --- videos on a web page ---------------------------------------------------
 
@@ -216,10 +216,17 @@ class DirectLinks @Inject constructor(
     /**
      * [url] as a video ready to queue, with its name and size. Null when the
      * link is dead or forbidden, or isn't a video: it's just left out.
+     * [referer] / [userAgent] (the in-app browser's) go with the lookup and the download.
      */
-    suspend fun lookUpVideo(url: String, parentRef: String? = null, parentName: String? = null): DownloadItem? =
+    suspend fun lookUpVideo(
+        url: String,
+        parentRef: String? = null,
+        parentName: String? = null,
+        referer: String? = null,
+        userAgent: String? = null
+    ): DownloadItem? =
         withContext(Dispatchers.IO) {
-            val p = runCatching { probe(url) }.getOrNull() ?: return@withContext null
+            val p = runCatching { probe(url, referer, userAgent) }.getOrNull() ?: return@withContext null
             if (p.webPage || !PageVideos.isVideo(p.name, p.contentType)) return@withContext null
             val tag = DirectLinkParser.itemId(url).removePrefix("direct:").take(8)
             item(
@@ -229,7 +236,9 @@ class DirectLinks @Inject constructor(
                 size = p.size,
                 host = DirectLinkParser.hostOf(url),
                 parentRef = parentRef,
-                parentName = parentName
+                parentName = parentName,
+                referer = referer,
+                userAgent = userAgent
             )
         }
 
@@ -244,8 +253,11 @@ class DirectLinks @Inject constructor(
     )
 
     /** One-byte ranged GET: name, size and type without downloading the file. */
-    private fun probe(url: String): Probe {
-        val req = Request.Builder().url(url).header("Range", "bytes=0-0").get().build()
+    private fun probe(url: String, referer: String? = null, userAgent: String? = null): Probe {
+        val req = Request.Builder().url(url).header("Range", "bytes=0-0").get().apply {
+            referer?.let { header("Referer", it) }
+            userAgent?.let { header("User-Agent", it) }
+        }.build()
         return client.newCall(req).execute().use { resp ->
             if (resp.code != 200 && resp.code != 206) {
                 throw ProviderException(context.getString(R.string.direct_err_http, DirectLinkParser.hostOf(url), resp.code))
@@ -287,7 +299,9 @@ class DirectLinks @Inject constructor(
         size: Long,
         host: String,
         parentRef: String? = null,
-        parentName: String? = null
+        parentName: String? = null,
+        referer: String? = null,
+        userAgent: String? = null
     ) = DownloadItem(
         id = DirectLinkParser.itemId(sourceRef),
         provider = ProviderId.DIRECT,
@@ -299,7 +313,9 @@ class DirectLinks @Inject constructor(
         maxConnections = CONNECTIONS,
         addedAt = java.time.Instant.now().toString(),
         parentRef = parentRef,
-        parentName = parentName
+        parentName = parentName,
+        referer = referer,
+        userAgent = userAgent
     )
 
     private companion object {

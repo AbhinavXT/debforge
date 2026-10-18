@@ -43,6 +43,9 @@ class BrowserViewModel @Inject constructor(
     var url: String = HOME
         private set
 
+    /** The WebView's own, sent with this tab's downloads: some hosts refuse other clients. */
+    var userAgent: String? = null
+
     private val _videos = MutableStateFlow<List<DownloadItem>>(emptyList())
     /** Videos the current page loaded, looked up (name, size), largest first: the main video before ad clips. */
     val videos: StateFlow<List<DownloadItem>> = _videos.asStateFlow()
@@ -65,8 +68,8 @@ class BrowserViewModel @Inject constructor(
         _videos.value = emptyList()
     }
 
-    /** Every request the page makes; called off the main thread. */
-    fun onRequest(url: String) {
+    /** Every request the page makes, with the page that made it; called off the main thread. */
+    fun onRequest(url: String, referer: String?) {
         if (!PageVideos.isSniffable(url)) return
         val clean = url.substringBefore('#')
         val forPage = synchronized(seen) {
@@ -74,7 +77,9 @@ class BrowserViewModel @Inject constructor(
             page
         }
         viewModelScope.launch {
-            val video = lookups.withPermit { directLinks.lookUpVideo(clean) } ?: return@launch
+            val video = lookups.withPermit {
+                directLinks.lookUpVideo(clean, referer = referer ?: this@BrowserViewModel.url, userAgent = userAgent)
+            } ?: return@launch
             if (synchronized(seen) { forPage != page }) return@launch
             _videos.update { (it + video).distinctBy { v -> v.id }.sortedByDescending { v -> v.filesize } }
         }
@@ -88,7 +93,9 @@ class BrowserViewModel @Inject constructor(
             return
         }
         val name = URLUtil.guessFileName(url, contentDisposition, mimeType)
-        viewModelScope.launch { queue(listOf(directLinks.browserFile(url, name, contentLength.coerceAtLeast(0)))) }
+        // The page showing now is the one that started it.
+        val file = directLinks.browserFile(url, name, contentLength.coerceAtLeast(0), referer = this.url, userAgent = userAgent)
+        viewModelScope.launch { queue(listOf(file)) }
     }
 
     fun downloadVideo(video: DownloadItem) {

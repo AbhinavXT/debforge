@@ -69,7 +69,9 @@ class DownloadController @Inject constructor(
                     chunksAllowed = item.maxConnections.coerceAtLeast(1),
                     state = DownloadState.QUEUED,
                     partFilePath = partPath,
-                    finalFilePath = finalPath
+                    finalFilePath = finalPath,
+                    referer = item.referer,
+                    userAgent = item.userAgent
                 )
             )
         }
