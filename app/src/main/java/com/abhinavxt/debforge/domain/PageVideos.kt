@@ -93,6 +93,9 @@ object PageVideos {
      */
     fun isSniffable(url: String): Boolean = extensionOf(url).let { it in VIDEO_EXTS && it != "ts" }
 
+    /** An HLS playlist: a stream DebForge can join into one file. */
+    fun isHlsPlaylist(url: String): Boolean = extensionOf(url) == "m3u8"
+
     private fun attributes(s: String): Map<String, String> =
         ATTR.findAll(s).associate { m ->
             m.groupValues[1].lowercase() to unescape(m.groupValues[2].ifEmpty { m.groupValues[3] }.ifEmpty { m.groupValues[4] })

@@ -193,6 +193,10 @@ fun BrowserScreen(onMagnet: (String) -> Unit, viewModel: BrowserViewModel = hilt
                                     progress = newProgress
                                 }
 
+                                override fun onReceivedTitle(view: WebView, title: String?) {
+                                    viewModel.title = title
+                                }
+
                                 override fun onShowCustomView(view: View, callback: CustomViewCallback) {
                                     fullscreen = view to callback
                                 }
@@ -224,7 +228,11 @@ fun BrowserScreen(onMagnet: (String) -> Unit, viewModel: BrowserViewModel = hilt
                 items(videos, key = { it.id }) { v ->
                     ListItem(
                         headlineContent = { Text(v.filename, maxLines = 2, overflow = TextOverflow.Ellipsis) },
-                        supportingContent = { Text(if (v.filesize > 0) "${formatSize(v.filesize)} · ${v.host}" else v.host) },
+                        supportingContent = {
+                            // A stream's size is bitrate x length: close, not exact.
+                            val approx = if (v.sourceRef.startsWith(DirectLinkParser.HLS_PREFIX)) "~" else ""
+                            Text(if (v.filesize > 0) "$approx${formatSize(v.filesize)} · ${v.host}" else v.host)
+                        },
                         trailingContent = { Icon(Icons.Filled.Download, contentDescription = null) },
                         modifier = Modifier.clickable {
                             viewModel.downloadVideo(v)

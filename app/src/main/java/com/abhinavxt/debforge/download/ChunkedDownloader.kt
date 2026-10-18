@@ -72,7 +72,8 @@ class ChunkedDownloader @Inject constructor(
     private val progressTracker: DownloadProgressTracker,
     private val conditions: DownloadConditions,
     private val rateLimiter: RateLimiter,
-    private val usage: com.abhinavxt.debforge.data.usage.UsageRecorder
+    private val usage: com.abhinavxt.debforge.data.usage.UsageRecorder,
+    private val hls: HlsDownloader
 ) {
     private companion object {
         const val BUFFER = 256 * 1024
@@ -169,6 +170,8 @@ class ChunkedDownloader @Inject constructor(
         if (partPath == null || finalPath == null) {
             return DownloadOutcome.Failure("Missing destination path")
         }
+        // A stream is a playlist of small pieces joined in order: its own path.
+        if (entity.sourceRef.startsWith(DirectLinkParser.HLS_PREFIX)) return hls.download(entity, partPath, finalPath)
 
         // 1) Resolve a working URL and learn whether ranges are supported.
         val probe = try {
@@ -586,42 +589,42 @@ class ChunkedDownloader @Inject constructor(
         }
     }
 
-    /**
-     * Runs a blocking OkHttp exchange ([block], on [call]) so that pause and
-     * cancel stop it at once. OkHttp blocks the thread in execute() and in
-     * every body read, and coroutine cancellation can't interrupt a blocked
-     * thread: a pause used to wait for the next bytes, up to the 60 s read
-     * timeout on a slow or stalled connection. Here a watcher cancels the
-     * call itself the moment the coroutine is cancelled, so the blocked read
-     * fails immediately (progress is still saved by the callers' finally).
-     */
-    private suspend fun <T> cancellableCall(call: Call, block: suspend () -> T): T = coroutineScope {
-        val done = AtomicBoolean(false)
-        val watcher = launch(start = CoroutineStart.UNDISPATCHED) {
-            try {
-                awaitCancellation()
-            } finally {
-                if (!done.get()) call.cancel()
-            }
-        }
-        try {
-            block()
-        } finally {
-            done.set(true)
-            watcher.cancel()
-        }
-    }
-
     /** Parses the total size from a "Content-Range: bytes 0-0/123456" header. */
-    /** A GET for this file, with the browser's Referer / User-Agent when it came from the Browser tab. */
-    private fun DownloadEntity.request(url: String): Request.Builder =
-        Request.Builder().url(url).get().apply {
-            referer?.let { header("Referer", it) }
-            userAgent?.let { header("User-Agent", it) }
-        }
-
     private fun parseContentRangeTotal(header: String?): Long? {
         val total = header?.substringAfter('/', "")?.trim()
         return total?.toLongOrNull()?.takeIf { it > 0 }
     }
 }
+
+/**
+ * Runs a blocking OkHttp exchange ([block], on [call]) so that pause and
+ * cancel stop it at once. OkHttp blocks the thread in execute() and in
+ * every body read, and coroutine cancellation can't interrupt a blocked
+ * thread: a pause used to wait for the next bytes, up to the 60 s read
+ * timeout on a slow or stalled connection. Here a watcher cancels the
+ * call itself the moment the coroutine is cancelled, so the blocked read
+ * fails immediately (progress is still saved by the callers' finally).
+ */
+internal suspend fun <T> cancellableCall(call: Call, block: suspend () -> T): T = coroutineScope {
+    val done = AtomicBoolean(false)
+    val watcher = launch(start = CoroutineStart.UNDISPATCHED) {
+        try {
+            awaitCancellation()
+        } finally {
+            if (!done.get()) call.cancel()
+        }
+    }
+    try {
+        block()
+    } finally {
+        done.set(true)
+        watcher.cancel()
+    }
+}
+
+/** A GET for this file, with the browser's Referer / User-Agent when it came from the Browser tab. */
+internal fun DownloadEntity.request(url: String): Request.Builder =
+    Request.Builder().url(url).get().apply {
+        referer?.let { header("Referer", it) }
+        userAgent?.let { header("User-Agent", it) }
+    }
