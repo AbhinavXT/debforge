@@ -1,5 +1,8 @@
+@file:OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+
 package com.abhinavxt.debforge.ui.settings
 
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.OpenInNew
@@ -86,7 +89,7 @@ fun AboutSection(viewModel: UpdateViewModel = hiltViewModel()) {
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 val available = (status as? UpdateStatus.Available)?.info
                 if (available != null) {
                     Button(onClick = { uriHandler.openUri(available.apkUrl ?: available.pageUrl) }) {

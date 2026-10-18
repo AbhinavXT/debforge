@@ -1,5 +1,8 @@
+@file:OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+
 package com.abhinavxt.debforge.ui.settings
 
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -105,7 +108,7 @@ fun OpenSubtitlesSection(viewModel: OpenSubtitlesViewModel = hiltViewModel()) {
                 else -> stringResource(R.string.os_on_key)
             }
         )
-        Row(
+        FlowRow(
             Modifier.padding(start = 68.dp, end = 16.dp, bottom = 12.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {

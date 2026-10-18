@@ -1,5 +1,10 @@
+@file:OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+
 package com.abhinavxt.debforge.ui.browse
 
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material.icons.rounded.NotificationAdd
 import androidx.compose.material.icons.rounded.NotificationsActive
@@ -315,10 +320,11 @@ fun TitleSheet(
     ) {
         LazyColumn(contentPadding = PaddingValues(bottom = 32.dp)) {
             item(key = "header") {
-                Row(Modifier.padding(horizontal = 20.dp)) {
-                    Poster(group = group, meta = meta, modifier = Modifier.width(112.dp))
-                    Spacer(Modifier.width(16.dp))
-                    Column(Modifier.weight(1f)) {
+                // Large font on a narrow phone: details go under the poster, so the buttons keep their width.
+                val stacked = LocalConfiguration.current.screenWidthDp / LocalDensity.current.fontScale < 320
+                FlowRow(Modifier.padding(horizontal = 20.dp), maxItemsInEachRow = if (stacked) 1 else 2) {
+                    Poster(group = group, meta = meta, modifier = Modifier.padding(end = 16.dp, bottom = 16.dp).width(112.dp))
+                    Column(if (stacked) Modifier.fillMaxWidth() else Modifier.weight(1f)) {
                         Text(
                             meta?.title ?: group.title,
                             style = MaterialTheme.typography.headlineSmall

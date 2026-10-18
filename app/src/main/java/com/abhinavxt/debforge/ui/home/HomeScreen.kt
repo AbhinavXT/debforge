@@ -43,6 +43,7 @@ import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
@@ -171,7 +172,7 @@ fun HomeScreen(signedIn: Boolean) {
                         selected = selected,
                         onClick = { go(tab) },
                         icon = { Icon(if (selected) tab.selectedIcon else tab.icon, contentDescription = stringResource(tab.labelRes)) },
-                        label = { Text(stringResource(tab.labelRes)) }
+                        label = { Text(stringResource(tab.labelRes), maxLines = 1, overflow = TextOverflow.Ellipsis) }
                     )
                 }
             }
@@ -187,7 +188,7 @@ fun HomeScreen(signedIn: Boolean) {
                             selected = selected,
                             onClick = { go(tab) },
                             icon = { Icon(if (selected) tab.selectedIcon else tab.icon, contentDescription = stringResource(tab.labelRes)) },
-                            label = { Text(stringResource(tab.labelRes)) }
+                            label = { Text(stringResource(tab.labelRes), maxLines = 1, overflow = TextOverflow.Ellipsis) }
                         )
                     }
                 }

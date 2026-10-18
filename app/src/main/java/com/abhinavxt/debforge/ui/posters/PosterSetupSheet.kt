@@ -1,5 +1,8 @@
+@file:OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+
 package com.abhinavxt.debforge.ui.posters
 
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -153,7 +156,7 @@ fun PosterSetupSheet(
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(Modifier.height(12.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(
                     onClick = viewModel::checkAndSave,
                     enabled = state.draft.isNotBlank() && !state.checking

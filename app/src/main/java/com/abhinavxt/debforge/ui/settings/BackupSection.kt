@@ -1,5 +1,8 @@
+@file:OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+
 package com.abhinavxt.debforge.ui.settings
 
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.Spacer
@@ -218,7 +221,7 @@ fun BackupSection(viewModel: BackupViewModel = hiltViewModel()) {
             title = stringResource(R.string.backup_title),
             subtitle = stringResource(R.string.backup_detail)
         )
-        Row(
+        FlowRow(
             Modifier.padding(start = 68.dp, end = 16.dp, bottom = 12.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {

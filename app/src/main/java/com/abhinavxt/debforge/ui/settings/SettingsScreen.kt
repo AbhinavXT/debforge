@@ -1,3 +1,5 @@
+@file:OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+
 package com.abhinavxt.debforge.ui.settings
 
 import android.app.LocaleManager
@@ -9,6 +11,7 @@ import android.provider.Settings
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -533,14 +536,18 @@ private fun ProviderChoiceRow(name: String, signedIn: Boolean, selected: Boolean
     ) {
         RadioButton(selected = selected, onClick = onClick)
         Spacer(Modifier.width(8.dp))
-        Text(name, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
-        val cs = MaterialTheme.colorScheme
-        StatusPill(
-            text = stringResource(if (signedIn) R.string.set_signed_in else R.string.set_not_signed_in),
-            container = if (signedIn) cs.primaryContainer else cs.surfaceContainerHighest,
-            content = if (signedIn) cs.onPrimaryContainer else cs.onSurfaceVariant,
-            icon = if (signedIn) Icons.Rounded.Check else null
-        )
+        // Wraps: with a large font the pill goes under the name instead of breaking it mid-word.
+        FlowRow(Modifier.weight(1f), horizontalArrangement = Arrangement.SpaceBetween) {
+            Text(name, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.align(Alignment.CenterVertically).padding(end = 8.dp))
+            val cs = MaterialTheme.colorScheme
+            StatusPill(
+                text = stringResource(if (signedIn) R.string.set_signed_in else R.string.set_not_signed_in),
+                modifier = Modifier.align(Alignment.CenterVertically),
+                container = if (signedIn) cs.primaryContainer else cs.surfaceContainerHighest,
+                content = if (signedIn) cs.onPrimaryContainer else cs.onSurfaceVariant,
+                icon = if (signedIn) Icons.Rounded.Check else null
+            )
+        }
     }
 }
 
@@ -803,7 +810,7 @@ private fun TmdbKeyRow(
         title = stringResource(R.string.set_posters),
         subtitle = stringResource(if (enabled) R.string.set_posters_on else R.string.set_tmdb_note)
     )
-    Row(
+    FlowRow(
         Modifier.padding(start = 68.dp, end = 16.dp, bottom = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
@@ -860,9 +867,11 @@ private fun AccountHeader(account: AccountInfo?, serviceName: String?, onManage:
             }
         }
         Spacer(Modifier.height(12.dp))
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        // Wraps: with a large font the button goes under the pill instead of being squeezed.
+        FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             if (days != null) {
                 StatusPill(
+                    modifier = Modifier.align(Alignment.CenterVertically),
                     text = when {
                         days < 0 -> stringResource(R.string.acct_expired)
                         days == 0L -> stringResource(R.string.acct_expires_today)
@@ -873,7 +882,6 @@ private fun AccountHeader(account: AccountInfo?, serviceName: String?, onManage:
                     icon = Icons.Rounded.WorkspacePremium
                 )
             }
-            Spacer(Modifier.weight(1f))
             TextButton(onClick = onManage) {
                 Text(
                     stringResource(if (warn) R.string.action_renew else R.string.acct_manage),
