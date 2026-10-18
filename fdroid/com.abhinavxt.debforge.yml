@@ -1,7 +1,9 @@
 AntiFeatures:
   NonFreeNet:
-    en-US: Needs an account with a proprietary debrid service (TorBox, Real-Debrid,
-      AllDebrid, Premiumize or Debrid-Link). Optionally uses TMDB for posters if you
+    en-US: Optionally uses an account with a proprietary debrid service (TorBox, Real-Debrid,
+      AllDebrid, Premiumize or Debrid-Link); the built-in browser and direct links work
+      without one. The browser opens DuckDuckGo as its start page and default search.
+      Optionally uses TMDB for posters if you
       add a key, Trakt (api.trakt.tv) for scrobbling and watch history, and OpenSubtitles
       (api.opensubtitles.com) for subtitles, all proprietary services.
 Categories:

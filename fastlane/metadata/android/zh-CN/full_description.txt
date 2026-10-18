@@ -39,4 +39,4 @@ DebForge 可将你 debrid 账户中的文件直接下载到手机、平板或 An
 <b>隐私</b>
 API 密钥通过 Android Keystore 加密，且绝不会包含在备份中。没有任何分析统计，也没有广告。如果应用崩溃，一份已移除令牌、链接和文件名的报告会保存在你的设备上，只有在你选择分享时才会发送。
 
-DebForge 需要至少拥有上述其中一项服务的账户。这些都是付费的专有服务，因此 F-Droid 为本应用标注了“Non-Free Network Services”（非自由网络服务）反特性。
+debrid 账户是可选的：内置浏览器和直链无需账户也能使用。上述 debrid 服务以及 DuckDuckGo（浏览器默认的起始页和搜索）都是专有服务，因此 F-Droid 为本应用标注了“Non-Free Network Services”（非自由网络服务）反特性。

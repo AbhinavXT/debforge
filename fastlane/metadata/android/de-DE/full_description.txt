@@ -39,4 +39,4 @@ DebForge lädt die Dateien aus deinem Debrid-Konto direkt auf dein Handy, Tablet
 <b>Datenschutz</b>
 API-Schlüssel werden mit dem Android Keystore verschlüsselt und nie in Sicherungen aufgenommen. Es gibt keine Analysedienste und keine Werbung. Wenn die App abstürzt, wird ein Bericht ohne Tokens, Links und Dateinamen auf deinem Gerät gespeichert und nur gesendet, wenn du ihn teilst.
 
-DebForge benötigt ein Konto bei mindestens einem der oben genannten Dienste. Dabei handelt es sich um kostenpflichtige, proprietäre Dienste, weshalb F-Droid die App mit der Anti-Funktion „Non-Free Network Services“ kennzeichnet.
+Ein Debrid-Konto ist optional: Der eingebaute Browser und direkte Links funktionieren auch ohne. Die oben genannten Debrid-Dienste und DuckDuckGo (Startseite und Standardsuche des Browsers) sind proprietäre Dienste, weshalb F-Droid die App mit der Anti-Funktion „Non-Free Network Services“ kennzeichnet.
