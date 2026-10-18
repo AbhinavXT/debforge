@@ -66,6 +66,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.abhinavxt.debforge.R
 import com.abhinavxt.debforge.domain.DirectLinkParser
+import com.abhinavxt.debforge.ui.browse.formatSize
 
 /**
  * A plain browser whose downloads land in DebForge's queue. Magnet links
@@ -214,15 +215,13 @@ fun BrowserScreen(onMagnet: (String) -> Unit, viewModel: BrowserViewModel = hilt
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
             )
             LazyColumn {
-                items(videos, key = { it }) { url ->
+                items(videos, key = { it.id }) { v ->
                     ListItem(
-                        headlineContent = {
-                            Text(DirectLinkParser.filenameFromUrl(url) ?: url, maxLines = 2, overflow = TextOverflow.Ellipsis)
-                        },
-                        supportingContent = { Text(DirectLinkParser.hostOf(url)) },
+                        headlineContent = { Text(v.filename, maxLines = 2, overflow = TextOverflow.Ellipsis) },
+                        supportingContent = { Text(if (v.filesize > 0) "${formatSize(v.filesize)} · ${v.host}" else v.host) },
                         trailingContent = { Icon(Icons.Filled.Download, contentDescription = null) },
                         modifier = Modifier.clickable {
-                            viewModel.downloadVideo(url)
+                            viewModel.downloadVideo(v)
                             showVideos = false
                         }
                     )

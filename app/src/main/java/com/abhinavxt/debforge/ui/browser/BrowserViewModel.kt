@@ -5,11 +5,8 @@ import android.webkit.URLUtil
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.abhinavxt.debforge.R
-import com.abhinavxt.debforge.data.provider.ProviderException
 import com.abhinavxt.debforge.data.provider.direct.DirectLinks
 import com.abhinavxt.debforge.data.prefs.SettingsStore
-import com.abhinavxt.debforge.domain.AddRequest
-import com.abhinavxt.debforge.domain.DirectLinkParser
 import com.abhinavxt.debforge.domain.DownloadItem
 import com.abhinavxt.debforge.domain.PageVideos
 import com.abhinavxt.debforge.download.DownloadController
@@ -24,6 +21,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import javax.inject.Inject
 
 /**
@@ -44,15 +43,25 @@ class BrowserViewModel @Inject constructor(
     var url: String = HOME
         private set
 
-    private val _videos = MutableStateFlow<List<String>>(emptyList())
-    /** Video file URLs the current page loaded, first seen first. */
-    val videos: StateFlow<List<String>> = _videos.asStateFlow()
+    private val _videos = MutableStateFlow<List<DownloadItem>>(emptyList())
+    /** Videos the current page loaded, looked up (name, size), largest first: the main video before ad clips. */
+    val videos: StateFlow<List<DownloadItem>> = _videos.asStateFlow()
+
+    /** URLs already looked up on this page; guarded by itself (requests arrive on WebView threads). */
+    private val seen = HashSet<String>()
+    /** Bumped per page, so a lookup finishing after navigating away is dropped. */
+    private var page = 0
+    private val lookups = Semaphore(LOOKUPS_PARALLEL)
 
     private val _messages = Channel<String>(Channel.BUFFERED)
     val messages = _messages.receiveAsFlow()
 
     fun onPageStarted(url: String) {
         this.url = url
+        synchronized(seen) {
+            seen.clear()
+            page++
+        }
         _videos.value = emptyList()
     }
 
@@ -60,7 +69,15 @@ class BrowserViewModel @Inject constructor(
     fun onRequest(url: String) {
         if (!PageVideos.isSniffable(url)) return
         val clean = url.substringBefore('#')
-        _videos.update { if (clean in it || it.size >= MAX_VIDEOS) it else it + clean }
+        val forPage = synchronized(seen) {
+            if (seen.size >= MAX_VIDEOS || !seen.add(clean)) return
+            page
+        }
+        viewModelScope.launch {
+            val video = lookups.withPermit { directLinks.lookUpVideo(clean) } ?: return@launch
+            if (synchronized(seen) { forPage != page }) return@launch
+            _videos.update { (it + video).distinctBy { v -> v.id }.sortedByDescending { v -> v.filesize } }
+        }
     }
 
     /** The page started a download (a link, a button, a redirect to a file). */
@@ -74,22 +91,8 @@ class BrowserViewModel @Inject constructor(
         viewModelScope.launch { queue(listOf(directLinks.browserFile(url, name, contentLength.coerceAtLeast(0)))) }
     }
 
-    /** Looked up first (name, size), so a dead or forbidden link says so now, not in the queue. */
-    fun downloadVideo(url: String) {
-        viewModelScope.launch {
-            val files = try {
-                directLinks.add(AddRequest.Link(url)).readyFiles
-            } catch (e: kotlinx.coroutines.CancellationException) {
-                throw e
-            } catch (e: ProviderException) {
-                _messages.send(e.message.orEmpty())
-                return@launch
-            } catch (e: Exception) {
-                _messages.send(context.getString(R.string.page_err_open, DirectLinkParser.hostOf(url), e.message ?: e.javaClass.simpleName))
-                return@launch
-            }
-            queue(files)
-        }
+    fun downloadVideo(video: DownloadItem) {
+        viewModelScope.launch { queue(listOf(video)) }
     }
 
     private suspend fun queue(files: List<DownloadItem>) {
@@ -106,5 +109,6 @@ class BrowserViewModel @Inject constructor(
         const val HOME = "https://duckduckgo.com/"
         /** A page streaming in .mp4 pieces would otherwise list hundreds. */
         const val MAX_VIDEOS = 50
+        const val LOOKUPS_PARALLEL = 4
     }
 }
