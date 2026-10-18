@@ -35,6 +35,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.movableContentOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -101,21 +103,26 @@ fun HomeScreen() {
     // phones keep the bottom bar. 600dp is Material's "medium" width class.
     val wide = LocalConfiguration.current.screenWidthDp >= 600
 
-    val content: @Composable (Modifier) -> Unit = { modifier ->
-        NavHost(
-            navController = navController,
-            startDestination = HomeTab.Browse.route,
-            modifier = modifier
-        ) {
-            composable(HomeTab.Browse.route) {
-                BrowseScreen(
-                    onAdd = { addViewModel.open() },
-                    onAddText = { addViewModel.open(prefillText = it) }
-                )
+    // Movable: turning the phone can switch between the bar and the rail, and
+    // the tabs must move along with their state (the Browser tab's page and a
+    // full-screen video in it) instead of being rebuilt.
+    val content = remember {
+        movableContentOf { modifier: Modifier ->
+            NavHost(
+                navController = navController,
+                startDestination = HomeTab.Browse.route,
+                modifier = modifier
+            ) {
+                composable(HomeTab.Browse.route) {
+                    BrowseScreen(
+                        onAdd = { addViewModel.open() },
+                        onAddText = { addViewModel.open(prefillText = it) }
+                    )
+                }
+                composable(HomeTab.Active.route) { ActiveDownloadsScreen() }
+                composable(HomeTab.Browser.route) { BrowserScreen(onMagnet = { addViewModel.open(prefillText = it) }) }
+                composable(HomeTab.Settings.route) { SettingsScreen() }
             }
-            composable(HomeTab.Active.route) { ActiveDownloadsScreen() }
-            composable(HomeTab.Browser.route) { BrowserScreen(onMagnet = { addViewModel.open(prefillText = it) }) }
-            composable(HomeTab.Settings.route) { SettingsScreen() }
         }
     }
 
