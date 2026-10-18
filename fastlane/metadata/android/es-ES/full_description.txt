@@ -39,4 +39,4 @@ DebForge descarga los archivos de tu cuenta debrid directamente en tu teléfono,
 <b>Privacidad</b>
 Las claves de API se cifran con el Android Keystore y nunca se incluyen en las copias de seguridad. No hay analíticas ni anuncios. Si la app se cierra inesperadamente, se guarda en tu dispositivo un informe sin tokens, enlaces ni nombres de archivo, y solo se envía si decides compartirlo.
 
-DebForge necesita una cuenta en al menos uno de los servicios anteriores. Son servicios de pago y privativos, por eso F-Droid marca la app con la antifunción "Non-Free Network Services".
+La cuenta de debrid es opcional: el navegador integrado y los enlaces directos funcionan sin ella. Los servicios debrid anteriores y DuckDuckGo (página de inicio y buscador predeterminado del navegador) son servicios privativos, por eso F-Droid marca la app con la antifunción "Non-Free Network Services".

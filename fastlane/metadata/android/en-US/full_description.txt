@@ -17,6 +17,7 @@ DebForge downloads the files in your debrid account straight to your phone, tabl
 <li>Add magnet links, .torrent files and links, from the app or by sharing to it, and optionally download them as soon as they're ready</li>
 <li>Built-in player that remembers where you stopped, a Continue watching row, subtitles from the torrent and the next episode ready to go, or play in VLC and others if you prefer</li>
 <li>Player gestures (double-tap to skip, swipe for brightness, volume and seeking, hold for 2×, pinch to zoom), subtitle style, audio and subtitle languages remembered per show, sleep timer, A-B loop, screenshots, picture-in-picture and background play. Downloaded files play offline</li>
+<li>Built-in browser: downloads a page starts go to DebForge's queue, and videos it plays (HLS streams too) are listed to download</li>
 <li>Pixeldrain, Google Drive and direct file links download straight to your phone, no service needed</li>
 <li>Follow a show and new episodes that reach your account download by themselves</li>
 <li>Skip intros, recaps and credits; find missing subtitles on OpenSubtitles</li>
@@ -41,4 +42,4 @@ DebForge downloads the files in your debrid account straight to your phone, tabl
 <b>Privacy</b>
 API keys are encrypted with the Android Keystore and never included in backups. There are no analytics and no ads. If the app crashes, a report with tokens, links and file names removed is kept on your device, and it is only sent if you choose to share it.
 
-DebForge needs an account with at least one of the services above. These are paid, proprietary services, which is why F-Droid marks the app with the "Non-Free Network Services" anti-feature.
+A debrid account is optional: the built-in browser and direct links work without one. The debrid services above, and DuckDuckGo (the browser's default start page and search), are proprietary services, which is why F-Droid marks the app with the "Non-Free Network Services" anti-feature.

@@ -39,4 +39,4 @@ DebForge, debrid hesabınızdaki dosyaları doğrudan telefonunuza, tabletinize 
 <b>Gizlilik</b>
 API anahtarları Android Keystore ile şifrelenir ve yedeklere asla dahil edilmez. Analiz ve reklam yoktur. Uygulama çökerse token'ların, bağlantıların ve dosya adlarının çıkarıldığı bir rapor cihazınızda saklanır ve yalnızca siz paylaşmayı seçerseniz gönderilir.
 
-DebForge, yukarıdaki hizmetlerden en az birinde hesap gerektirir. Bunlar ücretli ve özel mülk hizmetler olduğundan F-Droid, uygulamayı "Non-Free Network Services" (Özgür Olmayan Ağ Hizmetleri) anti-özelliğiyle işaretler.
+Debrid hesabı isteğe bağlıdır: yerleşik tarayıcı ve doğrudan bağlantılar hesap olmadan çalışır. Yukarıdaki debrid hizmetleri ve DuckDuckGo (tarayıcının varsayılan başlangıç sayfası ve araması) özel mülk hizmetler olduğundan F-Droid, uygulamayı "Non-Free Network Services" (Özgür Olmayan Ağ Hizmetleri) anti-özelliğiyle işaretler.

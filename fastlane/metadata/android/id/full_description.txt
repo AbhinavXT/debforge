@@ -39,4 +39,4 @@ DebForge mengunduh file di akun debrid Anda langsung ke ponsel, tablet, atau And
 <b>Privasi</b>
 API key dienkripsi dengan Android Keystore dan tidak pernah disertakan dalam cadangan. Tidak ada analitik dan tidak ada iklan. Jika aplikasi mengalami error, laporan dengan token, link, dan nama file yang telah dihapus disimpan di perangkat Anda, dan hanya dikirim jika Anda memilih untuk membagikannya.
 
-DebForge memerlukan akun di setidaknya salah satu layanan di atas. Layanan-layanan ini berbayar dan bersifat proprietary, itulah sebabnya F-Droid menandai aplikasi ini dengan anti-fitur "Non-Free Network Services".
+Akun debrid bersifat opsional: browser bawaan dan tautan langsung tetap berfungsi tanpanya. Layanan debrid di atas dan DuckDuckGo (halaman awal dan pencarian bawaan browser) bersifat proprietary, itulah sebabnya F-Droid menandai aplikasi ini dengan anti-fitur "Non-Free Network Services".
