@@ -32,10 +32,13 @@
         android:localeConfig="@xml/locales_config"
         android:supportsRtl="true"
         android:theme="@style/Theme.Debforge">
+        <!-- Handles rotation itself (Compose relayouts): the Browser tab's page
+             and a full-screen video in it survive turning the phone. -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
             android:launchMode="singleTop"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize"
             android:label="@string/app_name"
             android:theme="@style/Theme.Debforge">
             <intent-filter>
