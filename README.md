@@ -11,7 +11,7 @@ Add a magnet, watch it land, play it anywhere. No PC in the middle.
 <!-- Uncomment once DebForge is live on F-Droid:
 [<img src="https://f-droid.org/badge/get-it-on.png" alt="Get it on F-Droid" height="60">](https://f-droid.org/packages/com.abhinavxt.debforge/)
 -->
-[<img src="https://img.shields.io/badge/Buy%20me%20a%20coffee-FFDD00?style=for-the-badge&logo=buymeacoffee&logoColor=black" alt="Buy me a coffee" height="48">](https://buymeacoffee.com/abhinavxt)
+[<img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy me a coffee" height="48">](https://buymeacoffee.com/abhinavxt)
 
 <img src="docs/demo/debforge.gif" alt="DebForge in action" width="640">
 
