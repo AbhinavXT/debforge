@@ -11,6 +11,7 @@ Add a magnet, watch it land, play it anywhere. No PC in the middle.
 <!-- Uncomment once DebForge is live on F-Droid:
 [<img src="https://f-droid.org/badge/get-it-on.png" alt="Get it on F-Droid" height="60">](https://f-droid.org/packages/com.abhinavxt.debforge/)
 -->
+[<img src="https://img.shields.io/badge/Buy%20me%20a%20coffee-FFDD00?style=for-the-badge&logo=buymeacoffee&logoColor=black" alt="Buy me a coffee" height="48">](https://buymeacoffee.com/abhinavxt)
 
 <img src="docs/demo/debforge.gif" alt="DebForge in action" width="640">
 
@@ -163,6 +164,10 @@ Sign in to as many as you like and switch in Settings. When adding, DebForge che
 ## Contributing
 
 Want to build it, translate it, or add a service? See [DEVELOPMENT.md](DEVELOPMENT.md) and [PROVIDERS.md](PROVIDERS.md).
+
+## Support
+
+DebForge is free, with no ads and no tracking. If it saves you time, you can [buy me a coffee](https://buymeacoffee.com/abhinavxt) ☕
 
 ## License
 
