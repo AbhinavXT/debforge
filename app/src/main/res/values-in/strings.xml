@@ -69,6 +69,8 @@
     <string name="browse_your_service">layanan Anda</string>
     <string name="browse_empty_add">Tambah magnet, torrent, atau link</string>
     <string name="browse_local_empty">Video yang kamu unduh dari tab Browser atau sebuah tautan muncul di sini. Masuk ke layanan debrid di Setelan untuk melihat file-nya juga.</string>
+    <string name="browse_downloaded">Terunduh</string>
+    <string name="browse_downloaded_empty">File yang disimpan di perangkat ini muncul di sini: dari layananmu, tab Browser, atau sebuah tautan.</string>
     <string name="storage_title">Simpan file di mana?</string>
     <string name="storage_body">Pilih folder: penyimpanan internal, kartu SD, atau drive USB, tanpa izin khusus. Atau gunakan penyimpanan milik DebForge (dihapus jika aplikasi di-uninstal).</string>
     <string name="storage_use_app">Gunakan penyimpanan aplikasi</string>

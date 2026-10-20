@@ -69,6 +69,8 @@
     <string name="browse_your_service">आपकी सेवा</string>
     <string name="browse_empty_add">मैग्नेट, टॉरेंट या लिंक जोड़ें</string>
     <string name="browse_local_empty">ब्राउज़र टैब या किसी लिंक से डाउनलोड किए गए वीडियो यहाँ दिखते हैं। किसी debrid सेवा की फ़ाइलें भी देखने के लिए सेटिंग्स में साइन इन करें।</string>
+    <string name="browse_downloaded">डाउनलोड किए गए</string>
+    <string name="browse_downloaded_empty">इस डिवाइस पर सेव की गई फ़ाइलें यहां दिखती हैं: आपकी सेवा, ब्राउज़र टैब या किसी लिंक से।</string>
     <string name="storage_title">फ़ाइलें कहाँ सेव हों?</string>
     <string name="storage_body">एक फ़ोल्डर चुनें: इंटरनल स्टोरेज, SD कार्ड या USB ड्राइव, बिना किसी खास अनुमति के। या DebForge की अपनी स्टोरेज इस्तेमाल करें (ऐप हटाने पर फ़ाइलें भी हट जाती हैं)।</string>
     <string name="storage_use_app">ऐप स्टोरेज इस्तेमाल करें</string>

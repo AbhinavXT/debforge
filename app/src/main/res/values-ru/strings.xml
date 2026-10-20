@@ -69,6 +69,8 @@
     <string name="browse_your_service">ваш сервис</string>
     <string name="browse_empty_add">Добавить magnet, торрент или ссылку</string>
     <string name="browse_local_empty">Здесь появляются видео, скачанные во вкладке «Браузер» или по ссылке. Войдите в debrid-сервис в настройках, чтобы видеть и его файлы.</string>
+    <string name="browse_downloaded">Скачанные</string>
+    <string name="browse_downloaded_empty">Здесь появляются файлы, сохранённые на этом устройстве: из вашего сервиса, вкладки «Браузер» или по ссылке.</string>
     <string name="storage_title">Куда сохранять файлы?</string>
     <string name="storage_body">Выберите папку: внутренняя память, SD-карта или USB-накопитель, без особых разрешений. Или используйте собственное хранилище DebForge (удаляется вместе с приложением).</string>
     <string name="storage_use_app">Хранилище приложения</string>
