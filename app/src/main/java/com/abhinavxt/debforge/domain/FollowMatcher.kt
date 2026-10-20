@@ -13,6 +13,10 @@ import java.time.OffsetDateTime
  * ("1080p"), preferred when an episode comes in several. [seen] holds
  * episode keys already handled (queued, or skipped as already downloaded),
  * so nothing is queued twice.
+ *
+ * [autoSearch] (followed from the Search tab): DebForge also finds new
+ * episodes with the user's search sources and adds them to the service
+ * itself; [requested] holds the episodes it has sent, so each goes once.
  */
 data class Follow(
     val provider: ProviderId,
@@ -20,7 +24,9 @@ data class Follow(
     val title: String,
     val since: Long,
     val resolution: String? = null,
-    val seen: Set<String> = emptySet()
+    val seen: Set<String> = emptySet(),
+    val autoSearch: Boolean = false,
+    val requested: Set<String> = emptySet()
 )
 
 /** Picks what to queue for followed shows. Pure: unit-tested in FollowMatcherTest. */

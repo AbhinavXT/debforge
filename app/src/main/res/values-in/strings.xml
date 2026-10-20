@@ -698,6 +698,18 @@
     <string name="sources_url">Tautan feed Torznab</string>
     <string name="sources_api_key">Kunci API</string>
     <string name="sources_name">Nama (opsional)</string>
+    <string name="search_kind_all">Semua</string>
+    <string name="search_kind_movies">Film</string>
+    <string name="search_kind_shows">Acara</string>
+    <string name="search_season_any">Musim apa saja</string>
+    <string name="search_season">Musim %1$d</string>
+    <string name="search_episode_any">Episode apa saja</string>
+    <string name="search_episode">Episode %1$d</string>
+    <string name="search_recent">Pencarian terbaru</string>
+    <string name="search_clear_recent">Hapus</string>
+    <string name="search_remove_recent">Hapus %1$s</string>
+    <string name="search_follow_body">Episode baru dicari dan ditambahkan ke %1$s dengan sendirinya, lalu diunduh.</string>
+    <string name="search_following_body">Mengikuti. Episode baru dicari dan ditambahkan ke %1$s dengan sendirinya.</string>
     <plurals name="search_seeders">
         <item quantity="other">%1$d seeder</item>
     </plurals>

@@ -1,6 +1,13 @@
 package com.abhinavxt.debforge.ui.search
 
 import androidx.compose.foundation.horizontalScroll
+import com.abhinavxt.debforge.domain.SearchKind
+import androidx.compose.ui.graphics.Color
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.IconButton
+import androidx.compose.material.icons.rounded.History
+import androidx.compose.material.icons.rounded.Close
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -72,6 +79,8 @@ fun SearchScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val available by viewModel.available.collectAsStateWithLifecycle()
+    val recent by viewModel.recent.collectAsStateWithLifecycle()
+    val followOffer by viewModel.followOffer.collectAsStateWithLifecycle()
     val keyboard = LocalSoftwareKeyboardController.current
 
     Column(Modifier.fillMaxSize()) {
@@ -101,7 +110,16 @@ fun SearchScreen(
                 viewModel.submit()
             }
         )
-        if (state.results.isNotEmpty()) {
+        KindRow(
+            kind = state.kind,
+            onKind = viewModel::onKind,
+            season = state.season,
+            onSeason = viewModel::onSeason,
+            episode = state.episode,
+            onEpisode = viewModel::onEpisode
+        )
+        val showRecent = state.query.isBlank() && recent.isNotEmpty() && !state.loading
+        if (state.results.isNotEmpty() && !showRecent) {
             if (state.checkingCache || state.failures.isNotEmpty()) {
                 Notes(state.checkingCache, state.failures)
             }
@@ -116,6 +134,12 @@ fun SearchScreen(
         val shown = state.shown
         when {
             state.loading -> Box(Modifier.fillMaxSize(), Alignment.Center) { CircularProgressIndicator() }
+            showRecent -> RecentList(
+                recent = recent,
+                onRun = { keyboard?.hide(); viewModel.runRecent(it) },
+                onRemove = viewModel::removeRecent,
+                onClear = viewModel::clearRecent
+            )
             state.results.isEmpty() && state.failures.isNotEmpty() -> MessageState(
                 icon = Icons.Rounded.CloudOff,
                 title = state.failures.first(),
@@ -150,9 +174,159 @@ fun SearchScreen(
                 contentPadding = PaddingValues(top = 4.dp, bottom = 16.dp),
                 modifier = Modifier.fillMaxSize()
             ) {
+                followOffer?.let { offer ->
+                    item(key = "follow") { FollowCard(offer, onToggle = { viewModel.toggleFollow(offer) }) }
+                }
                 items(shown, key = { it.hash }) { result ->
                     ResultRow(result, onClick = { onAdd(result.magnet) })
                 }
+            }
+        }
+    }
+}
+
+/** All / Movies / Shows, and for shows the season and episode. */
+@Composable
+private fun KindRow(
+    kind: SearchKind,
+    onKind: (SearchKind) -> Unit,
+    season: Int?,
+    onSeason: (Int?) -> Unit,
+    episode: Int?,
+    onEpisode: (Int?) -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .horizontalScroll(rememberScrollState())
+            .padding(horizontal = 16.dp, vertical = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        SearchKind.entries.forEach { k ->
+            FilterChip(
+                selected = kind == k,
+                onClick = { onKind(k) },
+                label = {
+                    Text(stringResource(when (k) {
+                        SearchKind.ALL -> R.string.search_kind_all
+                        SearchKind.MOVIE -> R.string.search_kind_movies
+                        SearchKind.SHOW -> R.string.search_kind_shows
+                    }))
+                }
+            )
+        }
+        if (kind == SearchKind.SHOW) {
+            NumberPicker(
+                value = season,
+                range = 1..MAX_SEASON,
+                anyLabel = stringResource(R.string.search_season_any),
+                label = { stringResource(R.string.search_season, it) },
+                onPick = onSeason
+            )
+            if (season != null) {
+                NumberPicker(
+                    value = episode,
+                    range = 1..MAX_EPISODE,
+                    anyLabel = stringResource(R.string.search_episode_any),
+                    label = { stringResource(R.string.search_episode, it) },
+                    onPick = onEpisode
+                )
+            }
+        }
+    }
+}
+
+/** A chip that opens "Any, 1, 2, …"; null = any. */
+@Composable
+private fun NumberPicker(
+    value: Int?,
+    range: IntRange,
+    anyLabel: String,
+    label: @Composable (Int) -> String,
+    onPick: (Int?) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+    Box {
+        FilterChip(
+            selected = value != null,
+            onClick = { expanded = true },
+            trailingIcon = { Icon(Icons.Rounded.KeyboardArrowDown, contentDescription = null, modifier = Modifier.size(18.dp)) },
+            label = { Text(if (value == null) anyLabel else label(value)) }
+        )
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            DropdownMenuItem(
+                text = { Text(anyLabel) },
+                leadingIcon = { if (value == null) Icon(Icons.Rounded.Check, contentDescription = null) },
+                onClick = { onPick(null); expanded = false }
+            )
+            range.forEach { n ->
+                DropdownMenuItem(
+                    text = { Text(label(n)) },
+                    leadingIcon = { if (value == n) Icon(Icons.Rounded.Check, contentDescription = null) },
+                    onClick = { onPick(n); expanded = false }
+                )
+            }
+        }
+    }
+}
+
+/** Recent searches while the box is empty: tap to run one again. */
+@Composable
+private fun RecentList(recent: List<String>, onRun: (String) -> Unit, onRemove: (String) -> Unit, onClear: () -> Unit) {
+    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 16.dp)) {
+        item(key = "header") {
+            Row(Modifier.fillMaxWidth().padding(start = 20.dp, end = 8.dp, top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    stringResource(R.string.search_recent),
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.weight(1f)
+                )
+                TextButton(onClick = onClear) { Text(stringResource(R.string.search_clear_recent)) }
+            }
+        }
+        items(recent, key = { it }) { q ->
+            Surface(onClick = { onRun(q) }, color = Color.Transparent, modifier = Modifier.fillMaxWidth()) {
+                Row(Modifier.padding(start = 20.dp, end = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Rounded.History, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Spacer(Modifier.size(16.dp))
+                    Text(q, style = MaterialTheme.typography.bodyLarge, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
+                    IconButton(onClick = { onRemove(q) }) {
+                        Icon(Icons.Rounded.Close, contentDescription = stringResource(R.string.search_remove_recent, q))
+                    }
+                }
+            }
+        }
+    }
+}
+
+/** "Follow The Bear": new episodes are then found and added to the service by themselves. */
+@Composable
+private fun FollowCard(offer: FollowOffer, onToggle: () -> Unit) {
+    val cs = MaterialTheme.colorScheme
+    Surface(
+        color = cs.secondaryContainer,
+        contentColor = cs.onSecondaryContainer,
+        shape = MaterialTheme.shapes.large,
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp)
+    ) {
+        Row(Modifier.padding(start = 16.dp, end = 12.dp, top = 12.dp, bottom = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {
+                Text(offer.title, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(
+                    stringResource(
+                        if (offer.following) R.string.search_following_body else R.string.search_follow_body,
+                        offer.serviceName
+                    ),
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+            Spacer(Modifier.size(12.dp))
+            if (offer.following) {
+                OutlinedButton(onClick = onToggle) { Text(stringResource(R.string.follow_unfollow)) }
+            } else {
+                Button(onClick = onToggle) { Text(stringResource(R.string.follow_action)) }
             }
         }
     }
@@ -220,6 +394,9 @@ private fun Filters(
         }
     }
 }
+
+private const val MAX_SEASON = 30
+private const val MAX_EPISODE = 50
 
 @Composable
 private fun SearchQuality.label(): String = when (this) {

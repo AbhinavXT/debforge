@@ -20,7 +20,9 @@ object FollowBackup {
             "title" to f.title,
             "since" to f.since,
             "resolution" to f.resolution,
-            "seen" to f.seen.sorted()
+            "seen" to f.seen.sorted(),
+            "autoSearch" to f.autoSearch,
+            "requested" to f.requested.sorted()
         )
     }
 
@@ -34,7 +36,9 @@ object FollowBackup {
             // JSON numbers arrive as Double from Moshi.
             since = (m["since"] as? Number)?.toLong() ?: return@mapNotNull null,
             resolution = (m["resolution"] as? String)?.takeIf { it.isNotBlank() },
-            seen = (m["seen"] as? List<*>).orEmpty().filterIsInstance<String>().toSet()
+            seen = (m["seen"] as? List<*>).orEmpty().filterIsInstance<String>().toSet(),
+            autoSearch = m["autoSearch"] as? Boolean ?: false,
+            requested = (m["requested"] as? List<*>).orEmpty().filterIsInstance<String>().toSet()
         )
     }
 
@@ -54,7 +58,11 @@ object FollowBackup {
                 byKey[key] = f
                 added++
             } else {
-                byKey[key] = existing.copy(seen = existing.seen + f.seen)
+                byKey[key] = existing.copy(
+                    seen = existing.seen + f.seen,
+                    autoSearch = existing.autoSearch || f.autoSearch,
+                    requested = existing.requested + f.requested
+                )
             }
         }
         return byKey.values.toList() to added

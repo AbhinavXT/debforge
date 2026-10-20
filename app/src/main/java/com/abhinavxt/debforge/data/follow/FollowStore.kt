@@ -59,6 +59,11 @@ class FollowStore @Inject constructor(@ApplicationContext private val context: C
         list.map { if (it.provider == provider && it.showKey == showKey) it.copy(seen = it.seen + episodes) else it }
     }
 
+    /** Records episodes sent to the service by the search, so each is sent once. */
+    suspend fun markRequested(provider: ProviderId, showKey: String, episodes: Collection<String>) = update { list ->
+        list.map { if (it.provider == provider && it.showKey == showKey) it.copy(requested = it.requested + episodes) else it }
+    }
+
     private suspend fun update(change: (List<Follow>) -> List<Follow>) {
         context.followDataStore.edit { prefs -> prefs[key] = encode(change(decode(prefs[key]))) }
     }
@@ -73,6 +78,8 @@ class FollowStore @Inject constructor(@ApplicationContext private val context: C
                     .put("since", f.since)
                     .put("resolution", f.resolution ?: JSONObject.NULL)
                     .put("seen", JSONArray(f.seen.sorted()))
+                    .put("autoSearch", f.autoSearch)
+                    .put("requested", JSONArray(f.requested.sorted()))
             )
         }
     }.toString()
@@ -85,13 +92,16 @@ class FollowStore @Inject constructor(@ApplicationContext private val context: C
             runCatching {
                 val o = arr.getJSONObject(i)
                 val seen = o.optJSONArray("seen")
+                val requested = o.optJSONArray("requested")
                 Follow(
                     provider = ProviderId.fromName(o.getString("provider")) ?: return@runCatching null,
                     showKey = o.getString("showKey"),
                     title = o.getString("title"),
                     since = o.getLong("since"),
                     resolution = if (o.isNull("resolution")) null else o.optString("resolution"),
-                    seen = if (seen == null) emptySet() else (0 until seen.length()).mapTo(HashSet()) { seen.getString(it) }
+                    seen = if (seen == null) emptySet() else (0 until seen.length()).mapTo(HashSet()) { seen.getString(it) },
+                    autoSearch = o.optBoolean("autoSearch", false),
+                    requested = if (requested == null) emptySet() else (0 until requested.length()).mapTo(HashSet()) { requested.getString(it) }
                 )
             }.getOrNull()
         }

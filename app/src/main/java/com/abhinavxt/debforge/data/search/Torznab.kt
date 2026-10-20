@@ -1,5 +1,6 @@
 package com.abhinavxt.debforge.data.search
 
+import com.abhinavxt.debforge.domain.SearchKind
 import com.abhinavxt.debforge.domain.SearchResult
 import com.abhinavxt.debforge.domain.SearchResults
 import okhttp3.HttpUrl
@@ -36,6 +37,28 @@ object Torznab {
                 if (apiKey.isNotBlank()) setQueryParameter("apikey", apiKey.trim())
             }
             .build()
+    }
+
+    /**
+     * Query parameters for a search: `t=search`, `t=movie` or `t=tvsearch`
+     * (with `season` / `ep`), plus `imdbid` (digits only, as the spec has it).
+     */
+    fun searchParams(text: String, kind: SearchKind, season: Int?, episode: Int?, imdbId: String?): Map<String, String> =
+        buildMap {
+            put("t", when (kind) { SearchKind.ALL -> "search"; SearchKind.MOVIE -> "movie"; SearchKind.SHOW -> "tvsearch" })
+            put("q", text)
+            if (kind != SearchKind.ALL) imdbId?.removePrefix("tt")?.takeIf { it.isNotEmpty() }?.let { put("imdbid", it) }
+            if (kind == SearchKind.SHOW) {
+                season?.let { put("season", it.toString()) }
+                if (season != null) episode?.let { put("ep", it.toString()) }
+            }
+        }
+
+    /** "The Bear" + 2 + 5 → "The Bear S02E05" (or "The Bear S02") for sources without TV search. */
+    fun plainQuery(text: String, season: Int?, episode: Int?): String = when {
+        season == null -> text
+        episode == null -> "%s S%02d".format(java.util.Locale.ROOT, text, season)
+        else -> "%s S%02dE%02d".format(java.util.Locale.ROOT, text, season, episode)
     }
 
     /** The results of a `t=search` reply. Items without an info hash (nothing to add or check) are dropped. */
@@ -78,6 +101,7 @@ object Torznab {
             size = size,
             seeders = attrs["seeders"]?.toIntOrNull(),
             age = item.childText("pubDate")?.let(::ageOf),
+            published = item.childText("pubDate")?.let(::publishedMillis),
             tracker = item.childText("jackettindexer") ?: item.childText("prowlarrindexer") ?: attrs["indexer"],
             cached = null,
             owned = null
@@ -104,12 +128,15 @@ object Torznab {
         return bits.chunked(4).joinToString("") { Integer.toHexString(it.toInt(2)) }
     }
 
-    /** "Tue, 14 Oct 2026 08:00:00 +0000" → "6d" / "3mo" / "2y"; null if unreadable. */
-    fun ageOf(pubDate: String, now: Long = System.currentTimeMillis()): String? {
+    /** "Wed, 14 Oct 2026 08:00:00 +0000" as epoch millis; null if unreadable. */
+    fun publishedMillis(pubDate: String): Long? = runCatching {
         // The weekday is dropped: some trackers get it wrong, and the strict parser then refuses the date.
-        val millis = runCatching {
-            java.time.ZonedDateTime.parse(pubDate.trim().substringAfter(", "), PUB_DATE).toInstant().toEpochMilli()
-        }.getOrNull() ?: return null
+        java.time.ZonedDateTime.parse(pubDate.trim().substringAfter(", "), PUB_DATE).toInstant().toEpochMilli()
+    }.getOrNull()
+
+    /** "Wed, 14 Oct 2026 08:00:00 +0000" → "6d" / "3mo" / "2y"; null if unreadable. */
+    fun ageOf(pubDate: String, now: Long = System.currentTimeMillis()): String? {
+        val millis = publishedMillis(pubDate) ?: return null
         val days = ((now - millis) / 86_400_000L).coerceAtLeast(0)
         return when {
             days < 1 -> "<1d"
