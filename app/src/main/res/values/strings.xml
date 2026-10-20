@@ -72,6 +72,17 @@
     <string name="browse_local_empty">Videos you download from the Browser tab or a link show up here. Sign in to a debrid service in Settings to see its files too.</string>
     <string name="browse_downloaded">Downloaded</string>
     <string name="browse_downloaded_empty">Files saved to this device show up here: from your service, the Browser tab or a link.</string>
+    <string name="action_delete_device">Delete from device</string>
+    <string name="delete_device_title">Delete from this device?</string>
+    <string name="delete_device_body">“%1$s” will be deleted from this device\'s storage. This can\'t be undone.</string>
+    <plurals name="msg_deleted_device_n">
+        <item quantity="one">Deleted %1$d file from this device</item>
+        <item quantity="other">Deleted %1$d files from this device</item>
+    </plurals>
+    <plurals name="msg_delete_failed_n">
+        <item quantity="one">Couldn\'t delete %1$d file. Check that DebForge can still use the download folder.</item>
+        <item quantity="other">Couldn\'t delete %1$d files. Check that DebForge can still use the download folder.</item>
+    </plurals>
     <string name="storage_title">Where should files go?</string>
     <string name="storage_body">Choose a folder: internal storage, an SD card or a USB drive, with no special permission. Or use DebForge\'s own storage (removed if you uninstall the app).</string>
     <string name="storage_use_app">Use app storage</string>

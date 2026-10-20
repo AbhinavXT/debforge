@@ -71,6 +71,19 @@
     <string name="browse_local_empty">Los vídeos que descargues desde la pestaña Navegador o desde un enlace aparecen aquí. Inicia sesión en un servicio debrid en Ajustes para ver también sus archivos.</string>
     <string name="browse_downloaded">Descargados</string>
     <string name="browse_downloaded_empty">Aquí aparecen los archivos guardados en este dispositivo: de tu servicio, de la pestaña Navegador o de un enlace.</string>
+    <string name="action_delete_device">Eliminar del dispositivo</string>
+    <string name="delete_device_title">¿Eliminar de este dispositivo?</string>
+    <string name="delete_device_body">«%1$s» se eliminará del almacenamiento de este dispositivo. No se puede deshacer.</string>
+    <plurals name="msg_deleted_device_n">
+        <item quantity="one">Se eliminó %1$d archivo de este dispositivo</item>
+        <item quantity="many">Se eliminaron %1$d archivos de este dispositivo</item>
+        <item quantity="other">Se eliminaron %1$d archivos de este dispositivo</item>
+    </plurals>
+    <plurals name="msg_delete_failed_n">
+        <item quantity="one">No se pudo eliminar %1$d archivo. Comprueba que DebForge aún puede usar la carpeta de descargas.</item>
+        <item quantity="many">No se pudieron eliminar %1$d archivos. Comprueba que DebForge aún puede usar la carpeta de descargas.</item>
+        <item quantity="other">No se pudieron eliminar %1$d archivos. Comprueba que DebForge aún puede usar la carpeta de descargas.</item>
+    </plurals>
     <string name="storage_title">¿Dónde se guardan los archivos?</string>
     <string name="storage_body">Elige una carpeta: almacenamiento interno, una tarjeta SD o una unidad USB, sin permisos especiales. O usa el almacenamiento propio de DebForge (se borra si desinstalas la app).</string>
     <string name="storage_use_app">Usar almacenamiento de la app</string>

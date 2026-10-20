@@ -71,6 +71,15 @@
     <string name="browse_local_empty">从浏览器标签页或链接下载的视频会显示在这里。在设置中登录 debrid 服务即可同时查看其中的文件。</string>
     <string name="browse_downloaded">已下载</string>
     <string name="browse_downloaded_empty">保存在此设备上的文件会显示在这里：来自你的服务、浏览器标签页或链接。</string>
+    <string name="action_delete_device">从设备中删除</string>
+    <string name="delete_device_title">要从此设备中删除吗？</string>
+    <string name="delete_device_body">“%1$s”将从此设备的存储空间中删除。此操作无法撤消。</string>
+    <plurals name="msg_deleted_device_n">
+        <item quantity="other">已从此设备删除 %1$d 个文件</item>
+    </plurals>
+    <plurals name="msg_delete_failed_n">
+        <item quantity="other">无法删除 %1$d 个文件。请检查 DebForge 是否仍能使用下载文件夹。</item>
+    </plurals>
     <string name="storage_title">文件保存到哪里？</string>
     <string name="storage_body">选择一个文件夹：内部存储、SD 卡或 USB 存储设备均可，无需特殊权限。也可以使用 DebForge 自己的存储空间（卸载应用时会被删除）。</string>
     <string name="storage_use_app">使用应用存储</string>

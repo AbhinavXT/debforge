@@ -571,6 +571,28 @@ class BrowseViewModel @Inject constructor(
         viewModelScope.launch { removeKeys(p, keys) }
     }
 
+    // --- deleting from the device ----------------------------------------------
+
+    /** The downloads are shown and at least one of [items] is a finished file. */
+    fun canDelete(items: List<DownloadItem>): Boolean =
+        _state.value.local && items.any { downloadStates.value[it.id] == DownloadState.COMPLETED }
+
+    /** Deletes the files of finished downloads from storage; they then drop out of the list. */
+    fun deleteFromDevice(items: List<DownloadItem>) {
+        val states = downloadStates.value
+        val ids = items.map { it.id }.filter { states[it] == DownloadState.COMPLETED }
+        if (ids.isEmpty()) return
+        viewModelScope.launch {
+            val failed = ids.count { !downloadController.deleteFromDevice(it) }
+            val deleted = ids.size - failed
+            val res = appContext.resources
+            _events.send(
+                if (failed > 0) res.getQuantityString(R.plurals.msg_delete_failed_n, failed, failed)
+                else res.getQuantityString(R.plurals.msg_deleted_device_n, deleted, deleted)
+            )
+        }
+    }
+
     /** Removes a job that's still processing (e.g. a stalled torrent). */
     fun removeJob(job: RemoteJob) {
         viewModelScope.launch { removeKeys(job.provider, setOf(job.ref)) }

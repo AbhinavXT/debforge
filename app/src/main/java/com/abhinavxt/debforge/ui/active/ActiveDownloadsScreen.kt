@@ -30,6 +30,8 @@ import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.Schedule
 import androidx.compose.material.icons.rounded.Share
+import android.widget.Toast
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilledTonalIconButton
@@ -52,6 +54,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -312,6 +315,7 @@ private fun CompletedRow(row: ActiveRow, vm: ActiveDownloadsViewModel) {
         progress = null,
         actions = {
             var menu by remember { mutableStateOf(false) }
+            var confirmDelete by remember { mutableStateOf(false) }
             if (present && path != null) {
                 val isVideo = LocalFiles.mimeType(LocalFiles.name(path)).startsWith("video/")
                 FilledTonalIconButton(onClick = {
@@ -343,10 +347,35 @@ private fun CompletedRow(row: ActiveRow, vm: ActiveDownloadsViewModel) {
                     // Removes the entry only; the file stays where it is.
                     DropdownMenuItem(
                         text = { Text(stringResource(R.string.action_remove)) },
-                        leadingIcon = { Icon(Icons.Rounded.DeleteOutline, contentDescription = null) },
+                        leadingIcon = { Icon(Icons.Rounded.ClearAll, contentDescription = null) },
                         onClick = { menu = false; vm.cancel(row.id) }
                     )
+                    if (present && path != null) {
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.action_delete_device), color = cs.error) },
+                            leadingIcon = { Icon(Icons.Rounded.DeleteOutline, contentDescription = null, tint = cs.error) },
+                            onClick = { menu = false; confirmDelete = true }
+                        )
+                    }
                 }
+            }
+            if (confirmDelete) {
+                val failed = pluralStringResource(R.plurals.msg_delete_failed_n, 1, 1)
+                AlertDialog(
+                    onDismissRequest = { confirmDelete = false },
+                    icon = { Icon(Icons.Rounded.DeleteOutline, contentDescription = null, tint = cs.error) },
+                    title = { Text(stringResource(R.string.delete_device_title)) },
+                    text = { Text(stringResource(R.string.delete_device_body, row.entity.filename)) },
+                    confirmButton = {
+                        TextButton(onClick = {
+                            confirmDelete = false
+                            vm.deleteFromDevice(row.id) { Toast.makeText(context, failed, Toast.LENGTH_LONG).show() }
+                        }) { Text(stringResource(R.string.action_delete_device), color = cs.error) }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { confirmDelete = false }) { Text(stringResource(R.string.action_cancel)) }
+                    }
+                )
             }
         }
     )

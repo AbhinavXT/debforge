@@ -107,6 +107,11 @@ class ActiveDownloadsViewModel @Inject constructor(
     fun pause(id: String) { viewModelScope.launch { controller.pause(id) } }
     fun resume(id: String) { viewModelScope.launch { controller.resume(id) } }
     fun cancel(id: String) { viewModelScope.launch { controller.cancel(id) } }
+
+    /** Deletes a finished file from storage too; [onFailed] when it couldn't be deleted. */
+    fun deleteFromDevice(id: String, onFailed: () -> Unit) {
+        viewModelScope.launch { if (!controller.deleteFromDevice(id)) onFailed() }
+    }
     fun retry(id: String) { viewModelScope.launch { controller.retry(id) } }
     fun clearCompleted() { viewModelScope.launch { downloadDao.deleteCompleted() } }
 }

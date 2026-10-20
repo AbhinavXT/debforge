@@ -71,6 +71,17 @@
     <string name="browse_local_empty">ব্রাউজার ট্যাব বা কোনো লিংক থেকে ডাউনলোড করা ভিডিও এখানে দেখা যায়। কোনো debrid সার্ভিসের ফাইলও দেখতে সেটিংসে সাইন ইন করুন।</string>
     <string name="browse_downloaded">ডাউনলোড হয়েছে</string>
     <string name="browse_downloaded_empty">এই ডিভাইসে সেভ করা ফাইল এখানে দেখা যায়: আপনার সার্ভিস, ব্রাউজার ট্যাব বা লিংক থেকে।</string>
+    <string name="action_delete_device">ডিভাইস থেকে মুছুন</string>
+    <string name="delete_device_title">এই ডিভাইস থেকে মুছবেন?</string>
+    <string name="delete_device_body">“%1$s” এই ডিভাইসের স্টোরেজ থেকে মুছে ফেলা হবে। এটি আর ফেরানো যাবে না।</string>
+    <plurals name="msg_deleted_device_n">
+        <item quantity="one">এই ডিভাইস থেকে %1$dটি ফাইল মুছে ফেলা হয়েছে</item>
+        <item quantity="other">এই ডিভাইস থেকে %1$dটি ফাইল মুছে ফেলা হয়েছে</item>
+    </plurals>
+    <plurals name="msg_delete_failed_n">
+        <item quantity="one">%1$dটি ফাইল মোছা যায়নি। DebForge এখনও ডাউনলোড ফোল্ডার ব্যবহার করতে পারে কিনা দেখুন।</item>
+        <item quantity="other">%1$dটি ফাইল মোছা যায়নি। DebForge এখনও ডাউনলোড ফোল্ডার ব্যবহার করতে পারে কিনা দেখুন।</item>
+    </plurals>
     <string name="storage_title">ফাইলগুলো কোথায় রাখা হবে?</string>
     <string name="storage_body">একটি ফোল্ডার বেছে নিন: ইন্টারনাল স্টোরেজ, SD কার্ড বা USB ড্রাইভ, কোনো বিশেষ অনুমতি ছাড়াই। অথবা DebForge-এর নিজস্ব স্টোরেজ ব্যবহার করুন (অ্যাপ আনইনস্টল করলে মুছে যায়)।</string>
     <string name="storage_use_app">অ্যাপ স্টোরেজ ব্যবহার করুন</string>

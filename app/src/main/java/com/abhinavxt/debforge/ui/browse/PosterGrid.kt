@@ -292,7 +292,7 @@ fun TitleSheet(
     onDismiss: () -> Unit,
     /** Null when the service can't remove these files. */
     onRemove: (() -> Unit)? = null,
-    serviceName: String = "",
+    removeLabel: String = "",
     /** Shows only: followed right now? Null hides the button (movies, other files). */
     following: Boolean? = null,
     onToggleFollow: () -> Unit = {},
@@ -394,7 +394,7 @@ fun TitleSheet(
                                 )
                                 Spacer(Modifier.width(6.dp))
                                 Text(
-                                    stringResource(R.string.action_remove_from, serviceName),
+                                    removeLabel,
                                     color = MaterialTheme.colorScheme.error
                                 )
                             }

@@ -71,6 +71,17 @@
     <string name="browse_local_empty">బ్రౌజర్ ట్యాబ్ లేదా లింక్ నుండి డౌన్‌లోడ్ చేసిన వీడియోలు ఇక్కడ కనిపిస్తాయి. debrid సర్వీస్ ఫైల్‌లను కూడా చూడటానికి సెట్టింగ్‌లలో సైన్ ఇన్ చేయండి.</string>
     <string name="browse_downloaded">డౌన్‌లోడ్ చేసినవి</string>
     <string name="browse_downloaded_empty">ఈ పరికరంలో సేవ్ చేసిన ఫైల్‌లు ఇక్కడ కనిపిస్తాయి: మీ సర్వీస్, బ్రౌజర్ ట్యాబ్ లేదా లింక్ నుండి.</string>
+    <string name="action_delete_device">పరికరం నుండి తొలగించు</string>
+    <string name="delete_device_title">ఈ పరికరం నుండి తొలగించాలా?</string>
+    <string name="delete_device_body">“%1$s” ఈ పరికరం స్టోరేజ్ నుండి తొలగించబడుతుంది. దీన్ని రద్దు చేయలేరు.</string>
+    <plurals name="msg_deleted_device_n">
+        <item quantity="one">ఈ పరికరం నుండి %1$d ఫైల్ తొలగించబడింది</item>
+        <item quantity="other">ఈ పరికరం నుండి %1$d ఫైల్‌లు తొలగించబడ్డాయి</item>
+    </plurals>
+    <plurals name="msg_delete_failed_n">
+        <item quantity="one">%1$d ఫైల్‌ను తొలగించలేకపోయాం. DebForge ఇంకా డౌన్‌లోడ్ ఫోల్డర్‌ను ఉపయోగించగలదో చూడండి.</item>
+        <item quantity="other">%1$d ఫైల్‌లను తొలగించలేకపోయాం. DebForge ఇంకా డౌన్‌లోడ్ ఫోల్డర్‌ను ఉపయోగించగలదో చూడండి.</item>
+    </plurals>
     <string name="storage_title">ఫైల్‌లు ఎక్కడ సేవ్ కావాలి?</string>
     <string name="storage_body">ఒక ఫోల్డర్‌ను ఎంచుకోండి: ఇంటర్నల్ స్టోరేజ్, SD కార్డ్ లేదా USB డ్రైవ్, ప్రత్యేక అనుమతి అవసరం లేదు. లేదా DebForge సొంత స్టోరేజ్‌ను ఉపయోగించండి (యాప్‌ను అన్‌ఇన్‌స్టాల్ చేస్తే తొలగించబడుతుంది).</string>
     <string name="storage_use_app">యాప్ స్టోరేజ్‌ను ఉపయోగించు</string>

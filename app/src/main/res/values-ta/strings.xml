@@ -71,6 +71,17 @@
     <string name="browse_local_empty">உலாவி தாவலிலோ இணைப்பிலிருந்தோ பதிவிறக்கிய வீடியோக்கள் இங்கே தோன்றும். debrid சேவையின் கோப்புகளையும் பார்க்க அமைப்புகளில் உள்நுழையவும்.</string>
     <string name="browse_downloaded">பதிவிறக்கியவை</string>
     <string name="browse_downloaded_empty">இந்தச் சாதனத்தில் சேமித்த கோப்புகள் இங்கே தோன்றும்: உங்கள் சேவை, உலாவி தாவல் அல்லது இணைப்பிலிருந்து.</string>
+    <string name="action_delete_device">சாதனத்திலிருந்து நீக்கு</string>
+    <string name="delete_device_title">இந்தச் சாதனத்திலிருந்து நீக்கவா?</string>
+    <string name="delete_device_body">“%1$s” இந்தச் சாதனத்தின் சேமிப்பகத்திலிருந்து நீக்கப்படும். இதைத் திரும்பப் பெற முடியாது.</string>
+    <plurals name="msg_deleted_device_n">
+        <item quantity="one">இந்தச் சாதனத்திலிருந்து %1$d கோப்பு நீக்கப்பட்டது</item>
+        <item quantity="other">இந்தச் சாதனத்திலிருந்து %1$d கோப்புகள் நீக்கப்பட்டன</item>
+    </plurals>
+    <plurals name="msg_delete_failed_n">
+        <item quantity="one">%1$d கோப்பை நீக்க முடியவில்லை. DebForge இன்னும் பதிவிறக்கக் கோப்புறையைப் பயன்படுத்த முடிகிறதா எனப் பாருங்கள்.</item>
+        <item quantity="other">%1$d கோப்புகளை நீக்க முடியவில்லை. DebForge இன்னும் பதிவிறக்கக் கோப்புறையைப் பயன்படுத்த முடிகிறதா எனப் பாருங்கள்.</item>
+    </plurals>
     <string name="storage_title">கோப்புகள் எங்கே சேமிக்கப்பட வேண்டும்?</string>
     <string name="storage_body">ஒரு கோப்புறையைத் தேர்ந்தெடுக்கவும்: இன்டர்னல் ஸ்டோரேஜ், SD கார்டு அல்லது USB டிரைவ், சிறப்பு அனுமதி எதுவும் தேவையில்லை. அல்லது DebForge-இன் சொந்த ஸ்டோரேஜைப் பயன்படுத்தவும் (ஆப்ஸை அன்இன்ஸ்டால் செய்தால் நீக்கப்படும்).</string>
     <string name="storage_use_app">ஆப்ஸ் ஸ்டோரேஜைப் பயன்படுத்து</string>

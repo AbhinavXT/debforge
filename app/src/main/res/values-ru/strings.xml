@@ -71,6 +71,21 @@
     <string name="browse_local_empty">Здесь появляются видео, скачанные во вкладке «Браузер» или по ссылке. Войдите в debrid-сервис в настройках, чтобы видеть и его файлы.</string>
     <string name="browse_downloaded">Скачанные</string>
     <string name="browse_downloaded_empty">Здесь появляются файлы, сохранённые на этом устройстве: из вашего сервиса, вкладки «Браузер» или по ссылке.</string>
+    <string name="action_delete_device">Удалить с устройства</string>
+    <string name="delete_device_title">Удалить с этого устройства?</string>
+    <string name="delete_device_body">«%1$s» будет удалён из памяти этого устройства. Это нельзя отменить.</string>
+    <plurals name="msg_deleted_device_n">
+        <item quantity="one">Удалён %1$d файл с этого устройства</item>
+        <item quantity="few">Удалено %1$d файла с этого устройства</item>
+        <item quantity="many">Удалено %1$d файлов с этого устройства</item>
+        <item quantity="other">Удалено %1$d файла с этого устройства</item>
+    </plurals>
+    <plurals name="msg_delete_failed_n">
+        <item quantity="one">Не удалось удалить %1$d файл. Проверьте, есть ли у DebForge доступ к папке загрузок.</item>
+        <item quantity="few">Не удалось удалить %1$d файла. Проверьте, есть ли у DebForge доступ к папке загрузок.</item>
+        <item quantity="many">Не удалось удалить %1$d файлов. Проверьте, есть ли у DebForge доступ к папке загрузок.</item>
+        <item quantity="other">Не удалось удалить %1$d файла. Проверьте, есть ли у DebForge доступ к папке загрузок.</item>
+    </plurals>
     <string name="storage_title">Куда сохранять файлы?</string>
     <string name="storage_body">Выберите папку: внутренняя память, SD-карта или USB-накопитель, без особых разрешений. Или используйте собственное хранилище DebForge (удаляется вместе с приложением).</string>
     <string name="storage_use_app">Хранилище приложения</string>
