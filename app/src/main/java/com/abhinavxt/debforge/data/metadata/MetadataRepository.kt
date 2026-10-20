@@ -105,6 +105,31 @@ class MetadataRepository @Inject constructor(
         }
     }
 
+    private val imdbIds = ConcurrentHashMap<String, String>()
+
+    /**
+     * IMDb id ("tt1234567") of the movie or show called [title], best match on
+     * TMDB. Null without a TMDB key, when nothing matches, or on any failure:
+     * the search then goes by name alone.
+     */
+    suspend fun imdbId(title: String, kind: MediaKind): String? {
+        if (kind == MediaKind.OTHER || title.isBlank()) return null
+        val cacheKey = "${kind.name}:${title.trim().lowercase()}"
+        imdbIds[cacheKey]?.let { return it }
+        if (effectiveKey(settings.tmdbKeyFlow.first()).isBlank()) return null
+        val id = try {
+            gate.withPermit {
+                if (kind == MediaKind.SHOW) api.searchTv(title.trim()).results?.firstOrNull()?.let { api.tvExternalIds(it.id).imdbId }
+                else api.searchMovie(title.trim()).results?.firstOrNull()?.let { api.movieExternalIds(it.id).imdbId }
+            }
+        } catch (ce: CancellationException) {
+            throw ce
+        } catch (e: Exception) {
+            null
+        }
+        return id?.takeIf { it.startsWith("tt") }?.also { imdbIds[cacheKey] = it }
+    }
+
     /** Forget everything (e.g. after the user changes the TMDB key). */
     suspend fun clearCache() {
         memory.clear()

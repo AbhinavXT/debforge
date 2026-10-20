@@ -28,6 +28,13 @@ interface TmdbApi {
         @Query("include_adult") includeAdult: Boolean = false
     ): TmdbSearchResponse<TmdbMovieResult>
 
+    /** IMDb id of a movie / show, for the Search tab's ID search (indexers match it exactly). */
+    @GET("movie/{id}/external_ids")
+    suspend fun movieExternalIds(@retrofit2.http.Path("id") id: Long): TmdbExternalIds
+
+    @GET("tv/{id}/external_ids")
+    suspend fun tvExternalIds(@retrofit2.http.Path("id") id: Long): TmdbExternalIds
+
     /**
      * Checks a key the user is about to save, before it's stored. The
      * credential is passed explicitly (exactly one of the two), so
@@ -49,6 +56,9 @@ interface TmdbApi {
             path?.takeIf { it.isNotBlank() }?.let { IMAGE_BASE + size + it }
     }
 }
+
+@JsonClass(generateAdapter = true)
+data class TmdbExternalIds(@Json(name = "imdb_id") val imdbId: String?)
 
 @JsonClass(generateAdapter = true)
 data class TmdbAuthCheck(@Json(name = "success") val success: Boolean?)
