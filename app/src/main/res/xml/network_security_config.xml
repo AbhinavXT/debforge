@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Plain http:// is allowed because Jackett and Prowlarr usually run on the
+    user's own network without TLS (http://192.168.1.5:9117). The services'
+    APIs are all called over https:// regardless; this only stops Android from
+    refusing a server the user typed in themselves.
+-->
+<network-security-config xmlns:tools="http://schemas.android.com/tools">
+    <base-config cleartextTrafficPermitted="true" tools:ignore="InsecureBaseConfiguration">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>

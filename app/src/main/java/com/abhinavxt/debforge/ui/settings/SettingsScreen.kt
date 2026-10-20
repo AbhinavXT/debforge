@@ -409,6 +409,7 @@ fun SettingsScreen(onConnect: () -> Unit, viewModel: SettingsViewModel = hiltVie
             }
             item(key = "trakt") { TraktSection() }
             item(key = "opensubtitles") { OpenSubtitlesSection() }
+            item(key = "search_sources") { SearchSourcesSection() }
             item(key = "usage") { DataUsageSection() }
             item(key = "backup") { BackupSection() }
             item(key = "about") { AboutSection() }

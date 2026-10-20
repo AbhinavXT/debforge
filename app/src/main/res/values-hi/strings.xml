@@ -707,4 +707,36 @@
         <item quantity="one">%d वीडियो</item>
         <item quantity="other">%d वीडियो</item>
     </plurals>
+    <!-- Search tab -->
+    <string name="tab_search">खोजें</string>
+    <string name="search_hint">फ़िल्में और शो</string>
+    <string name="search_start_title">देखने के लिए कुछ खोजें</string>
+    <string name="search_nothing_found">“%1$s” के लिए कुछ नहीं मिला</string>
+    <string name="search_nothing_filtered">इन फ़िल्टर से कोई नतीजा मेल नहीं खाता</string>
+    <string name="search_cached_only">सिर्फ़ कैश वाले</string>
+    <string name="search_any_quality">कोई भी क्वालिटी</string>
+    <string name="search_cached">कैश में है</string>
+    <string name="search_in_library">आपकी लाइब्रेरी में</string>
+    <string name="search_needs_source_title">खोज का एक स्रोत जोड़ें</string>
+    <string name="search_needs_source_body">DebForge, Jackett या Prowlarr से खोजता है, जिसे आप खुद अपने कंप्यूटर या सर्वर पर चलाते हैं। सेटिंग्स → खोज के स्रोत में एक जोड़ें।</string>
+    <string name="search_open_settings">सेटिंग्स खोलें</string>
+    <string name="search_start_body">नाम से खोजें, जैसे “The Bear S02” या “Oppenheimer 2023”। जो नतीजे आपकी सेवा में पहले से कैश हैं, वे सबसे ऊपर आते हैं।</string>
+    <string name="search_checking_cache">देख रहे हैं कि कौन-से कैश में हैं…</string>
+    <string name="search_err_bad_url">फ़ीड का लिंक डालें, जो http:// या https:// से शुरू हो</string>
+    <string name="search_err_key">%1$s ने API कुंजी नहीं मानी</string>
+    <string name="search_err_said">%1$s: %2$s</string>
+    <string name="search_err_unreachable">%1$s से जुड़ नहीं पाए। देखें कि यह चल रहा है और उसी नेटवर्क पर है।</string>
+    <string name="search_err_not_torznab">%1$s ने Torznab फ़ीड की तरह जवाब नहीं दिया। लिंक जांचें।</string>
+    <string name="sources_title">खोज के स्रोत</string>
+    <string name="sources_detail">Jackett या Prowlarr फ़ीड, जिनमें खोज टैब ढूंढता है।</string>
+    <string name="sources_remove">%1$s हटाएं</string>
+    <string name="sources_add">स्रोत जोड़ें</string>
+    <string name="sources_add_body">Jackett में, इंडेक्सर सूची के ऊपर “Copy Torznab Feed” (सभी इंडेक्सर के लिए) और ऊपर दाईं ओर API कुंजी इस्तेमाल करें। Prowlarr में, कोई इंडेक्सर खोलकर उसका Torznab लिंक कॉपी करें; API कुंजी Settings → General में मिलेगी।</string>
+    <string name="sources_url">Torznab फ़ीड लिंक</string>
+    <string name="sources_api_key">API कुंजी</string>
+    <string name="sources_name">नाम (वैकल्पिक)</string>
+    <plurals name="search_seeders">
+        <item quantity="one">%1$d सीडर</item>
+        <item quantity="other">%1$d सीडर</item>
+    </plurals>
 </resources>

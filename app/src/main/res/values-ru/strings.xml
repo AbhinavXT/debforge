@@ -781,4 +781,38 @@
         <item quantity="many">%d видео</item>
         <item quantity="other">%d видео</item>
     </plurals>
+    <!-- Search tab -->
+    <string name="tab_search">Поиск</string>
+    <string name="search_hint">Фильмы и сериалы</string>
+    <string name="search_start_title">Найдите, что посмотреть</string>
+    <string name="search_nothing_found">Ничего не найдено по запросу «%1$s»</string>
+    <string name="search_nothing_filtered">Нет результатов с такими фильтрами</string>
+    <string name="search_cached_only">Только в кэше</string>
+    <string name="search_any_quality">Любое качество</string>
+    <string name="search_cached">В кэше</string>
+    <string name="search_in_library">В вашей библиотеке</string>
+    <string name="search_needs_source_title">Добавьте источник поиска</string>
+    <string name="search_needs_source_body">DebForge ищет через Jackett или Prowlarr, которые вы запускаете сами на компьютере или сервере. Добавьте источник в Настройках → Источники поиска.</string>
+    <string name="search_open_settings">Открыть настройки</string>
+    <string name="search_start_body">Ищите по названию, например «The Bear S02» или «Oppenheimer 2023». Результаты, которые уже есть в кэше вашего сервиса, показываются первыми.</string>
+    <string name="search_checking_cache">Проверяем, что есть в кэше…</string>
+    <string name="search_err_bad_url">Введите ссылку на фид, начиная с http:// или https://</string>
+    <string name="search_err_key">%1$s не принял ключ API</string>
+    <string name="search_err_said">%1$s: %2$s</string>
+    <string name="search_err_unreachable">Не удалось подключиться к %1$s. Проверьте, что он запущен и в той же сети.</string>
+    <string name="search_err_not_torznab">%1$s ответил не как фид Torznab. Проверьте ссылку.</string>
+    <string name="sources_title">Источники поиска</string>
+    <string name="sources_detail">Фиды Jackett или Prowlarr, по которым ищет вкладка «Поиск».</string>
+    <string name="sources_remove">Удалить %1$s</string>
+    <string name="sources_add">Добавить источник</string>
+    <string name="sources_add_body">В Jackett нажмите «Copy Torznab Feed» над списком индексаторов (для всех) и возьмите ключ API вверху справа. В Prowlarr откройте индексатор и скопируйте его ссылку Torznab, а ключ API найдите в Settings → General.</string>
+    <string name="sources_url">Ссылка на фид Torznab</string>
+    <string name="sources_api_key">Ключ API</string>
+    <string name="sources_name">Название (необязательно)</string>
+    <plurals name="search_seeders">
+        <item quantity="one">%1$d сид</item>
+        <item quantity="few">%1$d сида</item>
+        <item quantity="many">%1$d сидов</item>
+        <item quantity="other">%1$d сида</item>
+    </plurals>
 </resources>

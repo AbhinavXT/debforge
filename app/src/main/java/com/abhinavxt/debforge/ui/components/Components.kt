@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
@@ -229,7 +230,9 @@ fun SearchPill(
     onQuery: (String) -> Unit,
     placeholder: String,
     clearDescription: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    /** The keyboard's search key; null = filters as you type, nothing to submit. */
+    onSearch: (() -> Unit)? = null
 ) {
     TextField(
         value = query,
@@ -245,6 +248,7 @@ fun SearchPill(
         singleLine = true,
         shape = CircleShape,
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+        keyboardActions = if (onSearch != null) KeyboardActions(onSearch = { onSearch() }) else KeyboardActions.Default,
         colors = TextFieldDefaults.colors(
             focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
             unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,

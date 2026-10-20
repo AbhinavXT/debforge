@@ -670,4 +670,35 @@
     <plurals name="browser_videos_n">
         <item quantity="other">%d 个视频</item>
     </plurals>
+    <!-- Search tab -->
+    <string name="tab_search">搜索</string>
+    <string name="search_hint">电影和剧集</string>
+    <string name="search_start_title">找点东西看</string>
+    <string name="search_nothing_found">未找到与“%1$s”相关的结果</string>
+    <string name="search_nothing_filtered">没有符合这些筛选条件的结果</string>
+    <string name="search_cached_only">仅已缓存</string>
+    <string name="search_any_quality">任意画质</string>
+    <string name="search_cached">已缓存</string>
+    <string name="search_in_library">已在你的媒体库中</string>
+    <string name="search_needs_source_title">添加搜索源</string>
+    <string name="search_needs_source_body">DebForge 通过 Jackett 或 Prowlarr 搜索，它们由你自己在电脑或服务器上运行。请在“设置 → 搜索源”中添加一个。</string>
+    <string name="search_open_settings">打开设置</string>
+    <string name="search_start_body">按标题搜索，例如“The Bear S02”或“Oppenheimer 2023”。你的服务已缓存的结果排在前面。</string>
+    <string name="search_checking_cache">正在检查哪些已缓存…</string>
+    <string name="search_err_bad_url">请输入以 http:// 或 https:// 开头的 feed 链接</string>
+    <string name="search_err_key">%1$s 拒绝了 API 密钥</string>
+    <string name="search_err_said">%1$s：%2$s</string>
+    <string name="search_err_unreachable">无法连接 %1$s。请确认它正在运行并且在同一网络中。</string>
+    <string name="search_err_not_torznab">%1$s 的响应不像 Torznab feed。请检查链接。</string>
+    <string name="sources_title">搜索源</string>
+    <string name="sources_detail">“搜索”标签页会在这些 Jackett 或 Prowlarr feed 中搜索。</string>
+    <string name="sources_remove">移除 %1$s</string>
+    <string name="sources_add">添加搜索源</string>
+    <string name="sources_add_body">在 Jackett 中，使用索引器列表上方的“Copy Torznab Feed”（适用于全部索引器）和右上角的 API 密钥。在 Prowlarr 中，打开一个索引器并复制它的 Torznab 链接；API 密钥在 Settings → General 中。</string>
+    <string name="sources_url">Torznab feed 链接</string>
+    <string name="sources_api_key">API 密钥</string>
+    <string name="sources_name">名称（可选）</string>
+    <plurals name="search_seeders">
+        <item quantity="other">%1$d 个做种</item>
+    </plurals>
 </resources>

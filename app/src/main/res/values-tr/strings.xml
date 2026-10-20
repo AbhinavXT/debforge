@@ -707,4 +707,36 @@
         <item quantity="one">%d video</item>
         <item quantity="other">%d video</item>
     </plurals>
+    <!-- Search tab -->
+    <string name="tab_search">Ara</string>
+    <string name="search_hint">Filmler ve diziler</string>
+    <string name="search_start_title">İzleyecek bir şey bul</string>
+    <string name="search_nothing_found">“%1$s” için sonuç bulunamadı</string>
+    <string name="search_nothing_filtered">Bu filtrelere uyan sonuç yok</string>
+    <string name="search_cached_only">Yalnızca önbellekte</string>
+    <string name="search_any_quality">Her kalite</string>
+    <string name="search_cached">Önbellekte</string>
+    <string name="search_in_library">Kitaplığında</string>
+    <string name="search_needs_source_title">Bir arama kaynağı ekle</string>
+    <string name="search_needs_source_body">DebForge, kendin bilgisayarında veya sunucunda çalıştırdığın Jackett ya da Prowlarr üzerinden arar. Ayarlar → Arama kaynakları\'ndan bir tane ekle.</string>
+    <string name="search_open_settings">Ayarları aç</string>
+    <string name="search_start_body">Ada göre ara, örneğin “The Bear S02” veya “Oppenheimer 2023”. Hizmetinin önbelleğinde olan sonuçlar önce gelir.</string>
+    <string name="search_checking_cache">Hangilerinin önbellekte olduğu kontrol ediliyor…</string>
+    <string name="search_err_bad_url">http:// veya https:// ile başlayan akış bağlantısını gir</string>
+    <string name="search_err_key">%1$s API anahtarını reddetti</string>
+    <string name="search_err_said">%1$s: %2$s</string>
+    <string name="search_err_unreachable">%1$s kaynağına ulaşılamadı. Çalıştığını ve aynı ağda olduğunu kontrol et.</string>
+    <string name="search_err_not_torznab">%1$s bir Torznab akışı gibi yanıt vermedi. Bağlantıyı kontrol et.</string>
+    <string name="sources_title">Arama kaynakları</string>
+    <string name="sources_detail">Ara sekmesinin içinde aradığı Jackett veya Prowlarr akışları.</string>
+    <string name="sources_remove">%1$s kaldır</string>
+    <string name="sources_add">Kaynak ekle</string>
+    <string name="sources_add_body">Jackett\'ta dizinleyici listesinin üstündeki “Copy Torznab Feed”i (tüm dizinleyiciler için) ve sağ üstteki API anahtarını kullan. Prowlarr\'da bir dizinleyiciyi açıp Torznab bağlantısını kopyala; API anahtarı Settings → General\'da.</string>
+    <string name="sources_url">Torznab akış bağlantısı</string>
+    <string name="sources_api_key">API anahtarı</string>
+    <string name="sources_name">Ad (isteğe bağlı)</string>
+    <plurals name="search_seeders">
+        <item quantity="one">%1$d seeder</item>
+        <item quantity="other">%1$d seeder</item>
+    </plurals>
 </resources>
