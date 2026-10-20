@@ -58,8 +58,10 @@ import javax.inject.Inject
  */
 data class BrowseUiState(
     val providerName: String = "",
-    /** No service signed in: the items are the downloads on this device. */
+    /** The items are the downloads on this device (no service, or [downloadsView]). */
     val local: Boolean = false,
+    /** A service is signed in but the "Downloaded" chip is on. */
+    val downloadsView: Boolean = false,
     val emptyHint: String = "",
     val items: List<DownloadItem> = emptyList(),
     val query: String = "",
@@ -79,6 +81,8 @@ data class BrowseUiState(
     val error: String? = null
 ) {
     val canLoadMore: Boolean get() = !endReached && !isAppending && !isInitialLoad && error == null
+    /** Signed in: the chip can switch between the service's files and the downloads. */
+    val hasService: Boolean get() = !local || downloadsView
 }
 
 @HiltViewModel
@@ -146,8 +150,11 @@ class BrowseViewModel @Inject constructor(
 
     private var processingJob: Job? = null
 
-    /** Provider whose list is currently shown. Null until the first emission. */
+    /** Provider whose list is currently shown. Null until the first emission, and while the downloads are shown. */
     private var provider: ProviderId? = null
+    /** The signed-in service, kept while the "Downloaded" chip hides its list. */
+    private var service: ProviderId? = null
+    private var localJob: Job? = null
     private var nextPage = 1
     private var loadJob: Job? = null
 
@@ -179,42 +186,72 @@ class BrowseViewModel @Inject constructor(
             // Reload whenever the active service changes (Settings switcher).
             // signedInProvider only emits providers that have a token.
             auth.signedInProvider.collectLatest { id ->
-                if (id == null) return@collectLatest showLocal()
-                if (id == provider) return@collectLatest
-                provider = id
-                val info = auth.info(id)
-                _state.update {
-                    it.copy(
-                        providerName = info.displayName,
-                        local = false,
-                        emptyHint = str(
-                            R.string.browse_empty_hint,
-                            android.net.Uri.parse(info.websiteUrl).host?.removePrefix("www.") ?: info.displayName
-                        ),
-                        expiryWarning = null,
-                        renewUrl = info.websiteUrl
-                    )
+                if (id == null) {
+                    service = null
+                    _state.update { it.copy(providerName = "", downloadsView = false, expiryWarning = null) }
+                    return@collectLatest showLocal(str(R.string.browse_local_empty))
                 }
-                refresh()
+                if (id == service) return@collectLatest
+                service = id
+                _state.update { it.copy(expiryWarning = null, renewUrl = auth.info(id).websiteUrl) }
+                showService(id)
                 checkExpiry(id)
             }
         }
     }
 
-    /** No service: lists the finished downloads (any source) until one signs in. */
-    private suspend fun showLocal() {
+    /** Back to the service's list (signed in, or the "Downloaded" chip turned off). */
+    private fun showService(id: ProviderId) {
+        localJob?.cancel()
+        provider = id
+        val info = auth.info(id)
+        _state.update {
+            it.copy(
+                providerName = info.displayName,
+                local = false,
+                downloadsView = false,
+                emptyHint = str(
+                    R.string.browse_empty_hint,
+                    android.net.Uri.parse(info.websiteUrl).host?.removePrefix("www.") ?: info.displayName
+                )
+            )
+        }
+        refresh()
+    }
+
+    /** The "Downloaded" chip: the finished downloads on this device instead of the service's files. */
+    fun onToggleDownloads() {
+        val id = service ?: return
+        if (_state.value.downloadsView) {
+            showService(id)
+        } else {
+            _state.update { it.copy(downloadsView = true) }
+            showLocal(str(R.string.browse_downloaded_empty))
+        }
+    }
+
+    /**
+     * Lists the finished downloads (any source: a service, the Browser tab, a
+     * link). Without a service that's the whole Library until one signs in.
+     */
+    private fun showLocal(hint: String) {
         provider = null
         loadJob?.cancel()
         searchJob?.cancel()
         quietJob?.cancel()
         processingJob?.cancel()
+        localJob?.cancel()
         _processing.value = emptyList()
         _state.update {
             it.copy(
-                local = true, providerName = "", emptyHint = str(R.string.browse_local_empty),
-                expiryWarning = null, error = null, isAppending = false, searchingAll = false
+                local = true, emptyHint = hint, items = emptyList(), isInitialLoad = true,
+                error = null, isAppending = false, isRefreshing = false, searchingAll = false
             )
         }
+        localJob = viewModelScope.launch { collectLocal() }
+    }
+
+    private suspend fun collectLocal() {
         downloadDao.observeByState(DownloadState.COMPLETED).collect { rows ->
             _state.update { s ->
                 s.copy(
@@ -438,7 +475,7 @@ class BrowseViewModel @Inject constructor(
                 days <= 5 -> appContext.resources.getQuantityString(R.plurals.expiry_in_days, days.toInt(), days.toInt(), name)
                 else -> null
             } ?: return@launch
-            if (active == provider) _state.update { it.copy(expiryWarning = msg, renewUrl = auth.info(id).websiteUrl) }
+            if (active == service) _state.update { it.copy(expiryWarning = msg, renewUrl = auth.info(id).websiteUrl) }
         }
     }
 

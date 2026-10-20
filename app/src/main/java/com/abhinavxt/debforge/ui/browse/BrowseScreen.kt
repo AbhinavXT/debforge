@@ -44,6 +44,7 @@ import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.CloudOff
 import androidx.compose.material.icons.rounded.DeleteOutline
 import androidx.compose.material.icons.rounded.Download
+import androidx.compose.material.icons.rounded.DownloadDone
 import androidx.compose.material.icons.rounded.FolderOpen
 import androidx.compose.material.icons.rounded.GridView
 import androidx.compose.material.icons.rounded.Image
@@ -341,7 +342,9 @@ fun BrowseScreen(
                 posterView = state.posterView,
                 onTogglePosters = viewModel::onTogglePosterView,
                 grouped = state.grouped,
-                onToggleGroup = viewModel::onToggleGroup
+                onToggleGroup = viewModel::onToggleGroup,
+                downloadsView = state.downloadsView.takeIf { state.hasService },
+                onToggleDownloads = viewModel::onToggleDownloads
             )
             if (state.searchingAll) {
                 // Search covers the whole account: show that more is loading.
@@ -613,7 +616,10 @@ private fun ControlBar(
     posterView: Boolean,
     onTogglePosters: () -> Unit,
     grouped: Boolean,
-    onToggleGroup: () -> Unit
+    onToggleGroup: () -> Unit,
+    /** Null: no service signed in, so the list is the downloads already and there's no chip. */
+    downloadsView: Boolean?,
+    onToggleDownloads: () -> Unit
 ) {
     Column(modifier = Modifier.padding(top = 4.dp, bottom = 4.dp)) {
         SearchPill(
@@ -633,6 +639,14 @@ private fun ControlBar(
             verticalAlignment = Alignment.CenterVertically
         ) {
             SortPicker(sort = sort, onSort = onSort)
+            if (downloadsView != null) {
+                FilterChip(
+                    selected = downloadsView,
+                    onClick = onToggleDownloads,
+                    leadingIcon = { Icon(Icons.Rounded.DownloadDone, contentDescription = null, modifier = Modifier.size(18.dp)) },
+                    label = { Text(stringResource(R.string.browse_downloaded)) }
+                )
+            }
             FilterChip(
                 selected = posterView,
                 onClick = onTogglePosters,

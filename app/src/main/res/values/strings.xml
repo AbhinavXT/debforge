@@ -70,6 +70,8 @@
     <string name="browse_your_service">your service</string>
     <string name="browse_empty_add">Add a magnet, torrent or link</string>
     <string name="browse_local_empty">Videos you download from the Browser tab or a link show up here. Sign in to a debrid service in Settings to see its files too.</string>
+    <string name="browse_downloaded">Downloaded</string>
+    <string name="browse_downloaded_empty">Files saved to this device show up here: from your service, the Browser tab or a link.</string>
     <string name="storage_title">Where should files go?</string>
     <string name="storage_body">Choose a folder: internal storage, an SD card or a USB drive, with no special permission. Or use DebForge\'s own storage (removed if you uninstall the app).</string>
     <string name="storage_use_app">Use app storage</string>

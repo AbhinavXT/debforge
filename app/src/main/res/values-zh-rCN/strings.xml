@@ -69,6 +69,8 @@
     <string name="browse_your_service">你的服务</string>
     <string name="browse_empty_add">添加磁力、种子或链接</string>
     <string name="browse_local_empty">从浏览器标签页或链接下载的视频会显示在这里。在设置中登录 debrid 服务即可同时查看其中的文件。</string>
+    <string name="browse_downloaded">已下载</string>
+    <string name="browse_downloaded_empty">保存在此设备上的文件会显示在这里：来自你的服务、浏览器标签页或链接。</string>
     <string name="storage_title">文件保存到哪里？</string>
     <string name="storage_body">选择一个文件夹：内部存储、SD 卡或 USB 存储设备均可，无需特殊权限。也可以使用 DebForge 自己的存储空间（卸载应用时会被删除）。</string>
     <string name="storage_use_app">使用应用存储</string>
