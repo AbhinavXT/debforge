@@ -2,7 +2,7 @@ name: Release
 
 # Push a tag like v1.2.0 -> builds the signed release APK and publishes it as a
 # GitHub Release. The same APK is what F-Droid verifies against its own build
-# and what Obtainium installs, so it must be reproducible (see README).
+# and what Obtainium installs, so it must be reproducible (see DEVELOPMENT.md).
 #
 # Use scripts/release.sh to make the tag: it keeps versionName, versionCode,
 # the changelog and the tag in step.
@@ -66,7 +66,7 @@ jobs:
                   KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
               run: |
                   if [ -z "$KEYSTORE_BASE64" ]; then
-                    echo "::error::KEYSTORE_BASE64 secret is not set - an unsigned APK cannot be installed. See README 'Releasing'."
+                    echo "::error::KEYSTORE_BASE64 secret is not set - an unsigned APK cannot be installed. See DEVELOPMENT.md 'Releasing'."
                     exit 1
                   fi
                   echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
