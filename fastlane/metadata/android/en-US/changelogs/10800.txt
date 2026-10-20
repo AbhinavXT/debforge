@@ -1,0 +1,5 @@
+• added a Search tab: search your own Jackett or Prowlarr for movies and shows, down to the episode. Results cached on TorBox or Premiumize come first
+• follow a show from Search: new episodes are found, added to your service and downloaded by themselves
+• recent searches
+• Library: a Downloaded chip lists the files on this device, Browser downloads included
+• delete downloaded files from the device
