@@ -239,6 +239,13 @@ fun BrowseScreen(
     }
     val pickedItems = remember(selected, state.items) { state.items.filter { it.id in selected } }
 
+    // A sheet's remove button: from the service, or from the device in the downloads view.
+    fun removeAction(items: List<DownloadItem>, label: String, confirm: (RemoveRequest) -> Unit): (() -> Unit)? = when {
+        viewModel.canRemove(items) -> { { confirm(RemoveRequest(label, items = items)) } }
+        viewModel.canDelete(items) -> { { confirm(RemoveRequest(label, items = items, fromDevice = true)) } }
+        else -> null
+    }
+
     Scaffold(
         snackbarHost = { SnackbarHost(snackbar) },
         floatingActionButton = {
@@ -276,6 +283,11 @@ fun BrowseScreen(
                             val label = pluralRes(R.plurals.n_files, pickedItems.size, pickedItems.size)
                             IconButton(onClick = { confirmRemove = RemoveRequest(label, items = pickedItems) }) {
                                 Icon(Icons.Rounded.DeleteOutline, contentDescription = stringResource(R.string.action_remove))
+                            }
+                        } else if (viewModel.canDelete(pickedItems)) {
+                            val label = pluralRes(R.plurals.n_files, pickedItems.size, pickedItems.size)
+                            IconButton(onClick = { confirmRemove = RemoveRequest(label, items = pickedItems, fromDevice = true) }) {
+                                Icon(Icons.Rounded.DeleteOutline, contentDescription = stringResource(R.string.action_delete_device))
                             }
                         }
                         Box {
@@ -484,10 +496,9 @@ fun BrowseScreen(
                                 onPlay = { viewModel.play(it.item, it.info.displayTitle) },
                                 zipFor = viewModel::zipFor,
                                 onDismiss = { openGroupKey = null },
-                                onRemove = group.files.map { it.item }.takeIf { viewModel.canRemove(it) }?.let { items ->
-                                    { confirmRemove = RemoveRequest(group.title, items = items) }
-                                },
-                                serviceName = state.providerName,
+                                onRemove = removeAction(group.files.map { it.item }, group.title) { confirmRemove = it },
+                                removeLabel = if (state.local) stringResource(R.string.action_delete_device)
+                                    else stringResource(R.string.action_remove_from, state.providerName),
                                 following = group.files.firstOrNull()
                                     ?.takeIf { group.kind == MediaKind.SHOW }
                                     ?.let { "${it.item.provider.name}|${group.info.groupKey}" in followed },
@@ -545,9 +556,8 @@ fun BrowseScreen(
             onDownload = { handleEnqueue(listOf(f.item)); openFile = null },
             onPlay = { viewModel.play(f.item, f.info.displayTitle); openFile = null },
             onDismiss = { openFile = null },
-            onRemove = listOf(f.item).takeIf { viewModel.canRemove(it) }?.let { items ->
-                { confirmRemove = RemoveRequest(f.info.displayTitle, items = items); openFile = null }
-            }
+            onRemove = removeAction(listOf(f.item), f.info.displayTitle) { confirmRemove = it; openFile = null },
+            removeLabel = stringResource(if (state.local) R.string.action_delete_device else R.string.action_remove)
         )
     }
 
@@ -572,16 +582,31 @@ fun BrowseScreen(
         AlertDialog(
             onDismissRequest = { confirmRemove = null },
             icon = { Icon(Icons.Rounded.DeleteOutline, contentDescription = null, tint = MaterialTheme.colorScheme.error) },
-            title = { Text(stringResource(R.string.remove_title, state.providerName)) },
-            text = { Text(stringResource(R.string.remove_body, req.label, state.providerName)) },
+            title = {
+                Text(
+                    if (req.fromDevice) stringResource(R.string.delete_device_title)
+                    else stringResource(R.string.remove_title, state.providerName)
+                )
+            },
+            text = {
+                Text(
+                    if (req.fromDevice) stringResource(R.string.delete_device_body, req.label)
+                    else stringResource(R.string.remove_body, req.label, state.providerName)
+                )
+            },
             confirmButton = {
                 TextButton(onClick = {
-                    req.items?.let(viewModel::removeFromService)
+                    req.items?.let(if (req.fromDevice) viewModel::deleteFromDevice else viewModel::removeFromService)
                     req.job?.let(viewModel::removeJob)
                     confirmRemove = null
                     openGroupKey = null
                     if (req.items != null) selected = selected - req.items.map { it.id }.toSet()
-                }) { Text(stringResource(R.string.action_remove), color = MaterialTheme.colorScheme.error) }
+                }) {
+                    Text(
+                        stringResource(if (req.fromDevice) R.string.action_delete_device else R.string.action_remove),
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
             },
             dismissButton = {
                 TextButton(onClick = { confirmRemove = null }) { Text(stringResource(R.string.action_cancel)) }
@@ -884,7 +909,8 @@ private fun FileInfoDialog(
     onDownload: () -> Unit,
     onPlay: () -> Unit,
     onDismiss: () -> Unit,
-    onRemove: (() -> Unit)? = null
+    onRemove: (() -> Unit)? = null,
+    removeLabel: String = ""
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -921,7 +947,7 @@ private fun FileInfoDialog(
             Row {
                 if (onRemove != null) {
                     TextButton(onClick = onRemove) {
-                        Text(stringResource(R.string.action_remove), color = MaterialTheme.colorScheme.error)
+                        Text(removeLabel, color = MaterialTheme.colorScheme.error)
                     }
                 }
                 if (file.info.isVideo) TextButton(onClick = onPlay) { Text(stringResource(R.string.action_play)) }
@@ -1118,7 +1144,9 @@ private fun sortComparator(sort: SortOrder): Comparator<DownloadItem> = when (so
 private data class RemoveRequest(
     val label: String,
     val items: List<com.abhinavxt.debforge.domain.DownloadItem>? = null,
-    val job: com.abhinavxt.debforge.data.provider.RemoteJob? = null
+    val job: com.abhinavxt.debforge.data.provider.RemoteJob? = null,
+    /** Delete the downloaded files from this device instead (the downloads view). */
+    val fromDevice: Boolean = false
 )
 
 /** After the finger lifts, give the pull indicator this long to settle by itself. */

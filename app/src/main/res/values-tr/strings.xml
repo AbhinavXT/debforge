@@ -71,6 +71,17 @@
     <string name="browse_local_empty">Tarayıcı sekmesinden veya bir bağlantıdan indirdiğin videolar burada görünür. Bir debrid hizmetinin dosyalarını da görmek için Ayarlar\'dan oturum aç.</string>
     <string name="browse_downloaded">İndirilenler</string>
     <string name="browse_downloaded_empty">Bu cihaza kaydedilen dosyalar burada görünür: hizmetinden, Tarayıcı sekmesinden veya bir bağlantıdan.</string>
+    <string name="action_delete_device">Cihazdan sil</string>
+    <string name="delete_device_title">Bu cihazdan silinsin mi?</string>
+    <string name="delete_device_body">“%1$s” bu cihazın depolama alanından silinecek. Bu işlem geri alınamaz.</string>
+    <plurals name="msg_deleted_device_n">
+        <item quantity="one">Bu cihazdan %1$d dosya silindi</item>
+        <item quantity="other">Bu cihazdan %1$d dosya silindi</item>
+    </plurals>
+    <plurals name="msg_delete_failed_n">
+        <item quantity="one">%1$d dosya silinemedi. DebForge\'un indirme klasörünü hâlâ kullanabildiğini kontrol et.</item>
+        <item quantity="other">%1$d dosya silinemedi. DebForge\'un indirme klasörünü hâlâ kullanabildiğini kontrol et.</item>
+    </plurals>
     <string name="storage_title">Dosyalar nereye kaydedilsin?</string>
     <string name="storage_body">Bir klasör seçin: dahili depolama, SD kart veya USB sürücü; özel izin gerekmez. Ya da DebForge\'un kendi depolama alanını kullanın (uygulamayı kaldırırsanız silinir).</string>
     <string name="storage_use_app">Uygulama depolamasını kullan</string>

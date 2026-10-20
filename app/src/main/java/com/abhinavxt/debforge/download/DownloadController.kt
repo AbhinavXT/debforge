@@ -84,6 +84,22 @@ class DownloadController @Inject constructor(
     fun cancel(id: String) = runner.cancel(id)
 
     /**
+     * Deletes a finished download's file from storage and forgets it. The row
+     * stays when the file couldn't be deleted (folder access revoked, file in
+     * use), so it isn't lost track of. Returns false then.
+     */
+    suspend fun deleteFromDevice(id: String): Boolean = withContext(Dispatchers.IO) {
+        val entity = downloadDao.getById(id) ?: return@withContext true
+        val path = entity.finalFilePath
+        if (path != null) {
+            DownloadFiles.deleteFinal(path)
+            if (DownloadFiles.exists(path)) return@withContext false
+        }
+        downloadDao.delete(id)
+        true
+    }
+
+    /**
      * Pauses everything queued or running (widget, Quick Settings tile).
      * Queued rows are marked first, so the runner can't pick the next one up
      * while the current download is being interrupted. Safe from the

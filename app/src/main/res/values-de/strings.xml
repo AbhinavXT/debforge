@@ -71,6 +71,17 @@
     <string name="browse_local_empty">Videos, die du im Browser-Tab oder über einen Link herunterlädst, erscheinen hier. Melde dich in den Einstellungen bei einem Debrid-Dienst an, um auch dessen Dateien zu sehen.</string>
     <string name="browse_downloaded">Heruntergeladen</string>
     <string name="browse_downloaded_empty">Hier erscheinen Dateien, die auf diesem Gerät gespeichert sind: von deinem Dienst, aus dem Browser-Tab oder über einen Link.</string>
+    <string name="action_delete_device">Vom Gerät löschen</string>
+    <string name="delete_device_title">Von diesem Gerät löschen?</string>
+    <string name="delete_device_body">„%1$s“ wird aus dem Speicher dieses Geräts gelöscht. Das lässt sich nicht rückgängig machen.</string>
+    <plurals name="msg_deleted_device_n">
+        <item quantity="one">%1$d Datei von diesem Gerät gelöscht</item>
+        <item quantity="other">%1$d Dateien von diesem Gerät gelöscht</item>
+    </plurals>
+    <plurals name="msg_delete_failed_n">
+        <item quantity="one">%1$d Datei konnte nicht gelöscht werden. Prüfe, ob DebForge noch auf den Download-Ordner zugreifen darf.</item>
+        <item quantity="other">%1$d Dateien konnten nicht gelöscht werden. Prüfe, ob DebForge noch auf den Download-Ordner zugreifen darf.</item>
+    </plurals>
     <string name="storage_title">Wo sollen Dateien gespeichert werden?</string>
     <string name="storage_body">Wähle einen Ordner: interner Speicher, SD-Karte oder USB-Stick, ohne besondere Berechtigung. Oder nutze den eigenen Speicher von DebForge (wird beim Deinstallieren der App gelöscht).</string>
     <string name="storage_use_app">App-Speicher verwenden</string>
