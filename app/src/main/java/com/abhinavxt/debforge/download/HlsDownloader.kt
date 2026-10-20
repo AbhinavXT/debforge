@@ -36,15 +36,16 @@ import kotlin.coroutines.coroutineContext
  * media playlist) by joining its pieces, in order, into one file. Pieces are
  * fetched [PARALLEL] at a time; AES-128 ones are decrypted on the way. A
  * stream whose audio is apart ([DownloadEntity.audioUrl]) has its audio
- * joined into "<part>.audio", then both go into one MP4 ([StreamMuxer]).
+ * joined into "<part>.audio", then both go into one MP4 ([StreamMuxer]). A
+ * fragmented-MP4 stream is rewritten the same way, on its own: joined as it
+ * is, players see only its first piece's length.
  *
  * Resume: each piece written is a complete chunk row (its byte range in its
  * file; video pieces first, then audio), so a pause or failure continues at
  * the next piece; anything written after the last row is cut off first.
  *
- * shortcut: a stream without separate audio is joined as it is (.ts or
- * fragmented .mp4), not remuxed; send it through [StreamMuxer] too if players
- * struggle to seek in .ts files.
+ * shortcut: a .ts stream without separate audio is joined as it is, not
+ * remuxed; send it through [StreamMuxer] too if players struggle to seek in it.
  */
 @Singleton
 class HlsDownloader @Inject constructor(
@@ -61,13 +62,15 @@ class HlsDownloader @Inject constructor(
     }
 
     /** One playlist's pieces and the file they're joined into. */
-    private class Track(val pieces: List<HlsPlaylist.Segment>, val path: String)
+    private class Track(val media: HlsPlaylist.Media, val path: String) {
+        val pieces = listOfNotNull(media.init) + media.segments
+    }
 
     suspend fun download(entity: DownloadEntity, partPath: String, finalPath: String): DownloadOutcome = withContext(Dispatchers.IO) {
         val tracks = try {
             listOfNotNull(
-                Track(pieces(entity, entity.downloadUrl), partPath),
-                entity.audioUrl?.let { Track(pieces(entity, it), "$partPath.audio") }
+                Track(media(entity, entity.downloadUrl), partPath),
+                entity.audioUrl?.let { Track(media(entity, it), "$partPath.audio") }
             )
         } catch (ce: CancellationException) {
             throw ce
@@ -129,10 +132,16 @@ class HlsDownloader @Inject constructor(
         }
 
         val size = try {
-            if (tracks.size == 1) {
-                sizes.single().takeIf { DownloadFiles.verifyAndPromote(partPath, finalPath, it) }
-            } else {
-                combine(partPath, finalPath)
+            when {
+                tracks.size == 2 -> combine(partPath, finalPath, separateAudio = true)
+                tracks[0].media.init != null -> try {
+                    combine(partPath, finalPath, separateAudio = false)
+                } catch (e: IOException) {
+                    // Still the whole video, just a wrong length shown; better than nothing.
+                    sizes.single().takeIf { DownloadFiles.verifyAndPromote(partPath, finalPath, it) }
+                        ?.also { DownloadFiles.deletePart(partPath) } // the half-written .mux
+                }
+                else -> sizes.single().takeIf { DownloadFiles.verifyAndPromote(partPath, finalPath, it) }
             }
         } catch (ce: CancellationException) {
             throw ce
@@ -150,8 +159,8 @@ class HlsDownloader @Inject constructor(
         DownloadOutcome.Success
     }
 
-    /** The pieces of the media playlist at [url]; a clear IOException when it can't be downloaded. */
-    private suspend fun pieces(entity: DownloadEntity, url: String): List<HlsPlaylist.Segment> {
+    /** The media playlist at [url]; a clear IOException when it can't be downloaded. */
+    private suspend fun media(entity: DownloadEntity, url: String): HlsPlaylist.Media {
         val call = client.newCall(entity.request(url).build())
         val playlist = try {
             cancellableCall(call) {
@@ -168,21 +177,24 @@ class HlsDownloader @Inject constructor(
         if (playlist !is HlsPlaylist.Media) throw IOException("Not a stream playlist")
         if (playlist.drm) throw IOException("This stream is DRM-protected and can't be downloaded")
         if (playlist.live) throw IOException("Live streams can't be downloaded")
-        return (listOfNotNull(playlist.init) + playlist.segments).ifEmpty { throw IOException("The stream is empty") }
+        if (playlist.segments.isEmpty()) throw IOException("The stream is empty")
+        return playlist
     }
 
     /**
-     * Video (.part) and audio (.part.audio) into one MP4 (.part.mux), promoted
-     * to [finalPath]; the joined inputs are deleted after. Returns its size.
+     * Video (.part) and its [separateAudio] (.part.audio) into one MP4
+     * (.part.mux), promoted to [finalPath]; the joined inputs are deleted
+     * after. Returns its size.
      */
-    private suspend fun combine(partPath: String, finalPath: String): Long? {
+    private suspend fun combine(partPath: String, finalPath: String, separateAudio: Boolean): Long? {
         val muxPath = "$partPath.mux"
         val size = DownloadFiles.openFd(partPath).use { video ->
-            DownloadFiles.openFd("$partPath.audio").use { audio ->
+            val audio = if (separateAudio) DownloadFiles.openFd("$partPath.audio") else null
+            audio.use {
                 DownloadFiles.openFd(muxPath).use { out ->
                     // A combine cut short last time leaves its bytes behind.
                     Os.ftruncate(out.fileDescriptor, 0)
-                    StreamMuxer.mux(video.fileDescriptor, audio.fileDescriptor, out.fileDescriptor)
+                    StreamMuxer.mux(video.fileDescriptor, audio?.fileDescriptor, out.fileDescriptor)
                     out.statSize
                 }
             }
