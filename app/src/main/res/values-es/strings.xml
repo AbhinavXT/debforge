@@ -744,4 +744,37 @@
         <item quantity="many">%d vídeos</item>
         <item quantity="other">%d vídeos</item>
     </plurals>
+    <!-- Search tab -->
+    <string name="tab_search">Buscar</string>
+    <string name="search_hint">Películas y series</string>
+    <string name="search_start_title">Encuentra algo que ver</string>
+    <string name="search_nothing_found">No se encontró nada para «%1$s»</string>
+    <string name="search_nothing_filtered">Ningún resultado coincide con estos filtros</string>
+    <string name="search_cached_only">Solo en caché</string>
+    <string name="search_any_quality">Cualquier calidad</string>
+    <string name="search_cached">En caché</string>
+    <string name="search_in_library">En tu biblioteca</string>
+    <string name="search_needs_source_title">Añade una fuente de búsqueda</string>
+    <string name="search_needs_source_body">DebForge busca a través de Jackett o Prowlarr, que ejecutas tú mismo en tu ordenador o servidor. Añade una en Ajustes → Fuentes de búsqueda.</string>
+    <string name="search_open_settings">Abrir Ajustes</string>
+    <string name="search_start_body">Busca por título, como «The Bear S02» u «Oppenheimer 2023». Los resultados que tu servicio ya tiene en caché aparecen primero.</string>
+    <string name="search_checking_cache">Comprobando cuáles están en caché…</string>
+    <string name="search_err_bad_url">Introduce el enlace del feed, que empiece por http:// o https://</string>
+    <string name="search_err_key">%1$s rechazó la clave de API</string>
+    <string name="search_err_said">%1$s: %2$s</string>
+    <string name="search_err_unreachable">No se pudo conectar con %1$s. Comprueba que esté en marcha y en la misma red.</string>
+    <string name="search_err_not_torznab">%1$s no respondió como un feed Torznab. Revisa el enlace.</string>
+    <string name="sources_title">Fuentes de búsqueda</string>
+    <string name="sources_detail">Feeds de Jackett o Prowlarr en los que busca la pestaña Buscar.</string>
+    <string name="sources_remove">Quitar %1$s</string>
+    <string name="sources_add">Añadir una fuente</string>
+    <string name="sources_add_body">En Jackett, usa «Copy Torznab Feed» encima de la lista de indexadores (para todos) y la clave de API arriba a la derecha. En Prowlarr, abre un indexador y copia su enlace Torznab; la clave de API está en Settings → General.</string>
+    <string name="sources_url">Enlace del feed Torznab</string>
+    <string name="sources_api_key">Clave de API</string>
+    <string name="sources_name">Nombre (opcional)</string>
+    <plurals name="search_seeders">
+        <item quantity="one">%1$d seeder</item>
+        <item quantity="many">%1$d seeders</item>
+        <item quantity="other">%1$d seeders</item>
+    </plurals>
 </resources>

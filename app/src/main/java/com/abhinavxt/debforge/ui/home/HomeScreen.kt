@@ -17,10 +17,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Public
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material.icons.outlined.Public
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.VideoLibrary
 import androidx.compose.material3.MaterialTheme
@@ -60,6 +62,7 @@ import com.abhinavxt.debforge.ui.add.AddDialog
 import com.abhinavxt.debforge.ui.add.AddViewModel
 import com.abhinavxt.debforge.ui.browse.BrowseScreen
 import com.abhinavxt.debforge.ui.browser.BrowserScreen
+import com.abhinavxt.debforge.ui.search.SearchScreen
 import com.abhinavxt.debforge.ui.settings.SettingsScreen
 import com.abhinavxt.debforge.ui.setup.SetupScreen
 
@@ -70,13 +73,14 @@ private enum class HomeTab(
     val selectedIcon: ImageVector
 ) {
     Browse("browse", R.string.tab_library, Icons.Outlined.VideoLibrary, Icons.Filled.VideoLibrary),
+    Search("search", R.string.tab_search, Icons.Outlined.Search, Icons.Filled.Search),
     Active("active", R.string.tab_downloads, Icons.Outlined.Download, Icons.Filled.Download),
     Browser("browser", R.string.tab_browser, Icons.Outlined.Public, Icons.Filled.Public),
     Settings("settings", R.string.tab_settings, Icons.Outlined.Settings, Icons.Filled.Settings)
 }
 
 /**
- * The app shell. Bottom-nav switches between Browse / Active / Browser /
+ * The app shell. Bottom-nav switches between Browse / Search / Active / Browser /
  * Settings; nav state is saved across tab switches so the user keeps their
  * scroll position and any in-flight loads. Without a signed-in service
  * ([signedIn] false) the Library lists this device's downloads, shows Setup
@@ -152,6 +156,12 @@ fun HomeScreen(signedIn: Boolean) {
                         BackHandler { connecting = false }
                         SetupScreen()
                     }
+                }
+                composable(HomeTab.Search.route) {
+                    SearchScreen(
+                        onAdd = { addViewModel.open(prefillText = it) },
+                        onOpenSettings = { go(HomeTab.Settings) }
+                    )
                 }
                 composable(HomeTab.Active.route) { ActiveDownloadsScreen() }
                 composable(HomeTab.Browser.route) { BrowserScreen(onMagnet = addViewModel::offer) }

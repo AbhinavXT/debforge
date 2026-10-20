@@ -707,4 +707,36 @@
         <item quantity="one">%d వీడియో</item>
         <item quantity="other">%d వీడియోలు</item>
     </plurals>
+    <!-- Search tab -->
+    <string name="tab_search">వెతుకు</string>
+    <string name="search_hint">సినిమాలు మరియు షోలు</string>
+    <string name="search_start_title">చూడటానికి ఏదైనా వెతకండి</string>
+    <string name="search_nothing_found">“%1$s” కోసం ఏమీ దొరకలేదు</string>
+    <string name="search_nothing_filtered">ఈ ఫిల్టర్‌లకు సరిపోయే ఫలితాలు లేవు</string>
+    <string name="search_cached_only">కాష్ అయినవి మాత్రమే</string>
+    <string name="search_any_quality">ఏ క్వాలిటీ అయినా</string>
+    <string name="search_cached">కాష్ అయింది</string>
+    <string name="search_in_library">మీ లైబ్రరీలో ఉంది</string>
+    <string name="search_needs_source_title">సెర్చ్ మూలాన్ని జోడించండి</string>
+    <string name="search_needs_source_body">DebForge, Jackett లేదా Prowlarr ద్వారా వెతుకుతుంది; వాటిని మీరే మీ కంప్యూటర్ లేదా సర్వర్‌లో నడుపుతారు. సెట్టింగ్‌లు → సెర్చ్ మూలాలలో ఒకటి జోడించండి.</string>
+    <string name="search_open_settings">సెట్టింగ్‌లు తెరవండి</string>
+    <string name="search_start_body">పేరుతో వెతకండి, ఉదా. “The Bear S02” లేదా “Oppenheimer 2023”. మీ సర్వీస్‌లో ఇప్పటికే కాష్ అయిన ఫలితాలు ముందు వస్తాయి.</string>
+    <string name="search_checking_cache">ఏవి కాష్ అయ్యాయో చూస్తోంది…</string>
+    <string name="search_err_bad_url">http:// లేదా https://తో మొదలయ్యే ఫీడ్ లింక్ ఇవ్వండి</string>
+    <string name="search_err_key">%1$s API కీని అంగీకరించలేదు</string>
+    <string name="search_err_said">%1$s: %2$s</string>
+    <string name="search_err_unreachable">%1$sను చేరుకోలేకపోయాం. అది నడుస్తోందా, అదే నెట్‌వర్క్‌లో ఉందా చూడండి.</string>
+    <string name="search_err_not_torznab">%1$s Torznab ఫీడ్‌లా సమాధానం ఇవ్వలేదు. లింక్‌ను చూడండి.</string>
+    <string name="sources_title">సెర్చ్ మూలాలు</string>
+    <string name="sources_detail">వెతుకు ట్యాబ్ వెతికే Jackett లేదా Prowlarr ఫీడ్‌లు.</string>
+    <string name="sources_remove">%1$sను తీసివేయి</string>
+    <string name="sources_add">మూలాన్ని జోడించు</string>
+    <string name="sources_add_body">Jackettలో, ఇండెక్సర్ జాబితా పైన ఉన్న “Copy Torznab Feed” (అన్ని ఇండెక్సర్‌లకు) మరియు పై కుడివైపు ఉన్న API కీని ఉపయోగించండి. Prowlarrలో, ఒక ఇండెక్సర్‌ను తెరిచి దాని Torznab లింక్‌ను కాపీ చేయండి; API కీ Settings → Generalలో ఉంటుంది.</string>
+    <string name="sources_url">Torznab ఫీడ్ లింక్</string>
+    <string name="sources_api_key">API కీ</string>
+    <string name="sources_name">పేరు (ఐచ్ఛికం)</string>
+    <plurals name="search_seeders">
+        <item quantity="one">%1$d సీడర్</item>
+        <item quantity="other">%1$d సీడర్‌లు</item>
+    </plurals>
 </resources>

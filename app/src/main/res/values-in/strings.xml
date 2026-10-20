@@ -670,4 +670,35 @@
     <plurals name="browser_videos_n">
         <item quantity="other">%d video</item>
     </plurals>
+    <!-- Search tab -->
+    <string name="tab_search">Cari</string>
+    <string name="search_hint">Film dan acara</string>
+    <string name="search_start_title">Temukan tontonan</string>
+    <string name="search_nothing_found">Tidak ada hasil untuk “%1$s”</string>
+    <string name="search_nothing_filtered">Tidak ada hasil yang cocok dengan filter ini</string>
+    <string name="search_cached_only">Hanya yang di-cache</string>
+    <string name="search_any_quality">Kualitas apa saja</string>
+    <string name="search_cached">Di-cache</string>
+    <string name="search_in_library">Ada di pustakamu</string>
+    <string name="search_needs_source_title">Tambahkan sumber pencarian</string>
+    <string name="search_needs_source_body">DebForge mencari lewat Jackett atau Prowlarr, yang kamu jalankan sendiri di komputer atau servermu. Tambahkan satu di Setelan → Sumber pencarian.</string>
+    <string name="search_open_settings">Buka Setelan</string>
+    <string name="search_start_body">Cari berdasarkan judul, misalnya “The Bear S02” atau “Oppenheimer 2023”. Hasil yang sudah di-cache layananmu muncul lebih dulu.</string>
+    <string name="search_checking_cache">Memeriksa mana yang di-cache…</string>
+    <string name="search_err_bad_url">Masukkan tautan feed, diawali http:// atau https://</string>
+    <string name="search_err_key">%1$s menolak kunci API</string>
+    <string name="search_err_said">%1$s: %2$s</string>
+    <string name="search_err_unreachable">Tidak bisa menghubungi %1$s. Pastikan sedang berjalan dan di jaringan yang sama.</string>
+    <string name="search_err_not_torznab">%1$s tidak menjawab seperti feed Torznab. Periksa tautannya.</string>
+    <string name="sources_title">Sumber pencarian</string>
+    <string name="sources_detail">Feed Jackett atau Prowlarr yang dicari oleh tab Cari.</string>
+    <string name="sources_remove">Hapus %1$s</string>
+    <string name="sources_add">Tambahkan sumber</string>
+    <string name="sources_add_body">Di Jackett, pakai “Copy Torznab Feed” di atas daftar indexer (untuk semua indexer) dan kunci API di kanan atas. Di Prowlarr, buka sebuah indexer dan salin tautan Torznab-nya; kunci API ada di Settings → General.</string>
+    <string name="sources_url">Tautan feed Torznab</string>
+    <string name="sources_api_key">Kunci API</string>
+    <string name="sources_name">Nama (opsional)</string>
+    <plurals name="search_seeders">
+        <item quantity="other">%1$d seeder</item>
+    </plurals>
 </resources>

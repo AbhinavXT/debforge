@@ -709,4 +709,36 @@
         <item quantity="one">%d video</item>
         <item quantity="other">%d videos</item>
     </plurals>
+    <!-- Search tab -->
+    <string name="tab_search">Search</string>
+    <string name="search_hint">Movies and shows</string>
+    <string name="search_start_title">Find something to watch</string>
+    <string name="search_nothing_found">Nothing found for “%1$s”</string>
+    <string name="search_nothing_filtered">No results match these filters</string>
+    <string name="search_cached_only">Cached only</string>
+    <string name="search_any_quality">Any quality</string>
+    <string name="search_cached">Cached</string>
+    <string name="search_in_library">In your library</string>
+    <string name="search_needs_source_title">Add a search source</string>
+    <string name="search_needs_source_body">DebForge searches through Jackett or Prowlarr, which you run yourself on your computer or server. Add one in Settings → Search sources.</string>
+    <string name="search_open_settings">Open Settings</string>
+    <string name="search_start_body">Search by title, like “The Bear S02” or “Oppenheimer 2023”. Results already cached on your service come first.</string>
+    <string name="search_checking_cache">Checking which are cached…</string>
+    <string name="search_err_bad_url">Enter the feed link, starting with http:// or https://</string>
+    <string name="search_err_key">%1$s rejected the API key</string>
+    <string name="search_err_said">%1$s: %2$s</string>
+    <string name="search_err_unreachable">Couldn\'t reach %1$s. Check that it\'s running and on the same network.</string>
+    <string name="search_err_not_torznab">%1$s didn\'t answer like a Torznab feed. Check the link.</string>
+    <string name="sources_title">Search sources</string>
+    <string name="sources_detail">Jackett or Prowlarr feeds the Search tab looks through.</string>
+    <string name="sources_remove">Remove %1$s</string>
+    <string name="sources_add">Add a source</string>
+    <string name="sources_add_body">In Jackett, use “Copy Torznab Feed” at the top of the indexer list (for all indexers) and the API key at the top right. In Prowlarr, open an indexer and copy its Torznab link, and find the API key in Settings → General.</string>
+    <string name="sources_url">Torznab feed link</string>
+    <string name="sources_api_key">API key</string>
+    <string name="sources_name">Name (optional)</string>
+    <plurals name="search_seeders">
+        <item quantity="one">%1$d seeder</item>
+        <item quantity="other">%1$d seeders</item>
+    </plurals>
 </resources>

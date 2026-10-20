@@ -707,4 +707,36 @@
         <item quantity="one">%d வீடியோ</item>
         <item quantity="other">%d வீடியோக்கள்</item>
     </plurals>
+    <!-- Search tab -->
+    <string name="tab_search">தேடு</string>
+    <string name="search_hint">திரைப்படங்கள் மற்றும் தொடர்கள்</string>
+    <string name="search_start_title">பார்க்க ஏதாவது தேடுங்கள்</string>
+    <string name="search_nothing_found">“%1$s”க்கு எதுவும் கிடைக்கவில்லை</string>
+    <string name="search_nothing_filtered">இந்த வடிப்பான்களுக்கு முடிவுகள் இல்லை</string>
+    <string name="search_cached_only">கேஷ் செய்தவை மட்டும்</string>
+    <string name="search_any_quality">எந்தத் தரமும்</string>
+    <string name="search_cached">கேஷ் செய்யப்பட்டது</string>
+    <string name="search_in_library">உங்கள் நூலகத்தில்</string>
+    <string name="search_needs_source_title">தேடல் மூலத்தைச் சேர்க்கவும்</string>
+    <string name="search_needs_source_body">DebForge, Jackett அல்லது Prowlarr மூலம் தேடுகிறது; அவற்றை நீங்களே உங்கள் கணினி அல்லது சர்வரில் இயக்குகிறீர்கள். அமைப்புகள் → தேடல் மூலங்களில் ஒன்றைச் சேர்க்கவும்.</string>
+    <string name="search_open_settings">அமைப்புகளைத் திற</string>
+    <string name="search_start_body">தலைப்பைக் கொண்டு தேடுங்கள், எ.கா. “The Bear S02” அல்லது “Oppenheimer 2023”. உங்கள் சேவையில் ஏற்கெனவே கேஷ் செய்யப்பட்ட முடிவுகள் முதலில் வரும்.</string>
+    <string name="search_checking_cache">எவை கேஷ் செய்யப்பட்டுள்ளன எனப் பார்க்கிறது…</string>
+    <string name="search_err_bad_url">http:// அல்லது https:// இல் தொடங்கும் ஃபீட் இணைப்பை உள்ளிடவும்</string>
+    <string name="search_err_key">%1$s API விசையை ஏற்கவில்லை</string>
+    <string name="search_err_said">%1$s: %2$s</string>
+    <string name="search_err_unreachable">%1$s-ஐ அணுக முடியவில்லை. அது இயங்குகிறதா, அதே நெட்வொர்க்கில் உள்ளதா எனப் பாருங்கள்.</string>
+    <string name="search_err_not_torznab">%1$s ஒரு Torznab ஃபீட் போல பதிலளிக்கவில்லை. இணைப்பைச் சரிபாருங்கள்.</string>
+    <string name="sources_title">தேடல் மூலங்கள்</string>
+    <string name="sources_detail">தேடல் தாவல் தேடும் Jackett அல்லது Prowlarr ஃபீட்கள்.</string>
+    <string name="sources_remove">%1$s-ஐ நீக்கு</string>
+    <string name="sources_add">மூலத்தைச் சேர்</string>
+    <string name="sources_add_body">Jackett-இல், indexer பட்டியலின் மேலே உள்ள “Copy Torznab Feed” (எல்லா indexer-களுக்கும்) மற்றும் மேல் வலதில் உள்ள API விசையைப் பயன்படுத்தவும். Prowlarr-இல், ஒரு indexer-ஐத் திறந்து அதன் Torznab இணைப்பை நகலெடுக்கவும்; API விசை Settings → General-இல் உள்ளது.</string>
+    <string name="sources_url">Torznab ஃபீட் இணைப்பு</string>
+    <string name="sources_api_key">API விசை</string>
+    <string name="sources_name">பெயர் (விருப்பத்தேர்வு)</string>
+    <plurals name="search_seeders">
+        <item quantity="one">%1$d சீடர்</item>
+        <item quantity="other">%1$d சீடர்கள்</item>
+    </plurals>
 </resources>
