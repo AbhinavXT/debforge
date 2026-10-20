@@ -1,0 +1,1 @@
+• fixed videos downloaded from the Browser tab playing only their first few seconds: streams split into MP4 pieces are now saved as one normal MP4, full length and seekable
