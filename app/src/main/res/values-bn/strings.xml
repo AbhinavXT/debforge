@@ -738,6 +738,15 @@
     <string name="sources_url">Torznab ফিডের লিংক</string>
     <string name="sources_api_key">API কী</string>
     <string name="sources_name">নাম (ঐচ্ছিক)</string>
+    <string name="cast_title">TV-তে চালান</string>
+    <string name="cast_searching">এই Wi-Fi-তে TV খোঁজা হচ্ছে…</string>
+    <string name="cast_none">কোনো TV পাওয়া যায়নি। দেখুন TV চালু আছে, একই Wi-Fi-তে আছে এবং DLNA চালু আছে (কিছু TV একে মিডিয়া শেয়ারিং বা স্ক্রিন শেয়ারিং বলে)।</string>
+    <string name="cast_playing_on">%1$s-এ চলছে</string>
+    <string name="cast_pause">থামান</string>
+    <string name="cast_play">চালান</string>
+    <string name="cast_stop">এখানে দেখুন</string>
+    <string name="cast_leave">প্লেয়ার বন্ধ করুন</string>
+    <string name="cast_failed">%1$s ভিডিওটি নেয়নি।</string>
     <string name="release_avoid">এগুলো থাকা রিলিজ কখনো দেখাবেন না</string>
     <string name="release_prefer">এগুলো থাকা রিলিজ উপরে রাখুন</string>
     <string name="release_none">কিছু না</string>

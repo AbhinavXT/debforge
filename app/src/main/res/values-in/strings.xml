@@ -701,6 +701,15 @@
     <string name="sources_url">Tautan feed Torznab</string>
     <string name="sources_api_key">Kunci API</string>
     <string name="sources_name">Nama (opsional)</string>
+    <string name="cast_title">Putar di TV</string>
+    <string name="cast_searching">Mencari TV di Wi-Fi ini…</string>
+    <string name="cast_none">Tidak ada TV ditemukan. Pastikan TV menyala, di Wi-Fi yang sama, dan DLNA aktif (beberapa TV menyebutnya berbagi media atau berbagi layar).</string>
+    <string name="cast_playing_on">Diputar di %1$s</string>
+    <string name="cast_pause">Jeda</string>
+    <string name="cast_play">Putar</string>
+    <string name="cast_stop">Tonton di sini</string>
+    <string name="cast_leave">Tutup pemutar</string>
+    <string name="cast_failed">%1$s tidak menerima video.</string>
     <string name="release_avoid">Jangan tampilkan rilis dengan</string>
     <string name="release_prefer">Utamakan rilis dengan</string>
     <string name="release_none">Tidak ada</string>

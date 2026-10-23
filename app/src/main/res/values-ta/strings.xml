@@ -738,6 +738,15 @@
     <string name="sources_url">Torznab ஃபீட் இணைப்பு</string>
     <string name="sources_api_key">API விசை</string>
     <string name="sources_name">பெயர் (விருப்பத்தேர்வு)</string>
+    <string name="cast_title">TV-இல் இயக்கு</string>
+    <string name="cast_searching">இந்த Wi-Fi-இல் TV-களைத் தேடுகிறது…</string>
+    <string name="cast_none">TV எதுவும் கிடைக்கவில்லை. TV இயக்கத்தில் உள்ளதா, அதே Wi-Fi-இல் உள்ளதா, DLNA இயக்கப்பட்டுள்ளதா எனப் பாருங்கள் (சில TV-கள் இதை மீடியா பகிர்வு அல்லது திரைப் பகிர்வு என்கின்றன).</string>
+    <string name="cast_playing_on">%1$s-இல் இயங்குகிறது</string>
+    <string name="cast_pause">இடைநிறுத்து</string>
+    <string name="cast_play">இயக்கு</string>
+    <string name="cast_stop">இங்கே பார்</string>
+    <string name="cast_leave">பிளேயரை மூடு</string>
+    <string name="cast_failed">%1$s வீடியோவை ஏற்கவில்லை.</string>
     <string name="release_avoid">இவை உள்ள வெளியீடுகளை ஒருபோதும் காட்டாதே</string>
     <string name="release_prefer">இவை உள்ள வெளியீடுகளை மேலே வை</string>
     <string name="release_none">எதுவுமில்லை</string>

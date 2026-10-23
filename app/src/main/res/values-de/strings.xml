@@ -738,6 +738,15 @@
     <string name="sources_url">Torznab-Feed-Link</string>
     <string name="sources_api_key">API-Schlüssel</string>
     <string name="sources_name">Name (optional)</string>
+    <string name="cast_title">Auf dem Fernseher abspielen</string>
+    <string name="cast_searching">Suche Fernseher in diesem WLAN…</string>
+    <string name="cast_none">Kein Fernseher gefunden. Prüfe, ob er eingeschaltet, im selben WLAN und DLNA aktiviert ist (manche nennen es Medienfreigabe oder Bildschirmfreigabe).</string>
+    <string name="cast_playing_on">Läuft auf %1$s</string>
+    <string name="cast_pause">Pause</string>
+    <string name="cast_play">Abspielen</string>
+    <string name="cast_stop">Hier ansehen</string>
+    <string name="cast_leave">Player schließen</string>
+    <string name="cast_failed">%1$s hat das Video nicht angenommen.</string>
     <string name="release_avoid">Releases nie anzeigen mit</string>
     <string name="release_prefer">Releases höher einstufen mit</string>
     <string name="release_none">Nichts</string>

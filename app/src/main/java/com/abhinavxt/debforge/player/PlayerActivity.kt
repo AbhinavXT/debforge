@@ -118,6 +118,7 @@ class PlayerActivity : ComponentActivity() {
     @Inject lateinit var scrobbler: TraktScrobbler
     @Inject lateinit var openSubtitles: com.abhinavxt.debforge.data.subtitles.OpenSubtitlesRepository
     @Inject lateinit var movieHasher: MovieHasher
+    @Inject lateinit var caster: com.abhinavxt.debforge.player.cast.DlnaCaster
     @Inject lateinit var chapterReader: ChapterReader
 
     /** Settings → "Autoplay next episode". Off: the card still offers Play now, without a countdown. */
@@ -361,6 +362,7 @@ class PlayerActivity : ComponentActivity() {
             )
         }
         controls.title = title
+        controls.castAvailable = !isTv && !isLocalFile()
         if (!isTv) titleView.visibility = View.GONE // the controls have their own title bar
         // TV: the title shows and hides together with Media3's controls.
         playerView.setControllerVisibilityListener(PlayerView.ControllerVisibilityListener { visibility ->
@@ -892,6 +894,7 @@ class PlayerActivity : ComponentActivity() {
 
         override fun setSoftwareDecoding(on: Boolean) = this@PlayerActivity.setSoftwareDecoding(on, save = true)
         override fun openExternal() = openExternally()
+        override fun cast() = castToTv()
 
         override fun rotate() {
             userRotated = true
@@ -1704,6 +1707,7 @@ class PlayerActivity : ComponentActivity() {
         subtitles = ready.subtitles
         titleView.text = title
         controls.title = title
+        controls.castAvailable = !isTv && !isLocalFile()
         startFile()
         offeredFallback = false
         nextCancelled = false
@@ -2172,6 +2176,82 @@ class PlayerActivity : ComponentActivity() {
             eventTime: androidx.media3.exoplayer.analytics.AnalyticsListener.EventTime,
             totalLoadTimeMs: Int, totalBytesLoaded: Long, bitrateEstimate: Long
         ) { bandwidthBps = bitrateEstimate }
+    }
+
+    /** Play on TV: finds DLNA renderers on the network and hands the picked one the stream. */
+    private fun castToTv() {
+        val p = player ?: return
+        p.pause()
+        var search: kotlinx.coroutines.Job? = null
+        val searching = AlertDialog.Builder(this)
+            .setTitle(R.string.cast_title)
+            .setMessage(R.string.cast_searching)
+            .setNegativeButton(R.string.action_cancel) { _, _ -> search?.cancel() }
+            .setOnCancelListener { search?.cancel() }
+            .show()
+        search = lifecycleScope.launch {
+            val found = caster.discover()
+            searching.dismiss()
+            if (isFinishing) return@launch
+            if (found.isEmpty()) {
+                AlertDialog.Builder(this@PlayerActivity)
+                    .setTitle(R.string.cast_title)
+                    .setMessage(R.string.cast_none)
+                    .setPositiveButton(R.string.action_retry) { _, _ -> castToTv() }
+                    .setNegativeButton(R.string.action_close, null)
+                    .show()
+                return@launch
+            }
+            AlertDialog.Builder(this@PlayerActivity)
+                .setTitle(R.string.cast_title)
+                .setItems(found.map { it.name }.toTypedArray()) { _, i -> startCast(found[i]) }
+                .setNegativeButton(R.string.action_cancel, null)
+                .show()
+        }
+    }
+
+    private fun startCast(to: com.abhinavxt.debforge.player.cast.Renderer) {
+        val at = player?.currentPosition ?: 0L
+        lifecycleScope.launch {
+            if (runCatching { caster.play(to, uri.toString(), title, at) }.isFailure) {
+                Toast.makeText(this@PlayerActivity, getString(R.string.cast_failed, to.name), Toast.LENGTH_LONG).show()
+                return@launch
+            }
+            if (!isFinishing) showCastRemote(to)
+        }
+    }
+
+    /** While the TV plays: pause / play it, take the video back here, or leave it there and close. */
+    private fun showCastRemote(on: com.abhinavxt.debforge.player.cast.Renderer) {
+        var paused = false
+        val dialog = AlertDialog.Builder(this)
+            .setTitle(getString(R.string.cast_playing_on, on.name))
+            .setMessage(title)
+            .setCancelable(false)
+            .setPositiveButton(R.string.cast_pause, null)
+            .setNegativeButton(R.string.cast_stop) { _, _ ->
+                lifecycleScope.launch {
+                    // Carry on here from where the TV got to.
+                    val at = caster.positionMs(on)
+                    runCatching { caster.stop(on) }
+                    player?.let { p -> at?.let(p::seekTo); p.play() }
+                }
+            }
+            .setNeutralButton(R.string.cast_leave) { _, _ -> finish() }
+            .create()
+        dialog.setOnShowListener {
+            // Set here so the button doesn't close the dialog.
+            val toggle = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+            toggle.setOnClickListener {
+                lifecycleScope.launch {
+                    val ok = runCatching { if (paused) caster.resume(on) else caster.pause(on) }.isSuccess
+                    if (!ok) return@launch
+                    paused = !paused
+                    toggle.setText(if (paused) R.string.cast_play else R.string.cast_pause)
+                }
+            }
+        }
+        dialog.show()
     }
 
     private fun openExternally() {

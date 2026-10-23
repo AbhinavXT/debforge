@@ -740,6 +740,15 @@
     <string name="sources_url">Torznab feed link</string>
     <string name="sources_api_key">API key</string>
     <string name="sources_name">Name (optional)</string>
+    <string name="cast_title">Play on TV</string>
+    <string name="cast_searching">Looking for TVs on this Wi-Fi…</string>
+    <string name="cast_none">No TV found. Check that the TV is on, on the same Wi-Fi, and has DLNA turned on (some TVs call it media sharing or screen sharing).</string>
+    <string name="cast_playing_on">Playing on %1$s</string>
+    <string name="cast_pause">Pause</string>
+    <string name="cast_play">Play</string>
+    <string name="cast_stop">Watch here</string>
+    <string name="cast_leave">Close player</string>
+    <string name="cast_failed">%1$s didn\'t accept the video.</string>
     <string name="release_avoid">Never show releases with</string>
     <string name="release_prefer">Rank higher releases with</string>
     <string name="release_none">Nothing</string>
