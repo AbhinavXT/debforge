@@ -8,7 +8,7 @@
 Add a magnet, watch it land, play it anywhere. No PC in the middle.
 
 [<img src="docs/badges/obtainium.png" alt="Get it on Obtainium" height="48">](https://apps.obtainium.imranr.dev/redirect?r=obtainium://app/%7B%22id%22%3A%20%22com.abhinavxt.debforge%22%2C%20%22url%22%3A%20%22https%3A%2F%2Fgithub.com%2FAbhinavXT%2Fdebforge%22%2C%20%22author%22%3A%20%22AbhinavXT%22%2C%20%22name%22%3A%20%22DebForge%22%7D)
-[<img src="https://f-droid.org/badge/get-it-on.png" alt="Get it on F-Droid" height="60">](https://f-droid.org/packages/com.abhinavxt.debforge/)
+[<img src="docs/badges/fdroid.png" alt="Get it on F-Droid" height="48">](https://f-droid.org/packages/com.abhinavxt.debforge/)
 
 <img src="docs/demo/debforge.gif" alt="DebForge in action" width="640">
 
