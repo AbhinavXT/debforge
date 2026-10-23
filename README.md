@@ -111,6 +111,14 @@ Sign in to as many as you like and switch in Settings. When adding, DebForge che
   recap, credits or preview, a Skip button appears (or the intro is skipped by
   itself, Settings → Library). Without chapters, DebForge remembers where you
   skipped a show's intro and offers it there in the next episodes, TV remote included.
+- **Coming up.** With posters on, the Library shows when the next episode of
+  each followed show airs ("S03E04 · Tomorrow").
+- **Release preferences.** Settings → Search sources: releases with words you
+  never want (CAM and TS by default) are left out of Search and followed
+  shows, and words you like (x265, REMUX…) rank a release higher.
+- **Play on TV.** The player's cast button finds DLNA TVs on your Wi-Fi and
+  hands one the stream, starting where you were. *Watch here* brings it back
+  to the phone from where the TV got to. Subtitles stay on the phone.
 - **Trakt.** Connect your Trakt account (Settings → Trakt, with a free Trakt
   app of your own): what you watch in DebForge's player is scrobbled, and
   episodes and movies watched anywhere show ✓ Watched in the Library.
@@ -154,7 +162,7 @@ Sign in to as many as you like and switch in Settings. When adding, DebForge che
 ## Privacy
 
 - API keys are encrypted on the device with a key held in the Android Keystore, and are excluded from backups.
-- The app talks only to your debrid service, to TMDB for posters (if you add a key), and to GitHub to check for updates (you can turn this off in Settings → About).
+- The app talks only to your debrid service, to TMDB for posters and air dates (if you add a key), to TVs on your own network when you use Play on TV, and to GitHub to check for updates (you can turn this off in Settings → About).
 - Backups contain your sign-ins only if you choose to include them, and then only encrypted with your password (PBKDF2 + AES-256-GCM).
 - There are no analytics and no crash-reporting SDK. If the app crashes, a report with tokens, links and file names removed is saved on the device. On the next launch you're asked whether to share it; nothing is sent automatically.
 

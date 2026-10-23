@@ -1,0 +1,3 @@
+• Play on TV: send a stream from the player to a DLNA TV on your Wi-Fi. It starts where you were, and Watch here brings it back to the phone
+• Coming up: the Library shows when the next episode of each followed show airs (needs posters on)
+• Release preferences: CAM and TS releases are hidden, and words you like (x265, REMUX…) rank a release higher, in Search and for followed shows
