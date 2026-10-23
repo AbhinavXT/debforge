@@ -498,6 +498,9 @@
 
     <!-- Resume / Continue watching -->
     <string name="continue_watching">Seguir viendo</string>
+    <string name="upcoming_title">Próximamente</string>
+    <string name="upcoming_today">Hoy</string>
+    <string name="upcoming_tomorrow">Mañana</string>
     <string name="continue_remove">Quitar de Seguir viendo</string>
     <string name="continue_unavailable">No se puede reproducir %1$s: %2$s</string>
     <string name="watched">✓ Visto</string>

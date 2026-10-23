@@ -476,6 +476,9 @@
 
     <!-- Resume / Continue watching -->
     <string name="continue_watching">Continue watching</string>
+    <string name="upcoming_title">Coming up</string>
+    <string name="upcoming_today">Today</string>
+    <string name="upcoming_tomorrow">Tomorrow</string>
     <string name="continue_remove">Remove from Continue watching</string>
     <string name="continue_unavailable">Can\'t play %1$s: %2$s</string>
     <string name="watched">✓ Watched</string>

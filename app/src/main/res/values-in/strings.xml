@@ -452,6 +452,9 @@
 
     <!-- Resume / Continue watching -->
     <string name="continue_watching">Lanjut menonton</string>
+    <string name="upcoming_title">Segera tayang</string>
+    <string name="upcoming_today">Hari ini</string>
+    <string name="upcoming_tomorrow">Besok</string>
     <string name="continue_remove">Hapus dari Lanjut menonton</string>
     <string name="continue_unavailable">Tidak dapat memutar %1$s: %2$s</string>
     <string name="watched">✓ Sudah ditonton</string>

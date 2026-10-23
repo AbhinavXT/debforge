@@ -475,6 +475,9 @@
 
     <!-- Resume / Continue watching -->
     <string name="continue_watching">İzlemeye devam et</string>
+    <string name="upcoming_title">Yakında</string>
+    <string name="upcoming_today">Bugün</string>
+    <string name="upcoming_tomorrow">Yarın</string>
     <string name="continue_remove">İzlemeye devam et listesinden kaldır</string>
     <string name="continue_unavailable">%1$s oynatılamıyor: %2$s</string>
     <string name="watched">✓ İzlendi</string>

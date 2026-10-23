@@ -141,6 +141,7 @@ fun BrowseScreen(
     val spaceWarning by viewModel.spaceWarning.collectAsStateWithLifecycle()
     val followed by viewModel.followed.collectAsStateWithLifecycle()
     val continueWatching by viewModel.continueWatching.collectAsStateWithLifecycle()
+    val comingUp by viewModel.comingUp.collectAsStateWithLifecycle()
     val playback by viewModel.playback.collectAsStateWithLifecycle()
     val traktWatched by viewModel.traktWatched.collectAsStateWithLifecycle()
     var posterSetupOpen by remember { mutableStateOf(false) }
@@ -470,15 +471,18 @@ fun BrowseScreen(
                             },
                             onLongPress = { group -> selected = selected + group.files.map { it.item.id } },
                             // Not while searching: results come first then.
-                            header = if (state.query.isBlank() && continueWatching.isNotEmpty()) {
+                            header = if (state.query.isBlank() && (continueWatching.isNotEmpty() || comingUp.isNotEmpty())) {
                                 {
-                                    ContinueWatchingRow(
-                                        entries = continueWatching,
-                                        meta = meta,
-                                        onRequestMeta = viewModel::requestMeta,
-                                        onPlay = viewModel::playSaved,
-                                        onRemove = viewModel::forgetPlayback
-                                    )
+                                    androidx.compose.foundation.layout.Column {
+                                        ContinueWatchingRow(
+                                            entries = continueWatching,
+                                            meta = meta,
+                                            onRequestMeta = viewModel::requestMeta,
+                                            onPlay = viewModel::playSaved,
+                                            onRemove = viewModel::forgetPlayback
+                                        )
+                                        UpcomingRow(entries = comingUp, meta = meta, onRequestMeta = viewModel::requestMeta)
+                                    }
                                 }
                             } else null
                         )

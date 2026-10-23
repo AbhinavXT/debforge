@@ -521,6 +521,9 @@
 
     <!-- Resume / Continue watching -->
     <string name="continue_watching">Продолжить просмотр</string>
+    <string name="upcoming_title">Скоро</string>
+    <string name="upcoming_today">Сегодня</string>
+    <string name="upcoming_tomorrow">Завтра</string>
     <string name="continue_remove">Убрать из «Продолжить просмотр»</string>
     <string name="continue_unavailable">Не удаётся воспроизвести «%1$s»: %2$s</string>
     <string name="watched">✓ Просмотрено</string>
