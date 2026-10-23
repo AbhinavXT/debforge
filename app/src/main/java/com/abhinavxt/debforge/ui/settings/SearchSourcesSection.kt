@@ -7,7 +7,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Block
 import androidx.compose.material.icons.rounded.DeleteOutline
+import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material.icons.rounded.TravelExplore
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
@@ -34,6 +36,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import com.abhinavxt.debforge.R
+import com.abhinavxt.debforge.data.prefs.SettingsStore
 import com.abhinavxt.debforge.data.search.SearchRepository
 import com.abhinavxt.debforge.data.search.SearchSource
 import com.abhinavxt.debforge.data.search.SearchSourceStore
@@ -54,8 +57,15 @@ import javax.inject.Inject
 @HiltViewModel
 class SearchSourcesViewModel @Inject constructor(
     private val store: SearchSourceStore,
-    private val repository: SearchRepository
+    private val repository: SearchRepository,
+    private val settings: SettingsStore
 ) : ViewModel() {
+
+    val avoid: StateFlow<String> = settings.releaseAvoidFlow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), "")
+    val prefer: StateFlow<String> = settings.releasePreferFlow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), "")
+
+    fun setAvoid(v: String) { viewModelScope.launch { settings.setReleaseAvoid(v) } }
+    fun setPrefer(v: String) { viewModelScope.launch { settings.setReleasePrefer(v) } }
 
     val sources: StateFlow<List<SearchSource>> = store.sources
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
@@ -96,11 +106,15 @@ class SearchSourcesViewModel @Inject constructor(
     fun remove(source: SearchSource) { viewModelScope.launch { store.remove(source.id) } }
 }
 
-/** Settings → Search sources: the Jackett / Prowlarr feeds the Search tab uses. */
+/** Settings → Search sources: the Jackett / Prowlarr feeds the Search tab uses, and release preferences. */
 @Composable
 fun SearchSourcesSection(viewModel: SearchSourcesViewModel = hiltViewModel()) {
     val sources by viewModel.sources.collectAsStateWithLifecycle()
+    val avoid by viewModel.avoid.collectAsStateWithLifecycle()
+    val prefer by viewModel.prefer.collectAsStateWithLifecycle()
     var adding by remember { mutableStateOf(false) }
+    var editingAvoid by remember { mutableStateOf(false) }
+    var editingPrefer by remember { mutableStateOf(false) }
 
     SectionCard(title = stringResource(R.string.sources_title)) {
         SettingRow(
@@ -127,9 +141,53 @@ fun SearchSourcesSection(viewModel: SearchSourcesViewModel = hiltViewModel()) {
         ) {
             Text(stringResource(R.string.sources_add))
         }
+        if (sources.isNotEmpty()) {
+            RowDivider()
+            SettingRow(
+                icon = Icons.Rounded.Block,
+                title = stringResource(R.string.release_avoid),
+                subtitle = avoid.ifBlank { stringResource(R.string.release_none) },
+                onClick = { editingAvoid = true }
+            )
+            RowDivider()
+            SettingRow(
+                icon = Icons.Rounded.Star,
+                title = stringResource(R.string.release_prefer),
+                subtitle = prefer.ifBlank { stringResource(R.string.release_none) },
+                onClick = { editingPrefer = true }
+            )
+        }
     }
 
     if (adding) AddSourceDialog(viewModel, onDismiss = { adding = false })
+    if (editingAvoid) {
+        WordsDialog(stringResource(R.string.release_avoid), avoid, onSave = viewModel::setAvoid, onDismiss = { editingAvoid = false })
+    }
+    if (editingPrefer) {
+        WordsDialog(stringResource(R.string.release_prefer), prefer, onSave = viewModel::setPrefer, onDismiss = { editingPrefer = false })
+    }
+}
+
+/** Edits a comma-separated list of release-name words. */
+@Composable
+private fun WordsDialog(title: String, initial: String, onSave: (String) -> Unit, onDismiss: () -> Unit) {
+    var text by remember { mutableStateOf(initial) }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(title) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(stringResource(R.string.release_words_body), style = MaterialTheme.typography.bodyMedium)
+                OutlinedTextField(
+                    value = text, onValueChange = { text = it },
+                    placeholder = { Text("x265, REMUX") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        },
+        confirmButton = { TextButton(onClick = { onSave(text); onDismiss() }) { Text(stringResource(R.string.action_save)) } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) } }
+    )
 }
 
 @Composable

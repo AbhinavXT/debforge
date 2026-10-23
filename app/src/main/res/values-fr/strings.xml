@@ -772,6 +772,10 @@
     <string name="sources_url">Lien du flux Torznab</string>
     <string name="sources_api_key">Clé API</string>
     <string name="sources_name">Nom (facultatif)</string>
+    <string name="release_avoid">Ne jamais afficher les versions avec</string>
+    <string name="release_prefer">Classer plus haut les versions avec</string>
+    <string name="release_none">Rien</string>
+    <string name="release_words_body">Mots séparés par des virgules, comme x265, REMUX. Chacun correspond à une partie entière du nom. S\'applique à Rechercher et aux séries suivies depuis Rechercher.</string>
     <string name="search_kind_all">Tout</string>
     <string name="search_kind_movies">Films</string>
     <string name="search_kind_shows">Séries</string>

@@ -15,8 +15,9 @@ object FollowSearch {
      *  - listed by the tracker after the follow started (unknown date: skipped,
      *    "following" means from now on);
      *  - not handled yet ([Follow.seen]) nor already sent ([Follow.requested]).
-     * One per episode: cached first, then the followed quality, then the most
-     * seeders.
+     * One per episode: cached first, then the followed quality, then the
+     * user's preferred words, then the most seeders. (Avoided words never get
+     * here: the search drops them.)
      */
     fun pick(follow: Follow, results: List<SearchResult>): List<Pick> =
         results
@@ -34,6 +35,7 @@ object FollowSearch {
                 val best = options.sortedWith(
                     compareByDescending<SearchResult> { it.cached == true }
                         .thenByDescending { follow.resolution != null && it.info.resolution.equals(follow.resolution, ignoreCase = true) }
+                        .thenByDescending { it.preferred }
                         .thenByDescending { it.seeders ?: -1 }
                 ).first()
                 Pick(key, best)

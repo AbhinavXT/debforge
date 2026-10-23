@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.abhinavxt.debforge.data.update.InstallSource
+import com.abhinavxt.debforge.domain.ReleasePrefs
 import com.abhinavxt.debforge.domain.SortOrder
 import com.abhinavxt.debforge.domain.ThemeMode
 import kotlinx.coroutines.flow.Flow
@@ -60,6 +61,8 @@ class SettingsStore @Inject constructor(
     private val keySubtitleStyle = stringPreferencesKey("player_subtitle_style")
     private val keyPlayerBackground = booleanPreferencesKey("player_background")
     private val keyClipboardOffer = booleanPreferencesKey("clipboard_offer")
+    private val keyReleaseAvoid = stringPreferencesKey("release_avoid")
+    private val keyReleasePrefer = stringPreferencesKey("release_prefer")
     private val keyClipboardSeen = androidx.datastore.preferences.core.longPreferencesKey("clipboard_seen_at")
 
     /** Blank until the user chooses a folder. */
@@ -164,6 +167,15 @@ class SettingsStore @Inject constructor(
     val playerBackgroundFlow: Flow<Boolean> = context.settingsDataStore.data.map { it[keyPlayerBackground] ?: false }
     suspend fun setPlayerBackground(v: Boolean) = context.settingsDataStore.edit { it[keyPlayerBackground] = v }
 
+    /** Release preferences as typed (comma-separated words); see [ReleasePrefs]. */
+    val releaseAvoidFlow: Flow<String> = context.settingsDataStore.data.map { it[keyReleaseAvoid] ?: ReleasePrefs.DEFAULT_AVOID }
+    val releasePreferFlow: Flow<String> = context.settingsDataStore.data.map { it[keyReleasePrefer] ?: "" }
+    suspend fun setReleaseAvoid(v: String) = context.settingsDataStore.edit { it[keyReleaseAvoid] = v.trim() }
+    suspend fun setReleasePrefer(v: String) = context.settingsDataStore.edit { it[keyReleasePrefer] = v.trim() }
+
+    suspend fun releasePrefs(): ReleasePrefs =
+        ReleasePrefs(ReleasePrefs.words(releaseAvoidFlow.first()), ReleasePrefs.words(releasePreferFlow.first()))
+
     /** Every download condition in one snapshot, so the engine reads them atomically. */
     val downloadRulesFlow: Flow<DownloadRules> = context.settingsDataStore.data.map { p ->
         DownloadRules(
@@ -258,6 +270,8 @@ class SettingsStore @Inject constructor(
         keyScheduleOn, keyAutoUpdate, keyRemoveAfter, keyPureBlack, keyShowExtras, keyClipboardOffer,
         keyInternalPlayer, keyAutoplayNext, keyPip, keyAutoSkipIntro, keyNightMode, keyStreamPreviews
     )
+    /** May be blank on purpose (nothing avoided). */
+    private val backupStrings get() = listOf(keyReleaseAvoid, keyReleasePrefer)
     private val backupInts get() = listOf(keySortOrder, keyThemeMode, keyScheduleStart, keyScheduleEnd, keySpeedLimit, keyAutoDeleteDays)
 
     /** Only values the user actually set; defaults stay defaults on the new phone. */
@@ -268,6 +282,7 @@ class SettingsStore @Inject constructor(
         backupInts.forEach { k -> prefs[k]?.let { out[k.name] = it } }
         prefs[keyDownloadDir]?.let { out[keyDownloadDir.name] = it }
         prefs[keyAppTheme]?.let { out[keyAppTheme.name] = it }
+        backupStrings.forEach { k -> prefs[k]?.let { out[k.name] = it } }
         return out
     }
 
@@ -286,6 +301,9 @@ class SettingsStore @Inject constructor(
             backupInts.forEach { k ->
                 // JSON numbers arrive as Double.
                 (values[k.name] as? Number)?.let { e[k] = it.toInt(); applied++ }
+            }
+            backupStrings.forEach { k ->
+                (values[k.name] as? String)?.let { e[k] = it; applied++ }
             }
             (values[keyAppTheme.name] as? String)?.takeIf { it.isNotBlank() }?.let { e[keyAppTheme] = it; applied++ }
             (values[keyDownloadDir.name] as? String)?.takeIf { it.isNotBlank() }?.let { dir ->

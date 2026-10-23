@@ -35,6 +35,18 @@ class FollowSearchTest {
         assertEquals("The.Bear.S03E02.720p.HDTV", picks[1].result.title) // cached beats everything
     }
 
+    @Test fun preferredWordsBreakTiesAfterQuality() {
+        val picks = FollowSearch.pick(
+            bear,
+            listOf(
+                r("The.Bear.S03E01.1080p.WEB.x264", seeders = 500),
+                r("The.Bear.S03E01.1080p.WEB.x265", seeders = 5).copy(preferred = 1),
+                r("The.Bear.S03E01.2160p.WEB.x265", seeders = 50).copy(preferred = 1)
+            )
+        )
+        assertEquals("The.Bear.S03E01.1080p.WEB.x265", picks.single().result.title)
+    }
+
     @Test fun skipsOldUnknownHandledPacksAndOtherShows() {
         val follow = bear.copy(seen = setOf("S03E03"), requested = setOf("S03E04"))
         val picks = FollowSearch.pick(

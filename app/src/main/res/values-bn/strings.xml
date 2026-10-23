@@ -735,6 +735,10 @@
     <string name="sources_url">Torznab ফিডের লিংক</string>
     <string name="sources_api_key">API কী</string>
     <string name="sources_name">নাম (ঐচ্ছিক)</string>
+    <string name="release_avoid">এগুলো থাকা রিলিজ কখনো দেখাবেন না</string>
+    <string name="release_prefer">এগুলো থাকা রিলিজ উপরে রাখুন</string>
+    <string name="release_none">কিছু না</string>
+    <string name="release_words_body">কমা দিয়ে আলাদা করা শব্দ, যেমন x265, REMUX। প্রতিটি শব্দ রিলিজের নামের একটি পুরো অংশের সাথে মেলে। Search এবং Search থেকে ফলো করা শো দুটোতেই প্রযোজ্য।</string>
     <string name="search_kind_all">সব</string>
     <string name="search_kind_movies">মুভি</string>
     <string name="search_kind_shows">শো</string>

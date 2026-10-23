@@ -809,6 +809,10 @@
     <string name="sources_url">Ссылка на фид Torznab</string>
     <string name="sources_api_key">Ключ API</string>
     <string name="sources_name">Название (необязательно)</string>
+    <string name="release_avoid">Никогда не показывать релизы с</string>
+    <string name="release_prefer">Поднимать выше релизы с</string>
+    <string name="release_none">Ничего</string>
+    <string name="release_words_body">Слова через запятую, например x265, REMUX. Каждое совпадает с целой частью названия релиза. Действует в Поиске и для сериалов, на которые вы подписались из Поиска.</string>
     <string name="search_kind_all">Все</string>
     <string name="search_kind_movies">Фильмы</string>
     <string name="search_kind_shows">Сериалы</string>

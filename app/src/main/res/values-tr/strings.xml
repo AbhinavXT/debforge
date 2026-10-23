@@ -735,6 +735,10 @@
     <string name="sources_url">Torznab akış bağlantısı</string>
     <string name="sources_api_key">API anahtarı</string>
     <string name="sources_name">Ad (isteğe bağlı)</string>
+    <string name="release_avoid">Şunları içeren sürümleri asla gösterme</string>
+    <string name="release_prefer">Şunları içeren sürümleri üste al</string>
+    <string name="release_none">Hiçbiri</string>
+    <string name="release_words_body">Virgülle ayrılmış kelimeler, ör. x265, REMUX. Her biri sürüm adının tam bir parçasıyla eşleşir. Arama ve Aramadan takip edilen diziler için geçerlidir.</string>
     <string name="search_kind_all">Tümü</string>
     <string name="search_kind_movies">Filmler</string>
     <string name="search_kind_shows">Diziler</string>

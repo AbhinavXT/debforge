@@ -772,6 +772,10 @@
     <string name="sources_url">Link do feed Torznab</string>
     <string name="sources_api_key">Chave de API</string>
     <string name="sources_name">Nome (opcional)</string>
+    <string name="release_avoid">Nunca mostrar lançamentos com</string>
+    <string name="release_prefer">Priorizar lançamentos com</string>
+    <string name="release_none">Nada</string>
+    <string name="release_words_body">Palavras separadas por vírgulas, como x265, REMUX. Cada uma corresponde a uma parte inteira do nome. Vale para a Busca e para séries seguidas pela Busca.</string>
     <string name="search_kind_all">Tudo</string>
     <string name="search_kind_movies">Filmes</string>
     <string name="search_kind_shows">Séries</string>

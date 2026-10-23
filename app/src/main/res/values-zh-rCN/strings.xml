@@ -698,6 +698,10 @@
     <string name="sources_url">Torznab feed 链接</string>
     <string name="sources_api_key">API 密钥</string>
     <string name="sources_name">名称（可选）</string>
+    <string name="release_avoid">永不显示包含以下内容的版本</string>
+    <string name="release_prefer">优先显示包含以下内容的版本</string>
+    <string name="release_none">无</string>
+    <string name="release_words_body">用逗号分隔的词，例如 x265, REMUX。每个词匹配版本名称中完整的一段。适用于搜索以及从搜索中关注的剧集。</string>
     <string name="search_kind_all">全部</string>
     <string name="search_kind_movies">电影</string>
     <string name="search_kind_shows">剧集</string>
