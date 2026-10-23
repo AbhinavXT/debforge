@@ -8,9 +8,7 @@
 Add a magnet, watch it land, play it anywhere. No PC in the middle.
 
 [<img src="docs/badges/obtainium.png" alt="Get it on Obtainium" height="48">](https://apps.obtainium.imranr.dev/redirect?r=obtainium://app/%7B%22id%22%3A%20%22com.abhinavxt.debforge%22%2C%20%22url%22%3A%20%22https%3A%2F%2Fgithub.com%2FAbhinavXT%2Fdebforge%22%2C%20%22author%22%3A%20%22AbhinavXT%22%2C%20%22name%22%3A%20%22DebForge%22%7D)
-<!-- Uncomment once DebForge is live on F-Droid:
 [<img src="https://f-droid.org/badge/get-it-on.png" alt="Get it on F-Droid" height="60">](https://f-droid.org/packages/com.abhinavxt.debforge/)
--->
 
 <img src="docs/demo/debforge.gif" alt="DebForge in action" width="640">
 
@@ -33,7 +31,7 @@ Add a magnet, watch it land, play it anywhere. No PC in the middle.
 1. **Install.** Android 11 or newer. Pick one:
    - **Obtainium** (recommended): tap the badge above, or add `https://github.com/AbhinavXT/debforge` in Obtainium. It keeps DebForge updated for you.
    - **Manually**: download `DebForge-vX.Y.Z.apk` from [Releases](../../releases/latest) and open it. The app tells you when a new version is out.
-   - **F-Droid**: submission in progress.
+   - **F-Droid**: install [DebForge from F-Droid](https://f-droid.org/packages/com.abhinavxt.debforge/). New versions show up a few days after each GitHub release.
 
    All of them give you the **same APK signed with the same key**, so you can switch between them without losing your settings.
 2. **Sign in to your service.** Open DebForge, pick your debrid service and paste your API key (Real-Debrid can also sign in with a device code, AllDebrid with a PIN). You can add more services later in Settings.
