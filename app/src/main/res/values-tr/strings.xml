@@ -738,6 +738,15 @@
     <string name="sources_url">Torznab akış bağlantısı</string>
     <string name="sources_api_key">API anahtarı</string>
     <string name="sources_name">Ad (isteğe bağlı)</string>
+    <string name="cast_title">TV\'de oynat</string>
+    <string name="cast_searching">Bu Wi-Fi\'da TV aranıyor…</string>
+    <string name="cast_none">TV bulunamadı. TV\'nin açık, aynı Wi-Fi\'da ve DLNA\'nın açık olduğunu kontrol edin (bazı TV\'ler buna medya paylaşımı veya ekran paylaşımı der).</string>
+    <string name="cast_playing_on">%1$s üzerinde oynatılıyor</string>
+    <string name="cast_pause">Duraklat</string>
+    <string name="cast_play">Oynat</string>
+    <string name="cast_stop">Burada izle</string>
+    <string name="cast_leave">Oynatıcıyı kapat</string>
+    <string name="cast_failed">%1$s videoyu kabul etmedi.</string>
     <string name="release_avoid">Şunları içeren sürümleri asla gösterme</string>
     <string name="release_prefer">Şunları içeren sürümleri üste al</string>
     <string name="release_none">Hiçbiri</string>

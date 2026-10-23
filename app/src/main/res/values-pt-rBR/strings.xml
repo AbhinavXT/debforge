@@ -775,6 +775,15 @@
     <string name="sources_url">Link do feed Torznab</string>
     <string name="sources_api_key">Chave de API</string>
     <string name="sources_name">Nome (opcional)</string>
+    <string name="cast_title">Reproduzir na TV</string>
+    <string name="cast_searching">Procurando TVs nesta rede Wi-Fi…</string>
+    <string name="cast_none">Nenhuma TV encontrada. Verifique se ela está ligada, na mesma Wi-Fi e com DLNA ativado (algumas chamam de compartilhamento de mídia ou de tela).</string>
+    <string name="cast_playing_on">Reproduzindo em %1$s</string>
+    <string name="cast_pause">Pausar</string>
+    <string name="cast_play">Reproduzir</string>
+    <string name="cast_stop">Assistir aqui</string>
+    <string name="cast_leave">Fechar player</string>
+    <string name="cast_failed">%1$s não aceitou o vídeo.</string>
     <string name="release_avoid">Nunca mostrar lançamentos com</string>
     <string name="release_prefer">Priorizar lançamentos com</string>
     <string name="release_none">Nada</string>

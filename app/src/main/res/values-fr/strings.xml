@@ -775,6 +775,15 @@
     <string name="sources_url">Lien du flux Torznab</string>
     <string name="sources_api_key">Clé API</string>
     <string name="sources_name">Nom (facultatif)</string>
+    <string name="cast_title">Lire sur la TV</string>
+    <string name="cast_searching">Recherche de TV sur ce Wi-Fi…</string>
+    <string name="cast_none">Aucune TV trouvée. Vérifiez qu\'elle est allumée, sur le même Wi-Fi, et que le DLNA est activé (certaines TV l\'appellent partage multimédia ou partage d\'écran).</string>
+    <string name="cast_playing_on">Lecture sur %1$s</string>
+    <string name="cast_pause">Pause</string>
+    <string name="cast_play">Lecture</string>
+    <string name="cast_stop">Regarder ici</string>
+    <string name="cast_leave">Fermer le lecteur</string>
+    <string name="cast_failed">%1$s n\'a pas accepté la vidéo.</string>
     <string name="release_avoid">Ne jamais afficher les versions avec</string>
     <string name="release_prefer">Classer plus haut les versions avec</string>
     <string name="release_none">Rien</string>

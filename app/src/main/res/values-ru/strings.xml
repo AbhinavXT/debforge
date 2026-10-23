@@ -812,6 +812,15 @@
     <string name="sources_url">Ссылка на фид Torznab</string>
     <string name="sources_api_key">Ключ API</string>
     <string name="sources_name">Название (необязательно)</string>
+    <string name="cast_title">Смотреть на ТВ</string>
+    <string name="cast_searching">Ищем телевизоры в этой сети Wi-Fi…</string>
+    <string name="cast_none">Телевизор не найден. Проверьте, что он включён, в той же сети Wi-Fi и на нём включён DLNA (иногда это называется «общий доступ к медиа» или «трансляция экрана»).</string>
+    <string name="cast_playing_on">Воспроизводится на %1$s</string>
+    <string name="cast_pause">Пауза</string>
+    <string name="cast_play">Воспроизвести</string>
+    <string name="cast_stop">Смотреть здесь</string>
+    <string name="cast_leave">Закрыть плеер</string>
+    <string name="cast_failed">%1$s не принял видео.</string>
     <string name="release_avoid">Никогда не показывать релизы с</string>
     <string name="release_prefer">Поднимать выше релизы с</string>
     <string name="release_none">Ничего</string>

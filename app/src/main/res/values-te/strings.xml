@@ -738,6 +738,15 @@
     <string name="sources_url">Torznab ఫీడ్ లింక్</string>
     <string name="sources_api_key">API కీ</string>
     <string name="sources_name">పేరు (ఐచ్ఛికం)</string>
+    <string name="cast_title">TV లో ప్లే చేయండి</string>
+    <string name="cast_searching">ఈ Wi-Fi లో TV ల కోసం వెతుకుతోంది…</string>
+    <string name="cast_none">TV ఏదీ దొరకలేదు. TV ఆన్‌లో ఉందో, అదే Wi-Fi లో ఉందో, DLNA ఆన్‌లో ఉందో చూడండి (కొన్ని TV లు దీన్ని మీడియా షేరింగ్ లేదా స్క్రీన్ షేరింగ్ అంటాయి).</string>
+    <string name="cast_playing_on">%1$s లో ప్లే అవుతోంది</string>
+    <string name="cast_pause">పాజ్</string>
+    <string name="cast_play">ప్లే</string>
+    <string name="cast_stop">ఇక్కడ చూడండి</string>
+    <string name="cast_leave">ప్లేయర్ మూసివేయండి</string>
+    <string name="cast_failed">%1$s వీడియోను తీసుకోలేదు.</string>
     <string name="release_avoid">ఇవి ఉన్న రిలీజ్‌లను ఎప్పుడూ చూపవద్దు</string>
     <string name="release_prefer">ఇవి ఉన్న రిలీజ్‌లను పైన ఉంచండి</string>
     <string name="release_none">ఏమీ లేదు</string>

@@ -67,6 +67,8 @@ class ControlsState {
     /** The file's chapters (Matroska): marks on the seek bar and the Chapters list. */
     var chapters by mutableStateOf<List<com.abhinavxt.debforge.domain.MkvChapters.Chapter>>(emptyList())
     var pipAvailable by mutableStateOf(false)
+    /** A stream (not a file on the phone), on a phone or tablet: can go to a TV. */
+    var castAvailable by mutableStateOf(false)
     /** Right-hand time shows "−12:34" (left) instead of the length. */
     var showRemaining by mutableStateOf(false)
     var fill by mutableStateOf(Fill.FIT)

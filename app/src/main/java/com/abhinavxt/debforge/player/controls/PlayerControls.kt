@@ -54,6 +54,7 @@ import androidx.compose.material.icons.rounded.Repeat
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.Audiotrack
 import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.Cast
 import androidx.compose.material.icons.rounded.ClosedCaption
 import androidx.compose.material.icons.rounded.Crop
 import androidx.compose.material.icons.rounded.FastForward
@@ -137,6 +138,8 @@ interface ControlsActions {
     /** Jump to a chapter. */
     fun seekTo(ms: Long)
     fun openExternal()
+    /** Play on a TV on the same network (DLNA). */
+    fun cast()
     fun rotate()
     fun setFill(fill: Fill)
     fun enterPip()
@@ -317,6 +320,9 @@ private fun TopBar(state: ControlsState, actions: ControlsActions, modifier: Mod
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold
             )
+        }
+        if (state.castAvailable) {
+            ControlIcon(state, "cast", Icons.Rounded.Cast, stringResource(R.string.cast_title)) { actions.cast() }
         }
         ControlIcon(state, "external", Icons.AutoMirrored.Rounded.OpenInNew, stringResource(R.string.action_open_other_player)) {
             actions.openExternal()
