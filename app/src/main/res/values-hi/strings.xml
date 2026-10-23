@@ -475,6 +475,9 @@
 
     <!-- Resume / Continue watching -->
     <string name="continue_watching">देखना जारी रखें</string>
+    <string name="upcoming_title">जल्द आ रहा है</string>
+    <string name="upcoming_today">आज</string>
+    <string name="upcoming_tomorrow">कल</string>
     <string name="continue_remove">देखना जारी रखें से हटाएँ</string>
     <string name="continue_unavailable">%1$s नहीं चल सका: %2$s</string>
     <string name="watched">✓ देखा गया</string>

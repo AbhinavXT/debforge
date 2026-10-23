@@ -32,6 +32,10 @@ interface TmdbApi {
     @GET("movie/{id}/external_ids")
     suspend fun movieExternalIds(@retrofit2.http.Path("id") id: Long): TmdbExternalIds
 
+    /** A show's details; only `next_episode_to_air` is read, for "Coming up". */
+    @GET("tv/{id}")
+    suspend fun tvDetails(@retrofit2.http.Path("id") id: Long): TmdbTvDetails
+
     @GET("tv/{id}/external_ids")
     suspend fun tvExternalIds(@retrofit2.http.Path("id") id: Long): TmdbExternalIds
 
@@ -59,6 +63,16 @@ interface TmdbApi {
 
 @JsonClass(generateAdapter = true)
 data class TmdbExternalIds(@Json(name = "imdb_id") val imdbId: String?)
+
+@JsonClass(generateAdapter = true)
+data class TmdbTvDetails(@Json(name = "next_episode_to_air") val nextEpisode: TmdbEpisode?)
+
+@JsonClass(generateAdapter = true)
+data class TmdbEpisode(
+    @Json(name = "air_date") val airDate: String?,
+    @Json(name = "season_number") val season: Int?,
+    @Json(name = "episode_number") val episode: Int?
+)
 
 @JsonClass(generateAdapter = true)
 data class TmdbAuthCheck(@Json(name = "success") val success: Boolean?)

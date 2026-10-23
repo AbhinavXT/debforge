@@ -3,6 +3,7 @@ package com.abhinavxt.debforge.data.metadata
 import com.abhinavxt.debforge.BuildConfig
 import com.abhinavxt.debforge.data.prefs.SettingsStore
 import com.abhinavxt.debforge.domain.MediaKind
+import com.abhinavxt.debforge.domain.AiringEpisode
 import com.abhinavxt.debforge.domain.ReleaseInfo
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -130,9 +131,39 @@ class MetadataRepository @Inject constructor(
         return id?.takeIf { it.startsWith("tt") }?.also { imdbIds[cacheKey] = it }
     }
 
+    private data class Next(val at: Long, val next: AiringEpisode?)
+    private val nextEpisodes = ConcurrentHashMap<String, Next>()
+
+    /**
+     * The next episode of the show called [title] to air, per TMDB's best
+     * match. Null without a TMDB key, for a show that has ended or has no
+     * date yet, or on any failure.
+     */
+    suspend fun nextEpisode(title: String): AiringEpisode? {
+        if (title.isBlank() || effectiveKey(settings.tmdbKeyFlow.first()).isBlank()) return null
+        val cacheKey = title.trim().lowercase()
+        val now = System.currentTimeMillis()
+        // shortcut: memory only, so each app start asks TMDB again; a Room table if that's ever too many requests.
+        nextEpisodes[cacheKey]?.takeIf { now - it.at < NEXT_TTL_MS }?.let { return it.next }
+        val next = try {
+            gate.withPermit {
+                api.searchTv(title.trim()).results?.firstOrNull()
+                    ?.let { api.tvDetails(it.id).nextEpisode }
+                    ?.let { AiringEpisode.of(it.season, it.episode, it.airDate) }
+            }
+        } catch (ce: CancellationException) {
+            throw ce
+        } catch (e: Exception) {
+            return null
+        }
+        nextEpisodes[cacheKey] = Next(now, next)
+        return next
+    }
+
     /** Forget everything (e.g. after the user changes the TMDB key). */
     suspend fun clearCache() {
         memory.clear()
+        nextEpisodes.clear()
         dao.clear()
     }
 
@@ -212,6 +243,7 @@ class MetadataRepository @Inject constructor(
         private const val MAX_PARALLEL = 4
         private const val FOUND_TTL_MS = 30L * 24 * 60 * 60 * 1000
         private const val MISS_TTL_MS = 7L * 24 * 60 * 60 * 1000
+        private const val NEXT_TTL_MS = 6L * 60 * 60 * 1000
 
         /** User key wins; otherwise the key baked in at build time (may be empty). */
         fun effectiveKey(userKey: String?): String =

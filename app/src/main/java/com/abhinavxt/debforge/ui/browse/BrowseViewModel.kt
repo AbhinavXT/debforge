@@ -33,6 +33,8 @@ import kotlinx.coroutines.withContext
 import com.abhinavxt.debforge.ui.add.ProviderEvents
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -671,6 +673,21 @@ class BrowseViewModel @Inject constructor(
     val continueWatching: StateFlow<List<com.abhinavxt.debforge.data.playback.PlaybackEntity>> = playbackPositions.all
         .map { list -> com.abhinavxt.debforge.domain.Resume.continueWatching(list, { it.resumeEntry }) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    /** Followed shows with an episode on the way (TMDB key needed), soonest first. */
+    val comingUp: StateFlow<List<com.abhinavxt.debforge.domain.Upcoming>> =
+        combine(followStore.follows, metadata.enabled) { follows, enabled -> if (enabled) follows else emptyList() }
+            .map { follows ->
+                coroutineScope {
+                    follows.distinctBy { it.showKey }.map { f ->
+                        async {
+                            metadata.nextEpisode(f.title)?.let { com.abhinavxt.debforge.domain.Upcoming(f.title, f.showKey, it) }
+                        }
+                    }.mapNotNull { it.await() }
+                }
+            }
+            .map { com.abhinavxt.debforge.domain.Upcoming.sort(it) }
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     /**
      * Plays a "Continue watching" entry: gets a fresh link (the old one has

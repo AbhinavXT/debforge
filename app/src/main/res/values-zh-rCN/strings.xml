@@ -452,6 +452,9 @@
 
     <!-- Resume / Continue watching -->
     <string name="continue_watching">继续观看</string>
+    <string name="upcoming_title">即将播出</string>
+    <string name="upcoming_today">今天</string>
+    <string name="upcoming_tomorrow">明天</string>
     <string name="continue_remove">从“继续观看”中移除</string>
     <string name="continue_unavailable">无法播放 %1$s：%2$s</string>
     <string name="watched">✓ 已看完</string>

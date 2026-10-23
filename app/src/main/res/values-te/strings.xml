@@ -475,6 +475,9 @@
 
     <!-- Resume / Continue watching -->
     <string name="continue_watching">చూడటం కొనసాగించండి</string>
+    <string name="upcoming_title">త్వరలో రాబోతున్నవి</string>
+    <string name="upcoming_today">ఈరోజు</string>
+    <string name="upcoming_tomorrow">రేపు</string>
     <string name="continue_remove">చూడటం కొనసాగించండి నుండి తీసివేయండి</string>
     <string name="continue_unavailable">%1$s ప్లే చేయలేకపోయాం: %2$s</string>
     <string name="watched">✓ చూశారు</string>

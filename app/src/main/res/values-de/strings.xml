@@ -475,6 +475,9 @@
 
     <!-- Resume / Continue watching -->
     <string name="continue_watching">Weiterschauen</string>
+    <string name="upcoming_title">Demnächst</string>
+    <string name="upcoming_today">Heute</string>
+    <string name="upcoming_tomorrow">Morgen</string>
     <string name="continue_remove">Aus Weiterschauen entfernen</string>
     <string name="continue_unavailable">%1$s kann nicht abgespielt werden: %2$s</string>
     <string name="watched">✓ Gesehen</string>

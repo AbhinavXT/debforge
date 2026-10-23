@@ -475,6 +475,9 @@
 
     <!-- Resume / Continue watching -->
     <string name="continue_watching">দেখা চালিয়ে যান</string>
+    <string name="upcoming_title">শীঘ্রই আসছে</string>
+    <string name="upcoming_today">আজ</string>
+    <string name="upcoming_tomorrow">আগামীকাল</string>
     <string name="continue_remove">দেখা চালিয়ে যান থেকে সরান</string>
     <string name="continue_unavailable">%1$s চালানো যায়নি: %2$s</string>
     <string name="watched">✓ দেখা হয়েছে</string>
