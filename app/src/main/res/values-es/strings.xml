@@ -772,6 +772,10 @@
     <string name="sources_url">Enlace del feed Torznab</string>
     <string name="sources_api_key">Clave de API</string>
     <string name="sources_name">Nombre (opcional)</string>
+    <string name="release_avoid">No mostrar nunca versiones con</string>
+    <string name="release_prefer">Subir las versiones con</string>
+    <string name="release_none">Nada</string>
+    <string name="release_words_body">Palabras separadas por comas, como x265, REMUX. Cada una coincide con una parte entera del nombre. Se aplica a Buscar y a las series seguidas desde Buscar.</string>
     <string name="search_kind_all">Todo</string>
     <string name="search_kind_movies">Películas</string>
     <string name="search_kind_shows">Series</string>

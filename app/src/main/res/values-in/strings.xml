@@ -698,6 +698,10 @@
     <string name="sources_url">Tautan feed Torznab</string>
     <string name="sources_api_key">Kunci API</string>
     <string name="sources_name">Nama (opsional)</string>
+    <string name="release_avoid">Jangan tampilkan rilis dengan</string>
+    <string name="release_prefer">Utamakan rilis dengan</string>
+    <string name="release_none">Tidak ada</string>
+    <string name="release_words_body">Kata dipisahkan koma, seperti x265, REMUX. Masing-masing cocok dengan satu bagian utuh nama rilis. Berlaku untuk Cari dan acara yang diikuti dari Cari.</string>
     <string name="search_kind_all">Semua</string>
     <string name="search_kind_movies">Film</string>
     <string name="search_kind_shows">Acara</string>

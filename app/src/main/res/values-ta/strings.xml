@@ -735,6 +735,10 @@
     <string name="sources_url">Torznab ஃபீட் இணைப்பு</string>
     <string name="sources_api_key">API விசை</string>
     <string name="sources_name">பெயர் (விருப்பத்தேர்வு)</string>
+    <string name="release_avoid">இவை உள்ள வெளியீடுகளை ஒருபோதும் காட்டாதே</string>
+    <string name="release_prefer">இவை உள்ள வெளியீடுகளை மேலே வை</string>
+    <string name="release_none">எதுவுமில்லை</string>
+    <string name="release_words_body">காற்புள்ளியால் பிரிக்கப்பட்ட சொற்கள், உதா. x265, REMUX. ஒவ்வொன்றும் வெளியீட்டுப் பெயரின் முழுப் பகுதியுடன் பொருந்தும். Search-க்கும் Search-இலிருந்து பின்தொடரும் நிகழ்ச்சிகளுக்கும் பொருந்தும்.</string>
     <string name="search_kind_all">அனைத்தும்</string>
     <string name="search_kind_movies">திரைப்படங்கள்</string>
     <string name="search_kind_shows">தொடர்கள்</string>

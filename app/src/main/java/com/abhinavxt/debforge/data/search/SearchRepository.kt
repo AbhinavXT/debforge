@@ -6,6 +6,7 @@ import com.abhinavxt.debforge.data.repository.AuthRepository
 import com.abhinavxt.debforge.data.repository.DownloadsRepository
 import com.abhinavxt.debforge.di.ApiHttpClient
 import com.abhinavxt.debforge.data.metadata.MetadataRepository
+import com.abhinavxt.debforge.data.prefs.SettingsStore
 import com.abhinavxt.debforge.domain.DataResult
 import com.abhinavxt.debforge.domain.MediaKind
 import com.abhinavxt.debforge.domain.SearchKind
@@ -28,7 +29,8 @@ import javax.inject.Singleton
 /**
  * Searches every source the user added (Jackett / Prowlarr, over Torznab)
  * at once, then asks the signed-in services that can tell (TorBox,
- * Premiumize) which results they already have cached.
+ * Premiumize) which results they already have cached. The user's release
+ * preferences apply here, so Search and followed shows both honour them.
  *
  * Uses the auth-free API client: these are the user's own servers, so no
  * service token ever goes to them.
@@ -40,7 +42,8 @@ class SearchRepository @Inject constructor(
     private val store: SearchSourceStore,
     private val auth: AuthRepository,
     private val downloads: DownloadsRepository,
-    private val metadata: MetadataRepository
+    private val metadata: MetadataRepository,
+    private val settings: SettingsStore
 ) {
     /** Jackett's "all indexers" waits for its slowest tracker: give it longer than a service call. */
     private val http: OkHttpClient = api.newBuilder().readTimeout(90, java.util.concurrent.TimeUnit.SECONDS).build()
@@ -66,7 +69,10 @@ class SearchRepository @Inject constructor(
             SearchKind.ALL -> null
         }
         val replies = store.all().map { source -> async { searchOne(source, q, imdb) } }.awaitAll()
+        val prefs = settings.releasePrefs()
         val found = replies.flatMap { (it as? DataResult.Success)?.data.orEmpty() }
+            .filterNot { prefs.avoids(it.title) }
+            .map { it.copy(preferred = prefs.score(it.title)) }
         Outcome(
             results = SearchResults.rank(SearchResults.forEpisode(found, q.season, q.episode)),
             failures = replies.mapNotNull { (it as? DataResult.Error)?.message }

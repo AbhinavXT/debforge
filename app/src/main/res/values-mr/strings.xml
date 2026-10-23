@@ -735,6 +735,10 @@
     <string name="sources_url">Torznab फीड लिंक</string>
     <string name="sources_api_key">API की</string>
     <string name="sources_name">नाव (ऐच्छिक)</string>
+    <string name="release_avoid">हे असलेले रिलीज कधीही दाखवू नका</string>
+    <string name="release_prefer">हे असलेले रिलीज वर ठेवा</string>
+    <string name="release_none">काहीही नाही</string>
+    <string name="release_words_body">स्वल्पविरामाने वेगळे केलेले शब्द, उदा. x265, REMUX. प्रत्येक शब्द रिलीजच्या नावाच्या पूर्ण भागाशी जुळतो. Search आणि Search मधून फॉलो केलेल्या शोंना लागू.</string>
     <string name="search_kind_all">सर्व</string>
     <string name="search_kind_movies">चित्रपट</string>
     <string name="search_kind_shows">शो</string>

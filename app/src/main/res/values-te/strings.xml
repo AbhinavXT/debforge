@@ -735,6 +735,10 @@
     <string name="sources_url">Torznab ఫీడ్ లింక్</string>
     <string name="sources_api_key">API కీ</string>
     <string name="sources_name">పేరు (ఐచ్ఛికం)</string>
+    <string name="release_avoid">ఇవి ఉన్న రిలీజ్‌లను ఎప్పుడూ చూపవద్దు</string>
+    <string name="release_prefer">ఇవి ఉన్న రిలీజ్‌లను పైన ఉంచండి</string>
+    <string name="release_none">ఏమీ లేదు</string>
+    <string name="release_words_body">కామాలతో వేరు చేసిన పదాలు, ఉదా. x265, REMUX. ప్రతి పదం రిలీజ్ పేరులోని పూర్తి భాగంతో సరిపోలుతుంది. Search కు, Search నుండి ఫాలో చేసిన షోలకు వర్తిస్తుంది.</string>
     <string name="search_kind_all">అన్నీ</string>
     <string name="search_kind_movies">సినిమాలు</string>
     <string name="search_kind_shows">షోలు</string>

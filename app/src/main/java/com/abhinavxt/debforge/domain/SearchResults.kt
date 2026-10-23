@@ -19,9 +19,39 @@ data class SearchResult(
     /** Already in the user's account. */
     val owned: Boolean?,
     /** When the tracker listed it (epoch millis); null if the source doesn't say. */
-    val published: Long? = null
+    val published: Long? = null,
+    /** How many of the user's preferred words ([ReleasePrefs.prefer]) the name has. */
+    val preferred: Int = 0
 ) {
     val info: ReleaseInfo by lazy { ReleaseNameParser.parse(title) }
+}
+
+/**
+ * Settings → Search sources → Release preferences: releases whose name has an
+ * [avoid] word are never shown or added, and each [prefer] word a name has
+ * ranks it higher. A word matches whole name parts, so "TS" doesn't hit
+ * "Shorts" and "WEB-DL" matches "WEB.DL".
+ */
+data class ReleasePrefs(val avoid: List<String> = emptyList(), val prefer: List<String> = emptyList()) {
+
+    fun avoids(title: String): Boolean = tokens(title).let { t -> avoid.any { has(t, it) } }
+
+    fun score(title: String): Int = tokens(title).let { t -> prefer.count { has(t, it) } }
+
+    private fun has(titleTokens: List<String>, word: String): Boolean {
+        val w = tokens(word)
+        return w.isNotEmpty() && titleTokens.windowed(w.size).any { it == w }
+    }
+
+    companion object {
+        /** Avoided unless the user changes it: recordings made in a cinema. */
+        const val DEFAULT_AVOID = "CAM, HDCAM, TS, HDTS, TELESYNC"
+
+        /** "x265, HEVC ,, REMUX" → the words, as typed in the setting. */
+        fun words(text: String): List<String> = text.split(',').map { it.trim() }.filter { it.isNotEmpty() }
+
+        private fun tokens(s: String): List<String> = s.lowercase().split(Regex("[^\\p{L}\\p{N}]+")).filter { it.isNotEmpty() }
+    }
 }
 
 /** Quality filter on the Search screen; matches [ReleaseInfo.resolution]. */
@@ -33,14 +63,19 @@ enum class SearchKind { ALL, MOVIE, SHOW }
 object SearchResults {
 
     /**
-     * Cached first (one tap to watch), then the best seeded. Same torrent
-     * from two trackers is listed once, keeping the copy with more seeders.
+     * Cached first (one tap to watch), then the most preferred words, then
+     * the best seeded. Same torrent from two trackers is listed once, keeping
+     * the copy with more seeders.
      */
     fun rank(results: List<SearchResult>): List<SearchResult> =
         results
             .sortedByDescending { it.seeders ?: -1 }
             .distinctBy { it.hash.lowercase() }
-            .sortedWith(compareByDescending<SearchResult> { it.cached == true }.thenByDescending { it.seeders ?: -1 })
+            .sortedWith(
+                compareByDescending<SearchResult> { it.cached == true }
+                    .thenByDescending { it.preferred }
+                    .thenByDescending { it.seeders ?: -1 }
+            )
 
     fun filter(results: List<SearchResult>, quality: SearchQuality, cachedOnly: Boolean): List<SearchResult> =
         results.filter { r ->

@@ -735,6 +735,10 @@
     <string name="sources_url">Torznab-Feed-Link</string>
     <string name="sources_api_key">API-Schlüssel</string>
     <string name="sources_name">Name (optional)</string>
+    <string name="release_avoid">Releases nie anzeigen mit</string>
+    <string name="release_prefer">Releases höher einstufen mit</string>
+    <string name="release_none">Nichts</string>
+    <string name="release_words_body">Wörter durch Kommas getrennt, z. B. x265, REMUX. Jedes passt auf einen ganzen Teil des Release-Namens. Gilt für die Suche und für aus der Suche gefolgte Serien.</string>
     <string name="search_kind_all">Alle</string>
     <string name="search_kind_movies">Filme</string>
     <string name="search_kind_shows">Serien</string>
