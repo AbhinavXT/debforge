@@ -710,6 +710,23 @@
         <item quantity="one">%d व्हिडिओ</item>
         <item quantity="other">%d व्हिडिओ</item>
     </plurals>
+    <string name="browser_adblock">जाहिरात ब्लॉकिंग</string>
+    <string name="browser_adblock_block">जाहिराती आणि ट्रॅकर ब्लॉक करा</string>
+    <string name="browser_adblock_block_detail">uBlock Origin च्या फिल्टर याद्यांसह</string>
+    <string name="browser_adblock_on_site">%1$s वर</string>
+    <string name="browser_adblock_on_site_detail">ही साइट नीट चालत नसेल तर बंद करा</string>
+    <plurals name="browser_adblock_blocked_n">
+        <item quantity="one">या पेजवर %d ब्लॉक केले</item>
+        <item quantity="other">या पेजवर %d ब्लॉक केले</item>
+    </plurals>
+    <string name="browser_adblock_lists">फिल्टर याद्या</string>
+    <string name="browser_adblock_lists_detail">%1$s फिल्टर · %2$s अपडेट केल्या</string>
+    <string name="browser_adblock_lists_none">अजून डाउनलोड झाल्या नाहीत. एक छोटी अंगभूत यादी वापरली जात आहे.</string>
+    <string name="browser_adblock_lists_updating">डाउनलोड होत आहे…</string>
+    <string name="browser_adblock_lists_failed">अपडेट करता आले नाही. फोनवरील फिल्टर वापरले जात राहतील.</string>
+    <string name="browser_adblock_lists_failed_none">डाउनलोड करता आले नाही. सध्या एक छोटी अंगभूत यादी वापरली जात आहे.</string>
+    <string name="browser_adblock_update">आता अपडेट करा</string>
+    <string name="browser_adblock_stopped">एक पेज उघडणे थांबवले: %1$s</string>
     <!-- Search tab -->
     <string name="tab_search">शोधा</string>
     <string name="search_hint">चित्रपट आणि शो</string>

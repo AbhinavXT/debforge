@@ -17,7 +17,7 @@ DebForge downloads the files in your debrid account straight to your phone, tabl
 <li>Add magnet links, .torrent files and links, from the app or by sharing to it, and optionally download them as soon as they're ready</li>
 <li>Built-in player that remembers where you stopped, a Continue watching row, subtitles from the torrent and the next episode ready to go, or play in VLC and others if you prefer</li>
 <li>Player gestures (double-tap to skip, swipe for brightness, volume and seeking, hold for 2×, pinch to zoom), subtitle style, audio and subtitle languages remembered per show, sleep timer, A-B loop, screenshots, picture-in-picture and background play. Downloaded files play offline</li>
-<li>Built-in browser: downloads a page starts go to DebForge's queue, and videos it plays (HLS streams too) are listed to download</li>
+<li>Built-in browser: downloads a page starts go to DebForge's queue, and videos it plays (HLS streams too) are listed to download. Ads, trackers and pop-ups are blocked with uBlock Origin's default filter lists</li>
 <li>Pixeldrain, Google Drive and direct file links download straight to your phone, no service needed</li>
 <li>Follow a show and new episodes that reach your account download by themselves, with a Coming up row showing when the next one airs</li>
 <li>Play on TV: send a stream to a DLNA TV on your Wi-Fi, no Google services needed</li>

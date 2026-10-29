@@ -712,6 +712,23 @@
         <item quantity="one">%d video</item>
         <item quantity="other">%d videos</item>
     </plurals>
+    <string name="browser_adblock">Ad blocking</string>
+    <string name="browser_adblock_block">Block ads and trackers</string>
+    <string name="browser_adblock_block_detail">With uBlock Origin\'s filter lists</string>
+    <string name="browser_adblock_on_site">On %1$s</string>
+    <string name="browser_adblock_on_site_detail">Turn off if this site doesn\'t work right</string>
+    <plurals name="browser_adblock_blocked_n">
+        <item quantity="one">%d blocked on this page</item>
+        <item quantity="other">%d blocked on this page</item>
+    </plurals>
+    <string name="browser_adblock_lists">Filter lists</string>
+    <string name="browser_adblock_lists_detail">%1$s filters · updated %2$s</string>
+    <string name="browser_adblock_lists_none">Not downloaded yet. A short built-in list is in use.</string>
+    <string name="browser_adblock_lists_updating">Downloading…</string>
+    <string name="browser_adblock_lists_failed">Couldn\'t update. The filters already on this phone stay in use.</string>
+    <string name="browser_adblock_lists_failed_none">Couldn\'t download them. A short built-in list is in use for now.</string>
+    <string name="browser_adblock_update">Update now</string>
+    <string name="browser_adblock_stopped">Blocked a page from opening: %1$s</string>
     <!-- Search tab -->
     <string name="tab_search">Search</string>
     <string name="search_hint">Movies and shows</string>

@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.pm.ActivityInfo
 import android.graphics.Bitmap
+import android.text.format.DateUtils
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.CookieManager
@@ -19,7 +20,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardActions
@@ -28,19 +31,27 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.outlined.RemoveModerator
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -51,6 +62,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -61,26 +73,30 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import java.io.ByteArrayInputStream
+import java.text.NumberFormat
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.abhinavxt.debforge.R
-import com.abhinavxt.debforge.domain.AdHosts
 import com.abhinavxt.debforge.domain.DirectLinkParser
 import com.abhinavxt.debforge.ui.browse.formatSize
 
 /**
  * A plain browser whose downloads land in DebForge's queue. Magnet links
  * open the Add dialog ([onMagnet]); other app links (intent:, market:) are
- * ignored. Ad networks ([AdHosts]) are blocked.
+ * ignored. Ads are blocked and hidden; the shield in the address bar shows
+ * how many and turns it off for a site.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
 fun BrowserScreen(onMagnet: (String) -> Unit, viewModel: BrowserViewModel = hiltViewModel()) {
     val videos by viewModel.videos.collectAsStateWithLifecycle()
+    val adBlock by viewModel.adBlock.collectAsStateWithLifecycle()
+    var showAdBlock by remember { mutableStateOf(false) }
+    val adHiding = remember { AdHiding(viewModel::hidingCss) }
     val snackbar = remember { SnackbarHostState() }
     val focus = LocalFocusManager.current
     val keyboard = LocalSoftwareKeyboardController.current
@@ -147,6 +163,20 @@ fun BrowserScreen(onMagnet: (String) -> Unit, viewModel: BrowserViewModel = hilt
                         focus.clearFocus()
                     })
                 )
+                val adBlockOn = adBlock.enabled && adBlock.onHere
+                // The badge sits on the button, outside its round clip.
+                BadgedBox(badge = {
+                    if (adBlockOn && adBlock.blocked > 0) {
+                        Badge(Modifier.offset(x = (-8).dp, y = 8.dp)) { Text(if (adBlock.blocked > 99) "99+" else "${adBlock.blocked}") }
+                    }
+                }) {
+                    IconButton(onClick = { showAdBlock = true }) {
+                        Icon(
+                            if (adBlockOn) Icons.Filled.Shield else Icons.Outlined.RemoveModerator,
+                            contentDescription = stringResource(R.string.browser_adblock)
+                        )
+                    }
+                }
                 IconButton(onClick = { webView?.reload() }) {
                     Icon(Icons.Filled.Refresh, contentDescription = stringResource(R.string.action_refresh))
                 }
@@ -163,6 +193,7 @@ fun BrowserScreen(onMagnet: (String) -> Unit, viewModel: BrowserViewModel = hilt
                             viewModel.userAgent = settings.userAgentString
                             // Logins that go through another site (Google, a CDN) need these.
                             CookieManager.getInstance().setAcceptThirdPartyCookies(this, true)
+                            adHiding.install(this)
                             webViewClient = object : WebViewClient() {
                                 override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
                                     val url = request.url.toString()
@@ -170,15 +201,26 @@ fun BrowserScreen(onMagnet: (String) -> Unit, viewModel: BrowserViewModel = hilt
                                         onMagnet(url)
                                         return true
                                     }
-                                    // Pop-under redirects to ad networks go nowhere.
-                                    return request.url.scheme !in setOf("http", "https") || AdHosts.blocks(request.url.host)
+                                    if (request.url.scheme !in setOf("http", "https")) return true
+                                    // Pop-unders and redirects to ad and scam pages go nowhere.
+                                    return request.isForMainFrame && viewModel.blocksNavigation(url)
                                 }
 
                                 override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
+                                    if (request.isForMainFrame) return null
+                                    val url = request.url.toString()
+                                    val headers = request.requestHeaders
+                                    val referer = headers["Referer"]
                                     // An empty answer: the ad (and its video) never loads.
-                                    if (AdHosts.blocks(request.url.host)) return WebResourceResponse("text/plain", "utf-8", ByteArrayInputStream(ByteArray(0)))
-                                    if (!request.isForMainFrame) viewModel.onRequest(request.url.toString(), request.requestHeaders["Referer"])
+                                    if (viewModel.blocksRequest(url, referer, headers["Accept"], headers["X-Requested-With"])) {
+                                        return WebResourceResponse("text/plain", "utf-8", ByteArrayInputStream(ByteArray(0)))
+                                    }
+                                    viewModel.onRequest(url, referer)
                                     return null
+                                }
+
+                                override fun onPageCommitVisible(view: WebView, url: String) {
+                                    adHiding.onPageVisible(view)
                                 }
 
                                 override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
@@ -223,6 +265,16 @@ fun BrowserScreen(onMagnet: (String) -> Unit, viewModel: BrowserViewModel = hilt
         }
     }
 
+    if (showAdBlock) {
+        AdBlockSheet(
+            state = adBlock,
+            onDismiss = { showAdBlock = false },
+            onEnabled = { viewModel.setAdBlock(it); webView?.reload() },
+            onHere = { viewModel.setAdBlockHere(it); webView?.reload() },
+            onUpdate = viewModel::updateFilterLists
+        )
+    }
+
     if (showVideos) {
         ModalBottomSheet(onDismissRequest = { showVideos = false }) {
             Text(
@@ -247,6 +299,74 @@ fun BrowserScreen(onMagnet: (String) -> Unit, viewModel: BrowserViewModel = hilt
                     )
                 }
             }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun AdBlockSheet(
+    state: BrowserViewModel.AdBlock,
+    onDismiss: () -> Unit,
+    onEnabled: (Boolean) -> Unit,
+    onHere: (Boolean) -> Unit,
+    onUpdate: () -> Unit
+) {
+    // Rows on the sheet's own colour, not a band of surface colour.
+    val rowColors = ListItemDefaults.colors(containerColor = Color.Transparent)
+    ModalBottomSheet(onDismissRequest = onDismiss) {
+        Text(
+            stringResource(R.string.browser_adblock),
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+        )
+        if (state.enabled && state.onHere) {
+            Text(
+                pluralStringResource(R.plurals.browser_adblock_blocked_n, state.blocked, state.blocked),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
+        }
+        ListItem(
+            colors = rowColors,
+            headlineContent = { Text(stringResource(R.string.browser_adblock_block)) },
+            supportingContent = { Text(stringResource(R.string.browser_adblock_block_detail)) },
+            trailingContent = { Switch(checked = state.enabled, onCheckedChange = onEnabled) }
+        )
+        if (state.enabled && state.site.isNotEmpty()) {
+            ListItem(
+                colors = rowColors,
+                headlineContent = { Text(stringResource(R.string.browser_adblock_on_site, state.site)) },
+                supportingContent = { Text(stringResource(R.string.browser_adblock_on_site_detail)) },
+                trailingContent = { Switch(checked = state.onHere, onCheckedChange = onHere) }
+            )
+        }
+        if (state.enabled) {
+            val lists = state.lists
+            ListItem(
+                colors = rowColors,
+                headlineContent = { Text(stringResource(R.string.browser_adblock_lists)) },
+                supportingContent = {
+                    Text(
+                        when {
+                            lists.updating -> stringResource(R.string.browser_adblock_lists_updating)
+                            lists.failed && lists.filterCount == 0 -> stringResource(R.string.browser_adblock_lists_failed_none)
+                            lists.failed -> stringResource(R.string.browser_adblock_lists_failed)
+                            lists.filterCount == 0 -> stringResource(R.string.browser_adblock_lists_none)
+                            else -> stringResource(
+                                R.string.browser_adblock_lists_detail,
+                                NumberFormat.getInstance().format(lists.filterCount),
+                                DateUtils.getRelativeTimeSpanString(lists.updatedAt, System.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS)
+                            )
+                        }
+                    )
+                },
+                trailingContent = {
+                    if (lists.updating) CircularProgressIndicator(Modifier.padding(horizontal = 12.dp).size(24.dp), strokeWidth = 2.dp)
+                    else TextButton(onClick = onUpdate) { Text(stringResource(R.string.browser_adblock_update)) }
+                }
+            )
         }
     }
 }

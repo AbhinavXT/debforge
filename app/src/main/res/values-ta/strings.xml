@@ -710,6 +710,23 @@
         <item quantity="one">%d வீடியோ</item>
         <item quantity="other">%d வீடியோக்கள்</item>
     </plurals>
+    <string name="browser_adblock">விளம்பரத் தடுப்பு</string>
+    <string name="browser_adblock_block">விளம்பரங்களையும் டிராக்கர்களையும் தடு</string>
+    <string name="browser_adblock_block_detail">uBlock Origin வடிகட்டிப் பட்டியல்களுடன்</string>
+    <string name="browser_adblock_on_site">%1$s இல்</string>
+    <string name="browser_adblock_on_site_detail">இந்தத் தளம் சரியாக வேலை செய்யவில்லை என்றால் அணைக்கவும்</string>
+    <plurals name="browser_adblock_blocked_n">
+        <item quantity="one">இந்தப் பக்கத்தில் %d தடுக்கப்பட்டன</item>
+        <item quantity="other">இந்தப் பக்கத்தில் %d தடுக்கப்பட்டது</item>
+    </plurals>
+    <string name="browser_adblock_lists">வடிகட்டிப் பட்டியல்கள்</string>
+    <string name="browser_adblock_lists_detail">%1$s வடிகட்டிகள் · %2$s புதுப்பிக்கப்பட்டது</string>
+    <string name="browser_adblock_lists_none">இன்னும் பதிவிறக்கப்படவில்லை. ஒரு சிறிய உள்ளமைந்த பட்டியல் பயன்பாட்டில் உள்ளது.</string>
+    <string name="browser_adblock_lists_updating">பதிவிறக்குகிறது…</string>
+    <string name="browser_adblock_lists_failed">புதுப்பிக்க முடியவில்லை. ஃபோனில் உள்ள வடிகட்டிகள் தொடர்ந்து பயன்படும்.</string>
+    <string name="browser_adblock_lists_failed_none">பதிவிறக்க முடியவில்லை. இப்போதைக்கு ஒரு சிறிய உள்ளமைந்த பட்டியல் பயன்படுகிறது.</string>
+    <string name="browser_adblock_update">இப்போது புதுப்பி</string>
+    <string name="browser_adblock_stopped">ஒரு பக்கம் திறப்பது தடுக்கப்பட்டது: %1$s</string>
     <!-- Search tab -->
     <string name="tab_search">தேடு</string>
     <string name="search_hint">திரைப்படங்கள் மற்றும் தொடர்கள்</string>

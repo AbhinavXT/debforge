@@ -747,6 +747,24 @@
         <item quantity="many">%d vídeos</item>
         <item quantity="other">%d vídeos</item>
     </plurals>
+    <string name="browser_adblock">Bloqueo de anuncios</string>
+    <string name="browser_adblock_block">Bloquear anuncios y rastreadores</string>
+    <string name="browser_adblock_block_detail">Con las listas de filtros de uBlock Origin</string>
+    <string name="browser_adblock_on_site">En %1$s</string>
+    <string name="browser_adblock_on_site_detail">Desactívalo si este sitio no funciona bien</string>
+    <plurals name="browser_adblock_blocked_n">
+        <item quantity="one">%d bloqueados en esta página</item>
+        <item quantity="many">%d bloqueado en esta página</item>
+        <item quantity="other">%d bloqueado en esta página</item>
+    </plurals>
+    <string name="browser_adblock_lists">Listas de filtros</string>
+    <string name="browser_adblock_lists_detail">%1$s filtros · actualizadas %2$s</string>
+    <string name="browser_adblock_lists_none">Aún no descargadas. Se usa una lista corta integrada.</string>
+    <string name="browser_adblock_lists_updating">Descargando…</string>
+    <string name="browser_adblock_lists_failed">No se pudieron actualizar. Se siguen usando los filtros de este teléfono.</string>
+    <string name="browser_adblock_lists_failed_none">No se pudieron descargar. Por ahora se usa una lista corta integrada.</string>
+    <string name="browser_adblock_update">Actualizar ahora</string>
+    <string name="browser_adblock_stopped">Se bloqueó una página: %1$s</string>
     <!-- Search tab -->
     <string name="tab_search">Buscar</string>
     <string name="search_hint">Películas y series</string>

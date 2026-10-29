@@ -710,6 +710,23 @@
         <item quantity="one">%d వీడియో</item>
         <item quantity="other">%d వీడియోలు</item>
     </plurals>
+    <string name="browser_adblock">ప్రకటనల బ్లాకింగ్</string>
+    <string name="browser_adblock_block">ప్రకటనలు, ట్రాకర్‌లను బ్లాక్ చేయండి</string>
+    <string name="browser_adblock_block_detail">uBlock Origin ఫిల్టర్ జాబితాలతో</string>
+    <string name="browser_adblock_on_site">%1$sలో</string>
+    <string name="browser_adblock_on_site_detail">ఈ సైట్ సరిగ్గా పని చేయకపోతే ఆఫ్ చేయండి</string>
+    <plurals name="browser_adblock_blocked_n">
+        <item quantity="one">ఈ పేజీలో %d బ్లాక్ అయ్యాయి</item>
+        <item quantity="other">ఈ పేజీలో %d బ్లాక్ అయింది</item>
+    </plurals>
+    <string name="browser_adblock_lists">ఫిల్టర్ జాబితాలు</string>
+    <string name="browser_adblock_lists_detail">%1$s ఫిల్టర్‌లు · %2$s అప్‌డేట్ అయ్యాయి</string>
+    <string name="browser_adblock_lists_none">ఇంకా డౌన్‌లోడ్ కాలేదు. ఒక చిన్న అంతర్నిర్మిత జాబితా వాడుకలో ఉంది.</string>
+    <string name="browser_adblock_lists_updating">డౌన్‌లోడ్ అవుతోంది…</string>
+    <string name="browser_adblock_lists_failed">అప్‌డేట్ చేయలేకపోయింది. ఫోన్‌లో ఉన్న ఫిల్టర్‌లే వాడుకలో ఉంటాయి.</string>
+    <string name="browser_adblock_lists_failed_none">డౌన్‌లోడ్ చేయలేకపోయింది. ప్రస్తుతానికి ఒక చిన్న అంతర్నిర్మిత జాబితా వాడుకలో ఉంది.</string>
+    <string name="browser_adblock_update">ఇప్పుడే అప్‌డేట్ చేయండి</string>
+    <string name="browser_adblock_stopped">ఒక పేజీ తెరవడం ఆపబడింది: %1$s</string>
     <!-- Search tab -->
     <string name="tab_search">వెతుకు</string>
     <string name="search_hint">సినిమాలు మరియు షోలు</string>

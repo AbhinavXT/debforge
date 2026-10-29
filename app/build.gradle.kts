@@ -176,6 +176,9 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.navigation.compose)
 
+    // Browser tab: ad-hiding styles in place before a page's scripts run.
+    implementation(libs.androidx.webkit)
+
     // Images (posters)
     implementation(libs.coil.compose)
 

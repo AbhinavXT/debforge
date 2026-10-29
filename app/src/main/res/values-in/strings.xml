@@ -673,6 +673,22 @@
     <plurals name="browser_videos_n">
         <item quantity="other">%d video</item>
     </plurals>
+    <string name="browser_adblock">Pemblokir iklan</string>
+    <string name="browser_adblock_block">Blokir iklan dan pelacak</string>
+    <string name="browser_adblock_block_detail">Dengan daftar filter uBlock Origin</string>
+    <string name="browser_adblock_on_site">Di %1$s</string>
+    <string name="browser_adblock_on_site_detail">Matikan jika situs ini tidak berfungsi dengan benar</string>
+    <plurals name="browser_adblock_blocked_n">
+        <item quantity="other">%d diblokir di halaman ini</item>
+    </plurals>
+    <string name="browser_adblock_lists">Daftar filter</string>
+    <string name="browser_adblock_lists_detail">%1$s filter · diperbarui %2$s</string>
+    <string name="browser_adblock_lists_none">Belum diunduh. Daftar bawaan yang singkat sedang dipakai.</string>
+    <string name="browser_adblock_lists_updating">Mengunduh…</string>
+    <string name="browser_adblock_lists_failed">Tidak bisa memperbarui. Filter yang sudah ada di ponsel tetap dipakai.</string>
+    <string name="browser_adblock_lists_failed_none">Tidak bisa mengunduh. Untuk sementara daftar bawaan yang singkat dipakai.</string>
+    <string name="browser_adblock_update">Perbarui sekarang</string>
+    <string name="browser_adblock_stopped">Halaman diblokir: %1$s</string>
     <!-- Search tab -->
     <string name="tab_search">Cari</string>
     <string name="search_hint">Film dan acara</string>

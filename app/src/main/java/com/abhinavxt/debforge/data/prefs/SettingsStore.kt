@@ -64,6 +64,8 @@ class SettingsStore @Inject constructor(
     private val keyReleaseAvoid = stringPreferencesKey("release_avoid")
     private val keyReleasePrefer = stringPreferencesKey("release_prefer")
     private val keyClipboardSeen = androidx.datastore.preferences.core.longPreferencesKey("clipboard_seen_at")
+    private val keyAdBlock = booleanPreferencesKey("browser_adblock")
+    private val keyAdBlockOffSites = stringPreferencesKey("browser_adblock_off_sites")
 
     /** Blank until the user chooses a folder. */
     val downloadDirFlow: Flow<String> = context.settingsDataStore.data
@@ -107,6 +109,20 @@ class SettingsStore @Inject constructor(
     /** Offer a magnet / .torrent link found on the clipboard when the app opens. On by default. */
     val clipboardOfferFlow: Flow<Boolean> = context.settingsDataStore.data.map { it[keyClipboardOffer] ?: true }
     suspend fun setClipboardOffer(v: Boolean) = context.settingsDataStore.edit { it[keyClipboardOffer] = v }
+
+    /** Browser tab: block ads and trackers with uBlock Origin's default filter lists. On by default. */
+    val adBlockFlow: Flow<Boolean> = context.settingsDataStore.data.map { it[keyAdBlock] ?: true }
+    suspend fun setAdBlock(v: Boolean) = context.settingsDataStore.edit { it[keyAdBlock] = v }
+
+    /** Sites ("example.com", subdomains included) the browser doesn't block ads on. */
+    val adBlockOffSitesFlow: Flow<Set<String>> = context.settingsDataStore.data.map { p ->
+        p[keyAdBlockOffSites].orEmpty().lines().filter { it.isNotBlank() }.toSet()
+    }
+    suspend fun setAdBlockOnSite(site: String, on: Boolean) = context.settingsDataStore.edit { p ->
+        val sites = p[keyAdBlockOffSites].orEmpty().lines().filter { it.isNotBlank() }.toMutableSet()
+        if (on) sites -= site else sites += site
+        p[keyAdBlockOffSites] = sites.sorted().joinToString("\n")
+    }
 
     /** Timestamp of the last clip looked at, so each copy is offered once. Per device. */
     val clipboardSeenFlow: Flow<Long> = context.settingsDataStore.data.map { it[keyClipboardSeen] ?: 0L }
@@ -267,11 +283,11 @@ class SettingsStore @Inject constructor(
      */
     private val backupBooleans get() = listOf(
         keyDynamicColor, keyPosterView, keyOrganize, keyWifiOnly, keyChargingOnly,
-        keyScheduleOn, keyAutoUpdate, keyRemoveAfter, keyPureBlack, keyShowExtras, keyClipboardOffer,
+        keyScheduleOn, keyAutoUpdate, keyRemoveAfter, keyPureBlack, keyShowExtras, keyClipboardOffer, keyAdBlock,
         keyInternalPlayer, keyAutoplayNext, keyPip, keyAutoSkipIntro, keyNightMode, keyStreamPreviews
     )
-    /** May be blank on purpose (nothing avoided). */
-    private val backupStrings get() = listOf(keyReleaseAvoid, keyReleasePrefer)
+    /** May be blank on purpose (nothing avoided, no site left unblocked). */
+    private val backupStrings get() = listOf(keyReleaseAvoid, keyReleasePrefer, keyAdBlockOffSites)
     private val backupInts get() = listOf(keySortOrder, keyThemeMode, keyScheduleStart, keyScheduleEnd, keySpeedLimit, keyAutoDeleteDays)
 
     /** Only values the user actually set; defaults stay defaults on the new phone. */

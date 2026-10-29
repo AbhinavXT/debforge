@@ -710,6 +710,23 @@
         <item quantity="one">%d video</item>
         <item quantity="other">%d video</item>
     </plurals>
+    <string name="browser_adblock">Reklam engelleme</string>
+    <string name="browser_adblock_block">Reklamları ve izleyicileri engelle</string>
+    <string name="browser_adblock_block_detail">uBlock Origin filtre listeleriyle</string>
+    <string name="browser_adblock_on_site">%1$s üzerinde</string>
+    <string name="browser_adblock_on_site_detail">Bu site düzgün çalışmazsa kapatın</string>
+    <plurals name="browser_adblock_blocked_n">
+        <item quantity="one">Bu sayfada %d engellendi</item>
+        <item quantity="other">Bu sayfada %d engellendi</item>
+    </plurals>
+    <string name="browser_adblock_lists">Filtre listeleri</string>
+    <string name="browser_adblock_lists_detail">%1$s filtre · %2$s güncellendi</string>
+    <string name="browser_adblock_lists_none">Henüz indirilmedi. Kısa yerleşik bir liste kullanılıyor.</string>
+    <string name="browser_adblock_lists_updating">İndiriliyor…</string>
+    <string name="browser_adblock_lists_failed">Güncellenemedi. Telefondaki filtreler kullanılmaya devam ediyor.</string>
+    <string name="browser_adblock_lists_failed_none">İndirilemedi. Şimdilik kısa yerleşik bir liste kullanılıyor.</string>
+    <string name="browser_adblock_update">Şimdi güncelle</string>
+    <string name="browser_adblock_stopped">Bir sayfanın açılması engellendi: %1$s</string>
     <!-- Search tab -->
     <string name="tab_search">Ara</string>
     <string name="search_hint">Filmler ve diziler</string>

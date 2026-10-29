@@ -76,6 +76,11 @@ Sign in to as many as you like and switch in Settings. When adding, DebForge che
   DebForge lists the video files the page links to (name and size, largest first)
   and downloads the ones you tick. Pages that build their player with JavaScript
   (YouTube and the like) and HLS/DASH-only streams aren't supported.
+- **Ad blocking in the browser.** The Browser tab blocks ads, trackers and
+  pop-ups with the filter lists uBlock Origin uses by default (EasyList,
+  EasyPrivacy, uBlock filters, Peter Lowe's) and hides empty ad boxes. The shield
+  in the address bar shows how many it stopped and turns blocking off for a site
+  that misbehaves. Scriptlet filters (`+js(...)`) need uBlock itself and aren't run.
 - **Widget, tile and shortcuts.** A home-screen widget shows what's downloading
   with Pause all / Resume all and Add; a Quick Settings tile pauses everything in
   one tap; long-press the app icon for Add and Resume all.
@@ -162,7 +167,7 @@ Sign in to as many as you like and switch in Settings. When adding, DebForge che
 ## Privacy
 
 - API keys are encrypted on the device with a key held in the Android Keystore, and are excluded from backups.
-- The app talks only to your debrid service, to TMDB for posters and air dates (if you add a key), to TVs on your own network when you use Play on TV, and to GitHub to check for updates (you can turn this off in Settings → About).
+- The app talks only to your debrid service, to TMDB for posters and air dates (if you add a key), to TVs on your own network when you use Play on TV, to the filter-list hosts (ublockorigin.github.io, easylist.to, pgl.yoyo.org) every few days while you use the Browser tab with ad blocking on, and to GitHub to check for updates (you can turn this off in Settings → About).
 - Backups contain your sign-ins only if you choose to include them, and then only encrypted with your password (PBKDF2 + AES-256-GCM).
 - There are no analytics and no crash-reporting SDK. If the app crashes, a report with tokens, links and file names removed is saved on the device. On the next launch you're asked whether to share it; nothing is sent automatically.
 

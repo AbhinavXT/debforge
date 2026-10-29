@@ -710,6 +710,23 @@
         <item quantity="one">%d Video</item>
         <item quantity="other">%d Videos</item>
     </plurals>
+    <string name="browser_adblock">Werbeblocker</string>
+    <string name="browser_adblock_block">Werbung und Tracker blockieren</string>
+    <string name="browser_adblock_block_detail">Mit den Filterlisten von uBlock Origin</string>
+    <string name="browser_adblock_on_site">Auf %1$s</string>
+    <string name="browser_adblock_on_site_detail">Ausschalten, wenn diese Seite nicht richtig funktioniert</string>
+    <plurals name="browser_adblock_blocked_n">
+        <item quantity="one">%d auf dieser Seite blockiert</item>
+        <item quantity="other">%d auf dieser Seite blockiert</item>
+    </plurals>
+    <string name="browser_adblock_lists">Filterlisten</string>
+    <string name="browser_adblock_lists_detail">%1$s Filter · aktualisiert %2$s</string>
+    <string name="browser_adblock_lists_none">Noch nicht heruntergeladen. Eine kurze eingebaute Liste ist aktiv.</string>
+    <string name="browser_adblock_lists_updating">Wird heruntergeladen…</string>
+    <string name="browser_adblock_lists_failed">Aktualisierung fehlgeschlagen. Die Filter auf diesem Gerät bleiben aktiv.</string>
+    <string name="browser_adblock_lists_failed_none">Download fehlgeschlagen. Vorerst ist eine kurze eingebaute Liste aktiv.</string>
+    <string name="browser_adblock_update">Jetzt aktualisieren</string>
+    <string name="browser_adblock_stopped">Seite blockiert: %1$s</string>
     <!-- Search tab -->
     <string name="tab_search">Suche</string>
     <string name="search_hint">Filme und Serien</string>

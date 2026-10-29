@@ -784,6 +784,25 @@
         <item quantity="many">%d видео</item>
         <item quantity="other">%d видео</item>
     </plurals>
+    <string name="browser_adblock">Блокировка рекламы</string>
+    <string name="browser_adblock_block">Блокировать рекламу и трекеры</string>
+    <string name="browser_adblock_block_detail">Со списками фильтров uBlock Origin</string>
+    <string name="browser_adblock_on_site">На %1$s</string>
+    <string name="browser_adblock_on_site_detail">Выключите, если сайт работает неправильно</string>
+    <plurals name="browser_adblock_blocked_n">
+        <item quantity="one">Заблокировано на этой странице: %d</item>
+        <item quantity="few">Заблокировано на этой странице: %d</item>
+        <item quantity="many">Заблокировано на этой странице: %d</item>
+        <item quantity="other">Заблокировано на этой странице: %d</item>
+    </plurals>
+    <string name="browser_adblock_lists">Списки фильтров</string>
+    <string name="browser_adblock_lists_detail">Фильтров: %1$s · обновлено %2$s</string>
+    <string name="browser_adblock_lists_none">Ещё не загружены. Используется короткий встроенный список.</string>
+    <string name="browser_adblock_lists_updating">Загрузка…</string>
+    <string name="browser_adblock_lists_failed">Не удалось обновить. Фильтры на телефоне продолжают работать.</string>
+    <string name="browser_adblock_lists_failed_none">Не удалось загрузить. Пока используется короткий встроенный список.</string>
+    <string name="browser_adblock_update">Обновить</string>
+    <string name="browser_adblock_stopped">Открытие страницы заблокировано: %1$s</string>
     <!-- Search tab -->
     <string name="tab_search">Поиск</string>
     <string name="search_hint">Фильмы и сериалы</string>

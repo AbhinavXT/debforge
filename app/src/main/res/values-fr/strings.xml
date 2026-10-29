@@ -747,6 +747,24 @@
         <item quantity="many">%d vidéos</item>
         <item quantity="other">%d vidéos</item>
     </plurals>
+    <string name="browser_adblock">Blocage des pubs</string>
+    <string name="browser_adblock_block">Bloquer pubs et traqueurs</string>
+    <string name="browser_adblock_block_detail">Avec les listes de filtres d’uBlock Origin</string>
+    <string name="browser_adblock_on_site">Sur %1$s</string>
+    <string name="browser_adblock_on_site_detail">Désactivez-le si ce site ne fonctionne pas bien</string>
+    <plurals name="browser_adblock_blocked_n">
+        <item quantity="one">%d bloqués sur cette page</item>
+        <item quantity="many">%d bloqué sur cette page</item>
+        <item quantity="other">%d bloqué sur cette page</item>
+    </plurals>
+    <string name="browser_adblock_lists">Listes de filtres</string>
+    <string name="browser_adblock_lists_detail">%1$s filtres · mises à jour %2$s</string>
+    <string name="browser_adblock_lists_none">Pas encore téléchargées. Une courte liste intégrée est utilisée.</string>
+    <string name="browser_adblock_lists_updating">Téléchargement…</string>
+    <string name="browser_adblock_lists_failed">Mise à jour impossible. Les filtres déjà sur ce téléphone restent actifs.</string>
+    <string name="browser_adblock_lists_failed_none">Téléchargement impossible. Une courte liste intégrée est utilisée pour l’instant.</string>
+    <string name="browser_adblock_update">Mettre à jour</string>
+    <string name="browser_adblock_stopped">Ouverture d’une page bloquée : %1$s</string>
     <!-- Search tab -->
     <string name="tab_search">Rechercher</string>
     <string name="search_hint">Films et séries</string>

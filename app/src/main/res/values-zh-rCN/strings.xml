@@ -673,6 +673,22 @@
     <plurals name="browser_videos_n">
         <item quantity="other">%d 个视频</item>
     </plurals>
+    <string name="browser_adblock">广告拦截</string>
+    <string name="browser_adblock_block">拦截广告和跟踪器</string>
+    <string name="browser_adblock_block_detail">使用 uBlock Origin 的过滤列表</string>
+    <string name="browser_adblock_on_site">在 %1$s 上</string>
+    <string name="browser_adblock_on_site_detail">如果此网站无法正常使用，请关闭</string>
+    <plurals name="browser_adblock_blocked_n">
+        <item quantity="other">此页面已拦截 %d 项</item>
+    </plurals>
+    <string name="browser_adblock_lists">过滤列表</string>
+    <string name="browser_adblock_lists_detail">%1$s 条过滤规则 · %2$s更新</string>
+    <string name="browser_adblock_lists_none">尚未下载。正在使用简短的内置列表。</string>
+    <string name="browser_adblock_lists_updating">正在下载…</string>
+    <string name="browser_adblock_lists_failed">无法更新。手机上已有的过滤规则仍在使用。</string>
+    <string name="browser_adblock_lists_failed_none">无法下载。暂时使用简短的内置列表。</string>
+    <string name="browser_adblock_update">立即更新</string>
+    <string name="browser_adblock_stopped">已阻止打开页面：%1$s</string>
     <!-- Search tab -->
     <string name="tab_search">搜索</string>
     <string name="search_hint">电影和剧集</string>

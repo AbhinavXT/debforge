@@ -22,6 +22,8 @@ coroutines = "1.9.0"
 lifecycleViewmodelCompose = "2.8.7"
 navigationCompose = "2.8.4"
 coil = "2.7.0"
+# Browser ad blocking: hiding rules injected before a page's own scripts run.
+webkit = "1.14.0"
 # In-app video player (Apache-2.0). Pinned to the version Jellyfin's
 # prebuilt ffmpeg decoder is built against: the extension uses Media3's
 # unstable internal APIs, so the two must match exactly. Bump both together.
@@ -36,6 +38,7 @@ robolectric = "4.16.1"
 roborazzi = "1.74.0"
 
 [libraries]
+androidx-webkit = { group = "androidx.webkit", name = "webkit", version.ref = "webkit" }
 androidx-media3-exoplayer = { group = "androidx.media3", name = "media3-exoplayer", version.ref = "media3" }
 androidx-media3-ui = { group = "androidx.media3", name = "media3-ui", version.ref = "media3" }
 androidx-media3-session = { group = "androidx.media3", name = "media3-session", version.ref = "media3" }
