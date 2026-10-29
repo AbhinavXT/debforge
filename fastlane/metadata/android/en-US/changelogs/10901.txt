@@ -1,0 +1,2 @@
+• Ad blocking in the Browser tab: ads, trackers and pop-ups are blocked with the filter lists uBlock Origin uses by default, and empty ad boxes are hidden
+• The shield in the address bar shows how many were stopped and turns blocking off for a site that misbehaves
