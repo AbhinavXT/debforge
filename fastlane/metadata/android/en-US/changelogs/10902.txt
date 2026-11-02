@@ -1,0 +1,1 @@
+• Offcloud is now supported: sign in with your API key to browse and download your cloud, add magnets, links and .torrent files, and see which torrents are already cached
