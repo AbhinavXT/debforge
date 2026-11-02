@@ -7,6 +7,7 @@ DebForge మీ debrid ఖాతాలోని ఫైల్‌లను నే�
 <li>AllDebrid</li>
 <li>Premiumize</li>
 <li>Debrid-Link</li>
+<li>Offcloud</li>
 </ul>
 
 <b>ఫీచర్‌లు</b>

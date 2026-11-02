@@ -7,6 +7,7 @@ DebForge আপনার debrid অ্যাকাউন্টের ফাই�
 <li>AllDebrid</li>
 <li>Premiumize</li>
 <li>Debrid-Link</li>
+<li>Offcloud</li>
 </ul>
 
 <b>বৈশিষ্ট্য</b>

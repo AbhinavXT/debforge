@@ -7,6 +7,7 @@ DebForge आपके debrid खाते की फ़ाइलें सीध
 <li>AllDebrid</li>
 <li>Premiumize</li>
 <li>Debrid-Link</li>
+<li>Offcloud</li>
 </ul>
 
 <b>सुविधाएँ</b>

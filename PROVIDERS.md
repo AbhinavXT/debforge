@@ -13,7 +13,7 @@ DebridProvider
  └─ addCapabilities / add()   optional: magnets, .torrent files, links
 ```
 
-Currently bound: **TorBox**, **Real-Debrid**, **AllDebrid**, **Premiumize**, **Debrid-Link** (one package each under `data/provider/`).
+Currently bound: **TorBox**, **Real-Debrid**, **AllDebrid**, **Premiumize**, **Debrid-Link**, **Offcloud** (one package each under `data/provider/`).
 
 ## Adding a service
 

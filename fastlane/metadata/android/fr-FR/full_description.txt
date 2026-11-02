@@ -7,6 +7,7 @@ DebForge télécharge les fichiers de votre compte debrid directement sur votre 
 <li>AllDebrid</li>
 <li>Premiumize</li>
 <li>Debrid-Link</li>
+<li>Offcloud</li>
 </ul>
 
 <b>Fonctionnalités</b>

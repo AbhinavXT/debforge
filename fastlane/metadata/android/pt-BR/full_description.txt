@@ -7,6 +7,7 @@ O DebForge baixa os arquivos da sua conta debrid direto para o seu celular, tabl
 <li>AllDebrid</li>
 <li>Premiumize</li>
 <li>Debrid-Link</li>
+<li>Offcloud</li>
 </ul>
 
 <b>Recursos</b>

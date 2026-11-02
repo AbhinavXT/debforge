@@ -14,6 +14,7 @@ enum class ProviderId {
     ALL_DEBRID,
     PREMIUMIZE,
     DEBRID_LINK,
+    OFFCLOUD,
 
     /**
      * Not a debrid service: links DebForge downloads itself (Pixeldrain,

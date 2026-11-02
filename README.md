@@ -50,6 +50,9 @@ That's it. Extras like [Trakt](https://trakt.tv/) scrobbling, OpenSubtitles sear
 | AllDebrid    | PIN or API key       | ✓           | ✓            | ✓         |
 | Premiumize   | API key              | ✓           | ✓            | ✓         |
 | Debrid-Link  | API key              | ✓           | ✓            | ✓         |
+| Offcloud     | API key              | ✓           | ✓¹           | ✓         |
+
+¹ Offcloud has no .torrent upload, so DebForge sends the torrent as a magnet link.
 
 Sign in to as many as you like and switch in Settings. When adding, DebForge checks which of them already has the torrent cached and lets you choose.
 

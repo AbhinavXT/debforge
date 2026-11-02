@@ -7,6 +7,7 @@ DebForge तुमच्या डेब्रिड खात्यातील
 <li>AllDebrid</li>
 <li>Premiumize</li>
 <li>Debrid-Link</li>
+<li>Offcloud</li>
 </ul>
 
 <b>वैशिष्ट्ये</b>

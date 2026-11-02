@@ -7,6 +7,7 @@ DebForge descarga los archivos de tu cuenta debrid directamente en tu teléfono,
 <li>AllDebrid</li>
 <li>Premiumize</li>
 <li>Debrid-Link</li>
+<li>Offcloud</li>
 </ul>
 
 <b>Funciones</b>

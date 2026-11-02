@@ -7,6 +7,7 @@ DebForge lädt die Dateien aus deinem Debrid-Konto direkt auf dein Handy, Tablet
 <li>AllDebrid</li>
 <li>Premiumize</li>
 <li>Debrid-Link</li>
+<li>Offcloud</li>
 </ul>
 
 <b>Funktionen</b>

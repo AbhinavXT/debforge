@@ -7,6 +7,7 @@ DebForge mengunduh file di akun debrid Anda langsung ke ponsel, tablet, atau And
 <li>AllDebrid</li>
 <li>Premiumize</li>
 <li>Debrid-Link</li>
+<li>Offcloud</li>
 </ul>
 
 <b>Fitur</b>

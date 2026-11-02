@@ -7,6 +7,7 @@ DebForge உங்கள் debrid கணக்கிலுள்ள கோப�
 <li>AllDebrid</li>
 <li>Premiumize</li>
 <li>Debrid-Link</li>
+<li>Offcloud</li>
 </ul>
 
 <b>அம்சங்கள்</b>

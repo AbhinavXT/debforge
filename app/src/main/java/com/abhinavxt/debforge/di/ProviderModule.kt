@@ -6,6 +6,8 @@ import com.abhinavxt.debforge.data.provider.alldebrid.AllDebridApi
 import com.abhinavxt.debforge.data.provider.alldebrid.AllDebridProvider
 import com.abhinavxt.debforge.data.provider.debridlink.DebridLinkApi
 import com.abhinavxt.debforge.data.provider.debridlink.DebridLinkProvider
+import com.abhinavxt.debforge.data.provider.offcloud.OffcloudApi
+import com.abhinavxt.debforge.data.provider.offcloud.OffcloudProvider
 import com.abhinavxt.debforge.data.provider.premiumize.PremiumizeApi
 import com.abhinavxt.debforge.data.provider.premiumize.PremiumizeProvider
 import com.abhinavxt.debforge.data.remote.QueryAuthInterceptor
@@ -107,6 +109,15 @@ object ProviderModule {
     ): DebridLinkApi = retrofitFor(base, moshi, tokenStore, ProviderId.DEBRID_LINK, DebridLinkApi.BASE_URL)
         .create(DebridLinkApi::class.java)
 
+    @Provides
+    @Singleton
+    fun provideOffcloudApi(
+        @ApiHttpClient base: OkHttpClient,
+        moshi: Moshi,
+        tokenStore: TokenStore
+    ): OffcloudApi = retrofitFor(base, moshi, tokenStore, ProviderId.OFFCLOUD, OffcloudApi.BASE_URL)
+        .create(OffcloudApi::class.java)
+
     private fun retrofitFor(
         base: OkHttpClient,
         moshi: Moshi,
@@ -147,4 +158,7 @@ abstract class ProviderBindings {
 
     @Binds @IntoSet
     abstract fun debridLink(impl: DebridLinkProvider): DebridProvider
+
+    @Binds @IntoSet
+    abstract fun offcloud(impl: OffcloudProvider): DebridProvider
 }
