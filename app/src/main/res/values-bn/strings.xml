@@ -737,6 +737,7 @@
     <string name="browser_adblock_lists_failed_none">ডাউনলোড করা যায়নি। আপাতত একটি ছোট বিল্ট-ইন তালিকা ব্যবহার হচ্ছে।</string>
     <string name="browser_adblock_update">এখনই আপডেট করুন</string>
     <string name="browser_adblock_stopped">একটি পেজ খোলা আটকানো হয়েছে: %1$s</string>
+    <string name="browser_connection_not_secure">সংযোগ নিরাপদ নয়</string>
     <!-- Search tab -->
     <string name="tab_search">খুঁজুন</string>
     <string name="search_hint">মুভি ও শো</string>

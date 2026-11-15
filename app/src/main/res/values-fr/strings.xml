@@ -775,6 +775,7 @@
     <string name="browser_adblock_lists_failed_none">Téléchargement impossible. Une courte liste intégrée est utilisée pour l’instant.</string>
     <string name="browser_adblock_update">Mettre à jour</string>
     <string name="browser_adblock_stopped">Ouverture d’une page bloquée : %1$s</string>
+    <string name="browser_connection_not_secure">Connexion non sécurisée</string>
     <!-- Search tab -->
     <string name="tab_search">Rechercher</string>
     <string name="search_hint">Films et séries</string>

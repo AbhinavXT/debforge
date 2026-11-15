@@ -14,7 +14,27 @@ import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.material3.LocalTextStyle
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -45,7 +65,6 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -100,7 +119,7 @@ fun BrowserScreen(onMagnet: (String) -> Unit, viewModel: BrowserViewModel = hilt
     val snackbar = remember { SnackbarHostState() }
     val focus = LocalFocusManager.current
     val keyboard = LocalSoftwareKeyboardController.current
-    var address by remember { mutableStateOf(viewModel.url) }
+    var committed by remember { mutableStateOf(viewModel.url) }
     var progress by remember { mutableIntStateOf(100) }
     var canGoBack by remember { mutableStateOf(false) }
     var showVideos by remember { mutableStateOf(false) }
@@ -150,18 +169,14 @@ fun BrowserScreen(onMagnet: (String) -> Unit, viewModel: BrowserViewModel = hilt
                 IconButton(onClick = { webView?.goBack() }, enabled = canGoBack) {
                     Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.page_back))
                 }
-                OutlinedTextField(
-                    value = address,
-                    onValueChange = { address = it },
+                AddressPill(
+                    committed = committed,
                     modifier = Modifier.weight(1f).padding(vertical = 4.dp),
-                    singleLine = true,
-                    placeholder = { Text(stringResource(R.string.browser_address_hint)) },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri, imeAction = ImeAction.Go),
-                    keyboardActions = KeyboardActions(onGo = {
-                        if (address.isNotBlank()) webView?.loadUrl(DirectLinkParser.addressToUrl(address))
+                    onGo = { typed ->
+                        if (typed.isNotBlank()) webView?.loadUrl(DirectLinkParser.addressToUrl(typed))
                         keyboard?.hide()
                         focus.clearFocus()
-                    })
+                    }
                 )
                 val adBlockOn = adBlock.enabled && adBlock.onHere
                 // The badge sits on the button, outside its round clip.
@@ -181,7 +196,10 @@ fun BrowserScreen(onMagnet: (String) -> Unit, viewModel: BrowserViewModel = hilt
                     Icon(Icons.Filled.Refresh, contentDescription = stringResource(R.string.action_refresh))
                 }
             }
-            if (progress < 100) LinearProgressIndicator(progress = { progress / 100f }, modifier = Modifier.fillMaxWidth())
+            AnimatedVisibility(visible = progress < 100, enter = fadeIn(), exit = fadeOut()) {
+                val shown by animateFloatAsState(progress / 100f, label = "pageProgress")
+                LinearProgressIndicator(progress = { shown }, modifier = Modifier.fillMaxWidth())
+            }
             Box(Modifier.weight(1f)) {
                 AndroidView(
                     modifier = Modifier.fillMaxSize(),
@@ -225,12 +243,11 @@ fun BrowserScreen(onMagnet: (String) -> Unit, viewModel: BrowserViewModel = hilt
 
                                 override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
                                     viewModel.onPageStarted(url)
-                                    address = url
                                 }
 
                                 override fun doUpdateVisitedHistory(view: WebView, url: String, isReload: Boolean) {
                                     canGoBack = view.canGoBack()
-                                    address = url
+                                    committed = url
                                 }
                             }
                             webChromeClient = object : WebChromeClient() {
@@ -253,7 +270,7 @@ fun BrowserScreen(onMagnet: (String) -> Unit, viewModel: BrowserViewModel = hilt
                             setDownloadListener { url, _, contentDisposition, mimeType, contentLength ->
                                 // A load that turned into a download never finishes: the page stays as it was.
                                 progress = 100
-                                address = this.url ?: address
+                                committed = this.url ?: committed
                                 viewModel.onDownload(url, contentDisposition, mimeType, contentLength)
                             }
                             loadUrl(viewModel.url)
@@ -367,6 +384,124 @@ private fun AdBlockSheet(
                     else TextButton(onClick = onUpdate) { Text(stringResource(R.string.browser_adblock_update)) }
                 }
             )
+        }
+    }
+}
+
+/** What the address bar shows at rest for a committed URL. */
+internal data class AddressParts(val host: String?, val tail: String, val warn: Boolean)
+
+/**
+ * Splits a committed URL for display: the host (no scheme, never the userinfo),
+ * the path/query as a tail, and whether the page is plain http. Anything that is
+ * not an http(s) URL with a host comes back as the raw string, with no warning.
+ */
+internal fun addressParts(url: String): AddressParts {
+    val raw = AddressParts(null, url, false)
+    val m = Regex("^(https?)://([^/?#]*)(.*)$", setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL)).find(url) ?: return raw
+    val authority = m.groupValues[2].substringAfterLast('@')
+    if (authority.any { it.isWhitespace() || it.isISOControl() }) return raw
+    val host = percentDecode(authority)
+    val name = if (host.startsWith("[")) host.substringBefore(']').drop(1) else host.substringBeforeLast(':')
+    if (name.isEmpty() || host.startsWith(":")) return raw
+    val tail = m.groupValues[3].let { if (it == "/") "" else it }
+    return AddressParts(host, tail, m.groupValues[1].equals("http", ignoreCase = true))
+}
+
+private fun percentDecode(s: String): String {
+    val out = StringBuilder()
+    var i = 0
+    while (i < s.length) {
+        val c = if (s[i] == '%' && i + 3 <= s.length) s.substring(i + 1, i + 3).toIntOrNull(16)?.toChar() else null
+        if (c != null && (c.isLetterOrDigit() && c.code < 0x80 || c == '.' || c == '-')) {
+            out.append(c); i += 3
+        } else {
+            out.append(s[i]); i++
+        }
+    }
+    return out.toString()
+}
+
+/**
+ * The address bar: a filled pill like the Library's search field. At rest it
+ * shows the host of the page the WebView has committed, in bold, with the path
+ * muted; focused, the full URL with everything selected. It never reflects
+ * uncommitted typing, and warns only for plain http.
+ */
+@Composable
+private fun AddressPill(committed: String, modifier: Modifier, onGo: (String) -> Unit) {
+    val source = remember { MutableInteractionSource() }
+    val focused by source.collectIsFocusedAsState()
+    val cs = MaterialTheme.colorScheme
+    var field by remember { mutableStateOf(TextFieldValue(committed)) }
+    // Focus selects the whole URL; losing it without submitting drops the edit.
+    LaunchedEffect(focused) {
+        field = TextFieldValue(committed, if (focused) TextRange(0, committed.length) else TextRange.Zero)
+    }
+    LaunchedEffect(committed) { if (!focused) field = TextFieldValue(committed) }
+    val parts = remember(committed) { addressParts(committed) }
+    TextField(
+        value = if (focused) field else TextFieldValue(""),
+        onValueChange = { field = it },
+        modifier = modifier.fillMaxWidth(),
+        interactionSource = source,
+        singleLine = true,
+        shape = CircleShape,
+        placeholder = {
+            if (committed.isBlank() || focused) {
+                Text(stringResource(R.string.browser_address_hint), maxLines = 1)
+            } else {
+                RestingAddress(parts, cs.onSurface, cs.onSurfaceVariant)
+            }
+        },
+        leadingIcon = {
+            if (parts.warn) {
+                Icon(Icons.Filled.Warning, stringResource(R.string.browser_connection_not_secure), Modifier.size(20.dp), tint = cs.error)
+            }
+        },
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri, imeAction = ImeAction.Go),
+        keyboardActions = KeyboardActions(onGo = { onGo(field.text) }),
+        colors = TextFieldDefaults.colors(
+            focusedContainerColor = cs.surfaceContainerHigh,
+            unfocusedContainerColor = cs.surfaceContainerHigh,
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent,
+            disabledIndicatorColor = Color.Transparent
+        )
+    )
+}
+
+/** The host always shows its end: if it does not fit, its start is cut; the path goes first. */
+@Composable
+private fun RestingAddress(parts: AddressParts, hostColor: Color, restColor: Color) {
+    val host = parts.host
+    if (host == null) {
+        Text(parts.tail, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        return
+    }
+    val measurer = rememberTextMeasurer()
+    val style = LocalTextStyle.current
+    BoxWithConstraints(Modifier.fillMaxWidth()) {
+        val maxPx = constraints.maxWidth
+        val hostStyle = SpanStyle(color = hostColor, fontWeight = FontWeight.SemiBold)
+        fun width(text: AnnotatedString) = measurer.measure(text, style, maxLines = 1, softWrap = false).size.width
+        fun hostText(h: String) = buildAnnotatedString { withStyle(hostStyle) { append(h) } }
+        if (width(hostText(host)) <= maxPx) {
+            Text(
+                buildAnnotatedString {
+                    withStyle(hostStyle) { append(host) }
+                    withStyle(SpanStyle(color = restColor)) { append(parts.tail) }
+                },
+                maxLines = 1, overflow = TextOverflow.Ellipsis
+            )
+        } else {
+            var lo = 1
+            var hi = host.length
+            while (lo < hi) {
+                val mid = (lo + hi + 1) / 2
+                if (width(hostText("\u2026" + host.takeLast(mid))) <= maxPx) lo = mid else hi = mid - 1
+            }
+            Text(hostText("\u2026" + host.takeLast(lo)), maxLines = 1, softWrap = false)
         }
     }
 }

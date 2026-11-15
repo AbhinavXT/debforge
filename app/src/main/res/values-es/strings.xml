@@ -775,6 +775,7 @@
     <string name="browser_adblock_lists_failed_none">No se pudieron descargar. Por ahora se usa una lista corta integrada.</string>
     <string name="browser_adblock_update">Actualizar ahora</string>
     <string name="browser_adblock_stopped">Se bloqueó una página: %1$s</string>
+    <string name="browser_connection_not_secure">Conexión no segura</string>
     <!-- Search tab -->
     <string name="tab_search">Buscar</string>
     <string name="search_hint">Películas y series</string>

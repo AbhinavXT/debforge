@@ -2,6 +2,8 @@ package com.abhinavxt.debforge.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.ui.semantics.Role
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -156,11 +158,27 @@ fun SettingRow(
     subtitle: String? = null,
     onClick: (() -> Unit)? = null,
     trailing: (@Composable () -> Unit)? = null
+) = SettingRowLayout(
+    icon = icon,
+    title = title,
+    subtitle = subtitle,
+    interaction = if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier,
+    trailing = trailing
+)
+
+/** The row itself; [interaction] is how the whole row responds (click, toggle, nothing). */
+@Composable
+private fun SettingRowLayout(
+    icon: ImageVector,
+    title: String,
+    subtitle: String?,
+    interaction: Modifier,
+    trailing: (@Composable () -> Unit)?
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .let { if (onClick != null) it.clickable(onClick = onClick) else it }
+            .then(interaction)
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -198,12 +216,19 @@ fun SwitchSettingRow(
     onChange: (Boolean) -> Unit,
     enabled: Boolean = true
 ) {
-    SettingRow(
+    // One accessibility node: the row is the switch, so a screen reader announces
+    // the title with its on/off state instead of a row and a separate unnamed switch.
+    SettingRowLayout(
         icon = icon,
         title = title,
         subtitle = subtitle,
-        onClick = if (enabled) ({ onChange(!checked) }) else null,
-        trailing = { Switch(checked = checked, onCheckedChange = onChange, enabled = enabled) }
+        interaction = Modifier.toggleable(
+            value = checked,
+            enabled = enabled,
+            role = Role.Switch,
+            onValueChange = onChange
+        ),
+        trailing = { Switch(checked = checked, onCheckedChange = null, enabled = enabled) }
     )
 }
 

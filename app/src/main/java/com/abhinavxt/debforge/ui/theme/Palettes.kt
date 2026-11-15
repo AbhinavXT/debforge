@@ -62,10 +62,10 @@ object Palettes {
 
     fun scheme(seed: Seed, dark: Boolean, pureBlack: Boolean = false): Scheme {
         val p = Tonal(seed.hue, seed.chroma)
-        val s = Tonal(seed.hue, (seed.chroma * 0.33).coerceAtMost(0.05))
+        val s = Tonal(seed.hue, (seed.chroma * 0.16).coerceAtMost(0.026))
         val t = Tonal((seed.hue + seed.tertiaryShift).mod(360.0), (seed.chroma * 0.6).coerceAtLeast(0.03))
-        val n = Tonal(seed.hue, (seed.chroma * 0.06).coerceAtMost(0.01))
-        val nv = Tonal(seed.hue, (seed.chroma * 0.16).coerceAtMost(0.025))
+        val n = Tonal(seed.hue, (seed.chroma * 0.04).coerceAtMost(0.007))
+        val nv = Tonal(seed.hue, (seed.chroma * 0.10).coerceAtMost(0.016))
         val e = Tonal(27.0, 0.17)
         return if (!dark) Scheme(
             primary = p.tone(40), onPrimary = p.tone(100), primaryContainer = p.tone(90), onPrimaryContainer = p.tone(10),
@@ -91,15 +91,15 @@ object Palettes {
                 tertiary = t.tone(80), onTertiary = t.tone(20), tertiaryContainer = t.tone(30), onTertiaryContainer = t.tone(90),
                 error = e.tone(80), onError = e.tone(20), errorContainer = e.tone(30), onErrorContainer = e.tone(90),
                 background = base, onBackground = n.tone(90),
-                surface = base, onSurface = n.tone(90), surfaceVariant = nv.tone(30), onSurfaceVariant = nv.tone(80),
+                surface = base, onSurface = n.tone(90), surfaceVariant = nv.tone(32), onSurfaceVariant = nv.tone(80),
                 surfaceTint = p.tone(80), inverseSurface = n.tone(90), inverseOnSurface = n.tone(20),
-                outline = nv.tone(60), outlineVariant = nv.tone(30), scrim = BLACK,
-                surfaceBright = n.tone(24), surfaceDim = base,
-                surfaceContainerLowest = if (pureBlack) BLACK else n.tone(4),
-                surfaceContainerLow = n.tone(if (pureBlack) 6 else 10),
-                surfaceContainer = n.tone(if (pureBlack) 9 else 12),
-                surfaceContainerHigh = n.tone(if (pureBlack) 13 else 17),
-                surfaceContainerHighest = n.tone(if (pureBlack) 18 else 22)
+                outline = nv.tone(70), outlineVariant = nv.tone(38), scrim = BLACK,
+                surfaceBright = n.tone(28), surfaceDim = base,
+                surfaceContainerLowest = if (pureBlack) BLACK else n.tone(7),
+                surfaceContainerLow = n.tone(if (pureBlack) 6 else 11),
+                surfaceContainer = n.tone(if (pureBlack) 9 else 15),
+                surfaceContainerHigh = n.tone(if (pureBlack) 13 else 19),
+                surfaceContainerHighest = n.tone(if (pureBlack) 18 else 24)
             )
         }
     }

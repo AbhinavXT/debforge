@@ -181,7 +181,7 @@ fun HomeScreen(signedIn: Boolean) {
                     NavigationRailItem(
                         selected = selected,
                         onClick = { go(tab) },
-                        icon = { Icon(if (selected) tab.selectedIcon else tab.icon, contentDescription = stringResource(tab.labelRes)) },
+                        icon = { Icon(if (selected) tab.selectedIcon else tab.icon, contentDescription = null) },
                         label = { Text(stringResource(tab.labelRes), maxLines = 1, overflow = TextOverflow.Ellipsis) }
                     )
                 }
@@ -197,7 +197,7 @@ fun HomeScreen(signedIn: Boolean) {
                         NavigationBarItem(
                             selected = selected,
                             onClick = { go(tab) },
-                            icon = { Icon(if (selected) tab.selectedIcon else tab.icon, contentDescription = stringResource(tab.labelRes)) },
+                            icon = { Icon(if (selected) tab.selectedIcon else tab.icon, contentDescription = null) },
                             label = { Text(stringResource(tab.labelRes), maxLines = 1, overflow = TextOverflow.Ellipsis) }
                         )
                     }

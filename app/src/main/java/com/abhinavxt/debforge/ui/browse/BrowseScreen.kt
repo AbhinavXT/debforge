@@ -868,7 +868,8 @@ private fun ItemRow(
                 secondaryPrefix,
                 info?.qualityLabel?.ifEmpty { null },
                 formatSize(item.filesize),
-                item.host.ifEmpty { null }
+                // "Torrent · <name>": the title already identifies the file, so keep only the source.
+                item.host.let { if (info != null && info.displayTitle.isNotBlank()) withoutOwnFilename(it, item.filename) else it }.ifEmpty { null }
             ).joinToString(" · ")
             Text(
                 text = subtitle,
@@ -1116,3 +1117,9 @@ private data class RemoveRequest(
 
 /** After the finger lifts, give the pull indicator this long to settle by itself. */
 private const val PULL_SETTLE_MS = 400L
+
+/** Drops only a trailing " · <filename>" segment from a source label; every other segment stays. */
+internal fun withoutOwnFilename(host: String, filename: String): String {
+    val parts = host.split(" · ")
+    return if (parts.last() == filename) parts.dropLast(1).joinToString(" · ") else host
+}

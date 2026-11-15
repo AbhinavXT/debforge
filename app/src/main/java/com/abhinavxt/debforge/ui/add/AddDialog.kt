@@ -32,7 +32,8 @@ import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Description
 import androidx.compose.material.icons.rounded.HourglassEmpty
 import androidx.compose.material.icons.rounded.VideoLibrary
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.ui.semantics.Role
 import com.abhinavxt.debforge.domain.DownloadItem
 import com.abhinavxt.debforge.ui.browse.formatSize
 import androidx.compose.material.icons.rounded.UploadFile
@@ -337,12 +338,13 @@ private fun PageVideoList(state: AddUiState, videos: List<DownloadItem>, onToggl
             Row(
                 Modifier
                     .fillMaxWidth()
+                    .heightIn(min = 48.dp)
                     .clip(MaterialTheme.shapes.medium)
-                    .clickable(enabled = !state.submitting) { onToggle(v.id) }
+                    .toggleable(value = checked, enabled = !state.submitting, role = Role.Checkbox) { onToggle(v.id) }
                     .padding(vertical = 2.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Checkbox(checked = checked, onCheckedChange = { onToggle(v.id) }, enabled = !state.submitting)
+                Checkbox(checked = checked, onCheckedChange = null, enabled = !state.submitting)
                 Column(Modifier.weight(1f)) {
                     Text(v.filename, style = MaterialTheme.typography.bodyMedium, maxLines = 2, overflow = TextOverflow.Ellipsis)
                     Text(

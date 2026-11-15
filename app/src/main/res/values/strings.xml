@@ -739,6 +739,7 @@
     <string name="browser_adblock_lists_failed_none">Couldn\'t download them. A short built-in list is in use for now.</string>
     <string name="browser_adblock_update">Update now</string>
     <string name="browser_adblock_stopped">Blocked a page from opening: %1$s</string>
+    <string name="browser_connection_not_secure">Connection is not secure</string>
     <!-- Search tab -->
     <string name="tab_search">Search</string>
     <string name="search_hint">Movies and shows</string>

@@ -699,6 +699,7 @@
     <string name="browser_adblock_lists_failed_none">Tidak bisa mengunduh. Untuk sementara daftar bawaan yang singkat dipakai.</string>
     <string name="browser_adblock_update">Perbarui sekarang</string>
     <string name="browser_adblock_stopped">Halaman diblokir: %1$s</string>
+    <string name="browser_connection_not_secure">Koneksi tidak aman</string>
     <!-- Search tab -->
     <string name="tab_search">Cari</string>
     <string name="search_hint">Film dan acara</string>

@@ -737,6 +737,7 @@
     <string name="browser_adblock_lists_failed_none">डाउनलोड नहीं हो सका। अभी के लिए एक छोटी बिल्ट-इन सूची इस्तेमाल हो रही है।</string>
     <string name="browser_adblock_update">अभी अपडेट करें</string>
     <string name="browser_adblock_stopped">एक पेज खुलने से रोका गया: %1$s</string>
+    <string name="browser_connection_not_secure">कनेक्शन सुरक्षित नहीं है</string>
     <!-- Search tab -->
     <string name="tab_search">खोजें</string>
     <string name="search_hint">फ़िल्में और शो</string>

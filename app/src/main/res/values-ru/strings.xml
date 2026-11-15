@@ -813,6 +813,7 @@
     <string name="browser_adblock_lists_failed_none">Не удалось загрузить. Пока используется короткий встроенный список.</string>
     <string name="browser_adblock_update">Обновить</string>
     <string name="browser_adblock_stopped">Открытие страницы заблокировано: %1$s</string>
+    <string name="browser_connection_not_secure">Соединение не защищено</string>
     <!-- Search tab -->
     <string name="tab_search">Поиск</string>
     <string name="search_hint">Фильмы и сериалы</string>

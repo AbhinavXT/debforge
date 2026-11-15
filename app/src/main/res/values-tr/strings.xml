@@ -737,6 +737,7 @@
     <string name="browser_adblock_lists_failed_none">İndirilemedi. Şimdilik kısa yerleşik bir liste kullanılıyor.</string>
     <string name="browser_adblock_update">Şimdi güncelle</string>
     <string name="browser_adblock_stopped">Bir sayfanın açılması engellendi: %1$s</string>
+    <string name="browser_connection_not_secure">Bağlantı güvenli değil</string>
     <!-- Search tab -->
     <string name="tab_search">Ara</string>
     <string name="search_hint">Filmler ve diziler</string>

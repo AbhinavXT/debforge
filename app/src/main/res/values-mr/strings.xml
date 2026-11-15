@@ -737,6 +737,7 @@
     <string name="browser_adblock_lists_failed_none">डाउनलोड करता आले नाही. सध्या एक छोटी अंगभूत यादी वापरली जात आहे.</string>
     <string name="browser_adblock_update">आता अपडेट करा</string>
     <string name="browser_adblock_stopped">एक पेज उघडणे थांबवले: %1$s</string>
+    <string name="browser_connection_not_secure">कनेक्शन सुरक्षित नाही</string>
     <!-- Search tab -->
     <string name="tab_search">शोधा</string>
     <string name="search_hint">चित्रपट आणि शो</string>

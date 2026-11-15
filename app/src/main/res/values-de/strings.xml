@@ -737,6 +737,7 @@
     <string name="browser_adblock_lists_failed_none">Download fehlgeschlagen. Vorerst ist eine kurze eingebaute Liste aktiv.</string>
     <string name="browser_adblock_update">Jetzt aktualisieren</string>
     <string name="browser_adblock_stopped">Seite blockiert: %1$s</string>
+    <string name="browser_connection_not_secure">Verbindung nicht sicher</string>
     <!-- Search tab -->
     <string name="tab_search">Suche</string>
     <string name="search_hint">Filme und Serien</string>

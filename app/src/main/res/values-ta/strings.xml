@@ -737,6 +737,7 @@
     <string name="browser_adblock_lists_failed_none">பதிவிறக்க முடியவில்லை. இப்போதைக்கு ஒரு சிறிய உள்ளமைந்த பட்டியல் பயன்படுகிறது.</string>
     <string name="browser_adblock_update">இப்போது புதுப்பி</string>
     <string name="browser_adblock_stopped">ஒரு பக்கம் திறப்பது தடுக்கப்பட்டது: %1$s</string>
+    <string name="browser_connection_not_secure">இணைப்பு பாதுகாப்பானது அல்ல</string>
     <!-- Search tab -->
     <string name="tab_search">தேடு</string>
     <string name="search_hint">திரைப்படங்கள் மற்றும் தொடர்கள்</string>

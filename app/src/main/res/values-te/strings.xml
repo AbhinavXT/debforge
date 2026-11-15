@@ -737,6 +737,7 @@
     <string name="browser_adblock_lists_failed_none">డౌన్‌లోడ్ చేయలేకపోయింది. ప్రస్తుతానికి ఒక చిన్న అంతర్నిర్మిత జాబితా వాడుకలో ఉంది.</string>
     <string name="browser_adblock_update">ఇప్పుడే అప్‌డేట్ చేయండి</string>
     <string name="browser_adblock_stopped">ఒక పేజీ తెరవడం ఆపబడింది: %1$s</string>
+    <string name="browser_connection_not_secure">కనెక్షన్ సురక్షితం కాదు</string>
     <!-- Search tab -->
     <string name="tab_search">వెతుకు</string>
     <string name="search_hint">సినిమాలు మరియు షోలు</string>
