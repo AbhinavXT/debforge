@@ -1,0 +1,4 @@
+• Offcloud: folders no longer go missing from your library when the service is slow; a loading problem is now shown instead of an empty list
+• Offcloud: .torrent files keep their trackers, so private and rare torrents start
+• Offcloud: failed and cancelled downloads now show up, so you can remove them
+• Offcloud: "Download when ready" no longer says ready when there is nothing to download
