@@ -1,0 +1,462 @@
+package com.abhinavxt.debforge.ui.youtube
+
+import android.content.ClipboardManager
+import android.content.Context
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.ContentPaste
+import androidx.compose.material.icons.rounded.Download
+import androidx.compose.material.icons.rounded.ErrorOutline
+import androidx.compose.material.icons.rounded.FolderOpen
+import androidx.compose.material.icons.rounded.Link
+import androidx.compose.material.icons.rounded.PlayCircle
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil.compose.AsyncImage
+import kotlinx.coroutines.launch
+import com.abhinavxt.debforge.R
+import com.abhinavxt.debforge.domain.Container
+import com.abhinavxt.debforge.domain.FormatChoice
+import com.abhinavxt.debforge.domain.YouTubeVideo
+import com.abhinavxt.debforge.ui.components.MessageState
+import com.abhinavxt.debforge.ui.components.ScreenHeader
+
+private val FieldShape = CircleShape
+private val RowShape = RoundedCornerShape(16.dp)
+
+@Composable
+fun YouTubeScreen(
+    onOpenDownloads: () -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: YouTubeViewModel = hiltViewModel()
+) {
+    val ui by viewModel.ui.collectAsStateWithLifecycle()
+    val input by viewModel.input.collectAsStateWithLifecycle()
+    val snackbar = remember { SnackbarHostState() }
+    val context = LocalContext.current
+    // Android only lets the focused window read the clipboard, so read when focus arrives, and again on tapping Paste.
+    var clip by remember { mutableStateOf<String?>(null) }
+    val focused = LocalWindowInfo.current.isWindowFocused
+    LaunchedEffect(focused) { if (focused) clip = readClipLink(context) }
+    val scope = rememberCoroutineScope()
+    val folderPrompt by viewModel.folderPrompt.collectAsStateWithLifecycle()
+    val pickFolder = androidx.activity.compose.rememberLauncherForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.OpenDocumentTree()
+    ) { uri ->
+        if (uri == null) viewModel.dismissFolderPrompt()
+        else {
+            runCatching { com.abhinavxt.debforge.download.StorageAccess.rememberPickedFolder(context, uri, null) }
+            viewModel.setFolder(uri.toString())
+        }
+    }
+    if (folderPrompt) {
+        com.abhinavxt.debforge.ui.browse.AllFilesAccessDialog(
+            onPickFolder = { pickFolder.launch(null) },
+            onUseAppStorage = { viewModel.setFolder(com.abhinavxt.debforge.download.StorageAccess.appStorageDir(context)) },
+            onDismiss = viewModel::dismissFolderPrompt,
+        )
+    }
+    val msgNoLink = stringResource(R.string.yt_paste_none)
+    val msgQueued = stringResource(R.string.yt_queued)
+    val msgAlready = stringResource(R.string.yt_already_queued)
+    val msgFailed = stringResource(R.string.yt_err_queue)
+    val viewDownloads = stringResource(R.string.yt_view_downloads)
+
+    LaunchedEffect(Unit) {
+        viewModel.events.collect { e ->
+            val queuedOk = e == YouTubeEvent.QUEUED
+            snackbar.currentSnackbarData?.dismiss()
+            val r = snackbar.showSnackbar(
+                message = when (e) {
+                    YouTubeEvent.QUEUED -> msgQueued
+                    YouTubeEvent.ALREADY_QUEUED -> msgAlready
+                    YouTubeEvent.QUEUE_FAILED -> msgFailed
+                },
+                actionLabel = if (e == YouTubeEvent.QUEUE_FAILED) null else viewDownloads,
+                duration = if (queuedOk) SnackbarDuration.Long else SnackbarDuration.Short,
+            )
+            if (r == SnackbarResult.ActionPerformed) onOpenDownloads()
+        }
+    }
+
+    Box(modifier.fillMaxSize()) {
+        Column(Modifier.fillMaxSize()) {
+            ScreenHeader(stringResource(R.string.yt_title), subtitle = stringResource(R.string.yt_subtitle))
+            Spacer(Modifier.height(8.dp)) // scrolled content is clipped here, clear of the subtitle
+            Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
+                YouTubeContent(
+                    ui = ui,
+                    input = input,
+                    clipLink = clip,
+                    onInput = viewModel::setInput,
+                    onSubmit = viewModel::submit,
+                    onPaste = {
+                        clip = readClipLink(context)
+                        val link = clip
+                        if (link != null) viewModel.submit(link)
+                        else scope.launch { snackbar.currentSnackbarData?.dismiss(); snackbar.showSnackbar(msgNoLink) }
+                    },
+                    onReset = viewModel::reset,
+                    onRetry = viewModel::retry,
+                    onMode = viewModel::selectMode,
+                    onSelect = viewModel::select,
+                    onDownload = viewModel::download,
+                )
+            }
+        }
+        SnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter).padding(bottom = if (ui is YouTubeUi.Preview) 88.dp else 16.dp))
+    }
+}
+
+private fun readClipLink(context: Context): String? = runCatching {
+    val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+    cm.primaryClip?.takeIf { it.itemCount > 0 }?.getItemAt(0)?.coerceToText(context)?.toString()
+        ?.takeIf { looksLikeYouTube(it) }
+}.getOrNull()
+
+@Composable
+internal fun YouTubeContent(
+    ui: YouTubeUi,
+    input: String,
+    clipLink: String?,
+    onInput: (String) -> Unit,
+    onSubmit: (String) -> Unit,
+    onPaste: () -> Unit,
+    onReset: () -> Unit,
+    onRetry: () -> Unit,
+    onMode: (Boolean) -> Unit,
+    onSelect: (FormatChoice) -> Unit,
+    onDownload: () -> Unit,
+) {
+    AnimatedContent(
+        ui,
+        contentKey = { it::class },
+        transitionSpec = { fadeIn() togetherWith fadeOut() },
+        label = "youtube-state",
+        modifier = Modifier.widthIn(max = 640.dp),
+    ) { state ->
+        when (state) {
+            YouTubeUi.Empty -> EmptyState(input, clipLink, onInput, onSubmit, onPaste)
+            YouTubeUi.Resolving -> Skeleton()
+            is YouTubeUi.Preview -> PreviewState(state, onReset, onMode, onSelect, onDownload)
+            is YouTubeUi.Error -> MessageState(
+                icon = Icons.Rounded.ErrorOutline,
+                title = stringResource(errorTitle(state.kind)),
+                body = stringResource(errorText(state.kind)),
+                tone = MaterialTheme.colorScheme.error,
+                action = {
+                    Button(onClick = onRetry, modifier = Modifier.heightIn(min = 48.dp)) { Text(stringResource(R.string.yt_retry)) }
+                    TextButton(onClick = onReset, modifier = Modifier.heightIn(min = 48.dp)) { Text(stringResource(R.string.yt_another_link)) }
+                },
+            )
+        }
+    }
+}
+
+private fun errorTitle(k: YouTubeErrorKind) = when (k) {
+    YouTubeErrorKind.NOT_LINK -> R.string.yt_err_not_link_title
+    YouTubeErrorKind.PLAYLIST -> R.string.yt_err_playlist_title
+    else -> R.string.yt_err_title
+}
+
+private fun errorText(k: YouTubeErrorKind) = when (k) {
+    YouTubeErrorKind.NOT_LINK -> R.string.yt_err_not_link
+    YouTubeErrorKind.PLAYLIST -> R.string.yt_err_playlist
+    YouTubeErrorKind.SIGN_IN -> R.string.yt_err_sign_in
+    YouTubeErrorKind.UNAVAILABLE -> R.string.yt_err_unavailable
+    YouTubeErrorKind.NETWORK -> R.string.yt_err_network
+    YouTubeErrorKind.GENERIC -> R.string.yt_err_generic
+}
+
+@Composable
+private fun EmptyState(
+    input: String,
+    clipLink: String?,
+    onInput: (String) -> Unit,
+    onSubmit: (String) -> Unit,
+    onPaste: () -> Unit,
+) {
+    val keyboard = LocalSoftwareKeyboardController.current
+    val focus = remember { FocusRequester() }
+    LaunchedEffect(Unit) { runCatching { focus.requestFocus() } } // TV: land on the field
+    Column(
+        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        val source = remember { MutableInteractionSource() }
+        val focused by source.collectIsFocusedAsState()
+        TextField(
+            value = input,
+            onValueChange = onInput,
+            modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp).focusRequester(focus)
+                .then(if (focused) Modifier.border(2.dp, MaterialTheme.colorScheme.primary, FieldShape) else Modifier),
+            interactionSource = source,
+            placeholder = { Text(stringResource(R.string.yt_field_hint), maxLines = 1) },
+            leadingIcon = { Icon(Icons.Rounded.Link, contentDescription = null) },
+            trailingIcon = {
+                if (input.isEmpty()) {
+                    TextButton(onClick = onPaste, modifier = Modifier.heightIn(min = 48.dp)) {
+                        Icon(Icons.Rounded.ContentPaste, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.size(6.dp))
+                        Text(stringResource(R.string.yt_paste))
+                    }
+                } else {
+                    IconButton(onClick = { onInput("") }) {
+                        Icon(Icons.Rounded.Close, contentDescription = stringResource(R.string.yt_clear))
+                    }
+                }
+            },
+            singleLine = true,
+            shape = FieldShape,
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Go),
+            keyboardActions = KeyboardActions(onGo = { keyboard?.hide(); if (input.isNotBlank()) onSubmit(input) }),
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent,
+            ),
+        )
+        if (clipLink != null) {
+            AssistChip(
+                onClick = { keyboard?.hide(); onSubmit(clipLink) },
+                label = { Text(stringResource(R.string.yt_paste_chip, linkHost(clipLink)), maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                leadingIcon = { Icon(Icons.Rounded.ContentPaste, contentDescription = null, modifier = Modifier.size(18.dp)) },
+                modifier = Modifier.heightIn(min = 48.dp),
+            )
+        }
+        MessageState(
+            icon = Icons.Rounded.PlayCircle,
+            title = stringResource(R.string.yt_empty_title),
+            body = stringResource(R.string.yt_empty_body),
+            modifier = Modifier.heightIn(min = 280.dp),
+        )
+    }
+}
+
+@Composable
+private fun PreviewState(
+    p: YouTubeUi.Preview,
+    onReset: () -> Unit,
+    onMode: (Boolean) -> Unit,
+    onSelect: (FormatChoice) -> Unit,
+    onDownload: () -> Unit,
+) {
+    val audio = p.selected.isAudio
+    val rows = p.choices.filter { it.isAudio == audio }
+    val firstFocus = remember { FocusRequester() }
+    LaunchedEffect(p.video.id) { runCatching { firstFocus.requestFocus() } } // TV: land on the default row
+    Column(Modifier.fillMaxSize()) {
+    Column(
+        Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()).animateContentSize()
+            .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        Box(Modifier.fillMaxWidth().aspectRatio(16f / 9f).clip(MaterialTheme.shapes.large).background(MaterialTheme.colorScheme.surfaceContainerHigh)) {
+            AsyncImage(
+                model = p.video.thumbnailUrl,
+                contentDescription = stringResource(R.string.yt_thumbnail),
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize(),
+            )
+            if (p.video.durationSec > 0) {
+                Surface(
+                    color = Color.Black.copy(alpha = 0.75f),
+                    contentColor = Color.White,
+                    shape = RoundedCornerShape(8.dp),
+                    modifier = Modifier.align(Alignment.BottomEnd).padding(8.dp),
+                ) {
+                    Text(durationText(p.video.durationSec), style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp))
+                }
+            }
+        }
+        Row(verticalAlignment = Alignment.Top) {
+            Column(Modifier.weight(1f)) {
+                Text(p.video.title, style = MaterialTheme.typography.titleMedium, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                Text(p.video.uploader, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            }
+            IconButton(onClick = onReset) { Icon(Icons.Rounded.Close, contentDescription = stringResource(R.string.yt_another_link)) }
+        }
+        // A video with only audio (or only video) choices has nothing to switch between.
+        if (p.choices.any { it.isAudio } && p.choices.any { !it.isAudio }) ModeToggle(audio, onMode)
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            rows.forEachIndexed { i, c ->
+                FormatRow(c, c == p.selected, best = i == 0, onClick = { onSelect(c) },
+                    modifier = if (c == p.selected) Modifier.focusRequester(firstFocus) else Modifier)
+            }
+        }
+    }
+    // Pinned: the list scrolls, the primary action does not.
+    Surface(color = MaterialTheme.colorScheme.surfaceContainer, tonalElevation = 3.dp, shadowElevation = 6.dp, modifier = Modifier.fillMaxWidth()) {
+        Button(onClick = onDownload, modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp).heightIn(min = 56.dp)) {
+            Icon(Icons.Rounded.Download, contentDescription = null, modifier = Modifier.size(20.dp))
+            Spacer(Modifier.size(8.dp))
+            Text(stringResource(R.string.yt_download_format, choiceLabel(p.selected), sizeText(p.selected)), maxLines = 1, overflow = TextOverflow.Ellipsis)
+        }
+    }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ModeToggle(audio: Boolean, onMode: (Boolean) -> Unit) {
+    SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+        listOf(false to R.string.yt_mode_video, true to R.string.yt_mode_audio).forEachIndexed { i, (isAudio, label) ->
+            SegmentedButton(
+                selected = audio == isAudio,
+                onClick = { onMode(isAudio) },
+                shape = SegmentedButtonDefaults.itemShape(i, 2),
+                modifier = Modifier.heightIn(min = 48.dp),
+            ) { Text(stringResource(label)) }
+        }
+    }
+}
+
+@Composable
+private fun FormatRow(c: FormatChoice, selected: Boolean, best: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    val source = remember { MutableInteractionSource() }
+    val focused by source.collectIsFocusedAsState()
+    Surface(
+        color = if (selected) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surfaceContainerLow,
+        shape = RowShape,
+        modifier = modifier.fillMaxWidth().heightIn(min = 56.dp).clip(RowShape)
+            .then(if (focused) Modifier.border(2.dp, MaterialTheme.colorScheme.primary, RowShape) else Modifier)
+            .selectable(selected = selected, interactionSource = source, indication = androidx.compose.foundation.LocalIndication.current, role = Role.RadioButton, onClick = onClick),
+    ) {
+        Row(Modifier.padding(horizontal = 12.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+            RadioButton(selected = selected, onClick = null)
+            Spacer(Modifier.size(12.dp))
+            Text(choiceLabel(c), style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
+            if (best) {
+                Text(stringResource(R.string.yt_best), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
+                Spacer(Modifier.size(12.dp))
+            }
+            Text(sizeText(c), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
+}
+
+@Composable
+private fun Skeleton() {
+    val pulse: State<Float> = rememberInfiniteTransition(label = "yt-skeleton").animateFloat(
+        initialValue = 0.35f, targetValue = 0.8f,
+        animationSpec = infiniteRepeatable(tween(900), RepeatMode.Reverse), label = "pulse",
+    )
+    val loading = stringResource(R.string.yt_loading)
+    val tone = MaterialTheme.colorScheme.surfaceContainerHigh
+    Column(
+        Modifier.fillMaxSize().padding(horizontal = 16.dp, vertical = 8.dp).graphicsLayer { alpha = pulse.value }
+            .semantics { contentDescription = loading },
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        Box(Modifier.fillMaxWidth().aspectRatio(16f / 9f).clip(MaterialTheme.shapes.large).background(tone))
+        Box(Modifier.fillMaxWidth(0.8f).heightIn(min = 20.dp).clip(RoundedCornerShape(6.dp)).background(tone))
+        Box(Modifier.fillMaxWidth(0.4f).heightIn(min = 14.dp).clip(RoundedCornerShape(6.dp)).background(tone))
+        repeat(4) { Box(Modifier.fillMaxWidth().heightIn(min = 56.dp).clip(RowShape).background(tone)) }
+    }
+}
+
+// --- previews ---------------------------------------------------------------------------
+
+private val fakeVideo = YouTubeVideo("dQw4w9WgXcQ", "A very long example video title that wraps onto a second line to show truncation", "Example Channel", 213, null, emptyList())
+private val fakeChoices = listOf(
+    FormatChoice(137, 140, "mp4", 212_000_000, false, 1080, 60, Container.MP4, 128_000, isDefault = true),
+    FormatChoice(136, 140, "mp4", 120_000_000, true, 720, 30, Container.MP4, 128_000),
+    FormatChoice(null, 140, "m4a", 3_400_000, false, 0, 0, Container.M4A, 128_000),
+    FormatChoice(null, 251, "weba", 3_000_000, true, 0, 0, Container.WEBM, 130_000),
+)
+
+@Composable
+private fun PreviewHost(ui: YouTubeUi, clip: String? = null, input: String = "") {
+    MaterialTheme {
+        Surface {
+            YouTubeContent(ui, input, clip, {}, {}, {}, {}, {}, {}, {}, {})
+        }
+    }
+}
+
+@Preview(showBackground = true) @Composable private fun EmptyPreview() = PreviewHost(YouTubeUi.Empty, clip = "https://youtu.be/dQw4w9WgXcQ")
+@Preview(showBackground = true) @Composable private fun ResolvingPreview() = PreviewHost(YouTubeUi.Resolving)
+@Preview(showBackground = true, heightDp = 900) @Composable private fun VideoPreview() = PreviewHost(YouTubeUi.Preview(fakeVideo, fakeChoices, fakeChoices[0]))
+@Preview(showBackground = true, heightDp = 900) @Composable private fun AudioPreview() = PreviewHost(YouTubeUi.Preview(fakeVideo, fakeChoices, fakeChoices[2]))
+@Preview(showBackground = true) @Composable private fun ErrorPreview() = PreviewHost(YouTubeUi.Error(YouTubeErrorKind.PLAYLIST))

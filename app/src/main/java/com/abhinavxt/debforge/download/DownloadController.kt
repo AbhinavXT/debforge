@@ -1,5 +1,7 @@
 package com.abhinavxt.debforge.download
 
+import android.content.Context
+import dagger.hilt.android.qualifiers.ApplicationContext
 import com.abhinavxt.debforge.data.local.DownloadDao
 import com.abhinavxt.debforge.data.local.DownloadEntity
 import com.abhinavxt.debforge.data.prefs.SettingsStore
@@ -28,7 +30,8 @@ class DownloadController @Inject constructor(
     private val downloadDao: DownloadDao,
     private val settingsStore: SettingsStore,
     private val runner: DownloadQueueRunner,
-    private val scheduler: DownloadScheduler
+    private val scheduler: DownloadScheduler,
+    @ApplicationContext private val context: Context
 ) {
     /**
      * Serializes path resolution + insert. Without it, two quick enqueues of
@@ -72,7 +75,9 @@ class DownloadController @Inject constructor(
                     finalFilePath = finalPath,
                     referer = item.referer,
                     userAgent = item.userAgent,
-                    audioUrl = item.audioUrl
+                    audioUrl = item.audioUrl,
+                    title = item.title,
+                    artist = item.artist
                 )
             )
         }
@@ -95,6 +100,7 @@ class DownloadController @Inject constructor(
             DownloadFiles.deleteFinal(path)
             if (DownloadFiles.exists(path)) return@withContext false
         }
+        artworkFile(context, id).delete()
         downloadDao.delete(id)
         true
     }

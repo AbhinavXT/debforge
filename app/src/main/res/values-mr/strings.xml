@@ -77,6 +77,7 @@
     <string name="action_delete_device">डिव्हाइसवरून हटवा</string>
     <string name="delete_device_title">या डिव्हाइसवरून हटवायचे?</string>
     <string name="delete_device_body">“%1$s” या डिव्हाइसच्या स्टोरेजमधून हटवले जाईल. हे पूर्ववत करता येणार नाही.</string>
+    <string name="media_delete_one_body">“%1$s” (%2$s) या डिव्हाइसच्या स्टोरेजमधून हटवले जाईल. हे पूर्ववत करता येणार नाही.</string>
     <plurals name="msg_deleted_device_n">
         <item quantity="one">या डिव्हाइसवरून %1$d फाइल हटवली</item>
         <item quantity="other">या डिव्हाइसवरून %1$d फाइल्स हटवल्या</item>
@@ -795,4 +796,104 @@
         <item quantity="one">%1$d सीडर</item>
         <item quantity="other">%1$d सीडर</item>
     </plurals>
+
+    <!-- YouTube -->
+    <string name="yt_title">YouTube</string>
+    <string name="yt_subtitle">व्हिडिओ किंवा त्याचा ऑडिओ सेव्ह करा</string>
+    <string name="yt_field_hint">YouTube लिंक पेस्ट करा</string>
+    <string name="yt_paste">पेस्ट करा</string>
+    <string name="yt_paste_chip">%1$s लिंक पेस्ट करा</string>
+    <string name="yt_paste_none">क्लिपबोर्डवर YouTube लिंक नाही</string>
+    <string name="yt_clear">लिंक काढा</string>
+    <string name="yt_empty_title">YouTube वरून सेव्ह करा</string>
+    <string name="yt_empty_body">व्हिडिओ लिंक पेस्ट किंवा शेअर करा, क्वालिटी निवडा, आणि तो तुमच्या डिव्हाइसवर डाउनलोड होईल.</string>
+    <string name="yt_loading">व्हिडिओ लोड होत आहे</string>
+    <string name="yt_thumbnail">व्हिडिओ थंबनेल</string>
+    <string name="yt_mode_video">व्हिडिओ</string>
+    <string name="yt_mode_audio">ऑडिओ</string>
+    <string name="yt_best">सर्वोत्तम</string>
+    <string name="yt_download_format">डाउनलोड · %1$s · %2$s</string>
+    <string name="yt_another_link">दुसरी लिंक वापरा</string>
+    <string name="yt_queued">डाउनलोडमध्ये जोडले</string>
+    <string name="yt_already_queued">आधीच तुमच्या डाउनलोडमध्ये आहे</string>
+    <string name="yt_view_downloads">डाउनलोड पहा</string>
+    <string name="yt_retry">पुन्हा प्रयत्न करा</string>
+    <string name="yt_err_title">हा व्हिडिओ लोड करता आला नाही</string>
+    <string name="yt_err_not_link">ही YouTube लिंक असल्यासारखी वाटत नाही.</string>
+    <string name="yt_err_playlist">प्लेलिस्ट अजून समर्थित नाहीत; एकच व्हिडिओ उघडा.</string>
+    <string name="yt_err_not_link_title">लिंक तपासा</string>
+    <string name="yt_err_playlist_title">ही एक प्लेलिस्ट आहे</string>
+    <string name="yt_err_sign_in">या व्हिडिओला वयोमर्यादा आहे किंवा साइन-इन आवश्यक आहे, म्हणून तो डाउनलोड करता येत नाही.</string>
+    <string name="yt_err_unavailable">हा व्हिडिओ उपलब्ध नाही किंवा खाजगी आहे.</string>
+    <string name="yt_err_network">तुमचे कनेक्शन तपासा आणि पुन्हा प्रयत्न करा.</string>
+    <string name="yt_err_generic">हा व्हिडिओ वाचताना काहीतरी चूक झाली. थोड्या वेळाने पुन्हा प्रयत्न करा.</string>
+    <string name="yt_err_queue">डाउनलोड जोडता आला नाही. पुन्हा प्रयत्न करा.</string>
+
+    <!-- Media -->
+    <string name="media_title">मीडिया</string>
+    <string name="media_cd_downloads">डाउनलोड</string>
+    <string name="media_cd_settings">सेटिंग्ज</string>
+    <string name="media_downloading">%1$d डाउनलोड होत आहेत · %2$d%%</string>
+    <string name="media_tab_video_count">व्हिडिओ %1$d</string>
+    <string name="media_tab_audio_count">ऑडिओ %1$d</string>
+    <string name="media_tab_files_count">फाइल्स %1$d</string>
+    <string name="media_err_no_app">ही फाइल उघडू शकेल असे कोणतेही अॅप नाही</string>
+    <plurals name="media_cd_downloads_active">
+        <item quantity="one">डाउनलोड, %1$d सुरू आहे</item>
+        <item quantity="other">डाउनलोड, %1$d सुरू आहेत</item>
+    </plurals>
+    <string name="media_search_hint">डाउनलोड शोधा</string>
+    <string name="media_search_clear">शोध काढा</string>
+    <string name="media_sort">क्रमवारी</string>
+    <string name="media_empty_title">अजून काहीही डाउनलोड झालेले नाही</string>
+    <string name="media_empty_body">तुम्ही डाउनलोड केलेले व्हिडिओ, संगीत आणि फाइल्स येथे दिसतील.</string>
+    <string name="media_open_youtube">YouTube उघडा</string>
+    <string name="media_no_match_title">काहीही जुळले नाही</string>
+    <string name="media_no_match_body">“%1$s” शी काहीही जुळत नाही.</string>
+    <string name="media_more">आणखी कृती</string>
+    <string name="media_playing">सुरू आहे</string>
+    <string name="media_selected_count">%1$d निवडले</string>
+    <string name="media_select_all">सर्व निवडा</string>
+    <string name="media_close_selection">निवड बंद करा</string>
+    <string name="media_delete">हटवा</string>
+    <string name="media_delete_selected_title">या डिव्हाइसवरून हटवायचे?</string>
+    <plurals name="media_delete_selected_body">
+        <item quantity="one">%1$d फाइल या डिव्हाइसच्या स्टोरेजमधून हटवली जाईल. हे पूर्ववत करता येणार नाही.</item>
+        <item quantity="other">%1$d फाइल्स या डिव्हाइसच्या स्टोरेजमधून हटवल्या जातील. हे पूर्ववत करता येणार नाही.</item>
+    </plurals>
+
+    <!-- Audio player -->
+    <string name="audio_play">प्ले करा</string>
+    <string name="audio_pause">थांबवा</string>
+    <string name="audio_next">पुढील</string>
+    <string name="audio_previous">मागील</string>
+    <string name="audio_shuffle_on">शफल चालू</string>
+    <string name="audio_shuffle_off">शफल बंद</string>
+    <string name="audio_repeat_off">रिपीट बंद</string>
+    <string name="audio_repeat_all">सर्व रिपीट करा</string>
+    <string name="audio_repeat_one">एक रिपीट करा</string>
+    <string name="audio_close">आता सुरू असलेले बंद करा</string>
+    <string name="audio_expand">आता सुरू असलेले उघडा</string>
+    <string name="audio_up_next">पुढे</string>
+    <string name="audio_unknown_artist">अज्ञात कलाकार</string>
+    <string name="audio_position_state">%2$s पैकी %1$s</string>
+    <string name="audio_time_minutes_seconds">%1$s %2$s</string>
+    <plurals name="audio_time_minutes">
+        <item quantity="one">%1$d मिनिट</item>
+        <item quantity="other">%1$d मिनिटे</item>
+    </plurals>
+    <plurals name="audio_time_seconds">
+        <item quantity="one">%1$d सेकंद</item>
+        <item quantity="other">%1$d सेकंद</item>
+    </plurals>
+
+    <!-- Navigation -->
+    <string name="tab_youtube">YouTube</string>
+    <string name="tab_media">मीडिया</string>
+    <string name="shell_cd_downloads">डाउनलोड</string>
+    <string name="shell_cd_settings">सेटिंग्ज</string>
+    <string name="shell_cd_back">मागे</string>
+    <string name="shell_dl_empty_title">काहीही डाउनलोड होत नाही</string>
+    <string name="shell_dl_empty_body">पूर्ण झालेले डाउनलोड मीडियामध्ये आहेत.</string>
+    <string name="shell_dl_open_media">मीडिया उघडा</string>
 </resources>

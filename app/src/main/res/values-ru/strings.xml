@@ -77,6 +77,7 @@
     <string name="action_delete_device">Удалить с устройства</string>
     <string name="delete_device_title">Удалить с этого устройства?</string>
     <string name="delete_device_body">«%1$s» будет удалён из памяти этого устройства. Это нельзя отменить.</string>
+    <string name="media_delete_one_body">«%1$s» (%2$s) будет удалён из памяти этого устройства. Это нельзя отменить.</string>
     <plurals name="msg_deleted_device_n">
         <item quantity="one">Удалён %1$d файл с этого устройства</item>
         <item quantity="few">Удалено %1$d файла с этого устройства</item>
@@ -873,4 +874,112 @@
         <item quantity="many">%1$d сидов</item>
         <item quantity="other">%1$d сида</item>
     </plurals>
+
+    <!-- YouTube -->
+    <string name="yt_title">YouTube</string>
+    <string name="yt_subtitle">Сохраните видео или только звук</string>
+    <string name="yt_field_hint">Вставьте ссылку на YouTube</string>
+    <string name="yt_paste">Вставить</string>
+    <string name="yt_paste_chip">Вставить ссылку %1$s</string>
+    <string name="yt_paste_none">В буфере обмена нет ссылки на YouTube</string>
+    <string name="yt_clear">Очистить ссылку</string>
+    <string name="yt_empty_title">Сохранение с YouTube</string>
+    <string name="yt_empty_body">Вставьте или поделитесь ссылкой на видео, выберите качество, и оно загрузится на устройство.</string>
+    <string name="yt_loading">Загрузка видео</string>
+    <string name="yt_thumbnail">Превью видео</string>
+    <string name="yt_mode_video">Видео</string>
+    <string name="yt_mode_audio">Аудио</string>
+    <string name="yt_best">Лучшее</string>
+    <string name="yt_download_format">Скачать · %1$s · %2$s</string>
+    <string name="yt_another_link">Другая ссылка</string>
+    <string name="yt_queued">Добавлено в загрузки</string>
+    <string name="yt_already_queued">Уже в загрузках</string>
+    <string name="yt_view_downloads">Открыть загрузки</string>
+    <string name="yt_retry">Повторить</string>
+    <string name="yt_err_title">Не удалось загрузить видео</string>
+    <string name="yt_err_not_link">Это не похоже на ссылку на YouTube.</string>
+    <string name="yt_err_playlist">Плейлисты пока не поддерживаются; откройте отдельное видео.</string>
+    <string name="yt_err_not_link_title">Проверьте ссылку</string>
+    <string name="yt_err_playlist_title">Это плейлист</string>
+    <string name="yt_err_sign_in">У этого видео возрастное ограничение или нужен вход в аккаунт, поэтому его нельзя скачать.</string>
+    <string name="yt_err_unavailable">Это видео недоступно или закрыто.</string>
+    <string name="yt_err_network">Проверьте подключение и повторите попытку.</string>
+    <string name="yt_err_generic">Не удалось прочитать это видео. Повторите попытку чуть позже.</string>
+    <string name="yt_err_queue">Не удалось добавить загрузку. Повторите попытку.</string>
+
+    <!-- Media -->
+    <string name="media_title">Медиа</string>
+    <string name="media_cd_downloads">Загрузки</string>
+    <string name="media_cd_settings">Настройки</string>
+    <string name="media_downloading">Загружается: %1$d · %2$d%%</string>
+    <string name="media_tab_video_count">Видео %1$d</string>
+    <string name="media_tab_audio_count">Аудио %1$d</string>
+    <string name="media_tab_files_count">Файлы %1$d</string>
+    <string name="media_err_no_app">Нет приложения, которое может открыть этот файл</string>
+    <plurals name="media_cd_downloads_active">
+        <item quantity="one">Загрузки, %1$d выполняется</item>
+        <item quantity="few">Загрузки, %1$d выполняются</item>
+        <item quantity="many">Загрузки, выполняется: %1$d</item>
+        <item quantity="other">Загрузки, выполняется: %1$d</item>
+    </plurals>
+    <string name="media_search_hint">Поиск по загрузкам</string>
+    <string name="media_search_clear">Очистить поиск</string>
+    <string name="media_sort">Сортировка</string>
+    <string name="media_empty_title">Пока ничего не загружено</string>
+    <string name="media_empty_body">Видео, музыка и файлы, которые вы загрузите, появятся здесь.</string>
+    <string name="media_open_youtube">Открыть YouTube</string>
+    <string name="media_no_match_title">Ничего не найдено</string>
+    <string name="media_no_match_body">Нет совпадений с «%1$s».</string>
+    <string name="media_more">Ещё действия</string>
+    <string name="media_playing">Воспроизводится</string>
+    <string name="media_selected_count">Выбрано: %1$d</string>
+    <string name="media_select_all">Выбрать все</string>
+    <string name="media_close_selection">Закрыть выбор</string>
+    <string name="media_delete">Удалить</string>
+    <string name="media_delete_selected_title">Удалить с этого устройства?</string>
+    <plurals name="media_delete_selected_body">
+        <item quantity="one">%1$d файл будет удалён из памяти этого устройства. Это нельзя отменить.</item>
+        <item quantity="few">%1$d файла будут удалены из памяти этого устройства. Это нельзя отменить.</item>
+        <item quantity="many">%1$d файлов будут удалены из памяти этого устройства. Это нельзя отменить.</item>
+        <item quantity="other">%1$d файла будут удалены из памяти этого устройства. Это нельзя отменить.</item>
+    </plurals>
+
+    <!-- Audio player -->
+    <string name="audio_play">Воспроизвести</string>
+    <string name="audio_pause">Пауза</string>
+    <string name="audio_next">Далее</string>
+    <string name="audio_previous">Назад</string>
+    <string name="audio_shuffle_on">Перемешивание включено</string>
+    <string name="audio_shuffle_off">Перемешивание выключено</string>
+    <string name="audio_repeat_off">Повтор выключен</string>
+    <string name="audio_repeat_all">Повторять все</string>
+    <string name="audio_repeat_one">Повторять трек</string>
+    <string name="audio_close">Закрыть плеер</string>
+    <string name="audio_expand">Открыть плеер</string>
+    <string name="audio_up_next">Далее в очереди</string>
+    <string name="audio_unknown_artist">Неизвестный исполнитель</string>
+    <string name="audio_position_state">%1$s из %2$s</string>
+    <string name="audio_time_minutes_seconds">%1$s %2$s</string>
+    <plurals name="audio_time_minutes">
+        <item quantity="one">%1$d минута</item>
+        <item quantity="few">%1$d минуты</item>
+        <item quantity="many">%1$d минут</item>
+        <item quantity="other">%1$d минуты</item>
+    </plurals>
+    <plurals name="audio_time_seconds">
+        <item quantity="one">%1$d секунда</item>
+        <item quantity="few">%1$d секунды</item>
+        <item quantity="many">%1$d секунд</item>
+        <item quantity="other">%1$d секунды</item>
+    </plurals>
+
+    <!-- Navigation -->
+    <string name="tab_youtube">YouTube</string>
+    <string name="tab_media">Медиа</string>
+    <string name="shell_cd_downloads">Загрузки</string>
+    <string name="shell_cd_settings">Настройки</string>
+    <string name="shell_cd_back">Назад</string>
+    <string name="shell_dl_empty_title">Ничего не загружается</string>
+    <string name="shell_dl_empty_body">Завершённые загрузки находятся в разделе «Медиа».</string>
+    <string name="shell_dl_open_media">Открыть «Медиа»</string>
 </resources>

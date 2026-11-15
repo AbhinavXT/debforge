@@ -77,6 +77,7 @@
     <string name="action_delete_device">சாதனத்திலிருந்து நீக்கு</string>
     <string name="delete_device_title">இந்தச் சாதனத்திலிருந்து நீக்கவா?</string>
     <string name="delete_device_body">“%1$s” இந்தச் சாதனத்தின் சேமிப்பகத்திலிருந்து நீக்கப்படும். இதைத் திரும்பப் பெற முடியாது.</string>
+    <string name="media_delete_one_body">“%1$s” (%2$s) இந்தச் சாதனத்தின் சேமிப்பகத்திலிருந்து நீக்கப்படும். இதைத் திரும்பப் பெற முடியாது.</string>
     <plurals name="msg_deleted_device_n">
         <item quantity="one">இந்தச் சாதனத்திலிருந்து %1$d கோப்பு நீக்கப்பட்டது</item>
         <item quantity="other">இந்தச் சாதனத்திலிருந்து %1$d கோப்புகள் நீக்கப்பட்டன</item>
@@ -795,4 +796,104 @@
         <item quantity="one">%1$d சீடர்</item>
         <item quantity="other">%1$d சீடர்கள்</item>
     </plurals>
+
+    <!-- YouTube -->
+    <string name="yt_title">YouTube</string>
+    <string name="yt_subtitle">வீடியோவை அல்லது அதன் ஆடியோவைச் சேமி</string>
+    <string name="yt_field_hint">YouTube இணைப்பை ஒட்டவும்</string>
+    <string name="yt_paste">ஒட்டு</string>
+    <string name="yt_paste_chip">%1$s இணைப்பை ஒட்டு</string>
+    <string name="yt_paste_none">கிளிப்போர்டில் YouTube இணைப்பு இல்லை</string>
+    <string name="yt_clear">இணைப்பை அழி</string>
+    <string name="yt_empty_title">YouTube-இலிருந்து சேமி</string>
+    <string name="yt_empty_body">வீடியோ இணைப்பை ஒட்டவும் அல்லது பகிரவும், தரத்தைத் தேர்ந்தெடுக்கவும்; அது உங்கள் சாதனத்தில் பதிவிறங்கும்.</string>
+    <string name="yt_loading">வீடியோ ஏற்றப்படுகிறது</string>
+    <string name="yt_thumbnail">வீடியோ சிறுபடம்</string>
+    <string name="yt_mode_video">வீடியோ</string>
+    <string name="yt_mode_audio">ஆடியோ</string>
+    <string name="yt_best">சிறந்தது</string>
+    <string name="yt_download_format">பதிவிறக்கு · %1$s · %2$s</string>
+    <string name="yt_another_link">வேறு இணைப்பைப் பயன்படுத்து</string>
+    <string name="yt_queued">பதிவிறக்கங்களில் சேர்க்கப்பட்டது</string>
+    <string name="yt_already_queued">ஏற்கெனவே உங்கள் பதிவிறக்கங்களில் உள்ளது</string>
+    <string name="yt_view_downloads">பதிவிறக்கங்களைக் காட்டு</string>
+    <string name="yt_retry">மீண்டும் முயல்</string>
+    <string name="yt_err_title">இந்த வீடியோவை ஏற்ற முடியவில்லை</string>
+    <string name="yt_err_not_link">இது YouTube இணைப்பாகத் தெரியவில்லை.</string>
+    <string name="yt_err_playlist">பிளேலிஸ்ட்கள் இன்னும் ஆதரிக்கப்படவில்லை; ஒரு வீடியோவைத் திறக்கவும்.</string>
+    <string name="yt_err_not_link_title">இணைப்பைச் சரிபாருங்கள்</string>
+    <string name="yt_err_playlist_title">இது ஒரு பிளேலிஸ்ட்</string>
+    <string name="yt_err_sign_in">இந்த வீடியோவுக்கு வயது வரம்பு உள்ளது அல்லது உள்நுழைவு தேவை, எனவே இதைப் பதிவிறக்க முடியாது.</string>
+    <string name="yt_err_unavailable">இந்த வீடியோ கிடைக்கவில்லை அல்லது தனிப்பட்டது.</string>
+    <string name="yt_err_network">இணைப்பைச் சரிபார்த்து மீண்டும் முயலவும்.</string>
+    <string name="yt_err_generic">இந்த வீடியோவைப் படிப்பதில் ஏதோ தவறு நேர்ந்தது. சிறிது நேரம் கழித்து மீண்டும் முயலவும்.</string>
+    <string name="yt_err_queue">பதிவிறக்கத்தைச் சேர்க்க முடியவில்லை. மீண்டும் முயலவும்.</string>
+
+    <!-- Media -->
+    <string name="media_title">மீடியா</string>
+    <string name="media_cd_downloads">பதிவிறக்கங்கள்</string>
+    <string name="media_cd_settings">அமைப்புகள்</string>
+    <string name="media_downloading">%1$d பதிவிறங்குகிறது · %2$d%%</string>
+    <string name="media_tab_video_count">வீடியோ %1$d</string>
+    <string name="media_tab_audio_count">ஆடியோ %1$d</string>
+    <string name="media_tab_files_count">கோப்புகள் %1$d</string>
+    <string name="media_err_no_app">இந்தக் கோப்பைத் திறக்கக்கூடிய ஆப்ஸ் இல்லை</string>
+    <plurals name="media_cd_downloads_active">
+        <item quantity="one">பதிவிறக்கங்கள், %1$d நடைபெறுகிறது</item>
+        <item quantity="other">பதிவிறக்கங்கள், %1$d நடைபெறுகின்றன</item>
+    </plurals>
+    <string name="media_search_hint">பதிவிறக்கங்களைத் தேடு</string>
+    <string name="media_search_clear">தேடலை அழி</string>
+    <string name="media_sort">வரிசைப்படுத்து</string>
+    <string name="media_empty_title">இன்னும் எதுவும் பதிவிறக்கப்படவில்லை</string>
+    <string name="media_empty_body">நீங்கள் பதிவிறக்கும் வீடியோக்கள், இசை மற்றும் கோப்புகள் இங்கே தோன்றும்.</string>
+    <string name="media_open_youtube">YouTube-ஐத் திற</string>
+    <string name="media_no_match_title">பொருத்தம் இல்லை</string>
+    <string name="media_no_match_body">“%1$s” உடன் பொருந்துவது எதுவும் இல்லை.</string>
+    <string name="media_more">மேலும் செயல்கள்</string>
+    <string name="media_playing">இயங்குகிறது</string>
+    <string name="media_selected_count">%1$d தேர்ந்தெடுக்கப்பட்டது</string>
+    <string name="media_select_all">அனைத்தையும் தேர்ந்தெடு</string>
+    <string name="media_close_selection">தேர்வை மூடு</string>
+    <string name="media_delete">நீக்கு</string>
+    <string name="media_delete_selected_title">இந்தச் சாதனத்திலிருந்து நீக்கவா?</string>
+    <plurals name="media_delete_selected_body">
+        <item quantity="one">%1$d கோப்பு இந்தச் சாதனத்தின் சேமிப்பகத்திலிருந்து நீக்கப்படும். இதைத் திரும்பப் பெற முடியாது.</item>
+        <item quantity="other">%1$d கோப்புகள் இந்தச் சாதனத்தின் சேமிப்பகத்திலிருந்து நீக்கப்படும். இதைத் திரும்பப் பெற முடியாது.</item>
+    </plurals>
+
+    <!-- Audio player -->
+    <string name="audio_play">இயக்கு</string>
+    <string name="audio_pause">இடைநிறுத்து</string>
+    <string name="audio_next">அடுத்தது</string>
+    <string name="audio_previous">முந்தையது</string>
+    <string name="audio_shuffle_on">ஷஃபிள் இயக்கத்தில்</string>
+    <string name="audio_shuffle_off">ஷஃபிள் முடக்கம்</string>
+    <string name="audio_repeat_off">மீண்டும் இயக்கம் முடக்கம்</string>
+    <string name="audio_repeat_all">அனைத்தையும் மீண்டும் இயக்கு</string>
+    <string name="audio_repeat_one">ஒன்றை மீண்டும் இயக்கு</string>
+    <string name="audio_close">இப்போது இயங்குவதை மூடு</string>
+    <string name="audio_expand">இப்போது இயங்குவதைத் திற</string>
+    <string name="audio_up_next">அடுத்து</string>
+    <string name="audio_unknown_artist">அறியப்படாத கலைஞர்</string>
+    <string name="audio_position_state">%2$s இல் %1$s</string>
+    <string name="audio_time_minutes_seconds">%1$s %2$s</string>
+    <plurals name="audio_time_minutes">
+        <item quantity="one">%1$d நிமிடம்</item>
+        <item quantity="other">%1$d நிமிடங்கள்</item>
+    </plurals>
+    <plurals name="audio_time_seconds">
+        <item quantity="one">%1$d விநாடி</item>
+        <item quantity="other">%1$d விநாடிகள்</item>
+    </plurals>
+
+    <!-- Navigation -->
+    <string name="tab_youtube">YouTube</string>
+    <string name="tab_media">மீடியா</string>
+    <string name="shell_cd_downloads">பதிவிறக்கங்கள்</string>
+    <string name="shell_cd_settings">அமைப்புகள்</string>
+    <string name="shell_cd_back">பின்செல்</string>
+    <string name="shell_dl_empty_title">எதுவும் பதிவிறங்கவில்லை</string>
+    <string name="shell_dl_empty_body">முடிந்த பதிவிறக்கங்கள் மீடியாவில் உள்ளன.</string>
+    <string name="shell_dl_open_media">மீடியாவைத் திற</string>
 </resources>

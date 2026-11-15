@@ -77,6 +77,7 @@
     <string name="action_delete_device">Excluir do dispositivo</string>
     <string name="delete_device_title">Excluir deste dispositivo?</string>
     <string name="delete_device_body">“%1$s” será excluído do armazenamento deste dispositivo. Não é possível desfazer.</string>
+    <string name="media_delete_one_body">“%1$s” (%2$s) será excluído do armazenamento deste dispositivo. Não é possível desfazer.</string>
     <plurals name="msg_deleted_device_n">
         <item quantity="one">%1$d arquivo excluído deste dispositivo</item>
         <item quantity="many">%1$d arquivos excluídos deste dispositivo</item>
@@ -834,4 +835,108 @@
         <item quantity="many">%1$d seeders</item>
         <item quantity="other">%1$d seeders</item>
     </plurals>
+
+    <!-- YouTube -->
+    <string name="yt_title">YouTube</string>
+    <string name="yt_subtitle">Salve um vídeo ou só o áudio</string>
+    <string name="yt_field_hint">Cole um link do YouTube</string>
+    <string name="yt_paste">Colar</string>
+    <string name="yt_paste_chip">Colar link do %1$s</string>
+    <string name="yt_paste_none">Nenhum link do YouTube na área de transferência</string>
+    <string name="yt_clear">Limpar link</string>
+    <string name="yt_empty_title">Salvar do YouTube</string>
+    <string name="yt_empty_body">Cole ou compartilhe o link de um vídeo, escolha a qualidade e ele é baixado para o seu dispositivo.</string>
+    <string name="yt_loading">Carregando vídeo</string>
+    <string name="yt_thumbnail">Miniatura do vídeo</string>
+    <string name="yt_mode_video">Vídeo</string>
+    <string name="yt_mode_audio">Áudio</string>
+    <string name="yt_best">Melhor</string>
+    <string name="yt_download_format">Baixar · %1$s · %2$s</string>
+    <string name="yt_another_link">Usar outro link</string>
+    <string name="yt_queued">Adicionado aos downloads</string>
+    <string name="yt_already_queued">Já está nos seus downloads</string>
+    <string name="yt_view_downloads">Ver downloads</string>
+    <string name="yt_retry">Tentar de novo</string>
+    <string name="yt_err_title">Não foi possível carregar este vídeo</string>
+    <string name="yt_err_not_link">Isso não parece um link do YouTube.</string>
+    <string name="yt_err_playlist">Playlists ainda não são compatíveis; abra um único vídeo.</string>
+    <string name="yt_err_not_link_title">Confira o link</string>
+    <string name="yt_err_playlist_title">Isso é uma playlist</string>
+    <string name="yt_err_sign_in">Este vídeo tem restrição de idade ou exige login, então não pode ser baixado.</string>
+    <string name="yt_err_unavailable">Este vídeo está indisponível ou é privado.</string>
+    <string name="yt_err_network">Verifique sua conexão e tente de novo.</string>
+    <string name="yt_err_generic">Algo deu errado ao ler este vídeo. Tente de novo em instantes.</string>
+    <string name="yt_err_queue">Não foi possível adicionar o download. Tente de novo.</string>
+
+    <!-- Media -->
+    <string name="media_title">Mídia</string>
+    <string name="media_cd_downloads">Downloads</string>
+    <string name="media_cd_settings">Configurações</string>
+    <string name="media_downloading">%1$d baixando · %2$d%%</string>
+    <string name="media_tab_video_count">Vídeo %1$d</string>
+    <string name="media_tab_audio_count">Áudio %1$d</string>
+    <string name="media_tab_files_count">Arquivos %1$d</string>
+    <string name="media_err_no_app">Nenhum app consegue abrir este arquivo</string>
+    <plurals name="media_cd_downloads_active">
+        <item quantity="one">Downloads, %1$d em andamento</item>
+        <item quantity="many">Downloads, %1$d em andamento</item>
+        <item quantity="other">Downloads, %1$d em andamento</item>
+    </plurals>
+    <string name="media_search_hint">Buscar nos downloads</string>
+    <string name="media_search_clear">Limpar busca</string>
+    <string name="media_sort">Ordenar</string>
+    <string name="media_empty_title">Nada baixado ainda</string>
+    <string name="media_empty_body">Vídeos, músicas e arquivos que você baixar aparecem aqui.</string>
+    <string name="media_open_youtube">Abrir YouTube</string>
+    <string name="media_no_match_title">Nenhum resultado</string>
+    <string name="media_no_match_body">Nada corresponde a “%1$s”.</string>
+    <string name="media_more">Mais ações</string>
+    <string name="media_playing">Reproduzindo</string>
+    <string name="media_selected_count">%1$d selecionado(s)</string>
+    <string name="media_select_all">Selecionar tudo</string>
+    <string name="media_close_selection">Fechar seleção</string>
+    <string name="media_delete">Excluir</string>
+    <string name="media_delete_selected_title">Excluir deste dispositivo?</string>
+    <plurals name="media_delete_selected_body">
+        <item quantity="one">%1$d arquivo será excluído do armazenamento deste dispositivo. Não é possível desfazer.</item>
+        <item quantity="many">%1$d arquivos serão excluídos do armazenamento deste dispositivo. Não é possível desfazer.</item>
+        <item quantity="other">%1$d arquivos serão excluídos do armazenamento deste dispositivo. Não é possível desfazer.</item>
+    </plurals>
+
+    <!-- Audio player -->
+    <string name="audio_play">Reproduzir</string>
+    <string name="audio_pause">Pausar</string>
+    <string name="audio_next">Próxima</string>
+    <string name="audio_previous">Anterior</string>
+    <string name="audio_shuffle_on">Aleatório ativado</string>
+    <string name="audio_shuffle_off">Aleatório desativado</string>
+    <string name="audio_repeat_off">Repetir desativado</string>
+    <string name="audio_repeat_all">Repetir todas</string>
+    <string name="audio_repeat_one">Repetir uma</string>
+    <string name="audio_close">Fechar reprodução atual</string>
+    <string name="audio_expand">Abrir reprodução atual</string>
+    <string name="audio_up_next">A seguir</string>
+    <string name="audio_unknown_artist">Artista desconhecido</string>
+    <string name="audio_position_state">%1$s de %2$s</string>
+    <string name="audio_time_minutes_seconds">%1$s %2$s</string>
+    <plurals name="audio_time_minutes">
+        <item quantity="one">%1$d minuto</item>
+        <item quantity="many">%1$d minutos</item>
+        <item quantity="other">%1$d minutos</item>
+    </plurals>
+    <plurals name="audio_time_seconds">
+        <item quantity="one">%1$d segundo</item>
+        <item quantity="many">%1$d segundos</item>
+        <item quantity="other">%1$d segundos</item>
+    </plurals>
+
+    <!-- Navigation -->
+    <string name="tab_youtube">YouTube</string>
+    <string name="tab_media">Mídia</string>
+    <string name="shell_cd_downloads">Downloads</string>
+    <string name="shell_cd_settings">Configurações</string>
+    <string name="shell_cd_back">Voltar</string>
+    <string name="shell_dl_empty_title">Nada sendo baixado</string>
+    <string name="shell_dl_empty_body">Os downloads concluídos ficam em Mídia.</string>
+    <string name="shell_dl_open_media">Abrir Mídia</string>
 </resources>

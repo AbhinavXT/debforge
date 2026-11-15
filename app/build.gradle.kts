@@ -108,8 +108,9 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        isCoreLibraryDesugaringEnabled = true
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     buildFeatures {
         compose = true
@@ -189,6 +190,9 @@ dependencies {
     implementation(libs.androidx.media3.session)
     // Audio the phone can't decode itself (E-AC3, AC3, DTS, TrueHD).
     implementation(libs.jellyfin.media3.ffmpeg.decoder)
+
+    implementation(libs.newpipe.extractor)
+    coreLibraryDesugaring(libs.desugar.jdk.libs.nio)
 
     testImplementation(libs.junit)
     testImplementation(libs.androidx.junit)

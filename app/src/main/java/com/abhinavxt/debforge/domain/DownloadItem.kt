@@ -43,7 +43,10 @@ data class DownloadItem(
     val referer: String? = null,
     val userAgent: String? = null,
     /** A stream's separate audio playlist; the engine combines it with the video. */
-    val audioUrl: String? = null
+    val audioUrl: String? = null,
+    /** Human title and artist (YouTube downloads); null falls back to [filename]. */
+    val title: String? = null,
+    val artist: String? = null
 )
 
 /** One page of a provider listing. [hasMore] drives infinite scroll. */

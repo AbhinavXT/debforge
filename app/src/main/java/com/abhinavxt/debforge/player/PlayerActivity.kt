@@ -110,6 +110,7 @@ import com.abhinavxt.debforge.ui.browse.playExternally
 class PlayerActivity : ComponentActivity() {
 
     @Inject lateinit var positions: PlaybackPositions
+    @Inject lateinit var audioPlayer: AudioPlayer
     @Inject lateinit var upNext: UpNext
     @Inject lateinit var subtitleResolver: SubtitleResolver
     @Inject lateinit var repository: DownloadsRepository
@@ -290,6 +291,7 @@ class PlayerActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        audioPlayer.stopForVideo()
         uri = intent.data ?: run { finish(); return }
         title = intent.getStringExtra(EXTRA_TITLE).orEmpty()
         identity = Identity.from(intent)
@@ -1952,6 +1954,7 @@ class PlayerActivity : ComponentActivity() {
     /** Back in the player: the service lets go, pictures come back. */
     private fun takeBackFromBackground() {
         inBackground = false
+        audioPlayer.stopForVideo() // audio may have taken the service over meanwhile; video and audio never overlap
         stopService(Intent(this, BackgroundPlaybackService::class.java))
         BackgroundPlayback.player = null
         openSession()

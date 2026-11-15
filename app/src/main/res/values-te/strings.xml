@@ -77,6 +77,7 @@
     <string name="action_delete_device">పరికరం నుండి తొలగించు</string>
     <string name="delete_device_title">ఈ పరికరం నుండి తొలగించాలా?</string>
     <string name="delete_device_body">“%1$s” ఈ పరికరం స్టోరేజ్ నుండి తొలగించబడుతుంది. దీన్ని రద్దు చేయలేరు.</string>
+    <string name="media_delete_one_body">“%1$s” (%2$s) ఈ పరికరం స్టోరేజ్ నుండి తొలగించబడుతుంది. దీన్ని రద్దు చేయలేరు.</string>
     <plurals name="msg_deleted_device_n">
         <item quantity="one">ఈ పరికరం నుండి %1$d ఫైల్ తొలగించబడింది</item>
         <item quantity="other">ఈ పరికరం నుండి %1$d ఫైల్‌లు తొలగించబడ్డాయి</item>
@@ -795,4 +796,104 @@
         <item quantity="one">%1$d సీడర్</item>
         <item quantity="other">%1$d సీడర్‌లు</item>
     </plurals>
+
+    <!-- YouTube -->
+    <string name="yt_title">YouTube</string>
+    <string name="yt_subtitle">వీడియో లేదా దాని ఆడియోను సేవ్ చేయండి</string>
+    <string name="yt_field_hint">YouTube లింక్‌ను పేస్ట్ చేయండి</string>
+    <string name="yt_paste">పేస్ట్</string>
+    <string name="yt_paste_chip">%1$s లింక్‌ను పేస్ట్ చేయి</string>
+    <string name="yt_paste_none">క్లిప్‌బోర్డ్‌లో YouTube లింక్ లేదు</string>
+    <string name="yt_clear">లింక్‌ను తొలగించు</string>
+    <string name="yt_empty_title">YouTube నుండి సేవ్ చేయండి</string>
+    <string name="yt_empty_body">వీడియో లింక్‌ను పేస్ట్ చేయండి లేదా షేర్ చేయండి, క్వాలిటీని ఎంచుకోండి, అది మీ పరికరానికి డౌన్‌లోడ్ అవుతుంది.</string>
+    <string name="yt_loading">వీడియో లోడ్ అవుతోంది</string>
+    <string name="yt_thumbnail">వీడియో థంబ్‌నెయిల్</string>
+    <string name="yt_mode_video">వీడియో</string>
+    <string name="yt_mode_audio">ఆడియో</string>
+    <string name="yt_best">ఉత్తమం</string>
+    <string name="yt_download_format">డౌన్‌లోడ్ · %1$s · %2$s</string>
+    <string name="yt_another_link">మరొక లింక్‌ను ఉపయోగించండి</string>
+    <string name="yt_queued">డౌన్‌లోడ్‌లకు జోడించబడింది</string>
+    <string name="yt_already_queued">ఇప్పటికే మీ డౌన్‌లోడ్‌లలో ఉంది</string>
+    <string name="yt_view_downloads">డౌన్‌లోడ్‌లను చూడండి</string>
+    <string name="yt_retry">మళ్లీ ప్రయత్నించు</string>
+    <string name="yt_err_title">ఈ వీడియో లోడ్ కాలేదు</string>
+    <string name="yt_err_not_link">ఇది YouTube లింక్‌లా కనిపించడం లేదు.</string>
+    <string name="yt_err_playlist">ప్లేలిస్ట్‌లకు ఇంకా మద్దతు లేదు; ఒక్క వీడియోను తెరవండి.</string>
+    <string name="yt_err_not_link_title">లింక్‌ను తనిఖీ చేయండి</string>
+    <string name="yt_err_playlist_title">ఇది ప్లేలిస్ట్</string>
+    <string name="yt_err_sign_in">ఈ వీడియోకు వయోపరిమితి ఉంది లేదా సైన్ ఇన్ అవసరం, కాబట్టి దీన్ని డౌన్‌లోడ్ చేయలేరు.</string>
+    <string name="yt_err_unavailable">ఈ వీడియో అందుబాటులో లేదు లేదా ప్రైవేట్‌గా ఉంది.</string>
+    <string name="yt_err_network">మీ కనెక్షన్‌ను తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.</string>
+    <string name="yt_err_generic">ఈ వీడియోను చదువుతున్నప్పుడు ఏదో తప్పు జరిగింది. కొద్దిసేపటి తర్వాత మళ్లీ ప్రయత్నించండి.</string>
+    <string name="yt_err_queue">డౌన్‌లోడ్‌ను జోడించలేకపోయాం. మళ్లీ ప్రయత్నించండి.</string>
+
+    <!-- Media -->
+    <string name="media_title">మీడియా</string>
+    <string name="media_cd_downloads">డౌన్‌లోడ్‌లు</string>
+    <string name="media_cd_settings">సెట్టింగ్‌లు</string>
+    <string name="media_downloading">%1$d డౌన్‌లోడ్ అవుతున్నాయి · %2$d%%</string>
+    <string name="media_tab_video_count">వీడియో %1$d</string>
+    <string name="media_tab_audio_count">ఆడియో %1$d</string>
+    <string name="media_tab_files_count">ఫైళ్లు %1$d</string>
+    <string name="media_err_no_app">ఈ ఫైల్‌ను తెరవగల యాప్ ఏదీ లేదు</string>
+    <plurals name="media_cd_downloads_active">
+        <item quantity="one">డౌన్‌లోడ్‌లు, %1$d కొనసాగుతోంది</item>
+        <item quantity="other">డౌన్‌లోడ్‌లు, %1$d కొనసాగుతున్నాయి</item>
+    </plurals>
+    <string name="media_search_hint">డౌన్‌లోడ్‌లను వెతకండి</string>
+    <string name="media_search_clear">శోధనను తొలగించు</string>
+    <string name="media_sort">క్రమబద్ధీకరించు</string>
+    <string name="media_empty_title">ఇంకా ఏదీ డౌన్‌లోడ్ కాలేదు</string>
+    <string name="media_empty_body">మీరు డౌన్‌లోడ్ చేసిన వీడియోలు, సంగీతం, ఫైళ్లు ఇక్కడ కనిపిస్తాయి.</string>
+    <string name="media_open_youtube">YouTube తెరవండి</string>
+    <string name="media_no_match_title">సరిపోలికలు లేవు</string>
+    <string name="media_no_match_body">“%1$s”కు సరిపోయేది ఏదీ లేదు.</string>
+    <string name="media_more">మరిన్ని చర్యలు</string>
+    <string name="media_playing">ప్లే అవుతోంది</string>
+    <string name="media_selected_count">%1$d ఎంచుకున్నవి</string>
+    <string name="media_select_all">అన్నీ ఎంచుకో</string>
+    <string name="media_close_selection">ఎంపికను మూసివేయి</string>
+    <string name="media_delete">తొలగించు</string>
+    <string name="media_delete_selected_title">ఈ పరికరం నుండి తొలగించాలా?</string>
+    <plurals name="media_delete_selected_body">
+        <item quantity="one">%1$d ఫైల్ ఈ పరికరం స్టోరేజ్ నుండి తొలగించబడుతుంది. దీన్ని రద్దు చేయలేరు.</item>
+        <item quantity="other">%1$d ఫైళ్లు ఈ పరికరం స్టోరేజ్ నుండి తొలగించబడతాయి. దీన్ని రద్దు చేయలేరు.</item>
+    </plurals>
+
+    <!-- Audio player -->
+    <string name="audio_play">ప్లే చేయి</string>
+    <string name="audio_pause">పాజ్ చేయి</string>
+    <string name="audio_next">తదుపరి</string>
+    <string name="audio_previous">మునుపటి</string>
+    <string name="audio_shuffle_on">షఫుల్ ఆన్</string>
+    <string name="audio_shuffle_off">షఫుల్ ఆఫ్</string>
+    <string name="audio_repeat_off">రిపీట్ ఆఫ్</string>
+    <string name="audio_repeat_all">అన్నీ రిపీట్ చేయి</string>
+    <string name="audio_repeat_one">ఒకదాన్ని రిపీట్ చేయి</string>
+    <string name="audio_close">ఇప్పుడు ప్లే అవుతున్నదాన్ని మూసివేయి</string>
+    <string name="audio_expand">ఇప్పుడు ప్లే అవుతున్నదాన్ని తెరువు</string>
+    <string name="audio_up_next">తర్వాత</string>
+    <string name="audio_unknown_artist">తెలియని కళాకారుడు</string>
+    <string name="audio_position_state">%2$s లో %1$s</string>
+    <string name="audio_time_minutes_seconds">%1$s %2$s</string>
+    <plurals name="audio_time_minutes">
+        <item quantity="one">%1$d నిమిషం</item>
+        <item quantity="other">%1$d నిమిషాలు</item>
+    </plurals>
+    <plurals name="audio_time_seconds">
+        <item quantity="one">%1$d సెకను</item>
+        <item quantity="other">%1$d సెకన్లు</item>
+    </plurals>
+
+    <!-- Navigation -->
+    <string name="tab_youtube">YouTube</string>
+    <string name="tab_media">మీడియా</string>
+    <string name="shell_cd_downloads">డౌన్‌లోడ్‌లు</string>
+    <string name="shell_cd_settings">సెట్టింగ్‌లు</string>
+    <string name="shell_cd_back">వెనుకకు</string>
+    <string name="shell_dl_empty_title">ఏదీ డౌన్‌లోడ్ అవ్వడం లేదు</string>
+    <string name="shell_dl_empty_body">పూర్తయిన డౌన్‌లోడ్‌లు మీడియాలో ఉన్నాయి.</string>
+    <string name="shell_dl_open_media">మీడియా తెరువు</string>
 </resources>

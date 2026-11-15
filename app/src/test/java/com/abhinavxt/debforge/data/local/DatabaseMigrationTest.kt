@@ -130,6 +130,25 @@ class DatabaseMigrationTest {
         }
     }
 
+    @Test
+    fun downloadsFromV10GainEmptyTitleAndArtist() {
+        val name = create(10) { db ->
+            db.execSQL(
+                "INSERT INTO downloads (rdId, provider, filename, originalLink, downloadUrl, host, filesize, chunksAllowed, state, " +
+                    "bytesDownloaded, createdAt, updatedAt) VALUES ('d1', 'REAL_DEBRID', 'a.mkv', 'link', 'url', 'host', 100, 8, 'COMPLETED', 100, 1, 2)"
+            )
+        }
+        val room = openWithRoom(name)
+        try {
+            val d = runBlocking { room.downloadDao().getById("d1") }
+            assertEquals("a.mkv", d?.filename)
+            assertNull(d?.title)
+            assertNull(d?.artist)
+        } finally {
+            room.close()
+        }
+    }
+
     // --- helpers ---------------------------------------------------------------
 
     private fun schemaFile(version: Int) =

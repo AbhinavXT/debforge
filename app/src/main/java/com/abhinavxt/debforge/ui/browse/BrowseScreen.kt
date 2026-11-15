@@ -55,6 +55,7 @@ import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material.icons.rounded.Layers
 import androidx.compose.material.icons.rounded.Movie
 import androidx.compose.material.icons.rounded.Refresh
+import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material.icons.rounded.DoneAll
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.RemoveDone
@@ -138,6 +139,9 @@ fun BrowseScreen(
     onAdd: () -> Unit = {},
     /** Opens the Add dialog pre-filled (a link offered from the clipboard). */
     onAddText: (String) -> Unit = {},
+    onOpenDownloads: () -> Unit = {},
+    onOpenSettings: () -> Unit = {},
+    activeDownloads: Int = 0,
     viewModel: BrowseViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -420,6 +424,14 @@ fun BrowseScreen(
                             IconButton(onClick = viewModel::refresh) {
                                 Icon(Icons.Rounded.Refresh, contentDescription = stringResource(R.string.action_refresh))
                             }
+                        }
+                        IconButton(onClick = onOpenDownloads) {
+                            androidx.compose.material3.BadgedBox(badge = {
+                                if (activeDownloads > 0) androidx.compose.material3.Badge { Text("$activeDownloads") }
+                            }) { Icon(Icons.Rounded.Download, stringResource(R.string.shell_cd_downloads)) }
+                        }
+                        IconButton(onClick = onOpenSettings) {
+                            Icon(Icons.Rounded.Settings, stringResource(R.string.shell_cd_settings))
                         }
                     }
                 }
@@ -1031,7 +1043,7 @@ private fun ErrorState(message: String, onRetry: () -> Unit) {
 }
 
 @Composable
-private fun AllFilesAccessDialog(
+internal fun AllFilesAccessDialog(
     onPickFolder: () -> Unit,
     onUseAppStorage: () -> Unit,
     onDismiss: () -> Unit

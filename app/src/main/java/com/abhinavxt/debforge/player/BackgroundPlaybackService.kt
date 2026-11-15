@@ -31,11 +31,13 @@ class BackgroundPlaybackService : MediaSessionService() {
             stopSelf()
             return
         }
-        // Tapping the notification returns to the player where it left off.
+        // Tapping the notification returns to the player where it left off
+        // (audio: the app with "now playing" open).
         val open = PendingIntent.getActivity(
             this, 0,
-            Intent(this, PlayerActivity::class.java)
-                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_REORDER_TO_FRONT or Intent.FLAG_ACTIVITY_SINGLE_TOP),
+            BackgroundPlayback.openIntent
+                ?: Intent(this, PlayerActivity::class.java)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_REORDER_TO_FRONT or Intent.FLAG_ACTIVITY_SINGLE_TOP),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
         session = MediaSession.Builder(this, player)
@@ -66,4 +68,10 @@ class BackgroundPlaybackService : MediaSessionService() {
 /** Hand-over of the activity's player to [BackgroundPlaybackService]. */
 object BackgroundPlayback {
     @Volatile var player: Player? = null
+
+    /** What the notification opens instead of [PlayerActivity] (audio sets it). */
+    @Volatile var openIntent: Intent? = null
+
+    /** Boolean extra on that intent: open the app with "now playing" expanded. */
+    const val EXTRA_EXPAND_NOW_PLAYING = "com.abhinavxt.debforge.EXPAND_NOW_PLAYING"
 }

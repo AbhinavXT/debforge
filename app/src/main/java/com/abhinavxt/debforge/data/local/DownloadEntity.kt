@@ -56,6 +56,8 @@ data class DownloadEntity(
     val referer: String? = null,
     val userAgent: String? = null,
     val audioUrl: String? = null,
+    val title: String? = null,
+    val artist: String? = null,
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis()
 )

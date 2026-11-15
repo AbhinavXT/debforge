@@ -2,6 +2,7 @@ package com.abhinavxt.debforge.ui.add
 
 import android.content.Intent
 import android.net.Uri
+import com.abhinavxt.debforge.domain.YouTubeLinks
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -31,6 +32,16 @@ class PendingAddStore @Inject constructor() {
     fun offer(add: PendingAdd) {
         _pending.value = add
     }
+
+    private val _youtube = MutableStateFlow<String?>(null)
+    /** A shared or typed YouTube link (video or playlist-only) waiting for the YouTube screen. */
+    val youtube: StateFlow<String?> = _youtube.asStateFlow()
+
+    fun offerYouTube(text: String) {
+        _youtube.value = text
+    }
+
+    fun consumeYouTube(): String? = _youtube.value.also { _youtube.value = null }
 
     fun consume(): PendingAdd? = _pending.value.also { _pending.value = null }
 
@@ -65,10 +76,16 @@ class PendingAddStore @Inject constructor() {
             }
             else -> null
         }
+        if (add is PendingAdd.Text && isYouTube(add.text)) {
+            offerYouTube(add.text)
+            return true
+        }
         if (add != null) offer(add)
         return add != null
     }
 }
+
+fun isYouTube(text: String) = YouTubeLinks.videoId(text) != null || YouTubeLinks.isPlaylistOnly(text)
 
 /**
  * App-wide signal that a provider's remote list changed (something was added)

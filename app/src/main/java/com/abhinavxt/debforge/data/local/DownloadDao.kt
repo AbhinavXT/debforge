@@ -100,6 +100,10 @@ interface DownloadDao {
     @Query("SELECT * FROM downloads WHERE state = 'COMPLETED'")
     suspend fun completed(): List<DownloadEntity>
 
+    /** Finished downloads, newest first (Media screen). */
+    @Query("SELECT * FROM downloads WHERE state = 'COMPLETED' ORDER BY updatedAt DESC")
+    fun observeCompleted(): Flow<List<DownloadEntity>>
+
     /** "Clear finished": forget completed rows (files stay on disk). */
     @Query("DELETE FROM downloads WHERE state = 'COMPLETED'")
     suspend fun deleteCompleted()

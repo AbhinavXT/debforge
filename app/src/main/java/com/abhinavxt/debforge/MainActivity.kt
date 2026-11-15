@@ -40,6 +40,7 @@ class MainActivity : ComponentActivity() {
             pendingAdds.offerFromIntent(intent)
             handleAppAction(intent)
         }
+        takeExpandRequest(intent)
         setContent {
             val appVm: AppViewModel = hiltViewModel()
             val mode by appVm.themeMode.collectAsStateWithLifecycle()
@@ -74,6 +75,15 @@ class MainActivity : ComponentActivity() {
         setIntent(intent)
         pendingAdds.offerFromIntent(intent)
         handleAppAction(intent)
+        takeExpandRequest(intent)
+    }
+
+    /** The audio notification asks for "now playing"; clear it so rotation does not reopen it. */
+    private fun takeExpandRequest(intent: Intent?) {
+        if (intent?.getBooleanExtra(com.abhinavxt.debforge.player.BackgroundPlayback.EXTRA_EXPAND_NOW_PLAYING, false) == true) {
+            intent.removeExtra(com.abhinavxt.debforge.player.BackgroundPlayback.EXTRA_EXPAND_NOW_PLAYING)
+            com.abhinavxt.debforge.ui.home.NowPlayingRequest.expand.value = true
+        }
     }
 
     /** Widget, Quick Settings tile and launcher shortcuts; see [AppActions]. */

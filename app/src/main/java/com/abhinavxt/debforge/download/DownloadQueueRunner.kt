@@ -1,5 +1,6 @@
 package com.abhinavxt.debforge.download
 
+import android.content.Context
 import com.abhinavxt.debforge.data.local.ChunkDao
 import com.abhinavxt.debforge.data.local.DownloadDao
 import com.abhinavxt.debforge.data.local.DownloadEntity
@@ -17,6 +18,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -49,7 +51,8 @@ class DownloadQueueRunner @Inject constructor(
     private val progressTracker: DownloadProgressTracker,
     private val conditions: DownloadConditions,
     private val completionNotifier: CompletionNotifier,
-    private val serviceCleaner: ServiceCleaner
+    private val serviceCleaner: ServiceCleaner,
+    @ApplicationContext private val context: Context
 ) {
     /**
      * Why a session ended. DEFERRED = a rule (the schedule) says "not now";
@@ -153,6 +156,7 @@ class DownloadQueueRunner @Inject constructor(
             chunkDao.deleteForDownload(id)
             downloadDao.delete(id)
             DownloadFiles.deletePart(entity?.partFilePath)
+            artworkFile(context, id).delete()
             progressTracker.clear(id)
             interruptIfActive(id, Interrupt.CANCEL) // same race as pause
         }
@@ -268,6 +272,7 @@ class DownloadQueueRunner @Inject constructor(
                     chunkDao.deleteForDownload(entity.id)
                     downloadDao.delete(entity.id)
                     DownloadFiles.deletePart(entity.partFilePath)
+                    artworkFile(context, entity.id).delete()
                     // Honour an explicit cancel even if the file was already promoted.
                     if (completed) DownloadFiles.deleteFinal(entity.finalFilePath)
                 }

@@ -43,3 +43,15 @@
     public <init>(com.squareup.moshi.Moshi);
     public <init>(com.squareup.moshi.Moshi, java.lang.reflect.Type[]);
 }
+
+# NewPipeExtractor (YouTube): Rhino evaluates YouTube's signature JavaScript and
+# the extractor parses JSON/protobuf reflectively.
+-keep class org.mozilla.javascript.** { *; }
+-keep class org.mozilla.classfile.ClassFileWriter
+-dontwarn org.mozilla.javascript.JavaToJSONConverters
+-dontwarn org.mozilla.javascript.tools.**
+-keep class org.schabi.newpipe.extractor.timeago.patterns.** { *; }
+-keep class org.schabi.newpipe.extractor.services.youtube.protos.** { *; }
+-dontwarn java.beans.**
+-dontwarn javax.script.**
+-dontwarn jdk.dynalink.**

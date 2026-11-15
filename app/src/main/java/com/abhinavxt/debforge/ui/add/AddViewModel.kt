@@ -475,6 +475,11 @@ class AddViewModel @Inject constructor(
             if (s.canSubmit) downloadPickedVideos(s)
             return
         }
+        if (s.canSubmit && isYouTube(s.text)) {
+            pendingAdds.offerYouTube(s.text)
+            dismiss()
+            return
+        }
         val p = target ?: provider ?: return
         val active = provider
         if (!s.canSubmit) return

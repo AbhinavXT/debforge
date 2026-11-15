@@ -77,6 +77,7 @@
     <string name="action_delete_device">Cihazdan sil</string>
     <string name="delete_device_title">Bu cihazdan silinsin mi?</string>
     <string name="delete_device_body">“%1$s” bu cihazın depolama alanından silinecek. Bu işlem geri alınamaz.</string>
+    <string name="media_delete_one_body">“%1$s” (%2$s) bu cihazın depolama alanından silinecek. Bu işlem geri alınamaz.</string>
     <plurals name="msg_deleted_device_n">
         <item quantity="one">Bu cihazdan %1$d dosya silindi</item>
         <item quantity="other">Bu cihazdan %1$d dosya silindi</item>
@@ -795,4 +796,104 @@
         <item quantity="one">%1$d seeder</item>
         <item quantity="other">%1$d seeder</item>
     </plurals>
+
+    <!-- YouTube -->
+    <string name="yt_title">YouTube</string>
+    <string name="yt_subtitle">Videoyu veya sesini kaydet</string>
+    <string name="yt_field_hint">YouTube bağlantısı yapıştır</string>
+    <string name="yt_paste">Yapıştır</string>
+    <string name="yt_paste_chip">%1$s bağlantısını yapıştır</string>
+    <string name="yt_paste_none">Panoda YouTube bağlantısı yok</string>
+    <string name="yt_clear">Bağlantıyı temizle</string>
+    <string name="yt_empty_title">YouTube\'dan kaydet</string>
+    <string name="yt_empty_body">Bir video bağlantısı yapıştırın veya paylaşın, kaliteyi seçin; cihazınıza indirilsin.</string>
+    <string name="yt_loading">Video yükleniyor</string>
+    <string name="yt_thumbnail">Video küçük resmi</string>
+    <string name="yt_mode_video">Video</string>
+    <string name="yt_mode_audio">Ses</string>
+    <string name="yt_best">En iyi</string>
+    <string name="yt_download_format">İndir · %1$s · %2$s</string>
+    <string name="yt_another_link">Başka bağlantı kullan</string>
+    <string name="yt_queued">İndirilenlere eklendi</string>
+    <string name="yt_already_queued">Zaten indirilenlerde</string>
+    <string name="yt_view_downloads">İndirilenleri göster</string>
+    <string name="yt_retry">Tekrar dene</string>
+    <string name="yt_err_title">Bu video yüklenemedi</string>
+    <string name="yt_err_not_link">Bu bir YouTube bağlantısına benzemiyor.</string>
+    <string name="yt_err_playlist">Oynatma listeleri henüz desteklenmiyor; tek bir video açın.</string>
+    <string name="yt_err_not_link_title">Bağlantıyı kontrol edin</string>
+    <string name="yt_err_playlist_title">Bu bir oynatma listesi</string>
+    <string name="yt_err_sign_in">Bu videoda yaş sınırı var veya oturum açmak gerekiyor, bu yüzden indirilemez.</string>
+    <string name="yt_err_unavailable">Bu video kullanılamıyor veya gizli.</string>
+    <string name="yt_err_network">Bağlantınızı kontrol edip tekrar deneyin.</string>
+    <string name="yt_err_generic">Bu video okunurken bir sorun oluştu. Biraz sonra tekrar deneyin.</string>
+    <string name="yt_err_queue">İndirme eklenemedi. Tekrar deneyin.</string>
+
+    <!-- Media -->
+    <string name="media_title">Medya</string>
+    <string name="media_cd_downloads">İndirilenler</string>
+    <string name="media_cd_settings">Ayarlar</string>
+    <string name="media_downloading">%1$d indiriliyor · %%%2$d</string>
+    <string name="media_tab_video_count">Video %1$d</string>
+    <string name="media_tab_audio_count">Ses %1$d</string>
+    <string name="media_tab_files_count">Dosya %1$d</string>
+    <string name="media_err_no_app">Bu dosyayı açabilecek uygulama yok</string>
+    <plurals name="media_cd_downloads_active">
+        <item quantity="one">İndirilenler, %1$d devam ediyor</item>
+        <item quantity="other">İndirilenler, %1$d devam ediyor</item>
+    </plurals>
+    <string name="media_search_hint">İndirilenlerde ara</string>
+    <string name="media_search_clear">Aramayı temizle</string>
+    <string name="media_sort">Sırala</string>
+    <string name="media_empty_title">Henüz bir şey indirilmedi</string>
+    <string name="media_empty_body">İndirdiğiniz videolar, müzikler ve dosyalar burada görünür.</string>
+    <string name="media_open_youtube">YouTube\'u aç</string>
+    <string name="media_no_match_title">Eşleşme yok</string>
+    <string name="media_no_match_body">“%1$s” ile eşleşen bir şey yok.</string>
+    <string name="media_more">Diğer işlemler</string>
+    <string name="media_playing">Oynatılıyor</string>
+    <string name="media_selected_count">%1$d seçildi</string>
+    <string name="media_select_all">Tümünü seç</string>
+    <string name="media_close_selection">Seçimi kapat</string>
+    <string name="media_delete">Sil</string>
+    <string name="media_delete_selected_title">Bu cihazdan silinsin mi?</string>
+    <plurals name="media_delete_selected_body">
+        <item quantity="one">%1$d dosya bu cihazın depolama alanından silinecek. Bu işlem geri alınamaz.</item>
+        <item quantity="other">%1$d dosya bu cihazın depolama alanından silinecek. Bu işlem geri alınamaz.</item>
+    </plurals>
+
+    <!-- Audio player -->
+    <string name="audio_play">Oynat</string>
+    <string name="audio_pause">Duraklat</string>
+    <string name="audio_next">Sonraki</string>
+    <string name="audio_previous">Önceki</string>
+    <string name="audio_shuffle_on">Karıştır açık</string>
+    <string name="audio_shuffle_off">Karıştır kapalı</string>
+    <string name="audio_repeat_off">Tekrar kapalı</string>
+    <string name="audio_repeat_all">Tümünü tekrarla</string>
+    <string name="audio_repeat_one">Birini tekrarla</string>
+    <string name="audio_close">Çalan parçayı kapat</string>
+    <string name="audio_expand">Çalan parçayı aç</string>
+    <string name="audio_up_next">Sıradaki</string>
+    <string name="audio_unknown_artist">Bilinmeyen sanatçı</string>
+    <string name="audio_position_state">%1$s / %2$s</string>
+    <string name="audio_time_minutes_seconds">%1$s %2$s</string>
+    <plurals name="audio_time_minutes">
+        <item quantity="one">%1$d dakika</item>
+        <item quantity="other">%1$d dakika</item>
+    </plurals>
+    <plurals name="audio_time_seconds">
+        <item quantity="one">%1$d saniye</item>
+        <item quantity="other">%1$d saniye</item>
+    </plurals>
+
+    <!-- Navigation -->
+    <string name="tab_youtube">YouTube</string>
+    <string name="tab_media">Medya</string>
+    <string name="shell_cd_downloads">İndirilenler</string>
+    <string name="shell_cd_settings">Ayarlar</string>
+    <string name="shell_cd_back">Geri</string>
+    <string name="shell_dl_empty_title">İndirilen bir şey yok</string>
+    <string name="shell_dl_empty_body">Biten indirmeler Medya\'da.</string>
+    <string name="shell_dl_open_media">Medya\'yı aç</string>
 </resources>

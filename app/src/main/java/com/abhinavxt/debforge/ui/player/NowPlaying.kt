@@ -1,0 +1,275 @@
+package com.abhinavxt.debforge.ui.player
+
+import androidx.compose.animation.Crossfade
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.KeyboardArrowDown
+import androidx.compose.material.icons.rounded.Repeat
+import androidx.compose.material.icons.rounded.RepeatOne
+import androidx.compose.material.icons.rounded.Shuffle
+import androidx.compose.material.icons.rounded.SkipNext
+import androidx.compose.material.icons.rounded.SkipPrevious
+import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Slider
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import com.abhinavxt.debforge.R
+import com.abhinavxt.debforge.player.AudioRepeat
+import com.abhinavxt.debforge.player.AudioState
+import com.abhinavxt.debforge.player.formatClock
+import com.abhinavxt.debforge.player.upNextOrder
+import com.abhinavxt.debforge.ui.theme.DebforgeTheme
+
+/** Full-screen "now playing": artwork, title, seek bar, transport, shuffle/repeat and the queue. */
+@Composable
+fun NowPlaying(
+    state: AudioState,
+    onToggle: () -> Unit,
+    onNext: () -> Unit,
+    onPrevious: () -> Unit,
+    onSeek: (Long) -> Unit,
+    onShuffle: (Boolean) -> Unit,
+    onRepeat: () -> Unit,
+    onSkipTo: (Int) -> Unit,
+    onClose: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val track = state.track ?: return
+    Surface(modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
+        BoxWithConstraints(Modifier.fillMaxSize()) {
+            val wide = maxWidth > maxHeight && maxWidth >= 600.dp
+            Column(Modifier.fillMaxSize().padding(horizontal = 24.dp)) {
+                val s = remember { MutableInteractionSource() }
+                IconButton(onClose, Modifier.size(48.dp).focusRing(s, CircleShape), interactionSource = s) {
+                    Icon(Icons.Rounded.KeyboardArrowDown, stringResource(R.string.audio_close))
+                }
+                if (wide) {
+                    Row(Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(32.dp)) {
+                        Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+                            Artwork(state, Modifier.fillMaxWidth(0.7f).widthIn(max = 360.dp))
+                        }
+                        Column(Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
+                            Controls(state, onToggle, onNext, onPrevious, onSeek, onShuffle, onRepeat)
+                            Queue(state, onSkipTo, Modifier.weight(1f, fill = false).heightIn(max = 220.dp))
+                        }
+                    }
+                } else {
+                    Queue(
+                        state, onSkipTo, Modifier.weight(1f),
+                        header = {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Artwork(state, Modifier.fillMaxWidth(0.7f))
+                                Controls(state, onToggle, onNext, onPrevious, onSeek, onShuffle, onRepeat, Modifier.padding(top = 24.dp))
+                            }
+                        }
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun Artwork(state: AudioState, modifier: Modifier) {
+    val cs = MaterialTheme.colorScheme
+    val shape = RoundedCornerShape(24.dp)
+    Crossfade(state.track, modifier.aspectRatio(1f), label = "art") { t ->
+        if (t != null) TrackArt(
+            t,
+            Modifier.fillMaxSize().shadow(16.dp, shape, ambientColor = cs.surfaceTint, spotColor = cs.surfaceTint).clip(shape)
+        )
+    }
+}
+
+@Composable
+private fun Controls(
+    state: AudioState,
+    onToggle: () -> Unit,
+    onNext: () -> Unit,
+    onPrevious: () -> Unit,
+    onSeek: (Long) -> Unit,
+    onShuffle: (Boolean) -> Unit,
+    onRepeat: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val track = state.track ?: return
+    Column(modifier.fillMaxWidth()) {
+        Crossfade(track, label = "title") { t ->
+            Column(Modifier.fillMaxWidth()) {
+                Text(t.title, style = MaterialTheme.typography.headlineSmall, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                Text(
+                    t.artist ?: stringResource(R.string.audio_unknown_artist),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1, overflow = TextOverflow.Ellipsis
+                )
+            }
+        }
+        SeekBar(state.positionMs, state.durationMs, onSeek)
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically) {
+            val cs = MaterialTheme.colorScheme
+            ToggleButton(
+                Icons.Rounded.Shuffle, state.shuffle,
+                stringResource(if (state.shuffle) R.string.audio_shuffle_on else R.string.audio_shuffle_off)
+            ) { onShuffle(!state.shuffle) }
+            val s1 = remember { MutableInteractionSource() }
+            IconButton(onPrevious, Modifier.size(56.dp).focusRing(s1, CircleShape), interactionSource = s1) {
+                Icon(Icons.Rounded.SkipPrevious, stringResource(R.string.audio_previous), Modifier.size(32.dp))
+            }
+            val s2 = remember { MutableInteractionSource() }
+            FilledIconButton(
+                onToggle, Modifier.size(72.dp).focusRing(s2, CircleShape), interactionSource = s2,
+                colors = IconButtonDefaults.filledIconButtonColors(containerColor = cs.primary, contentColor = cs.onPrimary)
+            ) { PlayPauseIcon(state.isPlaying, Modifier.size(36.dp)) }
+            val s3 = remember { MutableInteractionSource() }
+            IconButton(onNext, Modifier.size(56.dp).focusRing(s3, CircleShape), enabled = state.hasNext, interactionSource = s3) {
+                Icon(Icons.Rounded.SkipNext, stringResource(R.string.audio_next), Modifier.size(32.dp))
+            }
+            ToggleButton(
+                if (state.repeat == AudioRepeat.ONE) Icons.Rounded.RepeatOne else Icons.Rounded.Repeat,
+                state.repeat != AudioRepeat.OFF,
+                stringResource(
+                    when (state.repeat) {
+                        AudioRepeat.OFF -> R.string.audio_repeat_off
+                        AudioRepeat.ALL -> R.string.audio_repeat_all
+                        AudioRepeat.ONE -> R.string.audio_repeat_one
+                    }
+                ),
+                onRepeat
+            )
+        }
+    }
+}
+
+@Composable
+private fun ToggleButton(icon: androidx.compose.ui.graphics.vector.ImageVector, on: Boolean, label: String, onClick: () -> Unit) {
+    val s = remember { MutableInteractionSource() }
+    IconButton(onClick, Modifier.size(48.dp).focusRing(s, CircleShape), interactionSource = s) {
+        Icon(
+            icon, label,
+            tint = if (on) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+@Composable
+private fun SeekBar(positionMs: Long, durationMs: Long, onSeek: (Long) -> Unit) {
+    // While dragging, show the thumb's value; seek once on release.
+    var dragging by remember { mutableStateOf<Float?>(null) }
+    val duration = durationMs.coerceAtLeast(1)
+    val shown = dragging ?: positionMs.coerceIn(0, duration).toFloat()
+    val tnum = MaterialTheme.typography.labelMedium.copy(fontFeatureSettings = "tnum")
+    val s = remember { MutableInteractionSource() }
+    val desc = stringResource(R.string.audio_position_state, spoken(shown.toLong()), spoken(duration))
+    Column(Modifier.fillMaxWidth().padding(top = 16.dp)) {
+        Slider(
+            value = shown,
+            onValueChange = { dragging = it },
+            onValueChangeFinished = { dragging?.let { onSeek(it.toLong()) }; dragging = null },
+            valueRange = 0f..duration.toFloat(),
+            interactionSource = s,
+            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
+                .focusRing(s, RoundedCornerShape(24.dp))
+                .semantics { stateDescription = desc }
+        )
+        Row(Modifier.fillMaxWidth().padding(horizontal = 4.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+            Text(formatClock(shown.toLong()), style = tnum, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text("-" + formatClock(duration - shown.toLong()), style = tnum, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
+}
+
+@Composable
+private fun spoken(ms: Long): String {
+    val s = (ms / 1000).toInt()
+    val seconds = pluralStringResource(R.plurals.audio_time_seconds, s % 60, s % 60)
+    return if (s >= 60) stringResource(R.string.audio_time_minutes_seconds, pluralStringResource(R.plurals.audio_time_minutes, s / 60, s / 60), seconds)
+    else seconds
+}
+
+/** "Up next" list; [header] scrolls with it so a phone in portrait fits everything. */
+@Composable
+private fun Queue(state: AudioState, onSkipTo: (Int) -> Unit, modifier: Modifier, header: (@Composable () -> Unit)? = null) {
+    val cs = MaterialTheme.colorScheme
+    LazyColumn(modifier.fillMaxWidth()) {
+        if (header != null) item { header() }
+        val upNext = upNextOrder(state.order, state.index, state.repeat).filter { it in state.queue.indices }
+        if (upNext.isNotEmpty()) item {
+            Text(
+                stringResource(R.string.audio_up_next),
+                style = MaterialTheme.typography.titleSmall,
+                color = cs.onSurfaceVariant,
+                modifier = Modifier.padding(top = 24.dp, bottom = 8.dp)
+            )
+        }
+        items(upNext, key = { it }) { i ->
+            val t = state.queue[i]
+            val s = remember { MutableInteractionSource() }
+            Column(
+                Modifier.fillMaxWidth().heightIn(min = 56.dp)
+                    .clip(MaterialTheme.shapes.small)
+                    .focusRing(s, MaterialTheme.shapes.small)
+                    .clickable(interactionSource = s, indication = androidx.compose.material3.ripple()) { onSkipTo(i) }
+                    .padding(horizontal = 8.dp, vertical = 8.dp),
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(t.title, style = MaterialTheme.typography.bodyLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(
+                    t.artist ?: stringResource(R.string.audio_unknown_artist),
+                    style = MaterialTheme.typography.bodySmall, color = cs.onSurfaceVariant,
+                    maxLines = 1, overflow = TextOverflow.Ellipsis
+                )
+            }
+        }
+    }
+}
+
+@Preview(showBackground = true, heightDp = 780)
+@Composable
+private fun NowPlayingPreview() = DebforgeTheme {
+    NowPlaying(previewState, {}, {}, {}, {}, {}, {}, {}, {})
+}
+
+@Preview(showBackground = true, widthDp = 900, heightDp = 480)
+@Composable
+private fun NowPlayingWidePreview() = DebforgeTheme {
+    NowPlaying(previewState.copy(shuffle = true, repeat = AudioRepeat.ONE), {}, {}, {}, {}, {}, {}, {}, {})
+}

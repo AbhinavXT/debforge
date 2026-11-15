@@ -77,6 +77,7 @@
     <string name="action_delete_device">ডিভাইস থেকে মুছুন</string>
     <string name="delete_device_title">এই ডিভাইস থেকে মুছবেন?</string>
     <string name="delete_device_body">“%1$s” এই ডিভাইসের স্টোরেজ থেকে মুছে ফেলা হবে। এটি আর ফেরানো যাবে না।</string>
+    <string name="media_delete_one_body">“%1$s” (%2$s) এই ডিভাইসের স্টোরেজ থেকে মুছে ফেলা হবে। এটি আর ফেরানো যাবে না।</string>
     <plurals name="msg_deleted_device_n">
         <item quantity="one">এই ডিভাইস থেকে %1$dটি ফাইল মুছে ফেলা হয়েছে</item>
         <item quantity="other">এই ডিভাইস থেকে %1$dটি ফাইল মুছে ফেলা হয়েছে</item>
@@ -795,4 +796,104 @@
         <item quantity="one">%1$d জন সিডার</item>
         <item quantity="other">%1$d জন সিডার</item>
     </plurals>
+
+    <!-- YouTube -->
+    <string name="yt_title">YouTube</string>
+    <string name="yt_subtitle">ভিডিও বা তার অডিও সেভ করুন</string>
+    <string name="yt_field_hint">YouTube লিংক পেস্ট করুন</string>
+    <string name="yt_paste">পেস্ট</string>
+    <string name="yt_paste_chip">%1$s লিংক পেস্ট করুন</string>
+    <string name="yt_paste_none">ক্লিপবোর্ডে কোনো YouTube লিংক নেই</string>
+    <string name="yt_clear">লিংক মুছুন</string>
+    <string name="yt_empty_title">YouTube থেকে সেভ করুন</string>
+    <string name="yt_empty_body">ভিডিও লিংক পেস্ট বা শেয়ার করুন, কোয়ালিটি বেছে নিন, আর সেটি আপনার ডিভাইসে ডাউনলোড হবে।</string>
+    <string name="yt_loading">ভিডিও লোড হচ্ছে</string>
+    <string name="yt_thumbnail">ভিডিওর থাম্বনেইল</string>
+    <string name="yt_mode_video">ভিডিও</string>
+    <string name="yt_mode_audio">অডিও</string>
+    <string name="yt_best">সেরা</string>
+    <string name="yt_download_format">ডাউনলোড · %1$s · %2$s</string>
+    <string name="yt_another_link">অন্য লিংক ব্যবহার করুন</string>
+    <string name="yt_queued">ডাউনলোডে যোগ করা হয়েছে</string>
+    <string name="yt_already_queued">আপনার ডাউনলোডে আগে থেকেই আছে</string>
+    <string name="yt_view_downloads">ডাউনলোড দেখুন</string>
+    <string name="yt_retry">আবার চেষ্টা করুন</string>
+    <string name="yt_err_title">এই ভিডিও লোড করা যায়নি</string>
+    <string name="yt_err_not_link">এটি YouTube লিংক বলে মনে হচ্ছে না।</string>
+    <string name="yt_err_playlist">প্লেলিস্ট এখনও সমর্থিত নয়; একটি ভিডিও খুলুন।</string>
+    <string name="yt_err_not_link_title">লিংকটি দেখুন</string>
+    <string name="yt_err_playlist_title">এটি একটি প্লেলিস্ট</string>
+    <string name="yt_err_sign_in">এই ভিডিওতে বয়সসীমা আছে বা সাইন-ইন লাগবে, তাই এটি ডাউনলোড করা যাবে না।</string>
+    <string name="yt_err_unavailable">এই ভিডিও পাওয়া যাচ্ছে না বা প্রাইভেট।</string>
+    <string name="yt_err_network">আপনার সংযোগ পরীক্ষা করে আবার চেষ্টা করুন।</string>
+    <string name="yt_err_generic">এই ভিডিও পড়তে গিয়ে কিছু ভুল হয়েছে। একটু পরে আবার চেষ্টা করুন।</string>
+    <string name="yt_err_queue">ডাউনলোড যোগ করা যায়নি। আবার চেষ্টা করুন।</string>
+
+    <!-- Media -->
+    <string name="media_title">মিডিয়া</string>
+    <string name="media_cd_downloads">ডাউনলোড</string>
+    <string name="media_cd_settings">সেটিংস</string>
+    <string name="media_downloading">%1$dটি ডাউনলোড হচ্ছে · %2$d%%</string>
+    <string name="media_tab_video_count">ভিডিও %1$d</string>
+    <string name="media_tab_audio_count">অডিও %1$d</string>
+    <string name="media_tab_files_count">ফাইল %1$d</string>
+    <string name="media_err_no_app">কোনো অ্যাপ এই ফাইল খুলতে পারে না</string>
+    <plurals name="media_cd_downloads_active">
+        <item quantity="one">ডাউনলোড, %1$dটি চলছে</item>
+        <item quantity="other">ডাউনলোড, %1$dটি চলছে</item>
+    </plurals>
+    <string name="media_search_hint">ডাউনলোড খুঁজুন</string>
+    <string name="media_search_clear">খোঁজা মুছুন</string>
+    <string name="media_sort">সাজান</string>
+    <string name="media_empty_title">এখনও কিছু ডাউনলোড হয়নি</string>
+    <string name="media_empty_body">আপনার ডাউনলোড করা ভিডিও, গান ও ফাইল এখানে দেখা যাবে।</string>
+    <string name="media_open_youtube">YouTube খুলুন</string>
+    <string name="media_no_match_title">কিছু মেলেনি</string>
+    <string name="media_no_match_body">“%1$s” এর সঙ্গে কিছু মেলেনি।</string>
+    <string name="media_more">আরও অ্যাকশন</string>
+    <string name="media_playing">চলছে</string>
+    <string name="media_selected_count">%1$dটি বাছাই করা হয়েছে</string>
+    <string name="media_select_all">সব বাছুন</string>
+    <string name="media_close_selection">বাছাই বন্ধ করুন</string>
+    <string name="media_delete">মুছুন</string>
+    <string name="media_delete_selected_title">এই ডিভাইস থেকে মুছবেন?</string>
+    <plurals name="media_delete_selected_body">
+        <item quantity="one">%1$dটি ফাইল এই ডিভাইসের স্টোরেজ থেকে মুছে ফেলা হবে। এটি আর ফেরানো যাবে না।</item>
+        <item quantity="other">%1$dটি ফাইল এই ডিভাইসের স্টোরেজ থেকে মুছে ফেলা হবে। এটি আর ফেরানো যাবে না।</item>
+    </plurals>
+
+    <!-- Audio player -->
+    <string name="audio_play">চালান</string>
+    <string name="audio_pause">বিরতি</string>
+    <string name="audio_next">পরেরটি</string>
+    <string name="audio_previous">আগেরটি</string>
+    <string name="audio_shuffle_on">শাফল চালু</string>
+    <string name="audio_shuffle_off">শাফল বন্ধ</string>
+    <string name="audio_repeat_off">রিপিট বন্ধ</string>
+    <string name="audio_repeat_all">সব রিপিট করুন</string>
+    <string name="audio_repeat_one">একটি রিপিট করুন</string>
+    <string name="audio_close">এখন চলছে বন্ধ করুন</string>
+    <string name="audio_expand">এখন চলছে খুলুন</string>
+    <string name="audio_up_next">এরপর</string>
+    <string name="audio_unknown_artist">অজানা শিল্পী</string>
+    <string name="audio_position_state">%2$s এর মধ্যে %1$s</string>
+    <string name="audio_time_minutes_seconds">%1$s %2$s</string>
+    <plurals name="audio_time_minutes">
+        <item quantity="one">%1$d মিনিট</item>
+        <item quantity="other">%1$d মিনিট</item>
+    </plurals>
+    <plurals name="audio_time_seconds">
+        <item quantity="one">%1$d সেকেন্ড</item>
+        <item quantity="other">%1$d সেকেন্ড</item>
+    </plurals>
+
+    <!-- Navigation -->
+    <string name="tab_youtube">YouTube</string>
+    <string name="tab_media">মিডিয়া</string>
+    <string name="shell_cd_downloads">ডাউনলোড</string>
+    <string name="shell_cd_settings">সেটিংস</string>
+    <string name="shell_cd_back">পিছনে</string>
+    <string name="shell_dl_empty_title">কিছু ডাউনলোড হচ্ছে না</string>
+    <string name="shell_dl_empty_body">সম্পূর্ণ হওয়া ডাউনলোড মিডিয়াতে আছে।</string>
+    <string name="shell_dl_open_media">মিডিয়া খুলুন</string>
 </resources>

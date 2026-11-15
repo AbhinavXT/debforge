@@ -23,7 +23,7 @@ import android.view.View
 import androidx.compose.ui.platform.LocalView
 import com.abhinavxt.debforge.ui.components.MiddleEllipsisText
 import com.abhinavxt.debforge.ui.components.ReleaseLabels
-import com.abhinavxt.debforge.ui.components.releaseLabels
+import com.abhinavxt.debforge.ui.media.releaseLabelsFor
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Description
@@ -42,7 +42,7 @@ import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.Schedule
 import androidx.compose.material.icons.rounded.Share
 import android.widget.Toast
-import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilledTonalIconButton
@@ -80,7 +80,7 @@ import com.abhinavxt.debforge.ui.components.MessageState
 import com.abhinavxt.debforge.ui.components.ScreenHeader
 
 @Composable
-fun ActiveDownloadsScreen(viewModel: ActiveDownloadsViewModel = hiltViewModel()) {
+fun ActiveDownloadsScreen(onOpenMedia: () -> Unit, viewModel: ActiveDownloadsViewModel = hiltViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val scheduledStart by viewModel.scheduledStartHour.collectAsStateWithLifecycle()
     val grouped = state.grouped
@@ -88,36 +88,21 @@ fun ActiveDownloadsScreen(viewModel: ActiveDownloadsViewModel = hiltViewModel())
     val running = grouped[DownloadState.DOWNLOADING].orEmpty()
     val totalSpeed = running.filterNot { it.waitingForNetwork }.sumOf { it.bytesPerSecond.coerceAtLeast(0) }
 
-    // Finished videos open in DebForge's player (offline, from the file).
-    val context = LocalContext.current
-    androidx.compose.runtime.LaunchedEffect(Unit) {
-        viewModel.playRequests.collect { req ->
-            context.startActivity(com.abhinavxt.debforge.player.PlayerActivity.intent(context, req))
-        }
-    }
-
     Scaffold(
         topBar = {
             ScreenHeader(
                 title = stringResource(R.string.tab_downloads),
                 subtitle = if (totalSpeed > 0) "↓ ${formatSpeed(totalSpeed)}" else null
-            ) {
-                if (state.rows.any { it.entity.state == DownloadState.COMPLETED }) {
-                    TextButton(onClick = viewModel::clearCompleted) {
-                        Icon(Icons.Rounded.ClearAll, contentDescription = null, modifier = Modifier.size(18.dp))
-                        Spacer(Modifier.width(6.dp))
-                        Text(stringResource(R.string.dl_clear_finished))
-                    }
-                }
-            }
+            )
         }
     ) { padding ->
         if (state.isEmpty) {
             MessageState(
                 icon = Icons.Rounded.Download,
-                title = stringResource(R.string.dl_empty_title),
-                body = stringResource(R.string.dl_empty_body),
-                modifier = Modifier.padding(padding)
+                title = stringResource(R.string.shell_dl_empty_title),
+                body = stringResource(R.string.shell_dl_empty_body),
+                modifier = Modifier.padding(padding),
+                action = { Button(onClick = onOpenMedia) { Text(stringResource(R.string.shell_dl_open_media)) } }
             )
             return@Scaffold
         }
@@ -142,7 +127,7 @@ fun ActiveDownloadsScreen(viewModel: ActiveDownloadsViewModel = hiltViewModel())
                         DownloadState.QUEUED -> QueuedRow(row, viewModel, m)
                         DownloadState.PAUSED -> PausedRow(row, viewModel, m)
                         DownloadState.FAILED -> FailedRow(row, viewModel, m)
-                        DownloadState.COMPLETED -> CompletedRow(row, viewModel, m)
+                        DownloadState.COMPLETED -> Unit
                     }
                 }
             }
@@ -154,8 +139,7 @@ private val SECTION_ORDER = listOf(
     DownloadState.DOWNLOADING,
     DownloadState.QUEUED,
     DownloadState.PAUSED,
-    DownloadState.FAILED,
-    DownloadState.COMPLETED
+    DownloadState.FAILED
 )
 
 @Composable
@@ -165,7 +149,7 @@ private fun DownloadState.title(): String = stringResource(
         DownloadState.QUEUED -> R.string.dl_section_queued
         DownloadState.PAUSED -> R.string.dl_section_paused
         DownloadState.FAILED -> R.string.dl_section_failed
-        DownloadState.COMPLETED -> R.string.dl_section_completed
+        DownloadState.COMPLETED -> R.string.dl_section_completed // never listed here
     }
 )
 
@@ -220,7 +204,7 @@ private fun DownloadingRow(row: ActiveRow, vm: ActiveDownloadsViewModel, modifie
         ).map { it.joinToString(" · ") }.distinct()
     }
     val cs = MaterialTheme.colorScheme
-    val labels = remember(name) { releaseLabels(name) }
+    val labels = remember(name) { row.entity.releaseLabelsFor() }
     RowFrame(
         modifier = modifier,
         labels = labels,
@@ -260,7 +244,7 @@ private fun ScheduleNotice(startHour: Int) {
 private fun QueuedRow(row: ActiveRow, vm: ActiveDownloadsViewModel, modifier: Modifier = Modifier) {
     val cs = MaterialTheme.colorScheme
     val view = LocalView.current
-    val labels = remember(row.entity.filename) { releaseLabels(row.entity.filename) }
+    val labels = remember(row.entity.filename) { row.entity.releaseLabelsFor() }
     val title = labels.title
     RowFrame(
         modifier = modifier,
@@ -283,7 +267,7 @@ private fun QueuedRow(row: ActiveRow, vm: ActiveDownloadsViewModel, modifier: Mo
 private fun PausedRow(row: ActiveRow, vm: ActiveDownloadsViewModel, modifier: Modifier = Modifier) {
     val cs = MaterialTheme.colorScheme
     val view = LocalView.current
-    val labels = remember(row.entity.filename) { releaseLabels(row.entity.filename) }
+    val labels = remember(row.entity.filename) { row.entity.releaseLabelsFor() }
     val title = labels.title
     RowFrame(
         modifier = modifier,
@@ -315,7 +299,7 @@ private fun PausedRow(row: ActiveRow, vm: ActiveDownloadsViewModel, modifier: Mo
 private fun FailedRow(row: ActiveRow, vm: ActiveDownloadsViewModel, modifier: Modifier = Modifier) {
     val cs = MaterialTheme.colorScheme
     val view = LocalView.current
-    val labels = remember(row.entity.filename) { releaseLabels(row.entity.filename) }
+    val labels = remember(row.entity.filename) { row.entity.releaseLabelsFor() }
     val title = labels.title
     RowFrame(
         modifier = modifier,
@@ -334,101 +318,6 @@ private fun FailedRow(row: ActiveRow, vm: ActiveDownloadsViewModel, modifier: Mo
             }
             IconButton(onClick = { view.strong(); vm.cancel(row.id) }) {
                 Icon(Icons.Rounded.Close, contentDescription = stringResource(R.string.dl_cd_dismiss, title))
-            }
-        }
-    )
-}
-
-@Composable
-private fun CompletedRow(row: ActiveRow, vm: ActiveDownloadsViewModel, modifier: Modifier = Modifier) {
-    val context = LocalContext.current
-    val path = row.entity.finalFilePath
-    // Existence check touches storage (a document query for picked folders),
-    // so it runs off the main thread; until it answers, assume the file is there.
-    val exists by androidx.compose.runtime.produceState(initialValue = path != null, path) {
-        value = path != null && kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { LocalFiles.exists(path) }
-    }
-    val cs = MaterialTheme.colorScheme
-    val present = exists && path != null
-    val view = LocalView.current
-    val labels = remember(row.entity.filename) { releaseLabels(row.entity.filename) }
-    val title = labels.title
-    RowFrame(
-        modifier = modifier,
-        labels = labels,
-        filename = row.entity.filename,
-        statusOptions = listOf(
-            if (present && path != null) {
-                stringResource(R.string.dl_done_at, formatBytes(row.entity.filesize), LocalFiles.folderLabel(context, path))
-            } else stringResource(R.string.dl_file_missing)
-        ),
-        icon = if (present) Icons.Rounded.CheckCircle else Icons.Rounded.Description,
-        iconContainer = if (present) cs.tertiaryContainer else cs.surfaceContainerHighest,
-        iconTint = if (present) cs.onTertiaryContainer else cs.onSurfaceVariant,
-        progress = null,
-        actions = {
-            var menu by remember { mutableStateOf(false) }
-            var confirmDelete by remember { mutableStateOf(false) }
-            if (present && path != null) {
-                val isVideo = LocalFiles.mimeType(LocalFiles.name(path)).startsWith("video/")
-                FilledTonalIconButton(onClick = {
-                    if (isVideo && vm.useInternalPlayer.value) {
-                        vm.play(row.entity)
-                    } else {
-                        runCatching { LocalFiles.openIntent(context, path)?.let(context::startActivity) }
-                    }
-                }) {
-                    Icon(
-                        if (isVideo) Icons.Rounded.PlayArrow else Icons.AutoMirrored.Rounded.OpenInNew,
-                        contentDescription = stringResource(if (isVideo) R.string.dl_cd_play else R.string.dl_cd_open, title)
-                    )
-                }
-            }
-            IconButton(onClick = { menu = true }) {
-                Icon(Icons.Rounded.MoreVert, contentDescription = stringResource(R.string.dl_cd_more, title))
-                DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
-                    if (present && path != null) {
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.action_share)) },
-                            leadingIcon = { Icon(Icons.Rounded.Share, contentDescription = null) },
-                            onClick = {
-                                menu = false
-                                runCatching { LocalFiles.shareIntent(context, path)?.let(context::startActivity) }
-                            }
-                        )
-                    }
-                    // Removes the entry only; the file stays where it is.
-                    DropdownMenuItem(
-                        text = { Text(stringResource(R.string.action_remove)) },
-                        leadingIcon = { Icon(Icons.Rounded.ClearAll, contentDescription = null) },
-                        onClick = { menu = false; view.strong(); vm.cancel(row.id) }
-                    )
-                    if (present && path != null) {
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.action_delete_device), color = cs.error) },
-                            leadingIcon = { Icon(Icons.Rounded.DeleteOutline, contentDescription = null, tint = cs.error) },
-                            onClick = { menu = false; confirmDelete = true }
-                        )
-                    }
-                }
-            }
-            if (confirmDelete) {
-                val failed = pluralStringResource(R.plurals.msg_delete_failed_n, 1, 1)
-                AlertDialog(
-                    onDismissRequest = { confirmDelete = false },
-                    icon = { Icon(Icons.Rounded.DeleteOutline, contentDescription = null, tint = cs.error) },
-                    title = { Text(stringResource(R.string.delete_device_title)) },
-                    text = { Text(stringResource(R.string.delete_device_body, row.entity.filename)) },
-                    confirmButton = {
-                        TextButton(onClick = {
-                            confirmDelete = false
-                            vm.deleteFromDevice(row.id) { Toast.makeText(context, failed, Toast.LENGTH_LONG).show() }
-                        }) { Text(stringResource(R.string.action_delete_device), color = cs.error) }
-                    },
-                    dismissButton = {
-                        TextButton(onClick = { confirmDelete = false }) { Text(stringResource(R.string.action_cancel)) }
-                    }
-                )
             }
         }
     )

@@ -11,6 +11,7 @@ import com.abhinavxt.debforge.di.DownloadHttpClient
 import com.abhinavxt.debforge.domain.DataResult
 import com.abhinavxt.debforge.domain.DirectLinkParser
 import com.abhinavxt.debforge.domain.ProviderId
+import com.abhinavxt.debforge.domain.YouTubeLinks
 import com.abhinavxt.debforge.domain.DownloadState
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -41,7 +42,8 @@ import kotlin.math.min
 /** Terminal result of a single file download (cancellation is thrown, not returned). */
 sealed interface DownloadOutcome {
     data object Success : DownloadOutcome
-    data class Failure(val message: String) : DownloadOutcome
+    /** [permanent]: retrying cannot help, so the runner fails the row at once. */
+    data class Failure(val message: String, val permanent: Boolean = false) : DownloadOutcome
 
     /**
      * Not failed — a rule (e.g. the download schedule) says "not now". The
@@ -157,7 +159,7 @@ class ChunkedDownloader @Inject constructor(
                     // don't count it — loop back and wait/defer.
                     if (conditions.currentBlock() != null) continue
                     consecutiveOnlineFailures++
-                    if (consecutiveOnlineFailures >= MAX_ATTEMPTS) return outcome
+                    if (outcome.permanent || consecutiveOnlineFailures >= MAX_ATTEMPTS) return outcome
                     delay(BACKOFF_MS[consecutiveOnlineFailures - 1])
                 }
             }
@@ -171,7 +173,7 @@ class ChunkedDownloader @Inject constructor(
             return DownloadOutcome.Failure("Missing destination path")
         }
         // A stream is a playlist of small pieces joined in order: its own path.
-        if (entity.sourceRef.startsWith(DirectLinkParser.HLS_PREFIX)) return hls.download(entity, partPath, finalPath)
+        if (entity.sourceRef.startsWith(DirectLinkParser.HLS_PREFIX) || YouTubeLinks.isSourceRef(entity.sourceRef)) return hls.download(entity, partPath, finalPath)
 
         // 1) Resolve a working URL and learn whether ranges are supported.
         val probe = try {

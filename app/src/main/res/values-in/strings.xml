@@ -77,6 +77,7 @@
     <string name="action_delete_device">Hapus dari perangkat</string>
     <string name="delete_device_title">Hapus dari perangkat ini?</string>
     <string name="delete_device_body">“%1$s” akan dihapus dari penyimpanan perangkat ini. Tindakan ini tidak bisa dibatalkan.</string>
+    <string name="media_delete_one_body">“%1$s” (%2$s) akan dihapus dari penyimpanan perangkat ini. Tindakan ini tidak bisa dibatalkan.</string>
     <plurals name="msg_deleted_device_n">
         <item quantity="other">%1$d file dihapus dari perangkat ini</item>
     </plurals>
@@ -756,4 +757,100 @@
     <plurals name="search_seeders">
         <item quantity="other">%1$d seeder</item>
     </plurals>
+
+    <!-- YouTube -->
+    <string name="yt_title">YouTube</string>
+    <string name="yt_subtitle">Simpan video atau audionya</string>
+    <string name="yt_field_hint">Tempel tautan YouTube</string>
+    <string name="yt_paste">Tempel</string>
+    <string name="yt_paste_chip">Tempel tautan %1$s</string>
+    <string name="yt_paste_none">Tidak ada tautan YouTube di papan klip</string>
+    <string name="yt_clear">Hapus tautan</string>
+    <string name="yt_empty_title">Simpan dari YouTube</string>
+    <string name="yt_empty_body">Tempel atau bagikan tautan video, pilih kualitas, lalu video diunduh ke perangkat Anda.</string>
+    <string name="yt_loading">Memuat video</string>
+    <string name="yt_thumbnail">Gambar mini video</string>
+    <string name="yt_mode_video">Video</string>
+    <string name="yt_mode_audio">Audio</string>
+    <string name="yt_best">Terbaik</string>
+    <string name="yt_download_format">Unduh · %1$s · %2$s</string>
+    <string name="yt_another_link">Gunakan tautan lain</string>
+    <string name="yt_queued">Ditambahkan ke unduhan</string>
+    <string name="yt_already_queued">Sudah ada di unduhan Anda</string>
+    <string name="yt_view_downloads">Lihat unduhan</string>
+    <string name="yt_retry">Coba lagi</string>
+    <string name="yt_err_title">Video ini tidak bisa dimuat</string>
+    <string name="yt_err_not_link">Itu sepertinya bukan tautan YouTube.</string>
+    <string name="yt_err_playlist">Playlist belum didukung; buka satu video saja.</string>
+    <string name="yt_err_not_link_title">Periksa tautan</string>
+    <string name="yt_err_playlist_title">Itu playlist</string>
+    <string name="yt_err_sign_in">Video ini dibatasi usia atau perlu masuk akun, jadi tidak bisa diunduh.</string>
+    <string name="yt_err_unavailable">Video ini tidak tersedia atau bersifat pribadi.</string>
+    <string name="yt_err_network">Periksa koneksi Anda lalu coba lagi.</string>
+    <string name="yt_err_generic">Terjadi masalah saat membaca video ini. Coba lagi sebentar lagi.</string>
+    <string name="yt_err_queue">Unduhan tidak bisa ditambahkan. Coba lagi.</string>
+
+    <!-- Media -->
+    <string name="media_title">Media</string>
+    <string name="media_cd_downloads">Unduhan</string>
+    <string name="media_cd_settings">Setelan</string>
+    <string name="media_downloading">%1$d diunduh · %2$d%%</string>
+    <string name="media_tab_video_count">Video %1$d</string>
+    <string name="media_tab_audio_count">Audio %1$d</string>
+    <string name="media_tab_files_count">File %1$d</string>
+    <string name="media_err_no_app">Tidak ada aplikasi yang bisa membuka file ini</string>
+    <plurals name="media_cd_downloads_active">
+        <item quantity="other">Unduhan, %1$d sedang berjalan</item>
+    </plurals>
+    <string name="media_search_hint">Cari unduhan</string>
+    <string name="media_search_clear">Hapus pencarian</string>
+    <string name="media_sort">Urutkan</string>
+    <string name="media_empty_title">Belum ada yang diunduh</string>
+    <string name="media_empty_body">Video, musik, dan file yang Anda unduh muncul di sini.</string>
+    <string name="media_open_youtube">Buka YouTube</string>
+    <string name="media_no_match_title">Tidak ada hasil</string>
+    <string name="media_no_match_body">Tidak ada yang cocok dengan “%1$s”.</string>
+    <string name="media_more">Tindakan lainnya</string>
+    <string name="media_playing">Sedang diputar</string>
+    <string name="media_selected_count">%1$d dipilih</string>
+    <string name="media_select_all">Pilih semua</string>
+    <string name="media_close_selection">Tutup pilihan</string>
+    <string name="media_delete">Hapus</string>
+    <string name="media_delete_selected_title">Hapus dari perangkat ini?</string>
+    <plurals name="media_delete_selected_body">
+        <item quantity="other">%1$d file akan dihapus dari penyimpanan perangkat ini. Tindakan ini tidak bisa dibatalkan.</item>
+    </plurals>
+
+    <!-- Audio player -->
+    <string name="audio_play">Putar</string>
+    <string name="audio_pause">Jeda</string>
+    <string name="audio_next">Berikutnya</string>
+    <string name="audio_previous">Sebelumnya</string>
+    <string name="audio_shuffle_on">Acak aktif</string>
+    <string name="audio_shuffle_off">Acak nonaktif</string>
+    <string name="audio_repeat_off">Ulangi nonaktif</string>
+    <string name="audio_repeat_all">Ulangi semua</string>
+    <string name="audio_repeat_one">Ulangi satu</string>
+    <string name="audio_close">Tutup yang sedang diputar</string>
+    <string name="audio_expand">Buka yang sedang diputar</string>
+    <string name="audio_up_next">Berikutnya</string>
+    <string name="audio_unknown_artist">Artis tidak dikenal</string>
+    <string name="audio_position_state">%1$s dari %2$s</string>
+    <string name="audio_time_minutes_seconds">%1$s %2$s</string>
+    <plurals name="audio_time_minutes">
+        <item quantity="other">%1$d menit</item>
+    </plurals>
+    <plurals name="audio_time_seconds">
+        <item quantity="other">%1$d detik</item>
+    </plurals>
+
+    <!-- Navigation -->
+    <string name="tab_youtube">YouTube</string>
+    <string name="tab_media">Media</string>
+    <string name="shell_cd_downloads">Unduhan</string>
+    <string name="shell_cd_settings">Setelan</string>
+    <string name="shell_cd_back">Kembali</string>
+    <string name="shell_dl_empty_title">Tidak ada yang diunduh</string>
+    <string name="shell_dl_empty_body">Unduhan yang selesai ada di Media.</string>
+    <string name="shell_dl_open_media">Buka Media</string>
 </resources>

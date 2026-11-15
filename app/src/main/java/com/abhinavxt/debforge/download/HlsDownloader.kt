@@ -7,7 +7,9 @@ import com.abhinavxt.debforge.data.local.DownloadEntity
 import com.abhinavxt.debforge.data.usage.UsageRecorder
 import com.abhinavxt.debforge.di.DownloadHttpClient
 import com.abhinavxt.debforge.domain.DownloadState
+import com.abhinavxt.debforge.data.youtube.YouTubeException
 import com.abhinavxt.debforge.domain.HlsPlaylist
+import com.abhinavxt.debforge.domain.YouTubeLinks
 import com.abhinavxt.debforge.download.conditions.DownloadConditions
 import com.abhinavxt.debforge.download.conditions.RateLimiter
 import kotlinx.coroutines.CancellationException
@@ -55,7 +57,8 @@ class HlsDownloader @Inject constructor(
     private val progressTracker: DownloadProgressTracker,
     private val conditions: DownloadConditions,
     private val rateLimiter: RateLimiter,
-    private val usage: UsageRecorder
+    private val usage: UsageRecorder,
+    private val youtubeSource: YouTubeSource
 ) {
     private companion object {
         const val PARALLEL = 4
@@ -67,8 +70,11 @@ class HlsDownloader @Inject constructor(
     }
 
     suspend fun download(entity: DownloadEntity, partPath: String, finalPath: String): DownloadOutcome = withContext(Dispatchers.IO) {
+        val yt = YouTubeLinks.isSourceRef(entity.sourceRef)
         val tracks = try {
-            listOfNotNull(
+            if (yt) youtubeSource.tracks(entity, partPath).mapIndexed { i, m ->
+                Track(m, if (i == 0) partPath else "$partPath.audio")
+            } else listOfNotNull(
                 Track(media(entity, entity.downloadUrl), partPath),
                 entity.audioUrl?.let { Track(media(entity, it), "$partPath.audio") }
             )
@@ -76,12 +82,21 @@ class HlsDownloader @Inject constructor(
             throw ce
         } catch (e: IOException) {
             return@withContext DownloadOutcome.Failure(e.message ?: "Couldn't load the stream")
+        } catch (e: YouTubeException) {
+            // Retrying can't fix these; a dropped connection can.
+            val permanent = e is YouTubeException.SignInRequired || e is YouTubeException.Unavailable || e is YouTubeException.PlaylistOnly
+            val msg = if (e is YouTubeException.Network) "Couldn't reach YouTube. Check your connection, then retry." else e.message ?: "Couldn't load the video"
+            return@withContext DownloadOutcome.Failure(msg, permanent)
         }
         val total = tracks.sumOf { it.pieces.size }
+        val allPieces = tracks.flatMap { it.pieces }
+        // YouTube pieces have exact lengths: the total is known, and a piece plan that changed (new length) is detected.
+        val ytBytes = if (yt) allPieces.sumOf { it.length ?: 0L } else 0L
 
         var done = chunkDao.getForDownload(entity.id)
+        // shortcut: a YouTube stream that grew in its last track (only full pieces done) isn't noticed, a schema column for the stream length would; add one if streams are seen changing mid-download.
         // The playlists changed since the last attempt: start over.
-        if (done.size > total || done.withIndex().any { (i, c) -> c.index != i }) {
+        if (done.size > total || done.withIndex().any { (i, c) -> c.index != i || (yt && (c.bytesWritten != allPieces[i].length || c.startByte != allPieces[i].offset)) }) {
             chunkDao.deleteForDownload(entity.id)
             done = emptyList()
         }
@@ -113,7 +128,7 @@ class HlsDownloader @Inject constructor(
                         downloaded += batchBytes
                         usage.add(entity.provider, batchBytes)
                         // The total is only known at the end: estimate it from the pieces so far.
-                        val estimate = downloaded * total / (first + batch.last().index + 1)
+                        val estimate = if (yt) ytBytes else downloaded * total / (first + batch.last().index + 1)
                         progressTracker.update(entity.id, downloaded, estimate, DownloadState.DOWNLOADING)
                         val throttleMs = rateLimiter.reserve(batchBytes)
                         if (throttleMs > 0) delay(throttleMs)
@@ -134,6 +149,8 @@ class HlsDownloader @Inject constructor(
         val size = try {
             when {
                 tracks.size == 2 -> combine(partPath, finalPath, separateAudio = true)
+                // Audio only: YouTube's M4A / WebM are fragmented, a raw copy has no duration.
+                yt -> combine(partPath, finalPath, separateAudio = false, audioOnly = true)
                 tracks[0].media.init != null -> try {
                     combine(partPath, finalPath, separateAudio = false)
                 } catch (e: IOException) {
@@ -182,11 +199,11 @@ class HlsDownloader @Inject constructor(
     }
 
     /**
-     * Video (.part) and its [separateAudio] (.part.audio) into one MP4
+     * Video (.part) and its [separateAudio] (.part.audio) into one MP4 (or WebM, by [finalPath]'s extension)
      * (.part.mux), promoted to [finalPath]; the joined inputs are deleted
      * after. Returns its size.
      */
-    private suspend fun combine(partPath: String, finalPath: String, separateAudio: Boolean): Long? {
+    private suspend fun combine(partPath: String, finalPath: String, separateAudio: Boolean, audioOnly: Boolean = false): Long? {
         val muxPath = "$partPath.mux"
         val size = DownloadFiles.openFd(partPath).use { video ->
             val audio = if (separateAudio) DownloadFiles.openFd("$partPath.audio") else null
@@ -194,7 +211,8 @@ class HlsDownloader @Inject constructor(
                 DownloadFiles.openFd(muxPath).use { out ->
                     // A combine cut short last time leaves its bytes behind.
                     Os.ftruncate(out.fileDescriptor, 0)
-                    StreamMuxer.mux(video.fileDescriptor, audio?.fileDescriptor, out.fileDescriptor)
+                    if (audioOnly) StreamMuxer.mux(null, video.fileDescriptor, out.fileDescriptor, StreamMuxer.Output.of(finalPath))
+                    else StreamMuxer.mux(video.fileDescriptor, audio?.fileDescriptor, out.fileDescriptor, StreamMuxer.Output.of(finalPath))
                     out.statSize
                 }
             }
@@ -226,7 +244,9 @@ class HlsDownloader @Inject constructor(
             call.execute().use { resp ->
                 val expected = if (offset != null && length != null) 206 else 200
                 if (resp.code != expected) throw IOException("Server returned HTTP ${resp.code}")
-                resp.body?.bytes() ?: throw IOException("Empty response body")
+                val bytes = resp.body?.bytes() ?: throw IOException("Empty response body")
+                if (expected == 206 && bytes.size.toLong() != length) throw IOException("Short piece: ${bytes.size} of $length bytes")
+                bytes
             }
         }
     }

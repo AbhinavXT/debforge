@@ -30,13 +30,23 @@ internal object StreamMuxer {
         val done: Boolean get() = extractor.sampleTime < 0
     }
 
-    /** [audio] null: the video file's own audio, if it has any. */
-    suspend fun mux(video: FileDescriptor, audio: FileDescriptor?, out: FileDescriptor) {
+    /** WebM for .webm / .weba (VP9 + Opus), MP4 for everything else (H.264 / AV1 + AAC). */
+    enum class Output(val muxerFormat: Int) {
+        MP4(MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4), WEBM(MediaMuxer.OutputFormat.MUXER_OUTPUT_WEBM);
+
+        companion object {
+            fun of(path: String) = if (path.substringAfterLast('.').lowercase() in setOf("webm", "weba")) WEBM else MP4
+        }
+    }
+
+    /** [video] null: audio only. [audio] null: the video file's own audio, if it has any. */
+    suspend fun mux(video: FileDescriptor?, audio: FileDescriptor?, out: FileDescriptor, output: Output = Output.MP4) {
         val extractors = mutableListOf<MediaExtractor>()
         var muxer: MediaMuxer? = null
         try {
-            muxer = MediaMuxer(out, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4)
+            muxer = MediaMuxer(out, output.muxerFormat)
             val sources = listOf(video to "video/", (audio ?: video) to "audio/").mapNotNull { (fd, kind) ->
+                if (fd == null) return@mapNotNull null
                 val ex = MediaExtractor().also { extractors += it }
                 ex.setDataSource(fd)
                 val index = (0 until ex.trackCount).firstOrNull {
@@ -48,12 +58,12 @@ internal object StreamMuxer {
                 val track = try {
                     muxer.addTrack(format)
                 } catch (e: IllegalArgumentException) {
-                    throw IOException("Can't put ${format.getString(MediaFormat.KEY_MIME)} in an MP4", e)
+                    throw IOException("Can't put ${format.getString(MediaFormat.KEY_MIME)} in a ${output.name}", e)
                 }
                 Source(ex, track, ex.sampleTime)
             }
             // One file: one clock, so audio keeps its offset from the video.
-            if (audio == null) sources.minOf { it.first }.let { start -> sources.forEach { it.first = start } }
+            if (audio == null && sources.isNotEmpty()) sources.minOf { it.first }.let { start -> sources.forEach { it.first = start } }
             muxer.start()
             val buffer = ByteBuffer.allocateDirect(MAX_SAMPLE)
             val info = MediaCodec.BufferInfo()
