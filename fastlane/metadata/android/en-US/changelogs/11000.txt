@@ -1,0 +1,6 @@
+• A refreshed look: calmer colours, so buttons and progress stand out
+• Library: the title tucks away as you scroll, leaving more room for your posters, and loading shows placeholders
+• Downloads and Processing show clean titles instead of long file names, with progress, speed and time left on one line
+• Title page: one clear Download all button, with Follow and .zip beside it
+• Browser: a tidier address bar that shows the site you are on
+• Smoother animations and better screen reader support
