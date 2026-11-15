@@ -16,7 +16,6 @@
     <string name="action_add">Добавить</string>
     <string name="action_dismiss">Скрыть</string>
     <string name="action_pause">Приостановить</string>
-    <string name="action_resume">Продолжить</string>
     <string name="action_renew">Продлить</string>
     <string name="action_refresh">Обновить</string>
     <string name="action_clear">Очистить</string>
@@ -43,8 +42,9 @@
     <string name="add_hint_magnet">Magnet-ссылки, по одной в строке</string>
     <string name="add_hint_links">Ссылки на файлообменники, по одной в строке</string>
     <string name="processing_on">Обработка на %1$s</string>
-    <string name="processing_will_auto">Будет скачано автоматически</string>
-    <string name="processing_auto_when_ready">Скачать автоматически, когда будет готово</string>
+    <string name="processing_auto_short">Автозагрузка</string>
+    <string name="processing_auto_on_short">Автозагрузка включена</string>
+    <string name="processing_cd_remove">Удалить %1$s из сервиса</string>
     <string name="eta_seconds">осталось %1$d с</string>
     <string name="eta_minutes">осталось %1$d мин</string>
     <string name="eta_hours">осталось %1$d ч %2$d мин</string>
@@ -53,8 +53,11 @@
     <string name="browse_cancel_selection">Отменить выбор</string>
     <string name="browse_searching_all">Поиск по всей библиотеке… Проверено файлов: %1$d</string>
     <string name="browse_search_hint">Поиск по названиям и файлам</string>
-    <string name="browse_posters">Постеры</string>
     <string name="browse_group_series">Группировать сериалы</string>
+    <string name="library_view_as_list">Перейти к списку</string>
+    <string name="library_view_as_posters">Перейти к постерам</string>
+    <string name="library_tmdb_prompt">Добавьте ключ TMDB для постеров</string>
+    <string name="library_loading">Загрузка библиотеки</string>
     <string name="sort_newest">Сначала новые</string>
     <string name="sort_oldest">Сначала старые</string>
     <string name="sort_name_az">Имя А–Я</string>
@@ -97,10 +100,11 @@
     <string name="kind_movie">Фильм</string>
     <string name="sheet_all_queued">Всё в очереди</string>
     <string name="sheet_download_all">Скачать всё (%1$d)</string>
-    <string name="sheet_zip_title">Всё одним .zip</string>
     <string name="sheet_zip_download">Скачать .zip</string>
     <string name="sheet_season">Сезон %1$d</string>
     <string name="sheet_download_season">Скачать сезон (%1$d)</string>
+    <string name="sheet_play_cd">Воспроизвести %1$s</string>
+    <string name="sheet_download_cd">Скачать %1$s</string>
     <string name="state_queued">В очереди</string>
     <string name="state_downloading">Загрузка</string>
     <string name="state_paused">Приостановлено</string>
@@ -117,12 +121,20 @@
     <string name="dl_waiting">Ожидание</string>
     <string name="dl_so_far">пока</string>
     <string name="dl_waiting_size">Ожидание · %1$s</string>
-    <string name="dl_paused_progress">Приостановлено · %1$s / %2$s</string>
+    <string name="dl_paused_status">Приостановлено · %1$s · %2$s</string>
     <string name="dl_failed">Ошибка загрузки</string>
     <string name="dl_done_at">Готово · %1$s · %2$s</string>
     <string name="dl_file_missing">Файл перемещён или удалён</string>
     <string name="dl_empty_title">Нет активных загрузок</string>
     <string name="dl_empty_body">Нажмите «Скачать» у элемента в Библиотеке, чтобы добавить его в очередь.</string>
+    <string name="dl_cd_pause">Приостановить %1$s</string>
+    <string name="dl_cd_resume">Продолжить %1$s</string>
+    <string name="dl_cd_cancel">Отменить %1$s</string>
+    <string name="dl_cd_retry">Повторить %1$s</string>
+    <string name="dl_cd_dismiss">Скрыть %1$s</string>
+    <string name="dl_cd_play">Воспроизвести %1$s</string>
+    <string name="dl_cd_open">Открыть %1$s</string>
+    <string name="dl_cd_more">Другие действия для %1$s</string>
     <string name="wait_network">Ожидание сети</string>
     <string name="wait_wifi">Ожидание Wi-Fi</string>
     <string name="wait_charger">Ожидание зарядки</string>
@@ -175,7 +187,6 @@
     <string name="poster_setup_unreachable">Не удалось связаться с TMDB для проверки ключа.</string>
     <string name="poster_setup_save_anyway">Всё равно сохранить</string>
     <string name="poster_setup_done">Постеры включены</string>
-    <string name="poster_banner">Добавьте бесплатный ключ TMDB, чтобы видеть постеры и описания</string>
     <string name="poster_banner_action">Настроить</string>
     <string name="set_posters_on">Включено. Постеры и описания берутся из TMDB.</string>
     <string name="set_posters_change">Сменить ключ</string>
@@ -401,7 +412,6 @@
     <string name="theme_graphite">Графит</string>
     <string name="set_pure_black">Чисто чёрный</string>
     <string name="set_pure_black_detail">Чёрный фон в тёмном режиме. Лучше для OLED-экранов и батареи.</string>
-    <string name="dl_more_actions">Другие действия</string>
 
     <!-- Widget, Quick Settings tile, launcher shortcuts, clipboard offer -->
     <string name="action_pause_all">Приостановить все</string>

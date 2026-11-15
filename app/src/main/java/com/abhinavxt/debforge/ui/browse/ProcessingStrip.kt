@@ -3,7 +3,10 @@ package com.abhinavxt.debforge.ui.browse
 import androidx.compose.ui.res.stringResource
 import com.abhinavxt.debforge.R
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -29,6 +32,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.material3.TextButton
 import androidx.compose.ui.Alignment
 import androidx.compose.foundation.layout.Row
@@ -36,6 +40,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.abhinavxt.debforge.data.provider.RemoteJob
+import com.abhinavxt.debforge.ui.components.MiddleEllipsisText
+import com.abhinavxt.debforge.ui.components.releaseLabels
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 
 /**
  * Horizontal strip of jobs the service is still fetching, each with a
@@ -70,13 +78,16 @@ fun ProcessingStrip(
 
 @Composable
 private fun JobCard(job: RemoteJob, watched: Boolean, onToggle: () -> Unit, onRemove: (() -> Unit)?) {
+    val labels = remember(job.name) { releaseLabels(job.name) }
+    val haptic = LocalHapticFeedback.current
     Surface(
         color = MaterialTheme.colorScheme.surfaceContainerHigh,
         shape = MaterialTheme.shapes.large,
         modifier = Modifier.width(248.dp)
     ) {
-        Column(Modifier.padding(14.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+        Box(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(start = 14.dp, end = 14.dp, top = 12.dp, bottom = 10.dp)) {
+            Row(verticalAlignment = Alignment.Top) {
                 IconBadge(
                     Icons.Rounded.CloudDownload,
                     container = MaterialTheme.colorScheme.tertiaryContainer,
@@ -84,18 +95,31 @@ private fun JobCard(job: RemoteJob, watched: Boolean, onToggle: () -> Unit, onRe
                     size = 32.dp
                 )
                 Spacer(Modifier.width(10.dp))
-                Text(
-                    job.name,
-                    style = MaterialTheme.typography.bodyMedium,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
+                Column(Modifier.weight(1f).padding(end = if (onRemove != null) 36.dp else 0.dp)) {
+                    Text(
+                        labels.title,
+                        style = MaterialTheme.typography.bodyMedium,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    if (labels.tags.isNotEmpty()) {
+                        Text(
+                            labels.tags,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                    MiddleEllipsisText(job.name)
+                }
             }
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(8.dp))
             val p = job.progress
             val barModifier = Modifier.fillMaxWidth().height(6.dp).clip(CircleShape)
             if (p != null) {
-                LinearProgressIndicator(progress = { p }, modifier = barModifier)
+                val shown by animateFloatAsState(p.coerceIn(0f, 1f), label = "job-progress")
+                LinearProgressIndicator(progress = { shown }, modifier = barModifier)
             } else {
                 LinearProgressIndicator(modifier = barModifier)
             }
@@ -107,7 +131,7 @@ private fun JobCard(job: RemoteJob, watched: Boolean, onToggle: () -> Unit, onRe
                     job.etaSeconds?.let { formatEta(it) },
                     job.bytesPerSecond?.let { formatSize(it) + "/s" }
                 ).joinToString(" · "),
-                style = MaterialTheme.typography.labelSmall,
+                style = MaterialTheme.typography.labelSmall.copy(fontFeatureSettings = "tnum"),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
@@ -116,7 +140,6 @@ private fun JobCard(job: RemoteJob, watched: Boolean, onToggle: () -> Unit, onRe
                 FilterChip(
                     selected = watched,
                     onClick = onToggle,
-                    modifier = Modifier.weight(1f, fill = false),
                     leadingIcon = {
                         Icon(
                             if (watched) Icons.Rounded.Check else Icons.Rounded.Bolt,
@@ -127,23 +150,27 @@ private fun JobCard(job: RemoteJob, watched: Boolean, onToggle: () -> Unit, onRe
                     label = {
                         Text(
                             stringResource(
-                                if (watched) R.string.processing_will_auto else R.string.processing_auto_when_ready
+                                if (watched) R.string.processing_auto_on_short else R.string.processing_auto_short
                             ),
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
                     }
                 )
-                if (onRemove != null) {
-                    IconButton(onClick = onRemove) {
-                        Icon(
-                            Icons.Rounded.DeleteOutline,
-                            contentDescription = stringResource(R.string.action_remove),
-                            tint = MaterialTheme.colorScheme.error
-                        )
-                    }
-                }
             }
+        }
+        if (onRemove != null) {
+            IconButton(
+                onClick = { haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove); onRemove() },
+                modifier = Modifier.align(Alignment.TopEnd)
+            ) {
+                Icon(
+                    Icons.Rounded.DeleteOutline,
+                    contentDescription = stringResource(R.string.processing_cd_remove, labels.title),
+                    tint = MaterialTheme.colorScheme.error
+                )
+            }
+        }
         }
     }
 }

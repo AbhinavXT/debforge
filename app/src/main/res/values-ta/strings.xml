@@ -16,7 +16,6 @@
     <string name="action_add">சேர்</string>
     <string name="action_dismiss">நிராகரி</string>
     <string name="action_pause">இடைநிறுத்து</string>
-    <string name="action_resume">தொடர்</string>
     <string name="action_renew">புதுப்பி</string>
     <string name="action_refresh">ரெஃப்ரெஷ் செய்</string>
     <string name="action_clear">அழி</string>
@@ -43,8 +42,9 @@
     <string name="add_hint_magnet">மேக்னெட் லிங்க், ஒரு வரிக்கு ஒன்று</string>
     <string name="add_hint_links">ஹோஸ்டர் லிங்க், ஒரு வரிக்கு ஒன்று</string>
     <string name="processing_on">%1$s-இல் செயலாக்கப்படுகிறது</string>
-    <string name="processing_will_auto">தானாகப் பதிவிறக்கப்படும்</string>
-    <string name="processing_auto_when_ready">தயாரானதும் தானாகப் பதிவிறக்கம்</string>
+    <string name="processing_auto_short">தானியங்கிப் பதிவிறக்கம்</string>
+    <string name="processing_auto_on_short">தானியங்கிப் பதிவிறக்கம் இயக்கத்தில்</string>
+    <string name="processing_cd_remove">சேவையிலிருந்து %1$s-ஐ அகற்று</string>
     <string name="eta_seconds">%1$d வி. மீதம்</string>
     <string name="eta_minutes">%1$d நி. மீதம்</string>
     <string name="eta_hours">%1$d ம. %2$d நி. மீதம்</string>
@@ -53,8 +53,11 @@
     <string name="browse_cancel_selection">தேர்வை ரத்துசெய்</string>
     <string name="browse_searching_all">முழு லைப்ரரியிலும் தேடுகிறது… %1$d கோப்புகள் சரிபார்க்கப்பட்டன</string>
     <string name="browse_search_hint">தலைப்புகள் அல்லது கோப்புகளைத் தேடு</string>
-    <string name="browse_posters">போஸ்டர்கள்</string>
     <string name="browse_group_series">தொடர்களாகக் குழுவாக்கு</string>
+    <string name="library_view_as_list">பட்டியல் காட்சிக்கு மாறு</string>
+    <string name="library_view_as_posters">போஸ்டர் காட்சிக்கு மாறு</string>
+    <string name="library_tmdb_prompt">போஸ்டர்களுக்கு TMDB key-ஐச் சேர்க்கவும்</string>
+    <string name="library_loading">லைப்ரரி ஏற்றப்படுகிறது</string>
     <string name="sort_newest">புதியவை</string>
     <string name="sort_oldest">பழையவை</string>
     <string name="sort_name_az">பெயர் A-Z</string>
@@ -93,10 +96,11 @@
     <string name="kind_movie">திரைப்படம்</string>
     <string name="sheet_all_queued">அனைத்தும் வரிசையில் உள்ளன</string>
     <string name="sheet_download_all">அனைத்தையும் பதிவிறக்கு (%1$d)</string>
-    <string name="sheet_zip_title">அனைத்தும் ஒரே .zip ஆக</string>
     <string name="sheet_zip_download">.zip பதிவிறக்கு</string>
     <string name="sheet_season">சீசன் %1$d</string>
     <string name="sheet_download_season">சீசனைப் பதிவிறக்கு (%1$d)</string>
+    <string name="sheet_play_cd">%1$s-ஐ இயக்கு</string>
+    <string name="sheet_download_cd">%1$s-ஐப் பதிவிறக்கு</string>
     <string name="state_queued">வரிசையில்</string>
     <string name="state_downloading">பதிவிறக்குகிறது</string>
     <string name="state_paused">இடைநிறுத்தப்பட்டது</string>
@@ -113,12 +117,20 @@
     <string name="dl_waiting">காத்திருக்கிறது</string>
     <string name="dl_so_far">இதுவரை</string>
     <string name="dl_waiting_size">காத்திருக்கிறது · %1$s</string>
-    <string name="dl_paused_progress">இடைநிறுத்தப்பட்டது · %1$s / %2$s</string>
+    <string name="dl_paused_status">இடைநிறுத்தப்பட்டது · %1$s · %2$s</string>
     <string name="dl_failed">பதிவிறக்கம் தோல்வியடைந்தது</string>
     <string name="dl_done_at">முடிந்தது · %1$s · %2$s</string>
     <string name="dl_file_missing">கோப்பு நகர்த்தப்பட்டது அல்லது நீக்கப்பட்டது</string>
     <string name="dl_empty_title">செயலில் எதுவும் இல்லை</string>
     <string name="dl_empty_body">வரிசையில் சேர்க்க, லைப்ரரியில் ஒரு உருப்படியின் பதிவிறக்கு பட்டனைத் தட்டவும்.</string>
+    <string name="dl_cd_pause">%1$s-ஐ இடைநிறுத்து</string>
+    <string name="dl_cd_resume">%1$s-ஐத் தொடர்</string>
+    <string name="dl_cd_cancel">%1$s-ஐ ரத்துசெய்</string>
+    <string name="dl_cd_retry">%1$s-ஐ மீண்டும் முயல்</string>
+    <string name="dl_cd_dismiss">%1$s-ஐ நிராகரி</string>
+    <string name="dl_cd_play">%1$s-ஐ இயக்கு</string>
+    <string name="dl_cd_open">%1$s-ஐத் திற</string>
+    <string name="dl_cd_more">%1$s-க்கான மேலும் செயல்கள்</string>
     <string name="wait_network">நெட்வொர்க்கிற்காகக் காத்திருக்கிறது</string>
     <string name="wait_wifi">Wi-Fi-க்காகக் காத்திருக்கிறது</string>
     <string name="wait_charger">சார்ஜருக்காகக் காத்திருக்கிறது</string>
@@ -171,7 +183,6 @@
     <string name="poster_setup_unreachable">key-ஐச் சரிபார்க்க TMDB-ஐ அணுக முடியவில்லை.</string>
     <string name="poster_setup_save_anyway">இருந்தாலும் சேமி</string>
     <string name="poster_setup_done">போஸ்டர்கள் இயக்கப்பட்டன</string>
-    <string name="poster_banner">போஸ்டர்களும் விளக்கங்களும் காண இலவச TMDB key-ஐச் சேர்க்கவும்</string>
     <string name="poster_banner_action">அமை</string>
     <string name="set_posters_on">இயக்கத்தில். போஸ்டர்களும் விளக்கங்களும் TMDB-யிலிருந்து வருகின்றன.</string>
     <string name="set_posters_change">key-ஐ மாற்று</string>
@@ -373,7 +384,6 @@
     <string name="theme_graphite">கிராஃபைட்</string>
     <string name="set_pure_black">முழு கருப்பு</string>
     <string name="set_pure_black_detail">டார்க் பயன்முறையில் கருப்புப் பின்னணி. OLED திரைக்கும் பேட்டரிக்கும் நல்லது.</string>
-    <string name="dl_more_actions">மேலும் செயல்கள்</string>
 
     <!-- Widget, Quick Settings tile, launcher shortcuts, clipboard offer -->
     <string name="action_pause_all">அனைத்தையும் இடைநிறுத்து</string>

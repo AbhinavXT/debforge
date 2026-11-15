@@ -16,7 +16,6 @@
     <string name="action_add">Adicionar</string>
     <string name="action_dismiss">Dispensar</string>
     <string name="action_pause">Pausar</string>
-    <string name="action_resume">Retomar</string>
     <string name="action_renew">Renovar</string>
     <string name="action_refresh">Atualizar</string>
     <string name="action_clear">Limpar</string>
@@ -43,8 +42,9 @@
     <string name="add_hint_magnet">Links magnet, um por linha</string>
     <string name="add_hint_links">Links de servidores de arquivos, um por linha</string>
     <string name="processing_on">Processando no %1$s</string>
-    <string name="processing_will_auto">Será baixado automaticamente</string>
-    <string name="processing_auto_when_ready">Baixar automaticamente quando estiver pronto</string>
+    <string name="processing_auto_short">Download automático</string>
+    <string name="processing_auto_on_short">Download automático ativado</string>
+    <string name="processing_cd_remove">Remover %1$s do serviço</string>
     <string name="eta_seconds">Faltam %1$d s</string>
     <string name="eta_minutes">Faltam %1$d min</string>
     <string name="eta_hours">Faltam %1$d h %2$d min</string>
@@ -53,8 +53,11 @@
     <string name="browse_cancel_selection">Cancelar seleção</string>
     <string name="browse_searching_all">Pesquisando em toda a biblioteca… %1$d arquivos verificados</string>
     <string name="browse_search_hint">Pesquisar títulos ou arquivos</string>
-    <string name="browse_posters">Pôsteres</string>
     <string name="browse_group_series">Agrupar como série</string>
+    <string name="library_view_as_list">Mudar para a visualização em lista</string>
+    <string name="library_view_as_posters">Mudar para a visualização em pôsteres</string>
+    <string name="library_tmdb_prompt">Adicione uma chave do TMDB para ver pôsteres</string>
+    <string name="library_loading">Carregando biblioteca</string>
     <string name="sort_newest">Mais recentes</string>
     <string name="sort_oldest">Mais antigos</string>
     <string name="sort_name_az">Nome A-Z</string>
@@ -95,10 +98,11 @@
     <string name="kind_movie">Filme</string>
     <string name="sheet_all_queued">Tudo na fila</string>
     <string name="sheet_download_all">Baixar tudo (%1$d)</string>
-    <string name="sheet_zip_title">Tudo em um único .zip</string>
     <string name="sheet_zip_download">Baixar .zip</string>
     <string name="sheet_season">Temporada %1$d</string>
     <string name="sheet_download_season">Baixar temporada (%1$d)</string>
+    <string name="sheet_play_cd">Reproduzir %1$s</string>
+    <string name="sheet_download_cd">Baixar %1$s</string>
     <string name="state_queued">Na fila</string>
     <string name="state_downloading">Baixando</string>
     <string name="state_paused">Pausado</string>
@@ -115,12 +119,20 @@
     <string name="dl_waiting">Aguardando</string>
     <string name="dl_so_far">até agora</string>
     <string name="dl_waiting_size">Aguardando · %1$s</string>
-    <string name="dl_paused_progress">Pausado · %1$s / %2$s</string>
+    <string name="dl_paused_status">Pausado · %1$s · %2$s</string>
     <string name="dl_failed">Falha no download</string>
     <string name="dl_done_at">Concluído · %1$s · %2$s</string>
     <string name="dl_file_missing">O arquivo foi movido ou excluído</string>
     <string name="dl_empty_title">Nada ativo</string>
     <string name="dl_empty_body">Toque em Baixar em um item da Biblioteca para colocá-lo na fila.</string>
+    <string name="dl_cd_pause">Pausar %1$s</string>
+    <string name="dl_cd_resume">Retomar %1$s</string>
+    <string name="dl_cd_cancel">Cancelar %1$s</string>
+    <string name="dl_cd_retry">Tentar de novo %1$s</string>
+    <string name="dl_cd_dismiss">Dispensar %1$s</string>
+    <string name="dl_cd_play">Reproduzir %1$s</string>
+    <string name="dl_cd_open">Abrir %1$s</string>
+    <string name="dl_cd_more">Mais ações para %1$s</string>
     <string name="wait_network">Aguardando conexão</string>
     <string name="wait_wifi">Aguardando Wi-Fi</string>
     <string name="wait_charger">Aguardando carregador</string>
@@ -173,7 +185,6 @@
     <string name="poster_setup_unreachable">Não foi possível acessar o TMDB para verificar a chave.</string>
     <string name="poster_setup_save_anyway">Salvar mesmo assim</string>
     <string name="poster_setup_done">Pôsteres ativados</string>
-    <string name="poster_banner">Adicione uma chave gratuita do TMDB para ver pôsteres e descrições</string>
     <string name="poster_banner_action">Configurar</string>
     <string name="set_posters_on">Ativado. Pôsteres e descrições vêm do TMDB.</string>
     <string name="set_posters_change">Trocar chave</string>
@@ -387,7 +398,6 @@
     <string name="theme_graphite">Grafite</string>
     <string name="set_pure_black">Preto puro</string>
     <string name="set_pure_black_detail">Fundos pretos no modo escuro. Melhor para telas OLED e para a bateria.</string>
-    <string name="dl_more_actions">Mais ações</string>
 
     <!-- Widget, Quick Settings tile, launcher shortcuts, clipboard offer -->
     <string name="action_pause_all">Pausar tudo</string>

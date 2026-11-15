@@ -16,7 +16,6 @@
     <string name="action_add">Ekle</string>
     <string name="action_dismiss">Kapat</string>
     <string name="action_pause">Duraklat</string>
-    <string name="action_resume">Devam et</string>
     <string name="action_renew">Yenile</string>
     <string name="action_refresh">Yenile</string>
     <string name="action_clear">Temizle</string>
@@ -43,8 +42,9 @@
     <string name="add_hint_magnet">Magnet bağlantıları, her satıra bir tane</string>
     <string name="add_hint_links">Hoster bağlantıları, her satıra bir tane</string>
     <string name="processing_on">%1$s üzerinde işleniyor</string>
-    <string name="processing_will_auto">Otomatik indirilecek</string>
-    <string name="processing_auto_when_ready">Hazır olunca otomatik indir</string>
+    <string name="processing_auto_short">Otomatik indirme</string>
+    <string name="processing_auto_on_short">Otomatik indirme açık</string>
+    <string name="processing_cd_remove">%1$s öğesini hizmetten kaldır</string>
     <string name="eta_seconds">%1$d sn kaldı</string>
     <string name="eta_minutes">%1$d dk kaldı</string>
     <string name="eta_hours">%1$d sa %2$d dk kaldı</string>
@@ -53,8 +53,11 @@
     <string name="browse_cancel_selection">Seçimi iptal et</string>
     <string name="browse_searching_all">Tüm kitaplığınız aranıyor… %1$d dosya kontrol edildi</string>
     <string name="browse_search_hint">Başlık veya dosya ara</string>
-    <string name="browse_posters">Posterler</string>
     <string name="browse_group_series">Dizi olarak grupla</string>
+    <string name="library_view_as_list">Liste görünümüne geç</string>
+    <string name="library_view_as_posters">Poster görünümüne geç</string>
+    <string name="library_tmdb_prompt">Posterler için TMDB anahtarı ekleyin</string>
+    <string name="library_loading">Kitaplık yükleniyor</string>
     <string name="sort_newest">En yeni</string>
     <string name="sort_oldest">En eski</string>
     <string name="sort_name_az">Ad A-Z</string>
@@ -93,10 +96,11 @@
     <string name="kind_movie">Film</string>
     <string name="sheet_all_queued">Tümü sırada</string>
     <string name="sheet_download_all">Tümünü indir (%1$d)</string>
-    <string name="sheet_zip_title">Hepsi tek bir .zip olarak</string>
     <string name="sheet_zip_download">.zip indir</string>
     <string name="sheet_season">Sezon %1$d</string>
     <string name="sheet_download_season">Sezonu indir (%1$d)</string>
+    <string name="sheet_play_cd">%1$s öğesini oynat</string>
+    <string name="sheet_download_cd">%1$s öğesini indir</string>
     <string name="state_queued">Sırada</string>
     <string name="state_downloading">İndiriliyor</string>
     <string name="state_paused">Duraklatıldı</string>
@@ -113,12 +117,20 @@
     <string name="dl_waiting">Bekliyor</string>
     <string name="dl_so_far">şu ana kadar</string>
     <string name="dl_waiting_size">Bekliyor · %1$s</string>
-    <string name="dl_paused_progress">Duraklatıldı · %1$s / %2$s</string>
+    <string name="dl_paused_status">Duraklatıldı · %1$s · %2$s</string>
     <string name="dl_failed">İndirme başarısız oldu</string>
     <string name="dl_done_at">Tamamlandı · %1$s · %2$s</string>
     <string name="dl_file_missing">Dosya taşındı veya silindi</string>
     <string name="dl_empty_title">Etkin indirme yok</string>
     <string name="dl_empty_body">Sıraya eklemek için Kitaplık\'taki bir öğede İndir\'e dokunun.</string>
+    <string name="dl_cd_pause">%1$s öğesini duraklat</string>
+    <string name="dl_cd_resume">%1$s öğesine devam et</string>
+    <string name="dl_cd_cancel">%1$s öğesini iptal et</string>
+    <string name="dl_cd_retry">%1$s öğesini tekrar dene</string>
+    <string name="dl_cd_dismiss">%1$s öğesini kapat</string>
+    <string name="dl_cd_play">%1$s öğesini oynat</string>
+    <string name="dl_cd_open">%1$s öğesini aç</string>
+    <string name="dl_cd_more">%1$s için diğer işlemler</string>
     <string name="wait_network">Ağ bekleniyor</string>
     <string name="wait_wifi">Wi-Fi bekleniyor</string>
     <string name="wait_charger">Şarj cihazı bekleniyor</string>
@@ -171,7 +183,6 @@
     <string name="poster_setup_unreachable">Anahtarı kontrol etmek için TMDB\'ye ulaşılamadı.</string>
     <string name="poster_setup_save_anyway">Yine de kaydet</string>
     <string name="poster_setup_done">Posterler açık</string>
-    <string name="poster_banner">Poster ve açıklamaları görmek için ücretsiz bir TMDB anahtarı ekleyin</string>
     <string name="poster_banner_action">Kur</string>
     <string name="set_posters_on">Açık. Posterler ve açıklamalar TMDB\'den gelir.</string>
     <string name="set_posters_change">Anahtarı değiştir</string>
@@ -373,7 +384,6 @@
     <string name="theme_graphite">Grafit</string>
     <string name="set_pure_black">Saf siyah</string>
     <string name="set_pure_black_detail">Koyu modda siyah arka plan. OLED ekranlar ve pil için daha iyi.</string>
-    <string name="dl_more_actions">Diğer işlemler</string>
 
     <!-- Widget, Quick Settings tile, launcher shortcuts, clipboard offer -->
     <string name="action_pause_all">Tümünü duraklat</string>

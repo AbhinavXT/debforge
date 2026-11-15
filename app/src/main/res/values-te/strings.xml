@@ -16,7 +16,6 @@
     <string name="action_add">జోడించు</string>
     <string name="action_dismiss">విస్మరించు</string>
     <string name="action_pause">పాజ్ చేయి</string>
-    <string name="action_resume">కొనసాగించు</string>
     <string name="action_renew">రెన్యూ చేయి</string>
     <string name="action_refresh">రిఫ్రెష్ చేయి</string>
     <string name="action_clear">క్లియర్ చేయి</string>
@@ -43,8 +42,9 @@
     <string name="add_hint_magnet">మాగ్నెట్ లింక్‌లు, ఒక్కో లైన్‌కు ఒకటి</string>
     <string name="add_hint_links">హోస్టర్ లింక్‌లు, ఒక్కో లైన్‌కు ఒకటి</string>
     <string name="processing_on">%1$sలో ప్రాసెస్ అవుతోంది</string>
-    <string name="processing_will_auto">ఆటోమేటిక్‌గా డౌన్‌లోడ్ అవుతుంది</string>
-    <string name="processing_auto_when_ready">సిద్ధమైనప్పుడు ఆటో-డౌన్‌లోడ్</string>
+    <string name="processing_auto_short">ఆటో-డౌన్‌లోడ్</string>
+    <string name="processing_auto_on_short">ఆటో-డౌన్‌లోడ్ ఆన్</string>
+    <string name="processing_cd_remove">సర్వీస్ నుండి %1$s ను తీసివేయి</string>
     <string name="eta_seconds">%1$d సె. మిగిలి ఉంది</string>
     <string name="eta_minutes">%1$d ని. మిగిలి ఉంది</string>
     <string name="eta_hours">%1$d గం. %2$d ని. మిగిలి ఉంది</string>
@@ -53,8 +53,11 @@
     <string name="browse_cancel_selection">ఎంపికను రద్దు చేయి</string>
     <string name="browse_searching_all">మొత్తం లైబ్రరీలో వెతుకుతోంది… %1$d ఫైల్‌లు తనిఖీ చేయబడ్డాయి</string>
     <string name="browse_search_hint">టైటిల్‌లు లేదా ఫైల్‌లను వెతకండి</string>
-    <string name="browse_posters">పోస్టర్‌లు</string>
     <string name="browse_group_series">సిరీస్‌లుగా గ్రూప్ చేయి</string>
+    <string name="library_view_as_list">లిస్ట్ వ్యూకు మారు</string>
+    <string name="library_view_as_posters">పోస్టర్ వ్యూకు మారు</string>
+    <string name="library_tmdb_prompt">పోస్టర్‌ల కోసం TMDB key జోడించండి</string>
+    <string name="library_loading">లైబ్రరీ లోడ్ అవుతోంది</string>
     <string name="sort_newest">కొత్తవి</string>
     <string name="sort_oldest">పాతవి</string>
     <string name="sort_name_az">పేరు A-Z</string>
@@ -93,10 +96,11 @@
     <string name="kind_movie">సినిమా</string>
     <string name="sheet_all_queued">అన్నీ క్యూలో ఉన్నాయి</string>
     <string name="sheet_download_all">అన్నీ డౌన్‌లోడ్ చేయి (%1$d)</string>
-    <string name="sheet_zip_title">అన్నీ ఒకే .zipగా</string>
     <string name="sheet_zip_download">.zip డౌన్‌లోడ్ చేయి</string>
     <string name="sheet_season">సీజన్ %1$d</string>
     <string name="sheet_download_season">సీజన్ డౌన్‌లోడ్ చేయి (%1$d)</string>
+    <string name="sheet_play_cd">%1$s ను ప్లే చేయి</string>
+    <string name="sheet_download_cd">%1$s ను డౌన్‌లోడ్ చేయి</string>
     <string name="state_queued">క్యూలో ఉంది</string>
     <string name="state_downloading">డౌన్‌లోడ్ అవుతోంది</string>
     <string name="state_paused">పాజ్ చేయబడింది</string>
@@ -113,12 +117,20 @@
     <string name="dl_waiting">వేచి ఉంది</string>
     <string name="dl_so_far">ఇప్పటివరకు</string>
     <string name="dl_waiting_size">వేచి ఉంది · %1$s</string>
-    <string name="dl_paused_progress">పాజ్ చేయబడింది · %1$s / %2$s</string>
+    <string name="dl_paused_status">పాజ్ చేయబడింది · %1$s · %2$s</string>
     <string name="dl_failed">డౌన్‌లోడ్ విఫలమైంది</string>
     <string name="dl_done_at">పూర్తయింది · %1$s · %2$s</string>
     <string name="dl_file_missing">ఫైల్ తరలించబడింది లేదా తొలగించబడింది</string>
     <string name="dl_empty_title">ఏదీ యాక్టివ్‌గా లేదు</string>
     <string name="dl_empty_body">క్యూలో చేర్చడానికి, మీ లైబ్రరీలో ఏదైనా ఐటెమ్‌పై డౌన్‌లోడ్ నొక్కండి.</string>
+    <string name="dl_cd_pause">%1$s ను పాజ్ చేయి</string>
+    <string name="dl_cd_resume">%1$s ను కొనసాగించు</string>
+    <string name="dl_cd_cancel">%1$s ను రద్దు చేయి</string>
+    <string name="dl_cd_retry">%1$s ను మళ్లీ ప్రయత్నించు</string>
+    <string name="dl_cd_dismiss">%1$s ను విస్మరించు</string>
+    <string name="dl_cd_play">%1$s ను ప్లే చేయి</string>
+    <string name="dl_cd_open">%1$s ను తెరువు</string>
+    <string name="dl_cd_more">%1$s కోసం మరిన్ని చర్యలు</string>
     <string name="wait_network">నెట్‌వర్క్ కోసం వేచి ఉంది</string>
     <string name="wait_wifi">Wi-Fi కోసం వేచి ఉంది</string>
     <string name="wait_charger">ఛార్జర్ కోసం వేచి ఉంది</string>
@@ -171,7 +183,6 @@
     <string name="poster_setup_unreachable">key తనిఖీ చేయడానికి TMDB ని చేరుకోలేకపోయాం.</string>
     <string name="poster_setup_save_anyway">అయినా సేవ్ చేయండి</string>
     <string name="poster_setup_done">పోస్టర్లు ఆన్ అయ్యాయి</string>
-    <string name="poster_banner">పోస్టర్లు, వివరణలు చూడటానికి ఉచిత TMDB key జోడించండి</string>
     <string name="poster_banner_action">సెటప్ చేయండి</string>
     <string name="set_posters_on">ఆన్. పోస్టర్లు, వివరణలు TMDB నుండి వస్తాయి.</string>
     <string name="set_posters_change">key మార్చండి</string>
@@ -373,7 +384,6 @@
     <string name="theme_graphite">గ్రాఫైట్</string>
     <string name="set_pure_black">పూర్తి నలుపు</string>
     <string name="set_pure_black_detail">డార్క్ మోడ్‌లో నలుపు నేపథ్యం. OLED స్క్రీన్‌లకు, బ్యాటరీకి మంచిది.</string>
-    <string name="dl_more_actions">మరిన్ని చర్యలు</string>
 
     <!-- Widget, Quick Settings tile, launcher shortcuts, clipboard offer -->
     <string name="action_pause_all">అన్నీ పాజ్ చేయండి</string>

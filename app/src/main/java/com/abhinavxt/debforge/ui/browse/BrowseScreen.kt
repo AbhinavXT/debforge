@@ -16,6 +16,9 @@ import androidx.compose.material3.Checkbox
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -103,9 +106,12 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarResult
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.collectLatest
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -247,11 +253,26 @@ fun BrowseScreen(
         else -> null
     }
 
+    val scroll = rememberSaveable(saver = LibraryScrollState.Saver) { LibraryScrollState() }
+    // Multi-select hides the title block: leave its collapse alone meanwhile.
+    SideEffect { scroll.suspended = selected.isNotEmpty() }
+    // A different query, sort, filter, provider or view starts at its top: bring the
+    // title and the labelled FAB back. (Skipped on first composition so rotation keeps it.)
+    val viewKey = "${state.query}|${state.sort}|${state.downloadsView}|${state.grouped}|${state.providerName}|${state.posterView}"
+    var lastViewKey by rememberSaveable { mutableStateOf(viewKey) }
+    LaunchedEffect(viewKey) {
+        if (viewKey != lastViewKey) {
+            lastViewKey = viewKey
+            scroll.expand()
+        }
+    }
+
     Scaffold(
         snackbarHost = { SnackbarHost(snackbar) },
         floatingActionButton = {
             if (selected.isEmpty()) {
                 ExtendedFloatingActionButton(
+                    expanded = !scroll.scrollingDown,
                     onClick = onAdd,
                     icon = { Icon(Icons.Rounded.Add, contentDescription = null) },
                     text = { Text(stringResource(R.string.action_add)) },
@@ -330,23 +351,33 @@ fun BrowseScreen(
                         }
                     }
                 )
-            } else {
-                ScreenHeader(
-                    title = stringResource(R.string.tab_library),
-                    subtitle = state.providerName.ifEmpty { null }
-                ) {
-                    // Pull down to refresh everywhere else; a TV remote can't
-                    // pull, so it keeps the button.
-                    if (isTv) {
-                        IconButton(onClick = viewModel::refresh) {
-                            Icon(Icons.Rounded.Refresh, contentDescription = stringResource(R.string.action_refresh))
+            }
+        }
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .padding(padding)
+                .consumeWindowInsets(padding)
+                .fillMaxSize()
+                .nestedScroll(scroll.connection)
+        ) {
+            if (selected.isEmpty()) {
+                // The title block scrolls away; the search field and controls below stay.
+                CollapsingHeader(scroll) {
+                    ScreenHeader(
+                        title = stringResource(R.string.tab_library),
+                        subtitle = state.providerName.ifEmpty { null }
+                    ) {
+                        // Pull down to refresh everywhere else; a TV remote can't
+                        // pull, so it keeps the button.
+                        if (isTv) {
+                            IconButton(onClick = viewModel::refresh) {
+                                Icon(Icons.Rounded.Refresh, contentDescription = stringResource(R.string.action_refresh))
+                            }
                         }
                     }
                 }
             }
-        }
-    ) { padding ->
-        Column(modifier = Modifier.padding(padding).fillMaxSize()) {
             ControlBar(
                 query = state.query,
                 onQuery = viewModel::onQueryChange,
@@ -387,20 +418,25 @@ fun BrowseScreen(
 
             // Only worth asking when there's a movie or show to put a poster on.
             val hasTitles = remember(parsed) { parsed.values.any { it.kind != MediaKind.OTHER } }
-            if (showPosterPrompt && state.posterView && hasTitles) {
-                PosterPromptBanner(
+            AnimatedVisibility(visible = showPosterPrompt && state.posterView && hasTitles) {
+                PosterPromptRow(
                     onSetUp = { posterSetupOpen = true },
                     onDismiss = viewModel::dismissPosterPrompt
                 )
             }
 
-            ProcessingStrip(
-                providerName = state.providerName,
-                jobs = processing,
-                isWatched = { "${it.provider.name}|${it.ref}" in watchedJobs },
-                onToggleWatch = viewModel::toggleWatch,
-                onRemove = { job -> confirmRemove = RemoveRequest(job.name, job = job) }
-            )
+            // Keep the last jobs while the strip animates out.
+            var lastJobs by remember { mutableStateOf(processing) }
+            if (processing.isNotEmpty()) lastJobs = processing
+            AnimatedVisibility(visible = processing.isNotEmpty()) {
+                ProcessingStrip(
+                    providerName = state.providerName,
+                    jobs = lastJobs,
+                    isWatched = { "${it.provider.name}|${it.ref}" in watchedJobs },
+                    onToggleWatch = viewModel::toggleWatch,
+                    onRemove = { job -> confirmRemove = RemoveRequest(job.name, job = job) }
+                )
+            }
 
             // Material3 1.3.0's pull-to-refresh can leave its arrow stuck on
             // screen: a position update from the last drag event can land
@@ -431,11 +467,14 @@ fun BrowseScreen(
                     }
             ) {
             when {
-                state.isInitialLoad -> CenteredSpinner()
-                state.error != null && state.items.isEmpty() -> PullableFill {
+                state.isInitialLoad -> {
+                    KeepHeaderOpen(scroll)
+                    if (state.posterView) PosterSkeleton() else ListSkeleton()
+                }
+                state.error != null && state.items.isEmpty() -> PullableFill(scroll) {
                     ErrorState(state.error!!) { viewModel.clearError(); viewModel.refresh() }
                 }
-                state.items.isEmpty() -> PullableFill {
+                state.items.isEmpty() -> PullableFill(scroll) {
                     EmptyState(
                         providerName = state.providerName,
                         hint = state.emptyHint,
@@ -448,7 +487,7 @@ fun BrowseScreen(
                         buildTitleGroups(shown, parsed, state.query, state.sort)
                     }
                     if (groups.isEmpty()) {
-                        PullableFill { NoMatches(state.query) }
+                        PullableFill(scroll) { NoMatches(state.query) }
                     } else {
                         PosterGrid(
                             groups = groups,
@@ -518,7 +557,7 @@ fun BrowseScreen(
                         buildSections(shown, state.query, state.sort, state.grouped)
                     }
                     if (sections.sumOf { it.items.size } == 0) {
-                        PullableFill { NoMatches(state.query) }
+                        PullableFill(scroll) { NoMatches(state.query) }
                     } else {
                         SectionList(
                             sections = sections,
@@ -537,7 +576,8 @@ fun BrowseScreen(
                                 }
                             },
                             onLongPress = { item -> selected = selected + item.id },
-                            onLoadMore = viewModel::loadMore
+                            onLoadMore = viewModel::loadMore,
+                            scroll = scroll
                         )
                     }
                 }
@@ -634,103 +674,6 @@ fun BrowseScreen(
     }
 }
 
-// --- top control row ----------------------------------------------------------
-
-@Composable
-private fun ControlBar(
-    query: String,
-    onQuery: (String) -> Unit,
-    sort: SortOrder,
-    onSort: (SortOrder) -> Unit,
-    posterView: Boolean,
-    onTogglePosters: () -> Unit,
-    grouped: Boolean,
-    onToggleGroup: () -> Unit,
-    /** Null: no service signed in, so the list is the downloads already and there's no chip. */
-    downloadsView: Boolean?,
-    onToggleDownloads: () -> Unit
-) {
-    Column(modifier = Modifier.padding(top = 4.dp, bottom = 4.dp)) {
-        SearchPill(
-            query = query,
-            onQuery = onQuery,
-            placeholder = stringResource(R.string.browse_search_hint),
-            clearDescription = stringResource(R.string.action_clear),
-            modifier = Modifier.padding(horizontal = 16.dp)
-        )
-        // Scrolls sideways so long translations never squash the chips.
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            SortPicker(sort = sort, onSort = onSort)
-            if (downloadsView != null) {
-                FilterChip(
-                    selected = downloadsView,
-                    onClick = onToggleDownloads,
-                    leadingIcon = { Icon(Icons.Rounded.DownloadDone, contentDescription = null, modifier = Modifier.size(18.dp)) },
-                    label = { Text(stringResource(R.string.browse_downloaded)) }
-                )
-            }
-            FilterChip(
-                selected = posterView,
-                onClick = onTogglePosters,
-                leadingIcon = { Icon(Icons.Rounded.GridView, contentDescription = null, modifier = Modifier.size(18.dp)) },
-                label = { Text(stringResource(R.string.browse_posters)) }
-            )
-            if (!posterView) {
-                FilterChip(
-                    selected = grouped,
-                    onClick = onToggleGroup,
-                    leadingIcon = { Icon(Icons.Rounded.Layers, contentDescription = null, modifier = Modifier.size(18.dp)) },
-                    label = { Text(stringResource(R.string.browse_group_series)) }
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun SortPicker(sort: SortOrder, onSort: (SortOrder) -> Unit) {
-    var expanded by remember { mutableStateOf(false) }
-    Box {
-        FilterChip(
-            selected = false,
-            onClick = { expanded = true },
-            leadingIcon = { Icon(Icons.AutoMirrored.Rounded.Sort, contentDescription = null, modifier = Modifier.size(18.dp)) },
-            trailingIcon = { Icon(Icons.Rounded.KeyboardArrowDown, contentDescription = null, modifier = Modifier.size(18.dp)) },
-            label = { Text(sort.label()) }
-        )
-        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            SortOrder.entries.forEach { option ->
-                DropdownMenuItem(
-                    text = { Text(option.label()) },
-                    leadingIcon = {
-                        if (option == sort) Icon(Icons.Rounded.Check, contentDescription = null)
-                    },
-                    onClick = { onSort(option); expanded = false }
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun SortOrder.label(): String = stringResource(
-    when (this) {
-        SortOrder.DATE_DESC -> R.string.sort_newest
-        SortOrder.DATE_ASC -> R.string.sort_oldest
-        SortOrder.NAME_ASC -> R.string.sort_name_az
-        SortOrder.NAME_DESC -> R.string.sort_name_za
-        SortOrder.SIZE_DESC -> R.string.sort_largest
-        SortOrder.SIZE_ASC -> R.string.sort_smallest
-    }
-)
-
 // --- list view ----------------------------------------------------------------
 
 @Composable
@@ -745,9 +688,29 @@ private fun SectionList(
     selected: Set<String>,
     onOpen: (DownloadItem) -> Unit,
     onLongPress: (DownloadItem) -> Unit,
-    onLoadMore: () -> Unit
+    onLoadMore: () -> Unit,
+    scroll: LibraryScrollState
 ) {
     val listState = rememberLazyListState()
+
+    // Exact list position: back at the top (fling or programmatic scroll) brings the header back.
+    LaunchedEffect(listState) {
+        snapshotFlow { listState.firstVisibleItemIndex == 0 && listState.firstVisibleItemScrollOffset == 0 }
+            .collect { atTop -> if (atTop) scroll.expand() }
+    }
+    // Nothing to scroll (checked after a beat so a collapsing header growing the viewport can't flap it).
+    LaunchedEffect(listState) {
+        snapshotFlow { !listState.canScrollForward && !listState.canScrollBackward }
+            .collectLatest { cannot ->
+                if (cannot) {
+                    kotlinx.coroutines.delay(300)
+                    if (System.nanoTime() - scroll.lastDragNanos > 300_000_000L) scroll.expand()
+                    scroll.canScroll = false
+                } else {
+                    scroll.canScroll = true
+                }
+            }
+    }
 
     LaunchedEffect(listState) {
         snapshotFlow { listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0 }
@@ -785,16 +748,16 @@ private fun SectionList(
                             if (ep.season != null) append("S").append(ep.season).append(" · ")
                             append("E").append(ep.episode)
                         }
-                        row(ep.item, indent = true, prefix = label)
+                        Box(Modifier.animateItem()) { row(ep.item, indent = true, prefix = label) }
                     }
                 } else {
-                    items(section.items, key = { it.id }) { item -> row(item, indent = false, prefix = null) }
+                    items(section.items, key = { it.id }) { item -> Box(Modifier.animateItem()) { row(item, indent = false, prefix = null) } }
                 }
                 is BrowseSection.Loose -> {
                     if (grouped && section.items.isNotEmpty()) {
                         item(key = "loose-header") { SectionHeader(stringResource(R.string.browse_other)) }
                     }
-                    items(section.items, key = { it.id }) { item -> row(item, indent = grouped, prefix = null) }
+                    items(section.items, key = { it.id }) { item -> Box(Modifier.animateItem()) { row(item, indent = grouped, prefix = null) } }
                 }
             }
         }
@@ -982,43 +945,19 @@ private fun ExpiryBanner(text: String, onRenew: () -> Unit, onDismiss: () -> Uni
     }
 }
 
-/** "Turn on posters" nudge while no TMDB key is set. Closing it is remembered. */
-@Composable
-private fun PosterPromptBanner(onSetUp: () -> Unit, onDismiss: () -> Unit) {
-    val onContainer = MaterialTheme.colorScheme.onSecondaryContainer
-    BannerCard(
-        icon = Icons.Rounded.Image,
-        text = stringResource(R.string.poster_banner),
-        container = MaterialTheme.colorScheme.secondaryContainer,
-        onContainer = onContainer
-    ) {
-        TextButton(
-            onClick = onSetUp,
-            colors = ButtonDefaults.textButtonColors(contentColor = onContainer)
-        ) { Text(stringResource(R.string.poster_banner_action), fontWeight = FontWeight.Bold) }
-        IconButton(onClick = onDismiss) {
-            Icon(Icons.Rounded.Close, contentDescription = stringResource(R.string.action_dismiss))
-        }
-    }
-}
-
 /**
  * Screens with nothing to scroll (empty, error, no matches) inside a
  * full-height scroll area, so pull to refresh works on them too.
  */
 @Composable
-private fun PullableFill(content: @Composable () -> Unit) {
+private fun PullableFill(scroll: LibraryScrollState, content: @Composable () -> Unit) {
+    KeepHeaderOpen(scroll)
     BoxWithConstraints(Modifier.fillMaxSize()) {
         val height = maxHeight
         Box(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
             Box(Modifier.fillMaxWidth().height(height)) { content() }
         }
     }
-}
-
-@Composable
-private fun CenteredSpinner() {
-    Box(Modifier.fillMaxSize(), Alignment.Center) { CircularProgressIndicator() }
 }
 
 @Composable

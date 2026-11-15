@@ -17,7 +17,6 @@
     <string name="action_add">Add</string>
     <string name="action_dismiss">Dismiss</string>
     <string name="action_pause">Pause</string>
-    <string name="action_resume">Resume</string>
     <string name="action_renew">Renew</string>
     <string name="action_refresh">Refresh</string>
     <string name="action_clear">Clear</string>
@@ -44,8 +43,9 @@
     <string name="add_hint_magnet">Magnet links, one per line</string>
     <string name="add_hint_links">Hoster links, one per line</string>
     <string name="processing_on">Processing on %1$s</string>
-    <string name="processing_will_auto">Will auto-download</string>
-    <string name="processing_auto_when_ready">Auto-download when ready</string>
+    <string name="processing_auto_short">Auto-download</string>
+    <string name="processing_auto_on_short">Auto-download on</string>
+    <string name="processing_cd_remove">Remove %1$s from the service</string>
     <string name="eta_seconds">%1$ds left</string>
     <string name="eta_minutes">%1$dm left</string>
     <string name="eta_hours">%1$dh %2$dm left</string>
@@ -54,8 +54,11 @@
     <string name="browse_cancel_selection">Cancel selection</string>
     <string name="browse_searching_all">Searching your whole library… %1$d files checked</string>
     <string name="browse_search_hint">Search titles or files</string>
-    <string name="browse_posters">Posters</string>
     <string name="browse_group_series">Group as series</string>
+    <string name="library_view_as_list">Switch to list view</string>
+    <string name="library_view_as_posters">Switch to poster view</string>
+    <string name="library_tmdb_prompt">Add a TMDB key for posters</string>
+    <string name="library_loading">Loading library</string>
     <string name="sort_newest">Newest</string>
     <string name="sort_oldest">Oldest</string>
     <string name="sort_name_az">Name A-Z</string>
@@ -94,10 +97,11 @@
     <string name="kind_movie">Movie</string>
     <string name="sheet_all_queued">All queued</string>
     <string name="sheet_download_all">Download all (%1$d)</string>
-    <string name="sheet_zip_title">Everything as one .zip</string>
     <string name="sheet_zip_download">Download .zip</string>
     <string name="sheet_season">Season %1$d</string>
     <string name="sheet_download_season">Download season (%1$d)</string>
+    <string name="sheet_play_cd">Play %1$s</string>
+    <string name="sheet_download_cd">Download %1$s</string>
     <string name="state_queued">Queued</string>
     <string name="state_downloading">Downloading</string>
     <string name="state_paused">Paused</string>
@@ -114,12 +118,20 @@
     <string name="dl_waiting">Waiting</string>
     <string name="dl_so_far">so far</string>
     <string name="dl_waiting_size">Waiting · %1$s</string>
-    <string name="dl_paused_progress">Paused · %1$s / %2$s</string>
+    <string name="dl_paused_status">Paused · %1$s · %2$s</string>
     <string name="dl_failed">Download failed</string>
     <string name="dl_done_at">Done · %1$s · %2$s</string>
     <string name="dl_file_missing">File was moved or deleted</string>
     <string name="dl_empty_title">Nothing active</string>
     <string name="dl_empty_body">Tap Download on an item in your Library to queue it.</string>
+    <string name="dl_cd_pause">Pause %1$s</string>
+    <string name="dl_cd_resume">Resume %1$s</string>
+    <string name="dl_cd_cancel">Cancel %1$s</string>
+    <string name="dl_cd_retry">Retry %1$s</string>
+    <string name="dl_cd_dismiss">Dismiss %1$s</string>
+    <string name="dl_cd_play">Play %1$s</string>
+    <string name="dl_cd_open">Open %1$s</string>
+    <string name="dl_cd_more">More actions for %1$s</string>
     <string name="wait_network">Waiting for network</string>
     <string name="wait_wifi">Waiting for Wi-Fi</string>
     <string name="wait_charger">Waiting for charger</string>
@@ -172,7 +184,6 @@
     <string name="poster_setup_unreachable">Couldn\'t reach TMDB to check the key.</string>
     <string name="poster_setup_save_anyway">Save anyway</string>
     <string name="poster_setup_done">Posters are on</string>
-    <string name="poster_banner">Add a free TMDB key to see posters and descriptions</string>
     <string name="poster_banner_action">Set up</string>
     <string name="set_posters_on">On. Posters and descriptions come from TMDB.</string>
     <string name="set_posters_change">Change key</string>
@@ -374,7 +385,6 @@
     <string name="theme_graphite">Graphite</string>
     <string name="set_pure_black">Pure black</string>
     <string name="set_pure_black_detail">Black backgrounds in dark mode. Easier on OLED screens and battery.</string>
-    <string name="dl_more_actions">More actions</string>
 
     <!-- Widget, Quick Settings tile, launcher shortcuts, clipboard offer -->
     <string name="action_pause_all">Pause all</string>

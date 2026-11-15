@@ -16,7 +16,6 @@
     <string name="action_add">जोड़ें</string>
     <string name="action_dismiss">हटाएँ</string>
     <string name="action_pause">रोकें</string>
-    <string name="action_resume">फिर शुरू करें</string>
     <string name="action_renew">नवीनीकरण करें</string>
     <string name="action_refresh">रीफ़्रेश करें</string>
     <string name="action_clear">साफ़ करें</string>
@@ -43,8 +42,9 @@
     <string name="add_hint_magnet">मैग्नेट लिंक, हर लाइन में एक</string>
     <string name="add_hint_links">होस्टर लिंक, हर लाइन में एक</string>
     <string name="processing_on">%1$s पर प्रोसेस हो रहा है</string>
-    <string name="processing_will_auto">अपने-आप डाउनलोड होगा</string>
-    <string name="processing_auto_when_ready">तैयार होने पर अपने-आप डाउनलोड</string>
+    <string name="processing_auto_short">अपने-आप डाउनलोड</string>
+    <string name="processing_auto_on_short">अपने-आप डाउनलोड चालू</string>
+    <string name="processing_cd_remove">%1$s को सेवा से हटाएँ</string>
     <string name="eta_seconds">%1$d से. बाकी</string>
     <string name="eta_minutes">%1$d मि. बाकी</string>
     <string name="eta_hours">%1$d घं. %2$d मि. बाकी</string>
@@ -53,8 +53,11 @@
     <string name="browse_cancel_selection">चयन रद्द करें</string>
     <string name="browse_searching_all">पूरी लाइब्रेरी में खोज रहे हैं… %1$d फ़ाइलें देखी गईं</string>
     <string name="browse_search_hint">टाइटल या फ़ाइलें खोजें</string>
-    <string name="browse_posters">पोस्टर</string>
     <string name="browse_group_series">सीरीज़ के हिसाब से</string>
+    <string name="library_view_as_list">सूची व्यू पर जाएँ</string>
+    <string name="library_view_as_posters">पोस्टर व्यू पर जाएँ</string>
+    <string name="library_tmdb_prompt">पोस्टर के लिए TMDB key जोड़ें</string>
+    <string name="library_loading">लाइब्रेरी लोड हो रही है</string>
     <string name="sort_newest">सबसे नए</string>
     <string name="sort_oldest">सबसे पुराने</string>
     <string name="sort_name_az">नाम A-Z</string>
@@ -93,10 +96,11 @@
     <string name="kind_movie">फ़िल्म</string>
     <string name="sheet_all_queued">सब कतार में हैं</string>
     <string name="sheet_download_all">सब डाउनलोड करें (%1$d)</string>
-    <string name="sheet_zip_title">सब कुछ एक .zip में</string>
     <string name="sheet_zip_download">.zip डाउनलोड करें</string>
     <string name="sheet_season">सीज़न %1$d</string>
     <string name="sheet_download_season">सीज़न डाउनलोड करें (%1$d)</string>
+    <string name="sheet_play_cd">%1$s चलाएँ</string>
+    <string name="sheet_download_cd">%1$s डाउनलोड करें</string>
     <string name="state_queued">कतार में</string>
     <string name="state_downloading">डाउनलोड हो रहा है</string>
     <string name="state_paused">रुका हुआ</string>
@@ -113,12 +117,20 @@
     <string name="dl_waiting">इंतज़ार</string>
     <string name="dl_so_far">अब तक</string>
     <string name="dl_waiting_size">इंतज़ार · %1$s</string>
-    <string name="dl_paused_progress">रुका हुआ · %1$s / %2$s</string>
+    <string name="dl_paused_status">रुका हुआ · %1$s · %2$s</string>
     <string name="dl_failed">डाउनलोड विफल</string>
     <string name="dl_done_at">पूरा · %1$s · %2$s</string>
     <string name="dl_file_missing">फ़ाइल हटा दी गई या कहीं और ले जाई गई</string>
     <string name="dl_empty_title">कुछ भी चालू नहीं</string>
     <string name="dl_empty_body">किसी आइटम को कतार में डालने के लिए लाइब्रेरी में डाउनलोड दबाएँ।</string>
+    <string name="dl_cd_pause">%1$s रोकें</string>
+    <string name="dl_cd_resume">%1$s फिर शुरू करें</string>
+    <string name="dl_cd_cancel">%1$s रद्द करें</string>
+    <string name="dl_cd_retry">%1$s फिर से कोशिश करें</string>
+    <string name="dl_cd_dismiss">%1$s हटाएँ</string>
+    <string name="dl_cd_play">%1$s चलाएँ</string>
+    <string name="dl_cd_open">%1$s खोलें</string>
+    <string name="dl_cd_more">%1$s के और विकल्प</string>
     <string name="wait_network">नेटवर्क का इंतज़ार</string>
     <string name="wait_wifi">वाई-फ़ाई का इंतज़ार</string>
     <string name="wait_charger">चार्जर का इंतज़ार</string>
@@ -171,7 +183,6 @@
     <string name="poster_setup_unreachable">key जाँचने के लिए TMDB तक नहीं पहुँच सके।</string>
     <string name="poster_setup_save_anyway">फिर भी सेव करें</string>
     <string name="poster_setup_done">पोस्टर चालू हैं</string>
-    <string name="poster_banner">पोस्टर और विवरण देखने के लिए मुफ़्त TMDB key जोड़ें</string>
     <string name="poster_banner_action">सेट अप करें</string>
     <string name="set_posters_on">चालू। पोस्टर और विवरण TMDB से आते हैं।</string>
     <string name="set_posters_change">key बदलें</string>
@@ -373,7 +384,6 @@
     <string name="theme_graphite">ग्रेफ़ाइट</string>
     <string name="set_pure_black">शुद्ध काला</string>
     <string name="set_pure_black_detail">डार्क मोड में काली पृष्ठभूमि। OLED स्क्रीन और बैटरी के लिए बेहतर।</string>
-    <string name="dl_more_actions">और विकल्प</string>
 
     <!-- Widget, Quick Settings tile, launcher shortcuts, clipboard offer -->
     <string name="action_pause_all">सभी रोकें</string>

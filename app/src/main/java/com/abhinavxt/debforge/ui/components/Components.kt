@@ -333,7 +333,9 @@ fun BannerCard(
 fun GeneratedArt(
     title: String,
     tag: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    /** False when the caption elsewhere already carries the title (poster grid). */
+    showTitle: Boolean = true
 ) {
     val cs = MaterialTheme.colorScheme
     val (a, b, fg) = when (Math.floorMod(title.hashCode(), 3)) {
@@ -345,6 +347,20 @@ fun GeneratedArt(
         modifier.background(Brush.linearGradient(listOf(a, b))),
         contentAlignment = Alignment.BottomStart
     ) {
+        if (!showTitle) {
+            // Tag above a large low-contrast initial, both bottom-left: clear of the
+            // badge (top-right) and the done check (top-left).
+            Column(Modifier.padding(start = 10.dp, bottom = 2.dp)) {
+                Text(tag, style = MaterialTheme.typography.labelSmall, color = fg.copy(alpha = 0.8f), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(
+                    title.trim().take(1).uppercase(),
+                    style = MaterialTheme.typography.displayLarge,
+                    fontWeight = FontWeight.Black,
+                    color = fg.copy(alpha = 0.22f)
+                )
+            }
+            return@Box
+        }
         // Large faint initial as texture.
         Text(
             title.trim().take(1).uppercase(),

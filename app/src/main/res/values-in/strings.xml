@@ -16,7 +16,6 @@
     <string name="action_add">Tambah</string>
     <string name="action_dismiss">Tutup</string>
     <string name="action_pause">Jeda</string>
-    <string name="action_resume">Lanjutkan</string>
     <string name="action_renew">Perpanjang</string>
     <string name="action_refresh">Muat ulang</string>
     <string name="action_clear">Bersihkan</string>
@@ -43,8 +42,9 @@
     <string name="add_hint_magnet">Link magnet, satu per baris</string>
     <string name="add_hint_links">Link hoster, satu per baris</string>
     <string name="processing_on">Diproses di %1$s</string>
-    <string name="processing_will_auto">Akan diunduh otomatis</string>
-    <string name="processing_auto_when_ready">Unduh otomatis saat siap</string>
+    <string name="processing_auto_short">Unduh otomatis</string>
+    <string name="processing_auto_on_short">Unduh otomatis aktif</string>
+    <string name="processing_cd_remove">Hapus %1$s dari layanan</string>
     <string name="eta_seconds">%1$d dtk lagi</string>
     <string name="eta_minutes">%1$d mnt lagi</string>
     <string name="eta_hours">%1$d j %2$d mnt lagi</string>
@@ -53,8 +53,11 @@
     <string name="browse_cancel_selection">Batalkan pilihan</string>
     <string name="browse_searching_all">Mencari di seluruh pustaka… %1$d file diperiksa</string>
     <string name="browse_search_hint">Cari judul atau file</string>
-    <string name="browse_posters">Poster</string>
     <string name="browse_group_series">Kelompokkan sebagai serial</string>
+    <string name="library_view_as_list">Beralih ke tampilan daftar</string>
+    <string name="library_view_as_posters">Beralih ke tampilan poster</string>
+    <string name="library_tmdb_prompt">Tambahkan kunci TMDB untuk poster</string>
+    <string name="library_loading">Memuat pustaka</string>
     <string name="sort_newest">Terbaru</string>
     <string name="sort_oldest">Terlama</string>
     <string name="sort_name_az">Nama A-Z</string>
@@ -91,10 +94,11 @@
     <string name="kind_movie">Film</string>
     <string name="sheet_all_queued">Semua dalam antrean</string>
     <string name="sheet_download_all">Unduh semua (%1$d)</string>
-    <string name="sheet_zip_title">Semuanya sebagai satu .zip</string>
     <string name="sheet_zip_download">Unduh .zip</string>
     <string name="sheet_season">Musim %1$d</string>
     <string name="sheet_download_season">Unduh musim (%1$d)</string>
+    <string name="sheet_play_cd">Putar %1$s</string>
+    <string name="sheet_download_cd">Unduh %1$s</string>
     <string name="state_queued">Dalam antrean</string>
     <string name="state_downloading">Mengunduh</string>
     <string name="state_paused">Dijeda</string>
@@ -111,12 +115,20 @@
     <string name="dl_waiting">Menunggu</string>
     <string name="dl_so_far">sejauh ini</string>
     <string name="dl_waiting_size">Menunggu · %1$s</string>
-    <string name="dl_paused_progress">Dijeda · %1$s / %2$s</string>
+    <string name="dl_paused_status">Dijeda · %1$s · %2$s</string>
     <string name="dl_failed">Unduhan gagal</string>
     <string name="dl_done_at">Selesai · %1$s · %2$s</string>
     <string name="dl_file_missing">File sudah dipindah atau dihapus</string>
     <string name="dl_empty_title">Tidak ada yang aktif</string>
     <string name="dl_empty_body">Ketuk Unduh pada item di Pustaka untuk memasukkannya ke antrean.</string>
+    <string name="dl_cd_pause">Jeda %1$s</string>
+    <string name="dl_cd_resume">Lanjutkan %1$s</string>
+    <string name="dl_cd_cancel">Batalkan %1$s</string>
+    <string name="dl_cd_retry">Coba lagi %1$s</string>
+    <string name="dl_cd_dismiss">Tutup %1$s</string>
+    <string name="dl_cd_play">Putar %1$s</string>
+    <string name="dl_cd_open">Buka %1$s</string>
+    <string name="dl_cd_more">Tindakan lain untuk %1$s</string>
     <string name="wait_network">Menunggu jaringan</string>
     <string name="wait_wifi">Menunggu Wi-Fi</string>
     <string name="wait_charger">Menunggu pengisi daya</string>
@@ -169,7 +181,6 @@
     <string name="poster_setup_unreachable">Tidak dapat menghubungi TMDB untuk memeriksa kunci.</string>
     <string name="poster_setup_save_anyway">Tetap simpan</string>
     <string name="poster_setup_done">Poster aktif</string>
-    <string name="poster_banner">Tambahkan kunci TMDB gratis untuk melihat poster dan deskripsi</string>
     <string name="poster_banner_action">Atur</string>
     <string name="set_posters_on">Aktif. Poster dan deskripsi berasal dari TMDB.</string>
     <string name="set_posters_change">Ganti kunci</string>
@@ -359,7 +370,6 @@
     <string name="theme_graphite">Grafit</string>
     <string name="set_pure_black">Hitam pekat</string>
     <string name="set_pure_black_detail">Latar hitam di mode gelap. Lebih hemat baterai di layar OLED.</string>
-    <string name="dl_more_actions">Tindakan lain</string>
 
     <!-- Widget, Quick Settings tile, launcher shortcuts, clipboard offer -->
     <string name="action_pause_all">Jeda semua</string>

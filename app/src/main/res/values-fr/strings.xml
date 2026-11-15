@@ -16,7 +16,6 @@
     <string name="action_add">Ajouter</string>
     <string name="action_dismiss">Ignorer</string>
     <string name="action_pause">Pause</string>
-    <string name="action_resume">Reprendre</string>
     <string name="action_renew">Renouveler</string>
     <string name="action_refresh">Actualiser</string>
     <string name="action_clear">Effacer</string>
@@ -43,8 +42,9 @@
     <string name="add_hint_magnet">Liens magnet, un par ligne</string>
     <string name="add_hint_links">Liens d\'hébergeurs, un par ligne</string>
     <string name="processing_on">Traitement sur %1$s</string>
-    <string name="processing_will_auto">Téléchargement auto prévu</string>
-    <string name="processing_auto_when_ready">Téléchargement auto une fois prêt</string>
+    <string name="processing_auto_short">Téléchargement auto</string>
+    <string name="processing_auto_on_short">Téléchargement auto activé</string>
+    <string name="processing_cd_remove">Supprimer %1$s du service</string>
     <string name="eta_seconds">%1$d s restantes</string>
     <string name="eta_minutes">%1$d min restantes</string>
     <string name="eta_hours">%1$d h %2$d min restantes</string>
@@ -53,8 +53,11 @@
     <string name="browse_cancel_selection">Annuler la sélection</string>
     <string name="browse_searching_all">Recherche dans toute votre bibliothèque… %1$d fichiers vérifiés</string>
     <string name="browse_search_hint">Rechercher titres ou fichiers</string>
-    <string name="browse_posters">Affiches</string>
     <string name="browse_group_series">Regrouper en séries</string>
+    <string name="library_view_as_list">Passer à l\'affichage en liste</string>
+    <string name="library_view_as_posters">Passer à l\'affichage en affiches</string>
+    <string name="library_tmdb_prompt">Ajoutez une clé TMDB pour voir les affiches</string>
+    <string name="library_loading">Chargement de la bibliothèque</string>
     <string name="sort_newest">Plus récents</string>
     <string name="sort_oldest">Plus anciens</string>
     <string name="sort_name_az">Nom A-Z</string>
@@ -95,10 +98,11 @@
     <string name="kind_movie">Film</string>
     <string name="sheet_all_queued">Tout est en file d\'attente</string>
     <string name="sheet_download_all">Tout télécharger (%1$d)</string>
-    <string name="sheet_zip_title">Tout en un seul .zip</string>
     <string name="sheet_zip_download">Télécharger le .zip</string>
     <string name="sheet_season">Saison %1$d</string>
     <string name="sheet_download_season">Télécharger la saison (%1$d)</string>
+    <string name="sheet_play_cd">Lire %1$s</string>
+    <string name="sheet_download_cd">Télécharger %1$s</string>
     <string name="state_queued">En attente</string>
     <string name="state_downloading">Téléchargement</string>
     <string name="state_paused">En pause</string>
@@ -115,12 +119,20 @@
     <string name="dl_waiting">En attente</string>
     <string name="dl_so_far">jusqu\'ici</string>
     <string name="dl_waiting_size">En attente · %1$s</string>
-    <string name="dl_paused_progress">En pause · %1$s / %2$s</string>
+    <string name="dl_paused_status">En pause · %1$s · %2$s</string>
     <string name="dl_failed">Échec du téléchargement</string>
     <string name="dl_done_at">Terminé · %1$s · %2$s</string>
     <string name="dl_file_missing">Le fichier a été déplacé ou supprimé</string>
     <string name="dl_empty_title">Rien en cours</string>
     <string name="dl_empty_body">Appuyez sur Télécharger sur un élément de votre Bibliothèque pour le mettre en file d\'attente.</string>
+    <string name="dl_cd_pause">Mettre %1$s en pause</string>
+    <string name="dl_cd_resume">Reprendre %1$s</string>
+    <string name="dl_cd_cancel">Annuler %1$s</string>
+    <string name="dl_cd_retry">Réessayer %1$s</string>
+    <string name="dl_cd_dismiss">Ignorer %1$s</string>
+    <string name="dl_cd_play">Lire %1$s</string>
+    <string name="dl_cd_open">Ouvrir %1$s</string>
+    <string name="dl_cd_more">Plus d\'actions pour %1$s</string>
     <string name="wait_network">En attente du réseau</string>
     <string name="wait_wifi">En attente du Wi-Fi</string>
     <string name="wait_charger">En attente du chargeur</string>
@@ -173,7 +185,6 @@
     <string name="poster_setup_unreachable">Impossible de joindre TMDB pour vérifier la clé.</string>
     <string name="poster_setup_save_anyway">Enregistrer quand même</string>
     <string name="poster_setup_done">Affiches activées</string>
-    <string name="poster_banner">Ajoutez une clé TMDB gratuite pour voir affiches et résumés</string>
     <string name="poster_banner_action">Configurer</string>
     <string name="set_posters_on">Activé. Les affiches et résumés viennent de TMDB.</string>
     <string name="set_posters_change">Changer de clé</string>
@@ -387,7 +398,6 @@
     <string name="theme_graphite">Graphite</string>
     <string name="set_pure_black">Noir pur</string>
     <string name="set_pure_black_detail">Fonds noirs en mode sombre. Mieux pour les écrans OLED et la batterie.</string>
-    <string name="dl_more_actions">Plus d\'actions</string>
 
     <!-- Widget, Quick Settings tile, launcher shortcuts, clipboard offer -->
     <string name="action_pause_all">Tout suspendre</string>

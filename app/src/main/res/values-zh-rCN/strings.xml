@@ -16,7 +16,6 @@
     <string name="action_add">添加</string>
     <string name="action_dismiss">忽略</string>
     <string name="action_pause">暂停</string>
-    <string name="action_resume">继续</string>
     <string name="action_renew">续费</string>
     <string name="action_refresh">刷新</string>
     <string name="action_clear">清除</string>
@@ -43,8 +42,9 @@
     <string name="add_hint_magnet">磁力链接，每行一个</string>
     <string name="add_hint_links">网盘链接，每行一个</string>
     <string name="processing_on">正在 %1$s 上处理</string>
-    <string name="processing_will_auto">将自动下载</string>
-    <string name="processing_auto_when_ready">就绪后自动下载</string>
+    <string name="processing_auto_short">自动下载</string>
+    <string name="processing_auto_on_short">自动下载已开启</string>
+    <string name="processing_cd_remove">从服务中移除 %1$s</string>
     <string name="eta_seconds">剩余 %1$d 秒</string>
     <string name="eta_minutes">剩余 %1$d 分钟</string>
     <string name="eta_hours">剩余 %1$d 小时 %2$d 分钟</string>
@@ -53,8 +53,11 @@
     <string name="browse_cancel_selection">取消选择</string>
     <string name="browse_searching_all">正在搜索整个媒体库… 已检查 %1$d 个文件</string>
     <string name="browse_search_hint">搜索标题或文件</string>
-    <string name="browse_posters">海报</string>
     <string name="browse_group_series">按剧集分组</string>
+    <string name="library_view_as_list">切换到列表视图</string>
+    <string name="library_view_as_posters">切换到海报视图</string>
+    <string name="library_tmdb_prompt">添加 TMDB 密钥以显示海报</string>
+    <string name="library_loading">正在加载媒体库</string>
     <string name="sort_newest">最新</string>
     <string name="sort_oldest">最早</string>
     <string name="sort_name_az">名称 A-Z</string>
@@ -91,10 +94,11 @@
     <string name="kind_movie">电影</string>
     <string name="sheet_all_queued">已全部加入队列</string>
     <string name="sheet_download_all">全部下载（%1$d）</string>
-    <string name="sheet_zip_title">全部打包为一个 .zip</string>
     <string name="sheet_zip_download">下载 .zip</string>
     <string name="sheet_season">第 %1$d 季</string>
     <string name="sheet_download_season">下载本季（%1$d）</string>
+    <string name="sheet_play_cd">播放 %1$s</string>
+    <string name="sheet_download_cd">下载 %1$s</string>
     <string name="state_queued">排队中</string>
     <string name="state_downloading">下载中</string>
     <string name="state_paused">已暂停</string>
@@ -111,12 +115,20 @@
     <string name="dl_waiting">等待中</string>
     <string name="dl_so_far">已下载</string>
     <string name="dl_waiting_size">等待中 · %1$s</string>
-    <string name="dl_paused_progress">已暂停 · %1$s / %2$s</string>
+    <string name="dl_paused_status">已暂停 · %1$s · %2$s</string>
     <string name="dl_failed">下载失败</string>
     <string name="dl_done_at">已完成 · %1$s · %2$s</string>
     <string name="dl_file_missing">文件已被移动或删除</string>
     <string name="dl_empty_title">没有进行中的任务</string>
     <string name="dl_empty_body">在媒体库中点按某项的“下载”即可加入队列。</string>
+    <string name="dl_cd_pause">暂停 %1$s</string>
+    <string name="dl_cd_resume">继续 %1$s</string>
+    <string name="dl_cd_cancel">取消 %1$s</string>
+    <string name="dl_cd_retry">重试 %1$s</string>
+    <string name="dl_cd_dismiss">忽略 %1$s</string>
+    <string name="dl_cd_play">播放 %1$s</string>
+    <string name="dl_cd_open">打开 %1$s</string>
+    <string name="dl_cd_more">%1$s 的更多操作</string>
     <string name="wait_network">正在等待网络</string>
     <string name="wait_wifi">正在等待 Wi-Fi</string>
     <string name="wait_charger">正在等待充电</string>
@@ -169,7 +181,6 @@
     <string name="poster_setup_unreachable">无法连接 TMDB 验证密钥。</string>
     <string name="poster_setup_save_anyway">仍然保存</string>
     <string name="poster_setup_done">海报已开启</string>
-    <string name="poster_banner">添加免费的 TMDB 密钥即可查看海报和简介</string>
     <string name="poster_banner_action">设置</string>
     <string name="set_posters_on">已开启。海报和简介来自 TMDB。</string>
     <string name="set_posters_change">更换密钥</string>
@@ -359,7 +370,6 @@
     <string name="theme_graphite">石墨</string>
     <string name="set_pure_black">纯黑</string>
     <string name="set_pure_black_detail">深色模式下使用纯黑背景，更适合 OLED 屏幕，也更省电。</string>
-    <string name="dl_more_actions">更多操作</string>
 
     <!-- Widget, Quick Settings tile, launcher shortcuts, clipboard offer -->
     <string name="action_pause_all">全部暂停</string>

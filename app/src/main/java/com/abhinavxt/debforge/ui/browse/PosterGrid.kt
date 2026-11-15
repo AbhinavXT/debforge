@@ -1,14 +1,11 @@
-@file:OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 
 package com.abhinavxt.debforge.ui.browse
 
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material.icons.rounded.NotificationAdd
 import androidx.compose.material.icons.rounded.NotificationsActive
-import androidx.compose.material3.FilterChip
 import com.abhinavxt.debforge.ui.pluralRes
 import androidx.compose.ui.res.stringResource
 import com.abhinavxt.debforge.R
@@ -20,11 +17,14 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -41,7 +41,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowDownward
@@ -55,8 +54,16 @@ import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Schedule
 import androidx.compose.material3.FilledTonalIconButton
+import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalContext
+import coil.request.ImageRequest
 import com.abhinavxt.debforge.ui.components.GeneratedArt
-import com.abhinavxt.debforge.ui.components.IconBadge
 import com.abhinavxt.debforge.ui.components.StatusPill
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -76,7 +83,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
@@ -161,11 +167,20 @@ private fun PosterCard(
     selected: Boolean = false,
     onLongClick: () -> Unit = {}
 ) {
+    val interaction = remember { MutableInteractionSource() }
+    val pressed by interaction.collectIsPressedAsState()
+    val scale by animateFloatAsState(if (pressed) 0.97f else 1f, label = "posterPress")
     Column(
         modifier = Modifier
+            .graphicsLayer { scaleX = scale; scaleY = scale }
             .clip(RoundedCornerShape(16.dp))
             .background(if (selected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent)
-            .combinedClickable(onClick = onClick, onLongClick = onLongClick)
+            .combinedClickable(
+                interactionSource = interaction,
+                indication = androidx.compose.foundation.LocalIndication.current,
+                onClick = onClick,
+                onLongClick = onLongClick
+            )
     ) {
         Box {
             Poster(group = group, meta = meta, done = allDone, modifier = Modifier.fillMaxWidth())
@@ -195,7 +210,7 @@ private fun PosterCard(
             modifier = Modifier.padding(horizontal = 8.dp)
         )
         Text(
-            text = if (allDone) stringResource(R.string.poster_downloaded) else group.subtitleText(),
+            text = if (allDone) stringResource(R.string.poster_downloaded) else group.subtitleText(withResolution = false),
             style = MaterialTheme.typography.labelMedium,
             color = if (allDone) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
             maxLines = 1,
@@ -225,11 +240,16 @@ fun Poster(group: TitleGroup, meta: MediaMeta?, modifier: Modifier = Modifier, d
                 MediaKind.MOVIE -> stringResource(R.string.poster_movie_tag)
                 MediaKind.OTHER -> group.info.extension?.uppercase() ?: stringResource(R.string.poster_file_tag)
             },
+            showTitle = false,
             modifier = Modifier.fillMaxSize()
         )
         if (meta?.posterUrl != null) {
+            val context = LocalContext.current
+            val request = remember(meta.posterUrl, context) {
+                ImageRequest.Builder(context).data(meta.posterUrl).crossfade(true).build()
+            }
             AsyncImage(
-                model = meta.posterUrl,
+                model = request,
                 contentDescription = meta.title,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
@@ -322,9 +342,7 @@ fun TitleSheet(
             item(key = "header") {
                 // Large font on a narrow phone: details go under the poster, so the buttons keep their width.
                 val stacked = LocalConfiguration.current.screenWidthDp / LocalDensity.current.fontScale < 320
-                FlowRow(Modifier.padding(horizontal = 20.dp), maxItemsInEachRow = if (stacked) 1 else 2) {
-                    Poster(group = group, meta = meta, modifier = Modifier.padding(end = 16.dp, bottom = 16.dp).width(112.dp))
-                    Column(if (stacked) Modifier.fillMaxWidth() else Modifier.weight(1f)) {
+                val headerTop: @Composable () -> Unit = {
                         Text(
                             meta?.title ?: group.title,
                             style = MaterialTheme.typography.headlineSmall
@@ -344,10 +362,12 @@ fun TitleSheet(
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                        Spacer(Modifier.height(14.dp))
+                }
+                val headerBottom: @Composable () -> Unit = {
                         Button(
                             onClick = { onDownload(pending) },
-                            enabled = pending.isNotEmpty()
+                            enabled = pending.isNotEmpty(),
+                            modifier = Modifier.fillMaxWidth()
                         ) {
                             Icon(
                                 if (pending.isEmpty()) Icons.Rounded.Check else Icons.Rounded.Download,
@@ -360,76 +380,127 @@ fun TitleSheet(
                                     pending.isEmpty() -> stringResource(R.string.sheet_all_queued)
                                     pending.size == 1 -> stringResource(R.string.action_download)
                                     else -> stringResource(R.string.sheet_download_all, pending.size)
-                                }
-                            )
-                        }
-                        if (following != null) {
-                            FilterChip(
-                                selected = following,
-                                onClick = onToggleFollow,
-                                label = { Text(stringResource(if (following) R.string.follow_following else R.string.follow_action)) },
-                                leadingIcon = {
-                                    Icon(
-                                        if (following) Icons.Rounded.NotificationsActive else Icons.Rounded.NotificationAdd,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(18.dp)
-                                    )
-                                }
-                            )
-                            if (following) {
-                                Text(
-                                    stringResource(R.string.follow_hint),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                        }
-                        if (onRemove != null) {
-                            TextButton(onClick = onRemove) {
-                                Icon(
-                                    Icons.Rounded.DeleteOutline,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.error,
-                                    modifier = Modifier.size(18.dp)
-                                )
-                                Spacer(Modifier.width(6.dp))
-                                Text(
-                                    removeLabel,
-                                    color = MaterialTheme.colorScheme.error
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-            zips.forEach { zip ->
-                item(key = zip.id) {
-                    Row(
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(start = 16.dp, end = 16.dp, top = 12.dp)
-                            .clip(MaterialTheme.shapes.medium)
-                            .background(MaterialTheme.colorScheme.surfaceContainerHigh)
-                            .padding(start = 12.dp, end = 4.dp, top = 8.dp, bottom = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        IconBadge(Icons.Rounded.FolderZip)
-                        Spacer(Modifier.width(12.dp))
-                        Column(Modifier.weight(1f)) {
-                            Text(stringResource(R.string.sheet_zip_title), style = MaterialTheme.typography.bodyMedium)
-                            Text(
-                                zip.parentName ?: zip.filename,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                },
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
                             )
                         }
-                        val zipState = downloadStates[zip.id]
-                        if (zipState != null) {
-                            DownloadStatePill(zipState, Modifier.padding(horizontal = 8.dp))
-                        } else {
-                            TextButton(onClick = { onDownload(listOf(zip)) }) { Text(stringResource(R.string.sheet_zip_download)) }
+                }
+                if (stacked) {
+                    Column(Modifier.padding(horizontal = 20.dp).padding(bottom = 12.dp)) {
+                        Poster(group = group, meta = meta, modifier = Modifier.padding(bottom = 12.dp).width(104.dp))
+                        headerTop()
+                        Spacer(Modifier.height(12.dp))
+                        headerBottom()
+                    }
+                } else {
+                    // Poster-height column: title and meta on top, the main button on the poster's bottom edge.
+                    Row(Modifier.padding(horizontal = 20.dp).padding(bottom = 12.dp).height(IntrinsicSize.Min)) {
+                        Poster(group = group, meta = meta, modifier = Modifier.padding(end = 16.dp).width(104.dp))
+                        Column(Modifier.weight(1f).fillMaxHeight(), verticalArrangement = Arrangement.SpaceBetween) {
+                            Column { headerTop() }
+                            headerBottom()
+                        }
+                    }
+                }
+                Column(Modifier.padding(horizontal = 20.dp)) {
+                    if (following != null || zips.size == 1) {
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                            if (following != null) {
+                                val followIcon = if (following) Icons.Rounded.NotificationsActive else Icons.Rounded.NotificationAdd
+                                val followContent: @Composable androidx.compose.foundation.layout.RowScope.() -> Unit = {
+                                    Icon(followIcon, contentDescription = null, modifier = Modifier.size(18.dp))
+                                    Spacer(Modifier.width(8.dp))
+                                    Text(
+                                        stringResource(if (following) R.string.follow_following else R.string.follow_action),
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                }
+                                if (following) {
+                                    FilledTonalButton(onClick = onToggleFollow, modifier = Modifier.weight(1f), content = followContent)
+                                } else {
+                                    OutlinedButton(onClick = onToggleFollow, modifier = Modifier.weight(1f), content = followContent)
+                                }
+                            }
+                            // A single archive shares the row with Follow.
+                            if (zips.size == 1) {
+                                val zip = zips.first()
+                                val zipState = downloadStates[zip.id]
+                                if (zipState != null) {
+                                    Box(Modifier.weight(1f).height(40.dp), contentAlignment = Alignment.Center) {
+                                        DownloadStatePill(zipState)
+                                    }
+                                } else {
+                                    OutlinedButton(onClick = { onDownload(listOf(zip)) }, modifier = Modifier.weight(1f)) {
+                                        Icon(Icons.Rounded.FolderZip, contentDescription = null, modifier = Modifier.size(18.dp))
+                                        Spacer(Modifier.width(8.dp))
+                                        Text(
+                                            stringResource(R.string.sheet_zip_download),
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    // Several archives: one named line each, with its own action or state.
+                    if (zips.size >= 2) {
+                        zips.forEach { zip ->
+                            val zipState = downloadStates[zip.id]
+                            Row(
+                                Modifier.fillMaxWidth().padding(top = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                Icon(
+                                    Icons.Rounded.FolderZip,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Text(
+                                    zip.filename,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                if (zipState != null) {
+                                    DownloadStatePill(zipState)
+                                } else {
+                                    OutlinedButton(onClick = { onDownload(listOf(zip)) }) {
+                                        Text(stringResource(R.string.sheet_zip_download), maxLines = 1)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if (following == true) {
+                        Text(
+                            stringResource(R.string.follow_hint),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(top = 12.dp)
+                        )
+                    }
+                    if (onRemove != null) {
+                        Spacer(Modifier.height(12.dp))
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                        TextButton(
+                            onClick = onRemove,
+                            contentPadding = PaddingValues(end = 12.dp),
+                            modifier = Modifier.heightIn(min = 48.dp)
+                        ) {
+                            Icon(
+                                Icons.Rounded.DeleteOutline,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.error,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text(removeLabel, color = MaterialTheme.colorScheme.error)
                         }
                     }
                 }
@@ -437,7 +508,7 @@ fun TitleSheet(
             meta?.overview?.let { overview ->
                 item(key = "overview") { Overview(overview) }
             }
-            item(key = "divider") { Spacer(Modifier.height(8.dp)) }
+            item(key = "divider") { Spacer(Modifier.height(4.dp)) }
 
             var lastSeason: Int? = null
             files.forEach { f ->
@@ -448,7 +519,7 @@ fun TitleSheet(
                     val seasonPending = seasonFiles.filter { downloadStates[it.item.id] == null }.map { it.item }
                     item(key = "season-$season") {
                         Row(
-                            Modifier.fillMaxWidth().padding(start = 24.dp, end = 12.dp, top = 16.dp, bottom = 4.dp),
+                            Modifier.fillMaxWidth().padding(start = 24.dp, end = 12.dp, top = 12.dp, bottom = 4.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
@@ -514,16 +585,20 @@ private fun FileRow(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(Modifier.weight(1f)) {
+            val label = file.info.episodeLabel
+            if (label != null) {
+                Text(label, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium)
+            }
             Text(
-                listOfNotNull(file.info.episodeLabel, file.info.qualityLabel.ifEmpty { null }, formatSize(file.item.filesize))
+                listOfNotNull(file.info.qualityLabel.ifEmpty { null }, formatSize(file.item.filesize))
                     .joinToString(" · "),
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Medium
+                style = if (label != null) MaterialTheme.typography.bodyMedium else MaterialTheme.typography.bodyLarge,
+                color = if (label != null) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface
             )
             Text(
                 file.item.filename,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.75f),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -543,17 +618,18 @@ private fun FileRow(
                     )
             }
         }
+        val what = file.info.episodeLabel ?: file.info.title
         if (file.info.isVideo) {
             // Stream straight from the service — no download needed.
-            IconButton(onClick = onPlay) {
-                Icon(Icons.Rounded.PlayArrow, contentDescription = stringResource(R.string.action_play))
+            FilledTonalIconButton(onClick = onPlay, modifier = Modifier.size(48.dp)) {
+                Icon(Icons.Rounded.PlayArrow, contentDescription = stringResource(R.string.sheet_play_cd, what))
             }
         }
         if (state != null) {
             DownloadStatePill(state, Modifier.padding(start = 4.dp, end = 6.dp))
         } else {
-            FilledTonalIconButton(onClick = onDownload) {
-                Icon(Icons.Rounded.Download, contentDescription = stringResource(R.string.action_download))
+            FilledIconButton(onClick = onDownload, modifier = Modifier.padding(start = 4.dp).size(48.dp)) {
+                Icon(Icons.Rounded.Download, contentDescription = stringResource(R.string.sheet_download_cd, what))
             }
         }
     }
@@ -586,7 +662,7 @@ fun DownloadState.badgeLabel(): String = stringResource(
 
 /** "S1–S3 · 24 episodes", "2023 · 2 versions", "4.2 GB" — localised. */
 @Composable
-fun TitleGroup.subtitleText(): String = when (kind) {
+fun TitleGroup.subtitleText(withResolution: Boolean = true): String = when (kind) {
     MediaKind.SHOW -> {
         val seasons = files.mapNotNull { it.info.season }.distinct().sorted()
         val seasonPart = when {
@@ -598,7 +674,7 @@ fun TitleGroup.subtitleText(): String = when (kind) {
     }
     MediaKind.MOVIE -> listOfNotNull(
         info.year?.toString(),
-        if (files.size > 1) pluralRes(R.plurals.n_versions, files.size, files.size) else files.first().info.resolution
+        if (files.size > 1) pluralRes(R.plurals.n_versions, files.size, files.size) else if (withResolution) files.first().info.resolution else null
     ).joinToString(" · ")
     MediaKind.OTHER -> formatSize(totalSize)
 }

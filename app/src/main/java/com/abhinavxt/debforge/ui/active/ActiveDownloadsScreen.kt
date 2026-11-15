@@ -1,6 +1,10 @@
 package com.abhinavxt.debforge.ui.active
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -13,6 +17,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.animation.core.animateFloatAsState
+import android.view.HapticFeedbackConstants
+import android.view.View
+import androidx.compose.ui.platform.LocalView
+import com.abhinavxt.debforge.ui.components.MiddleEllipsisText
+import com.abhinavxt.debforge.ui.components.ReleaseLabels
+import com.abhinavxt.debforge.ui.components.releaseLabels
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Description
@@ -117,20 +128,21 @@ fun ActiveDownloadsScreen(viewModel: ActiveDownloadsViewModel = hiltViewModel())
         ) {
             val start = scheduledStart
             if (start != null && grouped[DownloadState.QUEUED].orEmpty().isNotEmpty()) {
-                item(key = "schedule-notice") { ScheduleNotice(start) }
+                item(key = "schedule-notice", contentType = "notice") { Box(Modifier.animateItem()) { ScheduleNotice(start) } }
             }
             // Display order: action-needed states first.
             SECTION_ORDER.forEach { sectionState ->
                 val rows = grouped[sectionState].orEmpty()
                 if (rows.isEmpty()) return@forEach
-                item(key = "header-$sectionState") { SectionHeader(sectionState.title(), rows.size) }
-                items(rows, key = { it.id }) { row ->
+                item(key = "header-$sectionState", contentType = "header") { Box(Modifier.animateItem()) { SectionHeader(sectionState.title(), rows.size) } }
+                items(rows, key = { it.id }, contentType = { sectionState }) { row ->
+                    val m = Modifier.animateItem()
                     when (sectionState) {
-                        DownloadState.DOWNLOADING -> DownloadingRow(row, viewModel)
-                        DownloadState.QUEUED -> QueuedRow(row, viewModel)
-                        DownloadState.PAUSED -> PausedRow(row, viewModel)
-                        DownloadState.FAILED -> FailedRow(row, viewModel)
-                        DownloadState.COMPLETED -> CompletedRow(row, viewModel)
+                        DownloadState.DOWNLOADING -> DownloadingRow(row, viewModel, m)
+                        DownloadState.QUEUED -> QueuedRow(row, viewModel, m)
+                        DownloadState.PAUSED -> PausedRow(row, viewModel, m)
+                        DownloadState.FAILED -> FailedRow(row, viewModel, m)
+                        DownloadState.COMPLETED -> CompletedRow(row, viewModel, m)
                     }
                 }
             }
@@ -183,25 +195,37 @@ private fun SectionHeader(title: String, count: Int) {
 // --- row variants ------------------------------------------------------------
 
 @Composable
-private fun DownloadingRow(row: ActiveRow, vm: ActiveDownloadsViewModel) {
+private fun DownloadingRow(row: ActiveRow, vm: ActiveDownloadsViewModel, modifier: Modifier = Modifier) {
     val waitingLabel = row.waitingReasonRes?.let { stringResource(it) } ?: stringResource(R.string.dl_waiting)
     val soFar = stringResource(R.string.dl_so_far)
-    val eta = row.etaSeconds?.let { etaText(it) }
+    val eta = row.etaSeconds?.let { etaText(it).replace(' ', '\u00A0') }
+    val view = LocalView.current
+    val name = row.entity.filename
+    val known = row.entity.filesize > 0
+    val pct = if (known) "${(row.fraction * 100).toInt().coerceIn(0, 100)}%" else null
     // Archives built on the fly have no size until they finish.
-    val sizePart = if (row.entity.filesize > 0) {
-        "${formatBytes(row.bytesNow)} / ${formatBytes(row.entity.filesize)}"
+    val sizePart = if (known) formatBytePair(row.bytesNow, row.entity.filesize) else "${formatBytes(row.bytesNow)} $soFar"
+    val speed = formatSpeed(row.bytesPerSecond)
+    // Longest first; parts drop from the middle (speed, then size), never the percentage or the ETA.
+    val statusOptions = if (row.waitingForNetwork) {
+        listOf(
+            listOfNotNull(waitingLabel, pct, sizePart).joinToString(" · "),
+            listOfNotNull(waitingLabel, pct).joinToString(" · ")
+        )
     } else {
-        "${formatBytes(row.bytesNow)} $soFar"
-    }
-    val subtitle = if (row.waitingForNetwork) {
-        "$waitingLabel · $sizePart"
-    } else {
-        listOfNotNull(sizePart, formatSpeed(row.bytesPerSecond), eta).joinToString(" · ")
+        listOf(
+            listOfNotNull(pct, sizePart, speed, eta),
+            listOfNotNull(pct, sizePart, eta),
+            listOfNotNull(pct, eta)
+        ).map { it.joinToString(" · ") }.distinct()
     }
     val cs = MaterialTheme.colorScheme
+    val labels = remember(name) { releaseLabels(name) }
     RowFrame(
+        modifier = modifier,
+        labels = labels,
         filename = row.entity.filename,
-        subtitle = subtitle,
+        statusOptions = statusOptions,
         icon = if (row.waitingForNetwork) Icons.Rounded.Schedule else Icons.Rounded.ArrowDownward,
         iconContainer = cs.primaryContainer,
         iconTint = cs.onPrimaryContainer,
@@ -210,11 +234,11 @@ private fun DownloadingRow(row: ActiveRow, vm: ActiveDownloadsViewModel) {
         // Unknown size -> indeterminate bar rather than a stuck 0%.
         progress = if (row.entity.filesize > 0) row.fraction else -1f,
         actions = {
-            FilledTonalIconButton(onClick = { vm.pause(row.id) }) {
-                Icon(Icons.Rounded.Pause, contentDescription = stringResource(R.string.action_pause))
+            FilledTonalIconButton(onClick = { view.click(); vm.pause(row.id) }) {
+                Icon(Icons.Rounded.Pause, contentDescription = stringResource(R.string.dl_cd_pause, labels.title))
             }
-            IconButton(onClick = { vm.cancel(row.id) }) {
-                Icon(Icons.Rounded.Close, contentDescription = stringResource(R.string.action_cancel))
+            IconButton(onClick = { view.strong(); vm.cancel(row.id) }) {
+                Icon(Icons.Rounded.Close, contentDescription = stringResource(R.string.dl_cd_cancel, labels.title))
             }
         }
     )
@@ -233,68 +257,90 @@ private fun ScheduleNotice(startHour: Int) {
 }
 
 @Composable
-private fun QueuedRow(row: ActiveRow, vm: ActiveDownloadsViewModel) {
+private fun QueuedRow(row: ActiveRow, vm: ActiveDownloadsViewModel, modifier: Modifier = Modifier) {
     val cs = MaterialTheme.colorScheme
+    val view = LocalView.current
+    val labels = remember(row.entity.filename) { releaseLabels(row.entity.filename) }
+    val title = labels.title
     RowFrame(
+        modifier = modifier,
+        labels = labels,
         filename = row.entity.filename,
-        subtitle = stringResource(R.string.dl_waiting_size, formatBytes(row.entity.filesize)),
+        statusOptions = listOf(stringResource(R.string.dl_waiting_size, formatBytes(row.entity.filesize))),
         icon = Icons.Rounded.Schedule,
         iconContainer = cs.secondaryContainer,
         iconTint = cs.onSecondaryContainer,
         progress = null,
         actions = {
-            IconButton(onClick = { vm.cancel(row.id) }) {
-                Icon(Icons.Rounded.Close, contentDescription = stringResource(R.string.action_cancel))
+            IconButton(onClick = { view.strong(); vm.cancel(row.id) }) {
+                Icon(Icons.Rounded.Close, contentDescription = stringResource(R.string.dl_cd_cancel, title))
             }
         }
     )
 }
 
 @Composable
-private fun PausedRow(row: ActiveRow, vm: ActiveDownloadsViewModel) {
+private fun PausedRow(row: ActiveRow, vm: ActiveDownloadsViewModel, modifier: Modifier = Modifier) {
     val cs = MaterialTheme.colorScheme
+    val view = LocalView.current
+    val labels = remember(row.entity.filename) { releaseLabels(row.entity.filename) }
+    val title = labels.title
     RowFrame(
+        modifier = modifier,
+        labels = labels,
         filename = row.entity.filename,
-        subtitle = stringResource(R.string.dl_paused_progress, formatBytes(row.bytesNow), formatBytes(row.entity.filesize)),
+        statusOptions = listOf(
+            stringResource(
+                R.string.dl_paused_status,
+                "${(row.fraction * 100).toInt().coerceIn(0, 100)}%",
+                formatBytePair(row.bytesNow, row.entity.filesize)
+            )
+        ),
         icon = Icons.Rounded.Pause,
         iconContainer = cs.surfaceContainerHighest,
         iconTint = cs.onSurfaceVariant,
         progress = row.fraction,
         actions = {
-            FilledTonalIconButton(onClick = { vm.resume(row.id) }) {
-                Icon(Icons.Rounded.PlayArrow, contentDescription = stringResource(R.string.action_resume))
+            FilledTonalIconButton(onClick = { view.click(); vm.resume(row.id) }) {
+                Icon(Icons.Rounded.PlayArrow, contentDescription = stringResource(R.string.dl_cd_resume, title))
             }
-            IconButton(onClick = { vm.cancel(row.id) }) {
-                Icon(Icons.Rounded.Close, contentDescription = stringResource(R.string.action_cancel))
+            IconButton(onClick = { view.strong(); vm.cancel(row.id) }) {
+                Icon(Icons.Rounded.Close, contentDescription = stringResource(R.string.dl_cd_cancel, title))
             }
         }
     )
 }
 
 @Composable
-private fun FailedRow(row: ActiveRow, vm: ActiveDownloadsViewModel) {
+private fun FailedRow(row: ActiveRow, vm: ActiveDownloadsViewModel, modifier: Modifier = Modifier) {
     val cs = MaterialTheme.colorScheme
+    val view = LocalView.current
+    val labels = remember(row.entity.filename) { releaseLabels(row.entity.filename) }
+    val title = labels.title
     RowFrame(
+        modifier = modifier,
+        labels = labels,
         filename = row.entity.filename,
-        subtitle = row.entity.errorMessage ?: stringResource(R.string.dl_failed),
+        statusMaxLines = 2,
+        statusOptions = listOf(row.entity.errorMessage ?: stringResource(R.string.dl_failed)),
         subtitleColor = cs.error,
         icon = Icons.Rounded.ErrorOutline,
         iconContainer = cs.errorContainer,
         iconTint = cs.onErrorContainer,
         progress = null,
         actions = {
-            FilledTonalIconButton(onClick = { vm.retry(row.id) }) {
-                Icon(Icons.Rounded.Refresh, contentDescription = stringResource(R.string.action_retry))
+            FilledTonalIconButton(onClick = { view.click(); vm.retry(row.id) }) {
+                Icon(Icons.Rounded.Refresh, contentDescription = stringResource(R.string.dl_cd_retry, title))
             }
-            IconButton(onClick = { vm.cancel(row.id) }) {
-                Icon(Icons.Rounded.Close, contentDescription = stringResource(R.string.action_dismiss))
+            IconButton(onClick = { view.strong(); vm.cancel(row.id) }) {
+                Icon(Icons.Rounded.Close, contentDescription = stringResource(R.string.dl_cd_dismiss, title))
             }
         }
     )
 }
 
 @Composable
-private fun CompletedRow(row: ActiveRow, vm: ActiveDownloadsViewModel) {
+private fun CompletedRow(row: ActiveRow, vm: ActiveDownloadsViewModel, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val path = row.entity.finalFilePath
     // Existence check touches storage (a document query for picked folders),
@@ -304,11 +350,18 @@ private fun CompletedRow(row: ActiveRow, vm: ActiveDownloadsViewModel) {
     }
     val cs = MaterialTheme.colorScheme
     val present = exists && path != null
+    val view = LocalView.current
+    val labels = remember(row.entity.filename) { releaseLabels(row.entity.filename) }
+    val title = labels.title
     RowFrame(
+        modifier = modifier,
+        labels = labels,
         filename = row.entity.filename,
-        subtitle = if (present && path != null) {
-            stringResource(R.string.dl_done_at, formatBytes(row.entity.filesize), LocalFiles.folderLabel(context, path))
-        } else stringResource(R.string.dl_file_missing),
+        statusOptions = listOf(
+            if (present && path != null) {
+                stringResource(R.string.dl_done_at, formatBytes(row.entity.filesize), LocalFiles.folderLabel(context, path))
+            } else stringResource(R.string.dl_file_missing)
+        ),
         icon = if (present) Icons.Rounded.CheckCircle else Icons.Rounded.Description,
         iconContainer = if (present) cs.tertiaryContainer else cs.surfaceContainerHighest,
         iconTint = if (present) cs.onTertiaryContainer else cs.onSurfaceVariant,
@@ -327,12 +380,12 @@ private fun CompletedRow(row: ActiveRow, vm: ActiveDownloadsViewModel) {
                 }) {
                     Icon(
                         if (isVideo) Icons.Rounded.PlayArrow else Icons.AutoMirrored.Rounded.OpenInNew,
-                        contentDescription = stringResource(if (isVideo) R.string.action_play else R.string.action_open)
+                        contentDescription = stringResource(if (isVideo) R.string.dl_cd_play else R.string.dl_cd_open, title)
                     )
                 }
             }
             IconButton(onClick = { menu = true }) {
-                Icon(Icons.Rounded.MoreVert, contentDescription = stringResource(R.string.dl_more_actions))
+                Icon(Icons.Rounded.MoreVert, contentDescription = stringResource(R.string.dl_cd_more, title))
                 DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
                     if (present && path != null) {
                         DropdownMenuItem(
@@ -348,7 +401,7 @@ private fun CompletedRow(row: ActiveRow, vm: ActiveDownloadsViewModel) {
                     DropdownMenuItem(
                         text = { Text(stringResource(R.string.action_remove)) },
                         leadingIcon = { Icon(Icons.Rounded.ClearAll, contentDescription = null) },
-                        onClick = { menu = false; vm.cancel(row.id) }
+                        onClick = { menu = false; view.strong(); vm.cancel(row.id) }
                     )
                     if (present && path != null) {
                         DropdownMenuItem(
@@ -383,22 +436,27 @@ private fun CompletedRow(row: ActiveRow, vm: ActiveDownloadsViewModel) {
 
 // --- shared row frame --------------------------------------------------------
 
-/** One download as a rounded card: state icon, name, details, actions, progress. */
+/** One download as a rounded card: state icon, parsed title, tags, status, filename, actions, progress. */
 @Composable
 private fun RowFrame(
+    labels: ReleaseLabels,
     filename: String,
-    subtitle: String,
+    statusOptions: List<String>,
     icon: ImageVector,
     iconContainer: Color,
     iconTint: Color,
+    modifier: Modifier = Modifier,
     subtitleColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
+    statusMaxLines: Int = 1,
     progress: Float?,
     actions: @Composable () -> Unit
 ) {
+    val muted = MaterialTheme.colorScheme.onSurfaceVariant
+    val tnum = MaterialTheme.typography.bodySmall.copy(fontFeatureSettings = "tnum")
     Surface(
         color = MaterialTheme.colorScheme.surfaceContainerLow,
         shape = MaterialTheme.shapes.large,
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp)
+        modifier = modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp)
     ) {
         Column(Modifier.padding(start = 14.dp, end = 6.dp, top = 12.dp, bottom = 12.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -406,32 +464,74 @@ private fun RowFrame(
                 Spacer(Modifier.width(12.dp))
                 Column(Modifier.weight(1f)) {
                     Text(
-                        text = filename,
+                        text = labels.title,
                         style = MaterialTheme.typography.bodyLarge,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis
                     )
-                    Spacer(Modifier.height(2.dp))
-                    Text(
-                        text = subtitle,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = subtitleColor,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis
-                    )
+                    if (labels.tags.isNotEmpty()) {
+                        Text(labels.tags, style = tnum, color = muted, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    }
+                    // Raw filename: the quietest line; the end (extension) stays visible.
+                    MiddleEllipsisText(filename, modifier = Modifier.padding(top = 2.dp), hideFromAccessibility = true)
                 }
                 Row(horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) { actions() }
             }
+            // Changing numbers get the full card width, directly above the bar.
+            FitText(
+                options = statusOptions,
+                style = tnum,
+                color = subtitleColor,
+                maxLines = statusMaxLines,
+                modifier = Modifier.fillMaxWidth().padding(top = 8.dp, end = 8.dp)
+            )
             if (progress != null) {
-                Spacer(Modifier.height(10.dp))
+                Spacer(Modifier.height(6.dp))
                 val bar = Modifier.fillMaxWidth().padding(end = 8.dp).height(6.dp).clip(CircleShape)
                 if (progress < 0f) {
                     LinearProgressIndicator(modifier = bar)
                 } else {
-                    LinearProgressIndicator(progress = { progress }, modifier = bar)
+                    val shown by animateFloatAsState(progress.coerceIn(0f, 1f), label = "dl-progress")
+                    LinearProgressIndicator(progress = { shown }, modifier = bar)
                 }
             }
         }
+    }
+}
+
+/**
+ * Shows the first option that fits on [maxLines] lines at the available width; later options are
+ * shorter. Measured up front, so there is no overflow frame and nothing resets when the numbers tick.
+ */
+@Composable
+private fun FitText(
+    options: List<String>,
+    style: androidx.compose.ui.text.TextStyle,
+    color: Color,
+    maxLines: Int,
+    modifier: Modifier = Modifier
+) {
+    val measurer = rememberTextMeasurer()
+    BoxWithConstraints(modifier) {
+        val maxWidth = constraints.maxWidth
+        val text = options.firstOrNull { option ->
+            !measurer.measure(
+                text = option,
+                style = style,
+                overflow = TextOverflow.Ellipsis,
+                softWrap = maxLines > 1,
+                maxLines = maxLines,
+                constraints = Constraints(maxWidth = maxWidth)
+            ).hasVisualOverflow
+        } ?: options.last()
+        Text(
+            text = text,
+            style = style,
+            color = color,
+            maxLines = maxLines,
+            overflow = TextOverflow.Ellipsis,
+            softWrap = maxLines > 1
+        )
     }
 }
 
@@ -442,6 +542,14 @@ private fun formatBytes(bytes: Long): String = when {
     bytes < 1024L * 1024 -> "${bytes / 1024} KB"
     bytes < 1024L * 1024 * 1024 -> "%.1f MB".format(bytes / (1024.0 * 1024.0))
     else -> "%.2f GB".format(bytes / (1024.0 * 1024.0 * 1024.0))
+}
+
+/** "10.67 / 18.39 GB" when both share a unit, otherwise "637.9 MB / 1.68 GB". */
+private fun formatBytePair(now: Long, total: Long): String {
+    val a = formatBytes(now)
+    val b = formatBytes(total)
+    val unitA = a.substringAfterLast(' ')
+    return if (unitA == b.substringAfterLast(' ')) "${a.substringBeforeLast(' ')} / $b" else "$a / $b"
 }
 
 private fun formatSpeed(bps: Long): String = when {
@@ -457,3 +565,7 @@ private fun etaText(seconds: Long): String = when {
     seconds < 3600 -> stringResource(R.string.eta_minutes, (seconds / 60).toInt())
     else -> stringResource(R.string.eta_hours, (seconds / 3600).toInt(), ((seconds % 3600) / 60).toInt())
 }
+
+private fun View.click() = performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK)
+
+private fun View.strong() = performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)

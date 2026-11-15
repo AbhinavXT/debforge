@@ -123,7 +123,7 @@ class StoreScreenshots {
         progress.update(running.id, start, running.filesize, DownloadState.DOWNLOADING)
         Thread.sleep(250)
         progress.update(running.id, start + 5_600_000, running.filesize, DownloadState.DOWNLOADING)
-        waitForText("Tears.of.Steel")
+        waitForText("Tears of Steel")
         shot("3")
 
         // 4. Settings.
