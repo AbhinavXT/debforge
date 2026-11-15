@@ -105,7 +105,7 @@ private fun JobCard(job: RemoteJob, watched: Boolean, onToggle: () -> Unit, onRe
                     if (labels.tags.isNotEmpty()) {
                         Text(
                             labels.tags,
-                            style = MaterialTheme.typography.labelSmall,
+                            style = MaterialTheme.typography.bodySmall.copy(fontFeatureSettings = "tnum"),
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis

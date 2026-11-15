@@ -95,7 +95,7 @@ fun SetupScreen(viewModel: SetupViewModel = hiltViewModel()) {
             Box(
                 Modifier
                     .size(72.dp)
-                    .clip(RoundedCornerShape(22.dp))
+                    .clip(MaterialTheme.shapes.large)
                     .background(Brush.linearGradient(listOf(cs.primary, cs.tertiary))),
                 contentAlignment = Alignment.Center
             ) {

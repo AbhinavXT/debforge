@@ -1,6 +1,9 @@
 package com.abhinavxt.debforge.ui.browse
 
 import androidx.compose.animation.core.RepeatMode
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.snapshotFlow
+import kotlinx.coroutines.flow.collectLatest
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
@@ -57,6 +60,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
@@ -97,8 +102,8 @@ internal object CollapseMath {
 /**
  * Scroll state for the Library: how far the title block has collapsed, and
  * whether the grid is being scrolled down (the FAB then shrinks). Fed by
- * nested scroll from whichever list sits below, so it works for the poster
- * grid and the list alike without touching their scroll state.
+ * nested scroll from whichever list sits below; [TrackLibraryScroll] adds the
+ * exact top / cannot-scroll rule from that list's real scroll state.
  */
 class LibraryScrollState {
     var collapsed by mutableFloatStateOf(0f)
@@ -110,7 +115,6 @@ class LibraryScrollState {
     /** Number of screens (empty, error, skeleton) currently holding the header open. */
     internal var holds = 0
     internal var canScroll = true
-    private var listMoved = false
     internal var lastDragNanos = 0L
 
     private val active get() = !suspended && holds == 0
@@ -120,7 +124,6 @@ class LibraryScrollState {
         collapsed = 0f
         scrollingDown = false
         canScroll = true
-        listMoved = false
     }
 
     val connection = object : NestedScrollConnection {
@@ -134,20 +137,6 @@ class LibraryScrollState {
             return Offset(0f, step.consumed)
         }
 
-        override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
-            if (!active) return Offset.Zero
-            if (consumed.y != 0f) { listMoved = true; canScroll = true }
-            if (available.y > 0f) {
-                // The list hit its top (drag or fling): the title comes back.
-                expand()
-            } else if (available.y < 0f && consumed.y == 0f && !listMoved && collapsed >= maxCollapse && maxCollapse > 0f) {
-                // Collapsed, yet the list never moved: it is too short to scroll.
-                expand()
-                canScroll = false
-            }
-            return Offset.Zero
-        }
-
         override suspend fun onPreFling(available: Velocity): Velocity = Velocity.Zero
     }
 
@@ -156,6 +145,33 @@ class LibraryScrollState {
             save = { it.collapsed },
             restore = { LibraryScrollState().also { s -> s.collapsed = it } }
         )
+    }
+}
+
+/**
+ * The exact rule for both views: header and FAB fully open whenever the first item is at
+ * offset zero (also after a fling or programmatic scroll) or the content cannot scroll.
+ */
+@Composable
+internal fun TrackLibraryScroll(
+    scroll: LibraryScrollState,
+    atTop: () -> Boolean,
+    cannotScroll: () -> Boolean
+) {
+    LaunchedEffect(scroll) {
+        snapshotFlow { atTop() }.collect { top -> if (top) scroll.expand() }
+    }
+    // Nothing to scroll (checked after a beat so a collapsing header growing the viewport can't flap it).
+    LaunchedEffect(scroll) {
+        snapshotFlow { cannotScroll() }.collectLatest { cannot ->
+            if (cannot) {
+                kotlinx.coroutines.delay(300)
+                if (System.nanoTime() - scroll.lastDragNanos > 300_000_000L) scroll.expand()
+                scroll.canScroll = false
+            } else {
+                scroll.canScroll = true
+            }
+        }
     }
 }
 
@@ -220,12 +236,15 @@ internal fun ControlBar(
             modifier = Modifier.padding(horizontal = 16.dp)
         )
         Row(verticalAlignment = Alignment.CenterVertically) {
-            // Filters scroll sideways so long translations never squash them.
+            // Filters scroll sideways so long translations never squash them; a fade at a
+            // clipped edge shows there is more, and the view toggle stays put at the end.
+            val chipScroll = rememberScrollState()
             Row(
                 modifier = Modifier
                     .weight(1f)
-                    .horizontalScroll(rememberScrollState())
-                    .padding(start = 16.dp, top = 8.dp, bottom = 8.dp),
+                    .scrollEdgeFade(chipScroll, 24.dp)
+                    .horizontalScroll(chipScroll)
+                    .padding(start = 16.dp, top = 8.dp, bottom = 8.dp, end = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -263,6 +282,34 @@ internal fun ControlBar(
         }
     }
 }
+
+/** Fades the leading/trailing edge while the scroller can still move that way. */
+private fun Modifier.scrollEdgeFade(state: androidx.compose.foundation.ScrollState, width: androidx.compose.ui.unit.Dp): Modifier =
+    this
+        .graphicsLayer { compositingStrategy = androidx.compose.ui.graphics.CompositingStrategy.Offscreen }
+        .drawWithContent {
+            drawContent()
+            val w = width.toPx().coerceAtMost(size.width / 2)
+            if (state.canScrollForward) {
+                drawRect(
+                    brush = androidx.compose.ui.graphics.Brush.horizontalGradient(
+                        listOf(Color.Black, Color.Transparent), startX = size.width - w, endX = size.width
+                    ),
+                    topLeft = Offset(size.width - w, 0f),
+                    size = androidx.compose.ui.geometry.Size(w, size.height),
+                    blendMode = androidx.compose.ui.graphics.BlendMode.DstIn
+                )
+            }
+            if (state.canScrollBackward) {
+                drawRect(
+                    brush = androidx.compose.ui.graphics.Brush.horizontalGradient(
+                        listOf(Color.Transparent, Color.Black), startX = 0f, endX = w
+                    ),
+                    size = androidx.compose.ui.geometry.Size(w, size.height),
+                    blendMode = androidx.compose.ui.graphics.BlendMode.DstIn
+                )
+            }
+        }
 
 @Composable
 private fun SortPicker(sort: SortOrder, onSort: (SortOrder) -> Unit) {

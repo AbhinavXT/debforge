@@ -30,7 +30,7 @@ val AppTypography = Typography(
     labelSmall = base.labelSmall.copy(fontWeight = FontWeight.Medium, letterSpacing = 0.3.sp)
 )
 
-/** Generous rounding: chips 10, cards 20, sheets and dialogs 28. */
+/** Generous rounding: extraSmall 8, small 12, medium 16, large 20 (cards), extraLarge 28 (sheets and dialogs). */
 val AppShapes = Shapes(
     extraSmall = RoundedCornerShape(8.dp),
     small = RoundedCornerShape(12.dp),

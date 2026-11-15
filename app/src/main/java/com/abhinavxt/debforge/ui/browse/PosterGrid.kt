@@ -31,6 +31,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
@@ -85,6 +86,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.offset
+import androidx.compose.ui.layout.layout
 import coil.compose.AsyncImage
 import com.abhinavxt.debforge.data.metadata.MediaMeta
 import com.abhinavxt.debforge.domain.DownloadItem
@@ -104,11 +107,22 @@ fun PosterGrid(
     onLoadMore: () -> Unit,
     /** Full-width content above the posters (the Continue watching row). */
     header: (@Composable () -> Unit)? = null,
+    /** Full-width blocks (poster prompt, Processing) that scroll with the posters, above everything else. */
+    leading: (@Composable () -> Unit)? = null,
     /** Titles selected (multi-select); empty = not selecting. */
     selectedKeys: Set<String> = emptySet(),
-    onLongPress: (TitleGroup) -> Unit = {}
+    onLongPress: (TitleGroup) -> Unit = {},
+    gridState: LazyGridState = rememberLazyGridState(),
+    /** When given, the header and FAB follow this grid's exact scroll position. */
+    scroll: LibraryScrollState? = null
 ) {
-    val gridState = rememberLazyGridState()
+    if (scroll != null) {
+        TrackLibraryScroll(
+            scroll,
+            atTop = { gridState.firstVisibleItemIndex == 0 && gridState.firstVisibleItemScrollOffset == 0 },
+            cannotScroll = { !gridState.canScrollForward && !gridState.canScrollBackward }
+        )
+    }
 
     LaunchedEffect(gridState) {
         snapshotFlow { gridState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0 }
@@ -126,14 +140,22 @@ fun PosterGrid(
         verticalArrangement = Arrangement.spacedBy(18.dp),
         modifier = Modifier.fillMaxSize()
     ) {
-        if (header != null) {
-            item(span = { GridItemSpan(maxLineSpan) }, key = "header") { header() }
+        // Fixed items use "fixed:" keys and groups "group:" keys, so the two can never collide.
+        if (leading != null) {
+            item(span = { GridItemSpan(maxLineSpan) }, key = "fixed:leading") {
+                // The grid already pads 16dp each side; the blocks bring their own gutters.
+                Box(Modifier.bleedHorizontally(16.dp).animateItem()) { leading() }
+            }
         }
-        items(groups, key = { it.key }) { group ->
+        if (header != null) {
+            item(span = { GridItemSpan(maxLineSpan) }, key = "fixed:header") { header() }
+        }
+        items(groups, key = { "group:" + it.key }) { group ->
             // Ask for artwork only for cards that are actually composed
             // (i.e. on or near screen); the ViewModel de-duplicates.
             LaunchedEffect(group.key) { onRequestMeta(group) }
             PosterCard(
+                modifier = Modifier.animateItem(),
                 group = group,
                 meta = meta[group.key],
                 allDone = group.files.all { downloadStates[it.item.id] == DownloadState.COMPLETED },
@@ -142,7 +164,7 @@ fun PosterGrid(
                 onLongClick = { onLongPress(group) }
             )
         }
-        item(span = { GridItemSpan(maxLineSpan) }, key = "footer") {
+        item(span = { GridItemSpan(maxLineSpan) }, key = "fixed:footer") {
             Box(Modifier.fillMaxWidth().padding(16.dp), contentAlignment = Alignment.Center) {
                 when {
                     isAppending -> CircularProgressIndicator(Modifier.size(28.dp), strokeWidth = 2.dp)
@@ -157,9 +179,18 @@ fun PosterGrid(
     }
 }
 
+/** Lets a child use the [horizontal] content padding of its parent as extra width. */
+private fun Modifier.bleedHorizontally(horizontal: androidx.compose.ui.unit.Dp): Modifier =
+    layout { measurable, constraints ->
+        val extra = horizontal.roundToPx() * 2
+        val placeable = measurable.measure(constraints.offset(horizontal = extra))
+        layout(constraints.maxWidth, placeable.height) { placeable.place(-extra / 2, 0) }
+    }
+
 @OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 private fun PosterCard(
+    modifier: Modifier = Modifier,
     group: TitleGroup,
     meta: MediaMeta?,
     allDone: Boolean,
@@ -171,7 +202,7 @@ private fun PosterCard(
     val pressed by interaction.collectIsPressedAsState()
     val scale by animateFloatAsState(if (pressed) 0.97f else 1f, label = "posterPress")
     Column(
-        modifier = Modifier
+        modifier = modifier
             .graphicsLayer { scaleX = scale; scaleY = scale }
             .clip(RoundedCornerShape(16.dp))
             .background(if (selected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent)
@@ -339,7 +370,7 @@ fun TitleSheet(
         containerColor = MaterialTheme.colorScheme.surfaceContainerLow
     ) {
         LazyColumn(contentPadding = PaddingValues(bottom = 32.dp)) {
-            item(key = "header") {
+            item(key = "fixed:header") {
                 // Large font on a narrow phone: details go under the poster, so the buttons keep their width.
                 val stacked = LocalConfiguration.current.screenWidthDp / LocalDensity.current.fontScale < 320
                 val headerTop: @Composable () -> Unit = {
@@ -506,9 +537,9 @@ fun TitleSheet(
                 }
             }
             meta?.overview?.let { overview ->
-                item(key = "overview") { Overview(overview) }
+                item(key = "fixed:overview") { Overview(overview) }
             }
-            item(key = "divider") { Spacer(Modifier.height(4.dp)) }
+            item(key = "fixed:divider") { Spacer(Modifier.height(4.dp)) }
 
             var lastSeason: Int? = null
             files.forEach { f ->
@@ -517,7 +548,7 @@ fun TitleSheet(
                     lastSeason = season
                     val seasonFiles = files.filter { it.info.season == season }
                     val seasonPending = seasonFiles.filter { downloadStates[it.item.id] == null }.map { it.item }
-                    item(key = "season-$season") {
+                    item(key = "season:$season") {
                         Row(
                             Modifier.fillMaxWidth().padding(start = 24.dp, end = 12.dp, top = 12.dp, bottom = 4.dp),
                             verticalAlignment = Alignment.CenterVertically
@@ -536,7 +567,7 @@ fun TitleSheet(
                         }
                     }
                 }
-                item(key = f.item.id) {
+                item(key = "file:" + f.item.id) {
                     FileRow(
                         file = f,
                         state = downloadStates[f.item.id],

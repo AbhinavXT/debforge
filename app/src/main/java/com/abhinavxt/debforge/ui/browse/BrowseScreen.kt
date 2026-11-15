@@ -101,6 +101,8 @@ import com.abhinavxt.debforge.ui.components.ScreenHeader
 import com.abhinavxt.debforge.ui.components.SearchPill
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.key
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.material3.SnackbarDuration
@@ -267,6 +269,9 @@ fun BrowseScreen(
         }
     }
 
+    // Owned here so the exact scroll position drives the header; each view mode starts at its top.
+    val gridState = key(state.posterView) { rememberLazyGridState() }
+
     Scaffold(
         snackbarHost = { SnackbarHost(snackbar) },
         floatingActionButton = {
@@ -354,6 +359,47 @@ fun BrowseScreen(
             }
         }
     ) { padding ->
+        // Only worth asking when there's a movie or show to put a poster on.
+        val hasTitles = remember(parsed) { parsed.values.any { it.kind != MediaKind.OTHER } }
+        val promptVisible = showPosterPrompt && state.posterView && hasTitles
+        // Keep the last jobs while the strip animates out.
+        var lastJobs by remember { mutableStateOf(processing) }
+        if (processing.isNotEmpty()) lastJobs = processing
+        val promptRow: @Composable () -> Unit = {
+            PosterPromptRow(
+                onSetUp = { posterSetupOpen = true },
+                onDismiss = viewModel::dismissPosterPrompt
+            )
+        }
+        val processingStrip: @Composable () -> Unit = {
+            ProcessingStrip(
+                providerName = state.providerName,
+                jobs = lastJobs,
+                isWatched = { "${it.provider.name}|${it.ref}" in watchedJobs },
+                onToggleWatch = viewModel::toggleWatch,
+                onRemove = { job -> confirmRemove = RemoveRequest(job.name, job = job) }
+            )
+        }
+        val groups = remember(shown, parsed, state.query, state.sort, state.posterView) {
+            if (state.posterView) buildTitleGroups(shown, parsed, state.query, state.sort) else emptyList()
+        }
+        val sections = remember(shown, state.query, state.sort, state.grouped, state.posterView) {
+            if (state.posterView) emptyList() else buildSections(shown, state.query, state.sort, state.grouped)
+        }
+        // True when the poster grid or the list is what fills the screen.
+        val contentShown = !state.isInitialLoad &&
+            !(state.error != null && state.items.isEmpty()) &&
+            state.items.isNotEmpty() &&
+            if (state.posterView) groups.isNotEmpty() else sections.sumOf { it.items.size } > 0
+        val leading: (@Composable () -> Unit)? =
+            if (promptVisible || processing.isNotEmpty()) {
+                {
+                    Column {
+                        AnimatedVisibility(visible = promptVisible) { promptRow() }
+                        AnimatedVisibility(visible = processing.isNotEmpty()) { processingStrip() }
+                    }
+                }
+            } else null
         Column(
             modifier = Modifier
                 .padding(padding)
@@ -416,26 +462,11 @@ fun BrowseScreen(
 
             UpdateBanner()
 
-            // Only worth asking when there's a movie or show to put a poster on.
-            val hasTitles = remember(parsed) { parsed.values.any { it.kind != MediaKind.OTHER } }
-            AnimatedVisibility(visible = showPosterPrompt && state.posterView && hasTitles) {
-                PosterPromptRow(
-                    onSetUp = { posterSetupOpen = true },
-                    onDismiss = viewModel::dismissPosterPrompt
-                )
-            }
-
-            // Keep the last jobs while the strip animates out.
-            var lastJobs by remember { mutableStateOf(processing) }
-            if (processing.isNotEmpty()) lastJobs = processing
-            AnimatedVisibility(visible = processing.isNotEmpty()) {
-                ProcessingStrip(
-                    providerName = state.providerName,
-                    jobs = lastJobs,
-                    isWatched = { "${it.provider.name}|${it.ref}" in watchedJobs },
-                    onToggleWatch = viewModel::toggleWatch,
-                    onRemove = { job -> confirmRemove = RemoveRequest(job.name, job = job) }
-                )
+            // In the empty, error and loading states these stay pinned; with content they
+            // are the first items of the grid / list and scroll away with it.
+            if (!contentShown) {
+                AnimatedVisibility(visible = promptVisible) { promptRow() }
+                AnimatedVisibility(visible = processing.isNotEmpty()) { processingStrip() }
             }
 
             // Material3 1.3.0's pull-to-refresh can leave its arrow stuck on
@@ -483,14 +514,14 @@ fun BrowseScreen(
                     )
                 }
                 state.posterView -> {
-                    val groups = remember(shown, parsed, state.query, state.sort) {
-                        buildTitleGroups(shown, parsed, state.query, state.sort)
-                    }
                     if (groups.isEmpty()) {
                         PullableFill(scroll) { NoMatches(state.query) }
                     } else {
                         PosterGrid(
+                            gridState = gridState,
+                            scroll = scroll,
                             groups = groups,
+                            leading = leading,
                             meta = meta,
                             downloadStates = downloadStates,
                             isAppending = state.isAppending,
@@ -553,14 +584,12 @@ fun BrowseScreen(
                     }
                 }
                 else -> {
-                    val sections = remember(shown, state.query, state.sort, state.grouped) {
-                        buildSections(shown, state.query, state.sort, state.grouped)
-                    }
                     if (sections.sumOf { it.items.size } == 0) {
                         PullableFill(scroll) { NoMatches(state.query) }
                     } else {
                         SectionList(
                             sections = sections,
+                            leading = leading,
                             parsed = parsed,
                             grouped = state.grouped,
                             isAppending = state.isAppending,
@@ -679,6 +708,7 @@ fun BrowseScreen(
 @Composable
 private fun SectionList(
     sections: List<BrowseSection>,
+    leading: (@Composable () -> Unit)?,
     parsed: Map<String, ReleaseInfo>,
     grouped: Boolean,
     isAppending: Boolean,
@@ -693,24 +723,12 @@ private fun SectionList(
 ) {
     val listState = rememberLazyListState()
 
-    // Exact list position: back at the top (fling or programmatic scroll) brings the header back.
-    LaunchedEffect(listState) {
-        snapshotFlow { listState.firstVisibleItemIndex == 0 && listState.firstVisibleItemScrollOffset == 0 }
-            .collect { atTop -> if (atTop) scroll.expand() }
-    }
-    // Nothing to scroll (checked after a beat so a collapsing header growing the viewport can't flap it).
-    LaunchedEffect(listState) {
-        snapshotFlow { !listState.canScrollForward && !listState.canScrollBackward }
-            .collectLatest { cannot ->
-                if (cannot) {
-                    kotlinx.coroutines.delay(300)
-                    if (System.nanoTime() - scroll.lastDragNanos > 300_000_000L) scroll.expand()
-                    scroll.canScroll = false
-                } else {
-                    scroll.canScroll = true
-                }
-            }
-    }
+    // Exact list position: top (fling or programmatic) or nothing to scroll brings the header back.
+    TrackLibraryScroll(
+        scroll,
+        atTop = { listState.firstVisibleItemIndex == 0 && listState.firstVisibleItemScrollOffset == 0 },
+        cannotScroll = { !listState.canScrollForward && !listState.canScrollBackward }
+    )
 
     LaunchedEffect(listState) {
         snapshotFlow { listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0 }
@@ -739,11 +757,15 @@ private fun SectionList(
         contentPadding = PaddingValues(top = 8.dp, bottom = 88.dp),
         modifier = Modifier.fillMaxSize()
     ) {
+        // Keys: "fixed:" for single items, "item:"/"ep:" for files, so ids and names can't collide.
+        if (leading != null) {
+            item(key = "fixed:leading") { Box(Modifier.animateItem()) { leading() } }
+        }
         sections.forEach { section ->
             when (section) {
                 is BrowseSection.Show -> if (grouped) {
-                    item(key = "show-${section.showKey}") { SectionHeader(section.showDisplay) }
-                    items(section.episodes, key = { "${section.showKey}-${it.item.id}" }) { ep ->
+                    item(key = "fixed:show:${section.showKey}") { SectionHeader(section.showDisplay) }
+                    items(section.episodes, key = { "ep:${section.showKey}:${it.item.id}" }) { ep ->
                         val label = buildString {
                             if (ep.season != null) append("S").append(ep.season).append(" · ")
                             append("E").append(ep.episode)
@@ -751,17 +773,17 @@ private fun SectionList(
                         Box(Modifier.animateItem()) { row(ep.item, indent = true, prefix = label) }
                     }
                 } else {
-                    items(section.items, key = { it.id }) { item -> Box(Modifier.animateItem()) { row(item, indent = false, prefix = null) } }
+                    items(section.items, key = { "item:" + it.id }) { item -> Box(Modifier.animateItem()) { row(item, indent = false, prefix = null) } }
                 }
                 is BrowseSection.Loose -> {
                     if (grouped && section.items.isNotEmpty()) {
-                        item(key = "loose-header") { SectionHeader(stringResource(R.string.browse_other)) }
+                        item(key = "fixed:loose-header") { SectionHeader(stringResource(R.string.browse_other)) }
                     }
-                    items(section.items, key = { it.id }) { item -> Box(Modifier.animateItem()) { row(item, indent = grouped, prefix = null) } }
+                    items(section.items, key = { "item:" + it.id }) { item -> Box(Modifier.animateItem()) { row(item, indent = grouped, prefix = null) } }
                 }
             }
         }
-        item("footer") {
+        item(key = "fixed:footer") {
             Box(Modifier.fillMaxWidth().padding(16.dp), contentAlignment = Alignment.Center) {
                 when {
                     isAppending -> CircularProgressIndicator(modifier = Modifier.size(28.dp), strokeWidth = 2.dp)
