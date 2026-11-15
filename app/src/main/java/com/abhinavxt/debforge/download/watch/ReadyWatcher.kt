@@ -6,6 +6,7 @@ import android.app.job.JobScheduler
 import android.app.job.JobService
 import android.content.ComponentName
 import android.content.Context
+import com.abhinavxt.debforge.data.provider.JobFailedException
 import com.abhinavxt.debforge.data.repository.DownloadsRepository
 import com.abhinavxt.debforge.data.prefs.SettingsStore
 import com.abhinavxt.debforge.domain.DataResult
@@ -83,8 +84,11 @@ class ReadyWatcher @Inject constructor(
                     ready += w.name
                 }
                 is DataResult.Error -> {
-                    // Deleted on the service, or failing for days: stop watching.
-                    if (now - w.createdAt > GIVE_UP_AFTER_MS) dao.delete(w.provider, w.jobRef)
+                    // The service gave up on it: it can never become ready.
+                    // Otherwise (deleted, or failing for days) give up after 3 days.
+                    if (r.cause is JobFailedException || now - w.createdAt > GIVE_UP_AFTER_MS) {
+                        dao.delete(w.provider, w.jobRef)
+                    }
                 }
             }
         }

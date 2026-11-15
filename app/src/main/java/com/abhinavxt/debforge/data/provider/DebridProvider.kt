@@ -223,4 +223,7 @@ data class ResolvedLink(
 )
 
 /** An API-level failure with a message that is safe to show the user. */
-class ProviderException(message: String, cause: Throwable? = null) : Exception(message, cause)
+open class ProviderException(message: String, cause: Throwable? = null) : Exception(message, cause)
+
+/** A job the service gave up on (error or cancelled); it will never become ready. */
+class JobFailedException(message: String) : ProviderException(message)

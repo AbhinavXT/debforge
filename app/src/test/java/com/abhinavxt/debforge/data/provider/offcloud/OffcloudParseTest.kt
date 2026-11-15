@@ -45,4 +45,37 @@ class OffcloudParseTest {
         assertEquals("request failed", OffcloudParse.errorOf("""{"success":false}"""))
         assertNull(OffcloudParse.errorOf("""{"success":true}"""))
     }
+
+    @Test fun removeOutcomeClassifies() {
+        assertEquals(OffcloudParse.RemoveOutcome(true, null), OffcloudParse.removeOutcome("""{"success":true}"""))
+        assertEquals(OffcloudParse.RemoveOutcome(true, null), OffcloudParse.removeOutcome("[]"))
+        assertEquals(OffcloudParse.RemoveOutcome(true, "boom"), OffcloudParse.removeOutcome("""{"error":"boom"}"""))
+        assertEquals(OffcloudParse.RemoveOutcome(true, "request failed"), OffcloudParse.removeOutcome("""{"success":false}"""))
+        assertEquals(OffcloudParse.RemoveOutcome(false, null), OffcloudParse.removeOutcome(""))
+        assertEquals(OffcloudParse.RemoveOutcome(false, null), OffcloudParse.removeOutcome("<html>ok</html>"))
+        assertEquals(OffcloudParse.RemoveOutcome(false, null), OffcloudParse.removeOutcome("\"ok\""))
+    }
+
+    @Test fun instantParsesAllShapes() {
+        val t = java.time.Instant.parse("2024-05-01T10:00:00Z")
+        assertEquals(t, OffcloudParse.instant("2024-05-01T10:00:00Z"))
+        assertEquals(t, OffcloudParse.instant("2024-05-01T12:00:00+02:00"))
+        assertEquals(t, OffcloudParse.instant(t.toEpochMilli().toString()))
+        assertEquals(t, OffcloudParse.instant(t.epochSecond.toString()))
+        assertNull(OffcloudParse.instant("yesterday"))
+        assertNull(OffcloudParse.instant(null))
+        assertEquals("2024-05-01T10:00:00Z", OffcloudParse.isoDate("2024-05-01T10:00:00Z"))
+    }
+
+    // "...:00Z" vs "...:00.5Z": the string order is wrong, the instant order is right.
+    @Test fun instantOrdersWhereStringsDoNot() {
+        val raw = listOf(null, "2024-05-01T10:00:00Z", "2024-05-01T10:00:00.5Z", "bad", "2024-05-02T00:00:00Z")
+        val sorted = raw.sortedWith(compareByDescending<String?> { OffcloudParse.instant(it) })
+        assertEquals(
+            listOf("2024-05-02T00:00:00Z", "2024-05-01T10:00:00.5Z", "2024-05-01T10:00:00Z"),
+            sorted.take(3)
+        )
+        assertNull(OffcloudParse.instant(sorted[3]))
+        assertNull(OffcloudParse.instant(sorted[4]))
+    }
 }

@@ -27,6 +27,51 @@ object TorrentHash {
         digest.joinToString("") { "%02x".format(it) }
     }.getOrNull()
 
+    /**
+     * Tracker URLs of a .torrent (`announce`, then `announce-list`), deduped,
+     * http/https/udp only. Never throws: a malformed file yields what was
+     * read before the damage, or an empty list.
+     */
+    fun trackersFromTorrentFile(bytes: ByteArray): List<String> {
+        val out = LinkedHashSet<String>()
+        fun add(raw: String) {
+            val url = String(raw.toByteArray(Charsets.ISO_8859_1), Charsets.UTF_8).trim()
+            if (TRACKER_SCHEMES.any { url.startsWith(it, ignoreCase = true) }) out += url
+        }
+        runCatching {
+            if (bytes.isEmpty() || bytes[0] != 'd'.code.toByte()) return emptyList()
+            var i = 1
+            while (i < bytes.size && bytes[i] != 'e'.code.toByte()) {
+                val (key, afterKey) = readString(bytes, i) ?: break
+                when (key) {
+                    "announce" -> readString(bytes, afterKey)?.first?.let(::add)
+                    "announce-list" -> readTrackerTiers(bytes, afterKey, ::add)
+                }
+                i = skip(bytes, afterKey) ?: break
+            }
+        }
+        return out.toList()
+    }
+
+    /** Feeds every string of a list-of-lists at [i] to [add]; stops quietly at bad data. */
+    private fun readTrackerTiers(b: ByteArray, i: Int, add: (String) -> Unit) {
+        if (i >= b.size || b[i] != 'l'.code.toByte()) return
+        var j = i + 1
+        while (j < b.size && b[j] != 'e'.code.toByte()) {
+            if (b[j] == 'l'.code.toByte()) {
+                var k = j + 1
+                while (k < b.size && b[k] != 'e'.code.toByte()) {
+                    val (s, next) = readString(b, k) ?: return
+                    add(s)
+                    k = next
+                }
+            }
+            j = skip(b, j) ?: return
+        }
+    }
+
+    private val TRACKER_SCHEMES = listOf("http://", "https://", "udp://")
+
     private fun Char.isHexDigit() = this in '0'..'9' || this in 'a'..'f' || this in 'A'..'F'
 
     private fun base32ToHex(s: String): String? {

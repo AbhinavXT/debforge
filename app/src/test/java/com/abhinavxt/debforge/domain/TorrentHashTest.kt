@@ -33,4 +33,37 @@ class TorrentHashTest {
         assertNull(TorrentHash.fromTorrentFile("not bencode".toByteArray()))
         assertNull(TorrentHash.fromTorrentFile("d4:infoi1".toByteArray()))
     }
+
+    private fun bytes(s: String) = s.toByteArray(Charsets.ISO_8859_1)
+
+    @Test fun trackersFromAnnounceOnly() = assertEquals(
+        listOf("http://t/announce"),
+        TorrentHash.trackersFromTorrentFile(bytes("d8:announce17:http://t/announce4:infod4:name1:xee"))
+    )
+
+    @Test fun trackersFromAnnounceList() = assertEquals(
+        listOf("udp://a:1/x", "https://b/y", "http://c/z"),
+        TorrentHash.trackersFromTorrentFile(
+            bytes("d13:announce-listll11:udp://a:1/x11:https://b/yel10:http://c/zee4:infode")
+        )
+    )
+
+    @Test fun trackersDedupedAndFiltered() = assertEquals(
+        listOf("http://t/a", "udp://u:1"),
+        TorrentHash.trackersFromTorrentFile(
+            bytes("d8:announce10:http://t/a13:announce-listll10:http://t/a9:udp://u:19:wss://x:1el15:ftp://old/thingee4:infodee")
+        )
+    )
+
+    @Test fun trackersGarbageNeverThrows() {
+        assertEquals(emptyList<String>(), TorrentHash.trackersFromTorrentFile(ByteArray(0)))
+        assertEquals(emptyList<String>(), TorrentHash.trackersFromTorrentFile("not bencode".toByteArray()))
+        assertEquals(emptyList<String>(), TorrentHash.trackersFromTorrentFile(bytes("d8:announce99:http")))
+        assertEquals(emptyList<String>(), TorrentHash.trackersFromTorrentFile(bytes("d13:announce-listli5eee")))
+        // Damage after a good tracker keeps the good one.
+        assertEquals(
+            listOf("http://t/a"),
+            TorrentHash.trackersFromTorrentFile(bytes("d8:announce10:http://t/a4:infoi1"))
+        )
+    }
 }

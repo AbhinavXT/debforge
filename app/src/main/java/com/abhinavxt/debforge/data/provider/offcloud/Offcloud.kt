@@ -3,10 +3,12 @@ package com.abhinavxt.debforge.data.provider.offcloud
 import com.abhinavxt.debforge.data.provider.AccountInfo
 import com.abhinavxt.debforge.data.provider.AddResult
 import com.abhinavxt.debforge.data.provider.DebridProvider
+import com.abhinavxt.debforge.data.provider.JobFailedException
 import com.abhinavxt.debforge.data.provider.ProviderException
 import com.abhinavxt.debforge.data.provider.ProviderInfo
 import com.abhinavxt.debforge.data.provider.RemoteJob
 import com.abhinavxt.debforge.data.provider.ResolvedLink
+import com.abhinavxt.debforge.data.prefs.TokenStore
 import com.abhinavxt.debforge.domain.AddKind
 import com.abhinavxt.debforge.domain.AddRequest
 import com.abhinavxt.debforge.domain.DownloadItem
@@ -16,10 +18,16 @@ import com.abhinavxt.debforge.domain.TorrentHash
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 import com.squareup.moshi.Moshi
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.sync.withPermit
 import okhttp3.ResponseBody
+import retrofit2.HttpException
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
@@ -30,6 +38,8 @@ import java.net.URLEncoder
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicLong
+import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -37,8 +47,10 @@ import javax.inject.Singleton
  * Offcloud API (https://github.com/offcloud/offcloud-api, plus the newer
  * endpoints current clients use: account/info, cloud/history, cloud/remove).
  * Auth: `Authorization: Bearer <API key>` (added by AuthInterceptor). Bodies
- * are JSON. Errors usually come back as HTTP 200 with `{"error": "..."}`, and
- * a missing add-on as `{"not_available": "premium" | "cloud" | ...}`.
+ * are JSON. A bad key makes every endpoint answer HTTP 401
+ * `{"error":"NOAUTH"}`; other errors may come back as HTTP 200 with
+ * `{"error": "..."}`, and a missing add-on as
+ * `{"not_available": "premium" | "cloud" | ...}`.
  *
  * Offcloud has no torrent/file split: everything is a cloud "request". A
  * single-file request downloads from `https://<server>.offcloud.com/cloud/
@@ -184,12 +196,23 @@ object OffcloudParse {
     }
 
     /** ISO-8601 or epoch millis/seconds, to an ISO instant string. */
-    fun isoDate(raw: String?): String? {
+    fun isoDate(raw: String?): String? = instant(raw)?.toString()
+
+    /** ISO-8601 or epoch millis/seconds, to an [Instant]; null if unparseable. */
+    fun instant(raw: String?): Instant? {
         if (raw.isNullOrBlank()) return null
-        runCatching { return Instant.parse(raw).toString() }
-        runCatching { return OffsetDateTime.parse(raw).toInstant().toString() }
+        runCatching { return Instant.parse(raw) }
+        runCatching { return OffsetDateTime.parse(raw).toInstant() }
         val n = raw.toLongOrNull() ?: return null
-        return Instant.ofEpochMilli(if (n < 100_000_000_000L) n * 1000 else n).toString()
+        return Instant.ofEpochMilli(if (n < 100_000_000_000L) n * 1000 else n)
+    }
+
+    /** How a cloud/remove response reads: a JSON object or array is "recognised". */
+    data class RemoveOutcome(val recognised: Boolean, val error: String?)
+
+    fun removeOutcome(json: String): RemoveOutcome {
+        val root = runCatching { anyAdapter.fromJson(json) }.getOrNull()
+        return RemoveOutcome(root is Map<*, *> || root is List<*>, errorOf(json))
     }
 
     fun notAvailableMessage(what: String): String = when (what) {
@@ -209,9 +232,13 @@ private fun ocCheck(error: String?) {
 }
 
 @Singleton
-class OffcloudProvider @Inject constructor(
-    private val api: OffcloudApi
+class OffcloudProvider internal constructor(
+    private val api: OffcloudApi,
+    private val currentToken: suspend () -> String?
 ) : DebridProvider {
+
+    @Inject constructor(api: OffcloudApi, tokenStore: TokenStore) :
+        this(api, { tokenStore.token(ProviderId.OFFCLOUD) })
 
     override val info = ProviderInfo(
         id = ProviderId.OFFCLOUD,
@@ -226,7 +253,22 @@ class OffcloudProvider @Inject constructor(
     /** A finished request's files never change, so explore each one once. */
     private val folderCache = ConcurrentHashMap<String, List<OcFile>>()
 
-    override suspend fun validateToken(token: String): AccountInfo = api.validate("Bearer $token").toAccount()
+    /** Sign-in point: whatever was cached belongs to the previous account. */
+    override suspend fun validateToken(token: String): AccountInfo {
+        clearCaches()
+        try {
+            return api.validate("Bearer $token").toAccount()
+        } finally {
+            clearCaches()
+        }
+    }
+
+    /** Non-suspending; fetches already in flight won't store their results. */
+    private fun clearCaches() {
+        accountGen.incrementAndGet()
+        folderCache.clear()
+        invalidateHistory()
+    }
 
     override suspend fun account(): AccountInfo = api.accountInfo().toAccount()
 
@@ -240,20 +282,76 @@ class OffcloudProvider @Inject constructor(
         )
     }
 
-    private suspend fun history(): List<OcRequest> = api.history().filter { it.requestId != null }
+    /** History is the whole cloud in one call; keep it for a moment so a screen's burst of calls shares one fetch. */
+    private val historyLock = Mutex()
+    /** One immutable snapshot: the list, when it was stored, the token it was fetched with and the generation it began under. */
+    private class HistoryEntry(val list: List<OcRequest>, val at: Long, val token: String, val gen: Long)
+
+    private val historyEntry = AtomicReference<HistoryEntry?>(null)
+    /** Bumped by every invalidation; a fetch that began before a bump must not stay cached. */
+    private val historyGen = AtomicLong()
+    private val accountGen = AtomicLong()
+
+    private suspend fun history(fresh: Boolean = false): List<OcRequest> = historyLock.withLock {
+        // Read before the network call: the entry is stamped with the account it was fetched for.
+        val token = currentToken()
+        if (!fresh && token != null) {
+            historyEntry.get()?.takeIf {
+                it.token == token && it.gen == historyGen.get() && System.nanoTime() - it.at < HISTORY_TTL_NS
+            }?.let { return it.list }
+        }
+        val gen = historyGen.get()
+        val list = api.history().filter { it.requestId != null }
+        if (token != null) {
+            val entry = HistoryEntry(list, System.nanoTime(), token, gen)
+            historyEntry.set(entry)
+            // An invalidation may have landed before or after the store; either way drop what it meant to drop.
+            if (historyGen.get() != gen) historyEntry.compareAndSet(entry, null)
+        }
+        list
+    }
+
+    private fun invalidateHistory() {
+        historyGen.incrementAndGet()
+        historyEntry.set(null)
+    }
+
+    /** Caps concurrent cloud/explore calls. */
+    private val exploreGate = Semaphore(EXPLORE_PARALLELISM)
+
+    /** [itemsOf] with one retry; cancellation is never swallowed. */
+    private suspend fun itemsWithRetry(r: OcRequest): Result<List<DownloadItem>> {
+        var last: Exception? = null
+        repeat(2) {
+            try {
+                return Result.success(itemsOf(r))
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                // A rejected key won't get better on a second try.
+                if (e is HttpException && (e.code() == 401 || e.code() == 403)) return Result.failure(e)
+                last = e
+            }
+        }
+        return Result.failure(last!!)
+    }
 
     // --- library -----------------------------------------------------------
 
     override suspend fun listFiles(page: Int, pageSize: Int): Page<DownloadItem> {
         // History is the whole cloud in one call; page its requests locally,
         // newest first, and expand folder requests into their files.
-        val done = history().filter { it.status == "downloaded" }
-            .sortedByDescending { OffcloudParse.isoDate(it.createdOn) ?: "" }
+        // Sorted on the parsed time (ISO strings differ in precision); no date goes last.
+        val done = history(fresh = page <= 1).filter { it.status == "downloaded" }
+            .sortedWith(compareByDescending<OcRequest> { OffcloudParse.instant(it.createdOn) })
         val from = ((page - 1).coerceAtLeast(0) * pageSize).coerceAtMost(done.size)
         val slice = done.subList(from, (from + pageSize).coerceAtMost(done.size))
-        val items = coroutineScope {
-            slice.map { r -> async { runCatching { itemsOf(r) }.getOrDefault(emptyList()) } }.awaitAll()
-        }.flatten()
+        val results = coroutineScope {
+            slice.map { r -> async { exploreGate.withPermit { itemsWithRetry(r) } } }.awaitAll()
+        }
+        // Some folders failing still shows the rest; all failing is an error, not an empty library.
+        if (results.isNotEmpty() && results.all { it.isFailure }) throw results.first().exceptionOrNull()!!
+        val items = results.flatMap { it.getOrDefault(emptyList()) }
         return Page(items, hasMore = from + pageSize < done.size)
     }
 
@@ -302,13 +400,14 @@ class OffcloudProvider @Inject constructor(
     /** Files of a folder request, or null if it turns out to be a single file. */
     private suspend fun folderFiles(requestId: String): List<OcFile>? {
         folderCache[requestId]?.let { return it }
+        val gen = accountGen.get()
         val files = try {
             OffcloudParse.exploreFiles(api.explore(requestId).string())
         } catch (e: ProviderException) {
             if (e.message?.contains("Bad archive", ignoreCase = true) == true) return null
             throw e
         }
-        if (files.isNotEmpty()) folderCache[requestId] = files
+        if (files.isNotEmpty() && gen == accountGen.get()) folderCache[requestId] = files
         return files
     }
 
@@ -340,11 +439,18 @@ class OffcloudProvider @Inject constructor(
             is AddRequest.TorrentFile -> {
                 val hash = TorrentHash.fromTorrentFile(request.bytes)
                     ?: throw ProviderException("Couldn't read that .torrent file")
+                // Keep the trackers: a bare hash leaves peer discovery to DHT alone.
+                val trackers = TorrentHash.trackersFromTorrentFile(request.bytes).take(MAX_TRACKERS)
                 "magnet:?xt=urn:btih:$hash&dn=" +
-                    URLEncoder.encode(request.name.removeSuffix(".torrent"), "UTF-8")
+                    URLEncoder.encode(request.name.removeSuffix(".torrent"), "UTF-8") +
+                    trackers.joinToString("") { "&tr=" + URLEncoder.encode(it, "UTF-8") }
             }
         }
-        val r = api.addCloud(OcUrlBody(url))
+        val r = try {
+            api.addCloud(OcUrlBody(url))
+        } finally {
+            invalidateHistory()
+        }
         r.notAvailable?.let { throw ProviderException(OffcloudParse.notAvailableMessage(it)) }
         ocCheck(r.error)
         val id = r.requestId ?: throw ProviderException("Offcloud didn't accept that")
@@ -359,7 +465,7 @@ class OffcloudProvider @Inject constructor(
     // --- jobs --------------------------------------------------------------
 
     override suspend fun listProcessing(): List<RemoteJob> =
-        history().filter { it.status !in DONE && it.status !in FAILED }.map {
+        history().filter { it.status !in DONE }.map {
             RemoteJob(
                 ref = "req:${it.requestId}",
                 provider = ProviderId.OFFCLOUD,
@@ -377,8 +483,11 @@ class OffcloudProvider @Inject constructor(
         val r = history().firstOrNull { it.requestId == id }
             ?: throw ProviderException("Offcloud: that download is gone")
         return when (r.status) {
-            in FAILED -> throw ProviderException("Offcloud couldn't fetch ${r.fileName ?: "it"} (${r.status})")
-            in DONE -> itemsOf(r)
+            in FAILED -> throw JobFailedException("Offcloud couldn't fetch ${r.fileName ?: "it"} (${r.status})")
+            // Null would make ReadyWatcher poll forever; a plain error lets its give-up apply.
+            in DONE -> itemsOf(r).ifEmpty {
+                throw ProviderException("Offcloud: no files listed for ${r.fileName ?: "it"} yet")
+            }
             else -> null
         }
     }
@@ -395,13 +504,27 @@ class OffcloudProvider @Inject constructor(
     override suspend fun remove(key: String) {
         if (!key.startsWith("req:")) throw ProviderException("Corrupt Offcloud reference: $key")
         val id = key.removePrefix("req:")
-        // Current servers take a JSON list; older ones a GET per request.
-        val err = runCatching { OffcloudParse.errorOf(api.removeMany(OcRemoveBody(listOf(id))).string()) }
-            .getOrElse { "failed" }
-        if (err != null) {
-            OffcloudParse.errorOf(api.removeOne(id).string())?.let { ocCheck(it) }
+        try {
+            // Current servers take a JSON list; older ones a GET per request.
+            val post = try {
+                OffcloudParse.removeOutcome(api.removeMany(OcRemoveBody(listOf(id))).string())
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                null
+            }
+            if (post != null && post.recognised && post.error == null) return
+            val get = OffcloudParse.removeOutcome(api.removeOne(id).string())
+            get.error?.let { ocCheck(it) }
+            if (get.recognised) return
+            // Neither answer was understood: believe only a fresh history.
+            if (history(fresh = true).any { it.requestId == id }) {
+                throw ProviderException("Offcloud: couldn't remove it")
+            }
+        } finally {
+            folderCache.remove(id)
+            invalidateHistory()
         }
-        folderCache.remove(id)
     }
 
     override suspend fun itemsIn(key: String): List<DownloadItem>? {
@@ -428,6 +551,9 @@ class OffcloudProvider @Inject constructor(
 
     private companion object {
         const val DEFAULT_CONNECTIONS = 8
+        const val EXPLORE_PARALLELISM = 6
+        const val MAX_TRACKERS = 20
+        const val HISTORY_TTL_NS = 5_000_000_000L
         val DONE = setOf("downloaded")
         val FAILED = setOf("error", "canceled", "cancelled")
     }
