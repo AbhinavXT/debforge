@@ -35,6 +35,7 @@ import androidx.compose.material.icons.automirrored.rounded.Sort
 import androidx.compose.material.icons.rounded.AutoDelete
 import androidx.compose.material.icons.rounded.TouchApp
 import androidx.compose.material.icons.rounded.FastForward
+import androidx.compose.material.icons.rounded.HighQuality
 import androidx.compose.material.icons.rounded.Image
 import androidx.compose.material.icons.rounded.Audiotrack
 import androidx.compose.material.icons.rounded.ClosedCaption
@@ -95,6 +96,7 @@ import com.abhinavxt.debforge.download.ScheduleAlarm
 import com.abhinavxt.debforge.download.StorageAccess
 import com.abhinavxt.debforge.ui.components.RowDivider
 import com.abhinavxt.debforge.ui.components.ScreenHeader
+import com.abhinavxt.debforge.domain.DefaultQuality
 import com.abhinavxt.debforge.ui.components.SectionCard
 import com.abhinavxt.debforge.ui.components.SettingRow
 import com.abhinavxt.debforge.ui.components.StatusPill
@@ -124,6 +126,7 @@ fun SettingsScreen(onConnect: () -> Unit, viewModel: SettingsViewModel = hiltVie
     val clipboardOffer by viewModel.clipboardOffer.collectAsStateWithLifecycle()
     val storageInfo by viewModel.storageInfo.collectAsStateWithLifecycle()
     val autoDeleteDays by viewModel.autoDeleteDays.collectAsStateWithLifecycle()
+    val youTubeQuality by viewModel.youTubeQuality.collectAsStateWithLifecycle()
     val autoDeleteConfirm by viewModel.autoDeleteConfirm.collectAsStateWithLifecycle()
     val follows by viewModel.follows.collectAsStateWithLifecycle()
     val internalPlayer by viewModel.internalPlayer.collectAsStateWithLifecycle()
@@ -223,6 +226,8 @@ fun SettingsScreen(onConnect: () -> Unit, viewModel: SettingsViewModel = hiltVie
                     }
                     RowDivider()
                     AutoDeleteRow(current = autoDeleteDays, onPick = viewModel::pickAutoDeleteDays)
+                    RowDivider()
+                    YouTubeQualityRow(current = youTubeQuality, onPick = viewModel::setYouTubeQuality)
                 }
             }
 
@@ -766,6 +771,36 @@ private fun PlayerRow(internal: Boolean, onPick: (Boolean) -> Unit) {
                     text = { Text(label(v)) },
                     leadingIcon = { if (v == internal) Icon(Icons.Rounded.Check, contentDescription = null) },
                     onClick = { onPick(v); open = false }
+                )
+            }
+        }
+    }
+}
+
+/** YouTube "Default quality": the preview preselects it; the user can still change it. */
+@Composable
+private fun YouTubeQualityRow(current: DefaultQuality, onPick: (DefaultQuality) -> Unit) {
+    var open by remember { mutableStateOf(false) }
+    @Composable
+    fun label(q: DefaultQuality): String = when (q) {
+        DefaultQuality.ASK -> stringResource(R.string.set_yt_quality_ask)
+        DefaultQuality.BEST -> stringResource(R.string.set_yt_quality_best)
+        DefaultQuality.AUDIO -> stringResource(R.string.set_yt_quality_audio)
+        else -> "${q.height}p"
+    }
+    Box {
+        SettingRow(
+            icon = Icons.Rounded.HighQuality,
+            title = stringResource(R.string.set_yt_quality),
+            subtitle = label(current) + " · " + stringResource(R.string.set_yt_quality_detail),
+            onClick = { open = true }
+        )
+        DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
+            DefaultQuality.entries.forEach { q ->
+                DropdownMenuItem(
+                    text = { Text(label(q)) },
+                    leadingIcon = { if (q == current) Icon(Icons.Rounded.Check, contentDescription = null) },
+                    onClick = { onPick(q); open = false }
                 )
             }
         }

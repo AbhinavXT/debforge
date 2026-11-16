@@ -446,6 +446,11 @@
     <string name="set_auto_delete">Borrar descargas tras</string>
     <string name="set_auto_delete_detail">solo archivos que DebForge descargó y siguen en Descargas</string>
     <string name="set_auto_delete_never">Nunca</string>
+    <string name="set_yt_quality">Calidad predeterminada de YouTube</string>
+    <string name="set_yt_quality_ask">Preguntar siempre</string>
+    <string name="set_yt_quality_best">La mejor</string>
+    <string name="set_yt_quality_audio">Solo audio</string>
+    <string name="set_yt_quality_detail">preseleccionada en la vista previa de YouTube</string>
     <string name="set_auto_delete_confirm_title">¿Borrar ahora las descargas antiguas?</string>
     <string name="set_auto_delete_now">Borrar ahora</string>
     <plurals name="set_storage_downloaded">

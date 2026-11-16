@@ -410,6 +410,11 @@
     <string name="set_auto_delete">Hapus unduhan setelah</string>
     <string name="set_auto_delete_detail">hanya file yang diunduh DebForge dan masih ada di Unduhan</string>
     <string name="set_auto_delete_never">Tidak pernah</string>
+    <string name="set_yt_quality">Kualitas default YouTube</string>
+    <string name="set_yt_quality_ask">Tanya setiap kali</string>
+    <string name="set_yt_quality_best">Terbaik</string>
+    <string name="set_yt_quality_audio">Hanya audio</string>
+    <string name="set_yt_quality_detail">dipilih sebelumnya di pratinjau YouTube</string>
     <string name="set_auto_delete_confirm_title">Hapus unduhan lama sekarang?</string>
     <string name="set_auto_delete_now">Hapus sekarang</string>
     <plurals name="set_storage_downloaded">

@@ -464,6 +464,11 @@
     <string name="set_auto_delete">Удалять загрузки через</string>
     <string name="set_auto_delete_detail">только файлы, скачанные DebForge и ещё показанные в «Загрузках»</string>
     <string name="set_auto_delete_never">Никогда</string>
+    <string name="set_yt_quality">Качество YouTube по умолчанию</string>
+    <string name="set_yt_quality_ask">Спрашивать каждый раз</string>
+    <string name="set_yt_quality_best">Лучшее</string>
+    <string name="set_yt_quality_audio">Только аудио</string>
+    <string name="set_yt_quality_detail">выбирается заранее в предпросмотре YouTube</string>
     <string name="set_auto_delete_confirm_title">Удалить старые загрузки сейчас?</string>
     <string name="set_auto_delete_now">Удалить сейчас</string>
     <plurals name="set_storage_downloaded">

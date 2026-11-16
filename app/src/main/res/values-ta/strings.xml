@@ -428,6 +428,11 @@
     <string name="set_auto_delete">பதிவிறக்கங்களை நீக்கு</string>
     <string name="set_auto_delete_detail">DebForge பதிவிறக்கி, பதிவிறக்கங்களில் இன்னும் உள்ள கோப்புகள் மட்டும்</string>
     <string name="set_auto_delete_never">ஒருபோதும் இல்லை</string>
+    <string name="set_yt_quality">YouTube இயல்புநிலை தரம்</string>
+    <string name="set_yt_quality_ask">ஒவ்வொரு முறையும் கேள்</string>
+    <string name="set_yt_quality_best">சிறந்தது</string>
+    <string name="set_yt_quality_audio">ஆடியோ மட்டும்</string>
+    <string name="set_yt_quality_detail">YouTube முன்னோட்டத்தில் முன்பே தேர்ந்தெடுக்கப்படும்</string>
     <string name="set_auto_delete_confirm_title">பழைய பதிவிறக்கங்களை இப்போது நீக்கவா?</string>
     <string name="set_auto_delete_now">இப்போது நீக்கு</string>
     <plurals name="set_storage_downloaded">

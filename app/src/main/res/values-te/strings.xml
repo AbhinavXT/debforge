@@ -428,6 +428,11 @@
     <string name="set_auto_delete">డౌన్‌లోడ్‌లను తొలగించండి</string>
     <string name="set_auto_delete_detail">DebForge డౌన్‌లోడ్ చేసి, డౌన్‌లోడ్‌లలో ఇంకా ఉన్న ఫైల్‌లు మాత్రమే</string>
     <string name="set_auto_delete_never">ఎప్పుడూ వద్దు</string>
+    <string name="set_yt_quality">YouTube డిఫాల్ట్ నాణ్యత</string>
+    <string name="set_yt_quality_ask">ప్రతిసారీ అడగండి</string>
+    <string name="set_yt_quality_best">ఉత్తమం</string>
+    <string name="set_yt_quality_audio">ఆడియో మాత్రమే</string>
+    <string name="set_yt_quality_detail">YouTube ప్రివ్యూలో ముందే ఎంచుకోబడుతుంది</string>
     <string name="set_auto_delete_confirm_title">పాత డౌన్‌లోడ్‌లను ఇప్పుడే తొలగించాలా?</string>
     <string name="set_auto_delete_now">ఇప్పుడే తొలగించండి</string>
     <plurals name="set_storage_downloaded">

@@ -428,6 +428,11 @@
     <string name="set_auto_delete">डाउनलोड हटाएँ इसके बाद</string>
     <string name="set_auto_delete_detail">सिर्फ़ DebForge द्वारा डाउनलोड की गई और डाउनलोड में दिख रही फ़ाइलें</string>
     <string name="set_auto_delete_never">कभी नहीं</string>
+    <string name="set_yt_quality">YouTube की डिफ़ॉल्ट क्वालिटी</string>
+    <string name="set_yt_quality_ask">हर बार पूछें</string>
+    <string name="set_yt_quality_best">सर्वश्रेष्ठ</string>
+    <string name="set_yt_quality_audio">सिर्फ़ ऑडियो</string>
+    <string name="set_yt_quality_detail">YouTube प्रीव्यू में पहले से चुनी जाती है</string>
     <string name="set_auto_delete_confirm_title">पुराने डाउनलोड अभी हटाएँ?</string>
     <string name="set_auto_delete_now">अभी हटाएँ</string>
     <plurals name="set_storage_downloaded">

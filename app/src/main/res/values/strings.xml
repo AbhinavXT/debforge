@@ -429,6 +429,11 @@
     <string name="set_auto_delete">Delete downloads after</string>
     <string name="set_auto_delete_detail">only files DebForge downloaded and still lists under Downloads</string>
     <string name="set_auto_delete_never">Never</string>
+    <string name="set_yt_quality">YouTube default quality</string>
+    <string name="set_yt_quality_ask">Ask every time</string>
+    <string name="set_yt_quality_best">Best</string>
+    <string name="set_yt_quality_audio">Audio only</string>
+    <string name="set_yt_quality_detail">preselected in the YouTube preview</string>
     <string name="set_auto_delete_confirm_title">Delete old downloads now?</string>
     <string name="set_auto_delete_now">Delete now</string>
     <plurals name="set_storage_downloaded">

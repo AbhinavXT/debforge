@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.abhinavxt.debforge.data.update.InstallSource
+import com.abhinavxt.debforge.domain.DefaultQuality
 import com.abhinavxt.debforge.domain.ReleasePrefs
 import com.abhinavxt.debforge.domain.SortOrder
 import com.abhinavxt.debforge.domain.ThemeMode
@@ -64,6 +65,7 @@ class SettingsStore @Inject constructor(
     private val keyReleaseAvoid = stringPreferencesKey("release_avoid")
     private val keyReleasePrefer = stringPreferencesKey("release_prefer")
     private val keyClipboardSeen = androidx.datastore.preferences.core.longPreferencesKey("clipboard_seen_at")
+    private val keyYouTubeQuality = stringPreferencesKey("youtube_default_quality")
     private val keyAdBlock = booleanPreferencesKey("browser_adblock")
     private val keyAdBlockOffSites = stringPreferencesKey("browser_adblock_off_sites")
 
@@ -109,6 +111,12 @@ class SettingsStore @Inject constructor(
     /** Offer a magnet / .torrent link found on the clipboard when the app opens. On by default. */
     val clipboardOfferFlow: Flow<Boolean> = context.settingsDataStore.data.map { it[keyClipboardOffer] ?: true }
     suspend fun setClipboardOffer(v: Boolean) = context.settingsDataStore.edit { it[keyClipboardOffer] = v }
+
+    /** YouTube tab: the quality the preview preselects. */
+    val youTubeQualityFlow: Flow<DefaultQuality> = context.settingsDataStore.data.map { p ->
+        DefaultQuality.entries.firstOrNull { it.name == p[keyYouTubeQuality] } ?: DefaultQuality.ASK
+    }
+    suspend fun setYouTubeQuality(v: DefaultQuality) = context.settingsDataStore.edit { it[keyYouTubeQuality] = v.name }
 
     /** Browser tab: block ads and trackers with uBlock Origin's default filter lists. On by default. */
     val adBlockFlow: Flow<Boolean> = context.settingsDataStore.data.map { it[keyAdBlock] ?: true }
@@ -287,7 +295,7 @@ class SettingsStore @Inject constructor(
         keyInternalPlayer, keyAutoplayNext, keyPip, keyAutoSkipIntro, keyNightMode, keyStreamPreviews
     )
     /** May be blank on purpose (nothing avoided, no site left unblocked). */
-    private val backupStrings get() = listOf(keyReleaseAvoid, keyReleasePrefer, keyAdBlockOffSites)
+    private val backupStrings get() = listOf(keyReleaseAvoid, keyReleasePrefer, keyAdBlockOffSites, keyYouTubeQuality)
     private val backupInts get() = listOf(keySortOrder, keyThemeMode, keyScheduleStart, keyScheduleEnd, keySpeedLimit, keyAutoDeleteDays)
 
     /** Only values the user actually set; defaults stay defaults on the new phone. */

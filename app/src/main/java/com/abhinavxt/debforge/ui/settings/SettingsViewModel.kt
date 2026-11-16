@@ -121,6 +121,11 @@ class SettingsViewModel @Inject constructor(
         viewModelScope, SharingStarted.WhileSubscribed(5_000), 0
     )
 
+    val youTubeQuality: StateFlow<com.abhinavxt.debforge.domain.DefaultQuality> = settingsStore.youTubeQualityFlow.stateIn(
+        viewModelScope, SharingStarted.WhileSubscribed(5_000), com.abhinavxt.debforge.domain.DefaultQuality.ASK
+    )
+    fun setYouTubeQuality(v: com.abhinavxt.debforge.domain.DefaultQuality) = viewModelScope.launch { settingsStore.setYouTubeQuality(v) }
+
     /** Picking a period that would delete files right now asks first. */
     data class AutoDeletePreview(val days: Int, val files: Int, val bytes: Long)
 

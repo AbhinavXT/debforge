@@ -428,6 +428,11 @@
     <string name="set_auto_delete">ডাউনলোড মুছুন এর পরে</string>
     <string name="set_auto_delete_detail">শুধু DebForge-এর ডাউনলোড করা এবং ডাউনলোডে তালিকাভুক্ত ফাইল</string>
     <string name="set_auto_delete_never">কখনও না</string>
+    <string name="set_yt_quality">YouTube ডিফল্ট মান</string>
+    <string name="set_yt_quality_ask">প্রতিবার জিজ্ঞাসা করুন</string>
+    <string name="set_yt_quality_best">সেরা</string>
+    <string name="set_yt_quality_audio">শুধু অডিও</string>
+    <string name="set_yt_quality_detail">YouTube প্রিভিউতে আগে থেকে নির্বাচিত</string>
     <string name="set_auto_delete_confirm_title">পুরনো ডাউনলোড এখনই মুছবেন?</string>
     <string name="set_auto_delete_now">এখনই মুছুন</string>
     <plurals name="set_storage_downloaded">

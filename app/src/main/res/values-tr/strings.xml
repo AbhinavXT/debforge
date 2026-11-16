@@ -428,6 +428,11 @@
     <string name="set_auto_delete">İndirmeleri şu süreden sonra sil</string>
     <string name="set_auto_delete_detail">yalnızca DebForge\'un indirdiği ve İndirmeler\'de hâlâ listelenen dosyalar</string>
     <string name="set_auto_delete_never">Asla</string>
+    <string name="set_yt_quality">YouTube varsayılan kalitesi</string>
+    <string name="set_yt_quality_ask">Her seferinde sor</string>
+    <string name="set_yt_quality_best">En iyi</string>
+    <string name="set_yt_quality_audio">Yalnızca ses</string>
+    <string name="set_yt_quality_detail">YouTube önizlemesinde önceden seçilir</string>
     <string name="set_auto_delete_confirm_title">Eski indirmeler şimdi silinsin mi?</string>
     <string name="set_auto_delete_now">Şimdi sil</string>
     <plurals name="set_storage_downloaded">

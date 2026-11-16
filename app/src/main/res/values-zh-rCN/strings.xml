@@ -410,6 +410,11 @@
     <string name="set_auto_delete">自动删除下载</string>
     <string name="set_auto_delete_detail">仅限 DebForge 下载且仍在“下载”中列出的文件</string>
     <string name="set_auto_delete_never">从不</string>
+    <string name="set_yt_quality">YouTube 默认画质</string>
+    <string name="set_yt_quality_ask">每次询问</string>
+    <string name="set_yt_quality_best">最佳</string>
+    <string name="set_yt_quality_audio">仅音频</string>
+    <string name="set_yt_quality_detail">在 YouTube 预览中预先选中</string>
     <string name="set_auto_delete_confirm_title">现在删除旧下载？</string>
     <string name="set_auto_delete_now">立即删除</string>
     <plurals name="set_storage_downloaded">

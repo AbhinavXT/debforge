@@ -90,3 +90,18 @@ object YouTubeFormats {
         return FormatChoice(v?.itag, a.itag, ext, bytes, !known, v?.height ?: 0, v?.fps ?: 0, c, a.bitrateBps)
     }
 }
+
+/** Names are persisted in settings: add entries, never rename. */
+enum class DefaultQuality(val height: Int = 0) { ASK, BEST, P1080(1080), P720(720), P480(480), AUDIO }
+
+/** The choice the preview preselects for [quality]; [DefaultQuality.ASK] keeps the built-in default. */
+fun pickDefaultChoice(choices: List<FormatChoice>, quality: DefaultQuality): FormatChoice? {
+    val video = choices.filter { it.videoItag != null }.sortedByDescending { it.height }
+    val pick = when (quality) {
+        DefaultQuality.ASK -> null
+        DefaultQuality.BEST -> video.firstOrNull()
+        DefaultQuality.AUDIO -> choices.filter { it.videoItag == null }.let { a -> a.firstOrNull { it.isDefault } ?: a.firstOrNull() }
+        else -> video.firstOrNull { it.height <= quality.height } ?: video.lastOrNull()
+    }
+    return pick ?: choices.firstOrNull { it.isDefault } ?: choices.firstOrNull()
+}

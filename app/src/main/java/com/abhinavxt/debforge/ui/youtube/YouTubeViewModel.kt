@@ -12,6 +12,7 @@ import com.abhinavxt.debforge.domain.DownloadItem
 import com.abhinavxt.debforge.domain.FormatChoice
 import com.abhinavxt.debforge.domain.ProviderId
 import com.abhinavxt.debforge.domain.YouTubeFormats
+import com.abhinavxt.debforge.domain.pickDefaultChoice
 import com.abhinavxt.debforge.domain.YouTubeLinks
 import com.abhinavxt.debforge.domain.YouTubeSearchResult
 import com.abhinavxt.debforge.domain.YouTubeVideo
@@ -127,7 +128,7 @@ class YouTubeViewModel @Inject constructor(
             _ui.value = try {
                 val video = resolver.resolve(text)
                 val choices = YouTubeFormats.choices(video.streams, Build.VERSION.SDK_INT, video.durationSec)
-                val pick = choices.firstOrNull { it.isDefault } ?: choices.firstOrNull()
+                val pick = pickDefaultChoice(choices, settings.youTubeQualityFlow.first())
                 if (pick == null) YouTubeUi.Error(YouTubeErrorKind.UNAVAILABLE) else YouTubeUi.Preview(video, choices, pick)
             } catch (e: CancellationException) {
                 throw e
