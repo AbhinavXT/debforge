@@ -799,6 +799,25 @@
     <string name="yt_err_network">Periksa koneksi Anda lalu coba lagi.</string>
     <string name="yt_err_generic">Terjadi masalah saat membaca video ini. Coba lagi sebentar lagi.</string>
     <string name="yt_err_queue">Unduhan tidak bisa ditambahkan. Coba lagi.</string>
+    <string name="yt_playlist">Daftar putar</string>
+    <string name="yt_selected_count">%1$d dari %2$d dipilih</string>
+    <string name="yt_select_all">Pilih semua</string>
+    <string name="yt_select_none">Batalkan semua</string>
+    <string name="yt_adding">Menambahkan %1$d dari %2$d…</string>
+    <string name="yt_playlist_empty_title">Tidak ada yang diunduh</string>
+    <string name="yt_playlist_empty_body">Daftar putar ini tidak memiliki video yang terlihat.</string>
+    <plurals name="yt_download_n">
+        <item quantity="other">Unduh %1$d video</item>
+    </plurals>
+    <plurals name="yt_batch_added">
+        <item quantity="other">%1$d video ditambahkan ke unduhan</item>
+    </plurals>
+    <plurals name="yt_batch_already">
+        <item quantity="other">%1$d sudah ada di unduhan Anda</item>
+    </plurals>
+    <plurals name="yt_batch_failed">
+        <item quantity="other">%1$d tidak dapat ditambahkan</item>
+    </plurals>
 
     <!-- Media -->
     <string name="media_title">Media</string>

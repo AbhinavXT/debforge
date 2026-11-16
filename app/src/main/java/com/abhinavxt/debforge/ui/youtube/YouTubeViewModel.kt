@@ -9,6 +9,7 @@ import com.abhinavxt.debforge.data.local.DownloadDao
 import com.abhinavxt.debforge.data.youtube.YouTubeResolver
 import com.abhinavxt.debforge.di.ApiHttpClient
 import com.abhinavxt.debforge.domain.DownloadItem
+import com.abhinavxt.debforge.domain.DefaultQuality
 import com.abhinavxt.debforge.domain.FormatChoice
 import com.abhinavxt.debforge.domain.ProviderId
 import com.abhinavxt.debforge.domain.YouTubeFormats
@@ -30,6 +31,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
@@ -45,10 +47,24 @@ sealed interface YouTubeUi {
     data object Resolving : YouTubeUi
     data class Preview(val video: YouTubeVideo, val choices: List<FormatChoice>, val selected: FormatChoice) : YouTubeUi
     data class Results(val query: String, val items: List<YouTubeSearchResult>) : YouTubeUi
+    /** [progress] is (current, total) while the selected videos are being added one by one. */
+    data class Playlist(
+        val title: String,
+        val items: List<YouTubeSearchResult>,
+        val selected: Set<String>,
+        val quality: DefaultQuality,
+        val progress: Pair<Int, Int>? = null,
+    ) : YouTubeUi
     data class Error(val kind: YouTubeErrorKind, val search: Boolean = false) : YouTubeUi
 }
 
-enum class YouTubeEvent { QUEUED, ALREADY_QUEUED, QUEUE_FAILED }
+sealed interface YouTubeEvent {
+    data object QUEUED : YouTubeEvent
+    data object ALREADY_QUEUED : YouTubeEvent
+    data object QUEUE_FAILED : YouTubeEvent
+    /** A playlist batch finished (not cancelled). */
+    data class BatchDone(val added: Int, val already: Int, val failed: Int) : YouTubeEvent
+}
 
 @HiltViewModel
 class YouTubeViewModel @Inject constructor(
@@ -72,6 +88,7 @@ class YouTubeViewModel @Inject constructor(
 
     private var job: Job? = null
     private var enqueueJob: Job? = null
+    private var batchJob: Job? = null
 
     init {
         // Process death: bring the preview back for the last link the user submitted.
@@ -91,7 +108,9 @@ class YouTubeViewModel @Inject constructor(
         _input.value = text
         saved[LINK_KEY] = text
         job?.cancel()
+        batchJob?.cancel()
         when {
+            YouTubeLinks.isPlaylistOnly(text) && YouTubeLinks.playlistUrl(text) != null -> loadPlaylist(text)
             looksLikeYouTube(text) -> resolve(text)
             YouTubeLinks.isSearchQuery(text) -> search(text.trim())
             else -> _ui.value = YouTubeUi.Error(YouTubeErrorKind.NOT_LINK)
@@ -111,6 +130,31 @@ class YouTubeViewModel @Inject constructor(
             }
         }
     }
+
+    private fun loadPlaylist(text: String) {
+        _ui.value = YouTubeUi.Resolving
+        job = viewModelScope.launch {
+            _ui.value = try {
+                val list = resolver.playlist(text)
+                val quality = settings.youTubeQualityFlow.first().takeIf { it != DefaultQuality.ASK } ?: DefaultQuality.P720
+                YouTubeUi.Playlist(list.title, list.items, list.items.map { it.url }.toSet(), quality)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                ensureActive() // a cancelled job must not overwrite the state Back just set
+                YouTubeUi.Error(errorKind(e))
+            }
+        }
+    }
+
+    fun togglePlaylistItem(url: String) = updatePlaylist { it.copy(selected = if (url in it.selected) it.selected - url else it.selected + url) }
+
+    fun selectAllPlaylist(all: Boolean) = updatePlaylist { it.copy(selected = if (all) it.items.map { r -> r.url }.toSet() else emptySet()) }
+
+    fun setPlaylistQuality(q: DefaultQuality) = updatePlaylist { it.copy(quality = q) }
+
+    private fun updatePlaylist(f: (YouTubeUi.Playlist) -> YouTubeUi.Playlist) =
+        _ui.update { if (it is YouTubeUi.Playlist && it.progress == null) f(it) else it }
 
     /** A tapped search result: same path as a pasted link, but Back returns to the results. */
     fun pick(result: YouTubeSearchResult) {
@@ -146,6 +190,7 @@ class YouTubeViewModel @Inject constructor(
 
     fun reset() {
         job?.cancel()
+        batchJob?.cancel()
         fromResults?.let {
             fromResults = null
             _input.value = it.query
@@ -173,19 +218,12 @@ class YouTubeViewModel @Inject constructor(
     fun download() {
         val p = _ui.value as? YouTubeUi.Preview ?: return
         val c = p.selected
-        val ref = YouTubeLinks.sourceRef(p.video.id, c.videoItag, c.audioItag)
         if (enqueueJob?.isActive == true) return // double tap
-        // The engine re-resolves from sourceRef (URLs expire); the URL here is only the stream's current one.
-        val url = p.video.streams.firstOrNull { it.itag == (c.videoItag ?: c.audioItag) }?.url
-        val item = DownloadItem(
-            id = ref, provider = ProviderId.DIRECT, filename = fileNameFor(p.video.title, c, p.video.id), sourceRef = ref,
-            downloadUrl = url, host = "YouTube", filesize = c.estimatedBytes, maxConnections = 1,
-            addedAt = Instant.now().toString(), title = p.video.title, artist = p.video.uploader,
-        )
+        val item = itemFor(p.video, c)
         enqueueJob = viewModelScope.launch {
             // Same rule as Library: no writable download folder yet means ask, never queue to the filesystem root.
             if (!StorageAccess.canWrite(context, settings.downloadDirFlow.first())) {
-                pending = item to p.video.thumbnailUrl
+                pending = { enqueue(item, p.video.thumbnailUrl) }
                 _folderPrompt.value = true
                 return@launch
             }
@@ -193,22 +231,73 @@ class YouTubeViewModel @Inject constructor(
         }
     }
 
-    private suspend fun enqueue(item: DownloadItem, thumbnailUrl: String?) {
+    private fun itemFor(video: YouTubeVideo, c: FormatChoice): DownloadItem {
+        val ref = YouTubeLinks.sourceRef(video.id, c.videoItag, c.audioItag)
+        // The engine re-resolves from sourceRef (URLs expire); the URL here is only the stream's current one.
+        val url = video.streams.firstOrNull { it.itag == (c.videoItag ?: c.audioItag) }?.url
+        return DownloadItem(
+            id = ref, provider = ProviderId.DIRECT, filename = fileNameFor(video.title, c, video.id), sourceRef = ref,
+            downloadUrl = url, host = "YouTube", filesize = c.estimatedBytes, maxConnections = 1,
+            addedAt = Instant.now().toString(), title = video.title, artist = video.uploader,
+        )
+    }
+
+    private suspend fun enqueue(item: DownloadItem, thumbnailUrl: String?) = _events.send(tryEnqueue(item, thumbnailUrl))
+
+    /** Queues [item] and says what happened: QUEUED, ALREADY_QUEUED or QUEUE_FAILED. */
+    private suspend fun tryEnqueue(item: DownloadItem, thumbnailUrl: String?): YouTubeEvent {
         try {
             // enqueue ignores an id it already has, so ask first and report what really happens.
-            if (dao.getById(item.id) != null) { _events.send(YouTubeEvent.ALREADY_QUEUED); return }
+            if (dao.getById(item.id) != null) return YouTubeEvent.ALREADY_QUEUED
             downloads.enqueue(item)
-            _events.send(YouTubeEvent.QUEUED)
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            _events.send(YouTubeEvent.QUEUE_FAILED)
-            return
+            return YouTubeEvent.QUEUE_FAILED
         }
         saveThumbnail(thumbnailUrl, item.id)
+        return YouTubeEvent.QUEUED
     }
 
-    private var pending: Pair<DownloadItem, String?>? = null
+    /** Adds the ticked playlist videos, one at a time, each in its own best-matching format. */
+    fun downloadPlaylist() {
+        val p = _ui.value as? YouTubeUi.Playlist ?: return
+        val chosen = p.items.filter { it.url in p.selected }
+        if (chosen.isEmpty() || p.progress != null || batchJob?.isActive == true) return
+        batchJob = viewModelScope.launch {
+            if (!StorageAccess.canWrite(context, settings.downloadDirFlow.first())) {
+                pending = { startBatch(chosen, p.quality) }
+                _folderPrompt.value = true
+            } else startBatch(chosen, p.quality)
+        }
+    }
+
+    private fun startBatch(chosen: List<YouTubeSearchResult>, quality: DefaultQuality) {
+        batchJob = viewModelScope.launch {
+            var added = 0; var already = 0; var failed = 0
+            chosen.forEachIndexed { i, r ->
+                _ui.update { (it as? YouTubeUi.Playlist)?.copy(progress = i + 1 to chosen.size) ?: it }
+                try {
+                    val video = resolver.resolve(r.url)
+                    val pick = pickDefaultChoice(YouTubeFormats.choices(video.streams, Build.VERSION.SDK_INT, video.durationSec), quality)
+                    when (if (pick == null) YouTubeEvent.QUEUE_FAILED else tryEnqueue(itemFor(video, pick), video.thumbnailUrl)) {
+                        YouTubeEvent.QUEUED -> added++
+                        YouTubeEvent.ALREADY_QUEUED -> already++
+                        else -> failed++
+                    }
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    ensureActive() // Back cancelled: stop, don't count it
+                    failed++
+                }
+            }
+            _ui.update { (it as? YouTubeUi.Playlist)?.copy(progress = null) ?: it }
+            _events.send(YouTubeEvent.BatchDone(added, already, failed))
+        }
+    }
+
+    private var pending: (suspend () -> Unit)? = null
     private val _folderPrompt = MutableStateFlow(false)
     /** True while the "where to save" dialog should show. */
     val folderPrompt: StateFlow<Boolean> = _folderPrompt.asStateFlow()
@@ -222,7 +311,7 @@ class YouTubeViewModel @Inject constructor(
         pending = null
         viewModelScope.launch {
             settings.setDownloadDir(dir)
-            if (waiting != null) enqueue(waiting.first, waiting.second)
+            waiting?.invoke()
         }
     }
 

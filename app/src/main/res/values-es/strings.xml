@@ -877,6 +877,33 @@
     <string name="yt_err_network">Comprueba tu conexión e inténtalo de nuevo.</string>
     <string name="yt_err_generic">Algo salió mal al leer este vídeo. Inténtalo de nuevo en un momento.</string>
     <string name="yt_err_queue">No se pudo añadir la descarga. Inténtalo de nuevo.</string>
+    <string name="yt_playlist">Lista de reproducción</string>
+    <string name="yt_selected_count">%1$d de %2$d seleccionados</string>
+    <string name="yt_select_all">Seleccionar todo</string>
+    <string name="yt_select_none">Quitar selección</string>
+    <string name="yt_adding">Añadiendo %1$d de %2$d…</string>
+    <string name="yt_playlist_empty_title">Nada que descargar</string>
+    <string name="yt_playlist_empty_body">Esta lista no tiene vídeos visibles.</string>
+    <plurals name="yt_download_n">
+        <item quantity="one">Descargar %1$d vídeo</item>
+        <item quantity="many">Descargar %1$d vídeos</item>
+        <item quantity="other">Descargar %1$d vídeos</item>
+    </plurals>
+    <plurals name="yt_batch_added">
+        <item quantity="one">%1$d vídeo añadido a descargas</item>
+        <item quantity="many">%1$d vídeos añadidos a descargas</item>
+        <item quantity="other">%1$d vídeos añadidos a descargas</item>
+    </plurals>
+    <plurals name="yt_batch_already">
+        <item quantity="one">%1$d ya está en tus descargas</item>
+        <item quantity="many">%1$d ya están en tus descargas</item>
+        <item quantity="other">%1$d ya están en tus descargas</item>
+    </plurals>
+    <plurals name="yt_batch_failed">
+        <item quantity="one">No se pudo añadir %1$d</item>
+        <item quantity="many">No se pudieron añadir %1$d</item>
+        <item quantity="other">No se pudieron añadir %1$d</item>
+    </plurals>
 
     <!-- Media -->
     <string name="media_title">Medios</string>

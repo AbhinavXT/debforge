@@ -838,6 +838,29 @@
     <string name="yt_err_network">మీ కనెక్షన్‌ను తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.</string>
     <string name="yt_err_generic">ఈ వీడియోను చదువుతున్నప్పుడు ఏదో తప్పు జరిగింది. కొద్దిసేపటి తర్వాత మళ్లీ ప్రయత్నించండి.</string>
     <string name="yt_err_queue">డౌన్‌లోడ్‌ను జోడించలేకపోయాం. మళ్లీ ప్రయత్నించండి.</string>
+    <string name="yt_playlist">ప్లేలిస్ట్</string>
+    <string name="yt_selected_count">%2$d లో %1$d ఎంచుకున్నారు</string>
+    <string name="yt_select_all">అన్నీ ఎంచుకోండి</string>
+    <string name="yt_select_none">ఏదీ వద్దు</string>
+    <string name="yt_adding">%2$d లో %1$d జోడిస్తోంది…</string>
+    <string name="yt_playlist_empty_title">డౌన్‌లోడ్ చేయడానికి ఏమీ లేదు</string>
+    <string name="yt_playlist_empty_body">ఈ ప్లేలిస్ట్‌లో కనిపించే వీడియోలు లేవు.</string>
+    <plurals name="yt_download_n">
+        <item quantity="one">%1$d వీడియోను డౌన్‌లోడ్ చేయండి</item>
+        <item quantity="other">%1$d వీడియోలను డౌన్‌లోడ్ చేయండి</item>
+    </plurals>
+    <plurals name="yt_batch_added">
+        <item quantity="one">%1$d వీడియో డౌన్‌లోడ్‌లకు జోడించబడింది</item>
+        <item quantity="other">%1$d వీడియోలు డౌన్‌లోడ్‌లకు జోడించబడ్డాయి</item>
+    </plurals>
+    <plurals name="yt_batch_already">
+        <item quantity="one">%1$d ఇప్పటికే డౌన్‌లోడ్‌లలో ఉంది</item>
+        <item quantity="other">%1$d ఇప్పటికే డౌన్‌లోడ్‌లలో ఉన్నాయి</item>
+    </plurals>
+    <plurals name="yt_batch_failed">
+        <item quantity="one">%1$d జోడించడం సాధ్యం కాలేదు</item>
+        <item quantity="other">%1$d జోడించడం సాధ్యం కాలేదు</item>
+    </plurals>
 
     <!-- Media -->
     <string name="media_title">మీడియా</string>

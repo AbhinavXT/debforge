@@ -916,6 +916,37 @@
     <string name="yt_err_network">Проверьте подключение и повторите попытку.</string>
     <string name="yt_err_generic">Не удалось прочитать это видео. Повторите попытку чуть позже.</string>
     <string name="yt_err_queue">Не удалось добавить загрузку. Повторите попытку.</string>
+    <string name="yt_playlist">Плейлист</string>
+    <string name="yt_selected_count">Выбрано %1$d из %2$d</string>
+    <string name="yt_select_all">Выбрать все</string>
+    <string name="yt_select_none">Снять выбор</string>
+    <string name="yt_adding">Добавление %1$d из %2$d…</string>
+    <string name="yt_playlist_empty_title">Нечего скачивать</string>
+    <string name="yt_playlist_empty_body">В этом плейлисте нет доступных видео.</string>
+    <plurals name="yt_download_n">
+        <item quantity="one">Скачать %1$d видео</item>
+        <item quantity="few">Скачать %1$d видео</item>
+        <item quantity="many">Скачать %1$d видео</item>
+        <item quantity="other">Скачать %1$d видео</item>
+    </plurals>
+    <plurals name="yt_batch_added">
+        <item quantity="one">Добавлено в загрузки: %1$d видео</item>
+        <item quantity="few">Добавлено в загрузки: %1$d видео</item>
+        <item quantity="many">Добавлено в загрузки: %1$d видео</item>
+        <item quantity="other">Добавлено в загрузки: %1$d видео</item>
+    </plurals>
+    <plurals name="yt_batch_already">
+        <item quantity="one">%1$d уже в загрузках</item>
+        <item quantity="few">%1$d уже в загрузках</item>
+        <item quantity="many">%1$d уже в загрузках</item>
+        <item quantity="other">%1$d уже в загрузках</item>
+    </plurals>
+    <plurals name="yt_batch_failed">
+        <item quantity="one">Не удалось добавить: %1$d</item>
+        <item quantity="few">Не удалось добавить: %1$d</item>
+        <item quantity="many">Не удалось добавить: %1$d</item>
+        <item quantity="other">Не удалось добавить: %1$d</item>
+    </plurals>
 
     <!-- Media -->
     <string name="media_title">Медиа</string>

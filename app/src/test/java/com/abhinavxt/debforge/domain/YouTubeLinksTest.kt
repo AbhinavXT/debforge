@@ -40,6 +40,12 @@ class YouTubeLinksTest {
         assertFalse(YouTubeLinks.isPlaylistOnly("https://example.com/?list=1"))
     }
 
+    @Test fun playlistUrl() {
+        assertEquals("https://www.youtube.com/playlist?list=PL-1_a", YouTubeLinks.playlistUrl("https://www.youtube.com/playlist?list=PL-1_a&si=x"))
+        assertEquals("https://www.youtube.com/playlist?list=PL1", YouTubeLinks.playlistUrl("see https://m.youtube.com/watch?index=2&list=PL1"))
+        assertNull(YouTubeLinks.playlistUrl("https://youtu.be/$id"))
+    }
+
     @Test fun sourceRefRoundTrip() {
         val a = YouTubeLinks.sourceRef("a-b_c1234Zz", 299, 140)
         assertEquals("yt:a-b_c1234Zz:299:140", a)

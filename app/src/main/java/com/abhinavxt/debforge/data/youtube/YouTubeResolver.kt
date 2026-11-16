@@ -4,6 +4,7 @@ import com.abhinavxt.debforge.di.ApiHttpClient
 import com.abhinavxt.debforge.domain.Container
 import com.abhinavxt.debforge.domain.StreamKind
 import com.abhinavxt.debforge.domain.YouTubeLinks
+import com.abhinavxt.debforge.domain.YouTubePlaylist
 import com.abhinavxt.debforge.domain.YouTubeSearchResult
 import com.abhinavxt.debforge.domain.YouTubeStream
 import com.abhinavxt.debforge.domain.YouTubeVideo
@@ -17,6 +18,7 @@ import org.schabi.newpipe.extractor.exceptions.ContentNotAvailableException
 import org.schabi.newpipe.extractor.exceptions.ReCaptchaException
 import org.schabi.newpipe.extractor.exceptions.SignInConfirmNotBotException
 import org.schabi.newpipe.extractor.localization.Localization
+import org.schabi.newpipe.extractor.playlist.PlaylistInfo
 import org.schabi.newpipe.extractor.search.SearchInfo
 import org.schabi.newpipe.extractor.services.youtube.linkHandler.YoutubeSearchQueryHandlerFactory
 import org.schabi.newpipe.extractor.stream.AudioStream
@@ -70,6 +72,30 @@ class YouTubeResolver @Inject constructor(@ApiHttpClient private val client: OkH
                 .relatedItems.filterIsInstance<StreamInfoItem>().map {
                     YouTubeSearchResult(it.url, it.name.orEmpty(), it.uploaderName, it.duration, it.thumbnails.maxByOrNull { t -> t.height }?.url)
                 }.distinctBy { it.url } // rows are keyed by url; a repeat would crash the list
+        } catch (e: Exception) {
+            throw map(e)
+        }
+    }
+
+    suspend fun playlist(url: String): YouTubePlaylist = withContext(Dispatchers.IO) {
+        try {
+            init
+            val listUrl = YouTubeLinks.playlistUrl(url) ?: throw YouTubeException.Unavailable("Not a YouTube playlist link")
+            val info = PlaylistInfo.getInfo(listUrl)
+            val items = info.relatedItems.filterIsInstance<StreamInfoItem>().toMutableList()
+            var page = info.nextPage
+            // shortcut: first 200 videos of a playlist, raise or page lazily when users ask
+            while (page != null && items.size < 200) {
+                val more = PlaylistInfo.getMoreItems(ServiceList.YouTube, listUrl, page)
+                items += more.items.filterIsInstance<StreamInfoItem>()
+                page = more.nextPage
+            }
+            YouTubePlaylist(
+                info.name.orEmpty(),
+                items.take(200).map {
+                    YouTubeSearchResult(it.url, it.name.orEmpty(), it.uploaderName, it.duration, it.thumbnails.maxByOrNull { t -> t.height }?.url)
+                }.distinctBy { it.url }, // rows are keyed by url; a repeat would crash the list
+            )
         } catch (e: Exception) {
             throw map(e)
         }

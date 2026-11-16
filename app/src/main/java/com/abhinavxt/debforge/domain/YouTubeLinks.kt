@@ -15,6 +15,12 @@ object YouTubeLinks {
 
     fun isPlaylistOnly(text: String): Boolean = videoId(text) == null && playlist.containsMatchIn(text)
 
+    private val listParam = Regex("[?&]list=([A-Za-z0-9_-]+)")
+
+    /** The canonical playlist URL for a playlist link, or null when there is no list id. */
+    fun playlistUrl(text: String): String? =
+        listParam.find(text)?.groupValues?.get(1)?.let { "https://www.youtube.com/playlist?list=$it" }
+
     private val anyUrl = Regex("^\\s*https?://", RegexOption.IGNORE_CASE)
 
     /** Plain words to search for: not blank, not a video/playlist link, and not some other web address. */

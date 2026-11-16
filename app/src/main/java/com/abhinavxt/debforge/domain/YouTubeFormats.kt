@@ -34,6 +34,9 @@ data class YouTubeSearchResult(
     val thumbnailUrl: String?,
 )
 
+/** A playlist's videos (first 200); each [YouTubeSearchResult.url] goes through the normal link path. */
+data class YouTubePlaylist(val title: String, val items: List<YouTubeSearchResult>)
+
 /** One downloadable option. [videoItag] is null for audio only; [height] 0 then. */
 data class FormatChoice(
     val videoItag: Int?,

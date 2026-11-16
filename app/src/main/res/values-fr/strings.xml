@@ -877,6 +877,33 @@
     <string name="yt_err_network">Vérifiez votre connexion et réessayez.</string>
     <string name="yt_err_generic">Une erreur est survenue à la lecture de cette vidéo. Réessayez dans un instant.</string>
     <string name="yt_err_queue">Impossible d\'ajouter le téléchargement. Réessayez.</string>
+    <string name="yt_playlist">Playlist</string>
+    <string name="yt_selected_count">%1$d sur %2$d sélectionnées</string>
+    <string name="yt_select_all">Tout sélectionner</string>
+    <string name="yt_select_none">Tout désélectionner</string>
+    <string name="yt_adding">Ajout de %1$d sur %2$d…</string>
+    <string name="yt_playlist_empty_title">Rien à télécharger</string>
+    <string name="yt_playlist_empty_body">Cette playlist ne contient aucune vidéo visible.</string>
+    <plurals name="yt_download_n">
+        <item quantity="one">Télécharger %1$d vidéo</item>
+        <item quantity="many">Télécharger %1$d vidéos</item>
+        <item quantity="other">Télécharger %1$d vidéos</item>
+    </plurals>
+    <plurals name="yt_batch_added">
+        <item quantity="one">%1$d vidéo ajoutée aux téléchargements</item>
+        <item quantity="many">%1$d vidéos ajoutées aux téléchargements</item>
+        <item quantity="other">%1$d vidéos ajoutées aux téléchargements</item>
+    </plurals>
+    <plurals name="yt_batch_already">
+        <item quantity="one">%1$d déjà dans vos téléchargements</item>
+        <item quantity="many">%1$d déjà dans vos téléchargements</item>
+        <item quantity="other">%1$d déjà dans vos téléchargements</item>
+    </plurals>
+    <plurals name="yt_batch_failed">
+        <item quantity="one">%1$d n\'a pas pu être ajoutée</item>
+        <item quantity="many">%1$d n\'ont pas pu être ajoutées</item>
+        <item quantity="other">%1$d n\'ont pas pu être ajoutées</item>
+    </plurals>
 
     <!-- Media -->
     <string name="media_title">Médias</string>

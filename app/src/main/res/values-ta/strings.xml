@@ -838,6 +838,29 @@
     <string name="yt_err_network">இணைப்பைச் சரிபார்த்து மீண்டும் முயலவும்.</string>
     <string name="yt_err_generic">இந்த வீடியோவைப் படிப்பதில் ஏதோ தவறு நேர்ந்தது. சிறிது நேரம் கழித்து மீண்டும் முயலவும்.</string>
     <string name="yt_err_queue">பதிவிறக்கத்தைச் சேர்க்க முடியவில்லை. மீண்டும் முயலவும்.</string>
+    <string name="yt_playlist">பிளேலிஸ்ட்</string>
+    <string name="yt_selected_count">%2$d இல் %1$d தேர்ந்தெடுக்கப்பட்டது</string>
+    <string name="yt_select_all">அனைத்தையும் தேர்ந்தெடு</string>
+    <string name="yt_select_none">எதுவும் வேண்டாம்</string>
+    <string name="yt_adding">%2$d இல் %1$d சேர்க்கப்படுகிறது…</string>
+    <string name="yt_playlist_empty_title">பதிவிறக்க எதுவும் இல்லை</string>
+    <string name="yt_playlist_empty_body">இந்த பிளேலிஸ்ட்டில் காணக்கூடிய வீடியோக்கள் இல்லை.</string>
+    <plurals name="yt_download_n">
+        <item quantity="one">%1$d வீடியோவைப் பதிவிறக்கு</item>
+        <item quantity="other">%1$d வீடியோக்களைப் பதிவிறக்கு</item>
+    </plurals>
+    <plurals name="yt_batch_added">
+        <item quantity="one">%1$d வீடியோ பதிவிறக்கங்களில் சேர்க்கப்பட்டது</item>
+        <item quantity="other">%1$d வீடியோக்கள் பதிவிறக்கங்களில் சேர்க்கப்பட்டன</item>
+    </plurals>
+    <plurals name="yt_batch_already">
+        <item quantity="one">%1$d ஏற்கனவே பதிவிறக்கங்களில் உள்ளது</item>
+        <item quantity="other">%1$d ஏற்கனவே பதிவிறக்கங்களில் உள்ளன</item>
+    </plurals>
+    <plurals name="yt_batch_failed">
+        <item quantity="one">%1$d சேர்க்க முடியவில்லை</item>
+        <item quantity="other">%1$d சேர்க்க முடியவில்லை</item>
+    </plurals>
 
     <!-- Media -->
     <string name="media_title">மீடியா</string>

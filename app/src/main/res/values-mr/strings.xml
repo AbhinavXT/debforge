@@ -838,6 +838,29 @@
     <string name="yt_err_network">तुमचे कनेक्शन तपासा आणि पुन्हा प्रयत्न करा.</string>
     <string name="yt_err_generic">हा व्हिडिओ वाचताना काहीतरी चूक झाली. थोड्या वेळाने पुन्हा प्रयत्न करा.</string>
     <string name="yt_err_queue">डाउनलोड जोडता आला नाही. पुन्हा प्रयत्न करा.</string>
+    <string name="yt_playlist">प्लेलिस्ट</string>
+    <string name="yt_selected_count">%2$d पैकी %1$d निवडले</string>
+    <string name="yt_select_all">सर्व निवडा</string>
+    <string name="yt_select_none">काहीही नको</string>
+    <string name="yt_adding">%2$d पैकी %1$d जोडत आहे…</string>
+    <string name="yt_playlist_empty_title">डाउनलोड करण्यासाठी काही नाही</string>
+    <string name="yt_playlist_empty_body">या प्लेलिस्टमध्ये दिसणारे व्हिडिओ नाहीत.</string>
+    <plurals name="yt_download_n">
+        <item quantity="one">%1$d व्हिडिओ डाउनलोड करा</item>
+        <item quantity="other">%1$d व्हिडिओ डाउनलोड करा</item>
+    </plurals>
+    <plurals name="yt_batch_added">
+        <item quantity="one">%1$d व्हिडिओ डाउनलोडमध्ये जोडला</item>
+        <item quantity="other">%1$d व्हिडिओ डाउनलोडमध्ये जोडले</item>
+    </plurals>
+    <plurals name="yt_batch_already">
+        <item quantity="one">%1$d आधीच डाउनलोडमध्ये आहे</item>
+        <item quantity="other">%1$d आधीच डाउनलोडमध्ये आहेत</item>
+    </plurals>
+    <plurals name="yt_batch_failed">
+        <item quantity="one">%1$d जोडता आला नाही</item>
+        <item quantity="other">%1$d जोडता आले नाहीत</item>
+    </plurals>
 
     <!-- Media -->
     <string name="media_title">मीडिया</string>

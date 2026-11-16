@@ -838,6 +838,29 @@
     <string name="yt_err_network">Prüfe deine Verbindung und versuche es erneut.</string>
     <string name="yt_err_generic">Beim Lesen dieses Videos ist etwas schiefgelaufen. Versuche es gleich noch einmal.</string>
     <string name="yt_err_queue">Download konnte nicht hinzugefügt werden. Versuche es erneut.</string>
+    <string name="yt_playlist">Playlist</string>
+    <string name="yt_selected_count">%1$d von %2$d ausgewählt</string>
+    <string name="yt_select_all">Alle auswählen</string>
+    <string name="yt_select_none">Keine auswählen</string>
+    <string name="yt_adding">%1$d von %2$d wird hinzugefügt…</string>
+    <string name="yt_playlist_empty_title">Nichts zum Herunterladen</string>
+    <string name="yt_playlist_empty_body">Diese Playlist enthält keine sichtbaren Videos.</string>
+    <plurals name="yt_download_n">
+        <item quantity="one">%1$d Video herunterladen</item>
+        <item quantity="other">%1$d Videos herunterladen</item>
+    </plurals>
+    <plurals name="yt_batch_added">
+        <item quantity="one">%1$d Video zu den Downloads hinzugefügt</item>
+        <item quantity="other">%1$d Videos zu den Downloads hinzugefügt</item>
+    </plurals>
+    <plurals name="yt_batch_already">
+        <item quantity="one">%1$d bereits in den Downloads</item>
+        <item quantity="other">%1$d bereits in den Downloads</item>
+    </plurals>
+    <plurals name="yt_batch_failed">
+        <item quantity="one">%1$d konnte nicht hinzugefügt werden</item>
+        <item quantity="other">%1$d konnten nicht hinzugefügt werden</item>
+    </plurals>
 
     <!-- Media -->
     <string name="media_title">Medien</string>

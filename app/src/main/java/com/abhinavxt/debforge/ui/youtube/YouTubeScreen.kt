@@ -35,7 +35,12 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -87,6 +92,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -101,6 +107,7 @@ import coil.compose.AsyncImage
 import kotlinx.coroutines.launch
 import com.abhinavxt.debforge.R
 import com.abhinavxt.debforge.domain.Container
+import com.abhinavxt.debforge.domain.DefaultQuality
 import com.abhinavxt.debforge.domain.FormatChoice
 import com.abhinavxt.debforge.domain.YouTubeLinks
 import com.abhinavxt.debforge.domain.YouTubeSearchResult
@@ -154,13 +161,19 @@ fun YouTubeScreen(
 
     LaunchedEffect(Unit) {
         viewModel.events.collect { e ->
-            val queuedOk = e == YouTubeEvent.QUEUED
+            val queuedOk = e == YouTubeEvent.QUEUED || (e is YouTubeEvent.BatchDone && e.added > 0)
             snackbar.currentSnackbarData?.dismiss()
+            val res = context.resources
             val r = snackbar.showSnackbar(
                 message = when (e) {
                     YouTubeEvent.QUEUED -> msgQueued
                     YouTubeEvent.ALREADY_QUEUED -> msgAlready
                     YouTubeEvent.QUEUE_FAILED -> msgFailed
+                    is YouTubeEvent.BatchDone -> listOfNotNull(
+                        e.added.takeIf { it > 0 }?.let { res.getQuantityString(R.plurals.yt_batch_added, it, it) },
+                        e.already.takeIf { it > 0 }?.let { res.getQuantityString(R.plurals.yt_batch_already, it, it) },
+                        e.failed.takeIf { it > 0 }?.let { res.getQuantityString(R.plurals.yt_batch_failed, it, it) },
+                    ).joinToString(" · ")
                 },
                 actionLabel = if (e == YouTubeEvent.QUEUE_FAILED) null else viewDownloads,
                 duration = if (queuedOk) SnackbarDuration.Long else SnackbarDuration.Short,
@@ -192,10 +205,14 @@ fun YouTubeScreen(
                     onMode = viewModel::selectMode,
                     onSelect = viewModel::select,
                     onDownload = viewModel::download,
+                    onToggle = viewModel::togglePlaylistItem,
+                    onSelectAll = viewModel::selectAllPlaylist,
+                    onQuality = viewModel::setPlaylistQuality,
+                    onDownloadPlaylist = viewModel::downloadPlaylist,
                 )
             }
         }
-        SnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter).padding(bottom = if (ui is YouTubeUi.Preview) 88.dp else 16.dp))
+        SnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter).padding(bottom = if (ui is YouTubeUi.Preview || ui is YouTubeUi.Playlist) 88.dp else 16.dp))
     }
 }
 
@@ -219,6 +236,10 @@ internal fun YouTubeContent(
     onMode: (Boolean) -> Unit,
     onSelect: (FormatChoice) -> Unit,
     onDownload: () -> Unit,
+    onToggle: (String) -> Unit,
+    onSelectAll: (Boolean) -> Unit,
+    onQuality: (DefaultQuality) -> Unit,
+    onDownloadPlaylist: () -> Unit,
 ) {
     AnimatedContent(
         ui,
@@ -232,6 +253,7 @@ internal fun YouTubeContent(
             YouTubeUi.Resolving -> Skeleton()
             is YouTubeUi.Results -> ResultsState(state, input, onInput, onSubmit, onPaste, onPick)
             is YouTubeUi.Preview -> PreviewState(state, onReset, onMode, onSelect, onDownload)
+            is YouTubeUi.Playlist -> PlaylistState(state, onReset, onToggle, onSelectAll, onQuality, onDownloadPlaylist)
             is YouTubeUi.Error -> MessageState(
                 icon = Icons.Rounded.ErrorOutline,
                 title = stringResource(errorTitle(state.kind, state.search)),
@@ -347,19 +369,129 @@ private fun ResultRow(r: YouTubeSearchResult, onClick: () -> Unit) {
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Box(Modifier.width(128.dp).aspectRatio(16f / 9f).clip(RoundedCornerShape(12.dp)).background(MaterialTheme.colorScheme.surfaceContainerHigh)) {
-            AsyncImage(model = r.thumbnailUrl, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
-            if (r.durationSec > 0) {
-                Surface(
-                    color = Color.Black.copy(alpha = 0.75f),
-                    contentColor = Color.White,
-                    shape = RoundedCornerShape(6.dp),
-                    modifier = Modifier.align(Alignment.BottomEnd).padding(4.dp),
-                ) {
-                    Text(durationText(r.durationSec), style = MaterialTheme.typography.labelSmall, modifier = Modifier.padding(horizontal = 6.dp, vertical = 1.dp))
+        ResultThumb(r)
+        Column(Modifier.weight(1f)) {
+            Text(r.title, style = MaterialTheme.typography.titleSmall, maxLines = 2, overflow = TextOverflow.Ellipsis)
+            if (!r.channel.isNullOrBlank()) {
+                Text(r.channel, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            }
+        }
+    }
+}
+
+@Composable
+private fun ResultThumb(r: YouTubeSearchResult) {
+    Box(Modifier.width(128.dp).aspectRatio(16f / 9f).clip(RoundedCornerShape(12.dp)).background(MaterialTheme.colorScheme.surfaceContainerHigh)) {
+        AsyncImage(model = r.thumbnailUrl, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
+        if (r.durationSec > 0) {
+            Surface(
+                color = Color.Black.copy(alpha = 0.75f),
+                contentColor = Color.White,
+                shape = RoundedCornerShape(6.dp),
+                modifier = Modifier.align(Alignment.BottomEnd).padding(4.dp),
+            ) {
+                Text(durationText(r.durationSec), style = MaterialTheme.typography.labelSmall, modifier = Modifier.padding(horizontal = 6.dp, vertical = 1.dp))
+            }
+        }
+    }
+}
+
+@Composable
+private fun PlaylistState(
+    p: YouTubeUi.Playlist,
+    onReset: () -> Unit,
+    onToggle: (String) -> Unit,
+    onSelectAll: (Boolean) -> Unit,
+    onQuality: (DefaultQuality) -> Unit,
+    onDownload: () -> Unit,
+) {
+    val busy = p.progress != null
+    val firstFocus = remember { FocusRequester() }
+    LaunchedEffect(Unit) { runCatching { firstFocus.requestFocus() } } // TV: land on the first control
+    Column(Modifier.fillMaxSize()) {
+        LazyColumn(
+            Modifier.weight(1f).fillMaxWidth(),
+            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            item {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Column(Modifier.weight(1f)) {
+                        Text(p.title.ifBlank { stringResource(R.string.yt_playlist) }, style = MaterialTheme.typography.titleMedium, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                        Text(stringResource(R.string.yt_selected_count, p.selected.size, p.items.size), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    IconButton(onClick = onReset) { Icon(Icons.Rounded.Close, contentDescription = stringResource(R.string.yt_another_link)) }
+                }
+            }
+            if (p.items.isEmpty()) {
+                item {
+                    MessageState(
+                        icon = Icons.Rounded.PlayCircle,
+                        title = stringResource(R.string.yt_playlist_empty_title),
+                        body = stringResource(R.string.yt_playlist_empty_body),
+                        modifier = Modifier.heightIn(min = 280.dp),
+                    )
+                }
+            } else {
+                item {
+                    Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        listOf(DefaultQuality.BEST, DefaultQuality.P1080, DefaultQuality.P720, DefaultQuality.P480, DefaultQuality.AUDIO).forEachIndexed { i, q ->
+                            FilterChip(
+                                selected = p.quality == q,
+                                onClick = { onQuality(q) },
+                                enabled = !busy,
+                                label = { Text(qualityLabel(q)) },
+                                modifier = Modifier.heightIn(min = 48.dp).then(if (i == 0) Modifier.focusRequester(firstFocus) else Modifier),
+                            )
+                        }
+                    }
+                }
+                item {
+                    Row {
+                        TextButton(onClick = { onSelectAll(true) }, enabled = !busy, modifier = Modifier.heightIn(min = 48.dp)) { Text(stringResource(R.string.yt_select_all)) }
+                        TextButton(onClick = { onSelectAll(false) }, enabled = !busy, modifier = Modifier.heightIn(min = 48.dp)) { Text(stringResource(R.string.yt_select_none)) }
+                    }
+                }
+            }
+            items(p.items, key = { it.url }) { PlaylistRow(it, it.url in p.selected, !busy) { onToggle(it.url) } }
+        }
+        // Pinned like the single-video preview: the list scrolls, the primary action does not.
+        Surface(color = MaterialTheme.colorScheme.surfaceContainer, tonalElevation = 3.dp, shadowElevation = 6.dp, modifier = Modifier.fillMaxWidth()) {
+            Column(Modifier.padding(horizontal = 16.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                p.progress?.let { (n, total) -> LinearProgressIndicator(progress = { n.toFloat() / total }, modifier = Modifier.fillMaxWidth()) }
+                Button(onClick = onDownload, enabled = !busy && p.selected.isNotEmpty(), modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp)) {
+                    Icon(Icons.Rounded.Download, contentDescription = null, modifier = Modifier.size(20.dp))
+                    Spacer(Modifier.size(8.dp))
+                    Text(
+                        p.progress?.let { (n, total) -> stringResource(R.string.yt_adding, n, total) }
+                            ?: pluralStringResource(R.plurals.yt_download_n, p.selected.size, p.selected.size),
+                        maxLines = 1, overflow = TextOverflow.Ellipsis,
+                    )
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun qualityLabel(q: DefaultQuality) = when (q) {
+    DefaultQuality.BEST -> stringResource(R.string.set_yt_quality_best)
+    DefaultQuality.AUDIO -> stringResource(R.string.set_yt_quality_audio)
+    else -> "${q.height}p"
+}
+
+@Composable
+private fun PlaylistRow(r: YouTubeSearchResult, checked: Boolean, enabled: Boolean, onToggle: () -> Unit) {
+    val source = remember { MutableInteractionSource() }
+    Row(
+        Modifier.fillMaxWidth().heightIn(min = 56.dp).clip(RowShape).focusRing(source, RowShape)
+            .toggleable(value = checked, enabled = enabled, interactionSource = source, indication = androidx.compose.foundation.LocalIndication.current, role = Role.Checkbox, onValueChange = { onToggle() })
+            .padding(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Checkbox(checked = checked, onCheckedChange = null, enabled = enabled)
+        ResultThumb(r)
         Column(Modifier.weight(1f)) {
             Text(r.title, style = MaterialTheme.typography.titleSmall, maxLines = 2, overflow = TextOverflow.Ellipsis)
             if (!r.channel.isNullOrBlank()) {
@@ -538,7 +670,7 @@ private val fakeChoices = listOf(
 private fun PreviewHost(ui: YouTubeUi, clip: String? = null, input: String = "") {
     MaterialTheme {
         Surface {
-            YouTubeContent(ui, input, clip, {}, {}, {}, {}, {}, {}, {}, {}, {})
+            YouTubeContent(ui, input, clip, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})
         }
     }
 }
@@ -549,3 +681,6 @@ private fun PreviewHost(ui: YouTubeUi, clip: String? = null, input: String = "")
 @Preview(showBackground = true, heightDp = 900) @Composable private fun AudioPreview() = PreviewHost(YouTubeUi.Preview(fakeVideo, fakeChoices, fakeChoices[2]))
 @Preview(showBackground = true, heightDp = 700) @Composable private fun ResultsPreview() = PreviewHost(YouTubeUi.Results("big buck bunny", listOf(YouTubeSearchResult("u", fakeVideo.title, "Example Channel", 596, null))), input = "big buck bunny")
 @Preview(showBackground = true) @Composable private fun ErrorPreview() = PreviewHost(YouTubeUi.Error(YouTubeErrorKind.PLAYLIST))
+@Preview(showBackground = true, heightDp = 700) @Composable private fun PlaylistPreview() = PreviewHost(
+    YouTubeUi.Playlist("Example playlist", listOf(YouTubeSearchResult("u", fakeVideo.title, "Example Channel", 596, null), YouTubeSearchResult("v", "Second video", null, 60, null)), setOf("u"), DefaultQuality.P720),
+)

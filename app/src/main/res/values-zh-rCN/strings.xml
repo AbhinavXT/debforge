@@ -799,6 +799,25 @@
     <string name="yt_err_network">请检查网络连接后重试。</string>
     <string name="yt_err_generic">读取此视频时出错，请稍后重试。</string>
     <string name="yt_err_queue">无法添加下载，请重试。</string>
+    <string name="yt_playlist">播放列表</string>
+    <string name="yt_selected_count">已选 %1$d / %2$d</string>
+    <string name="yt_select_all">全选</string>
+    <string name="yt_select_none">全不选</string>
+    <string name="yt_adding">正在添加 %1$d / %2$d…</string>
+    <string name="yt_playlist_empty_title">没有可下载的内容</string>
+    <string name="yt_playlist_empty_body">此播放列表没有可见的视频。</string>
+    <plurals name="yt_download_n">
+        <item quantity="other">下载 %1$d 个视频</item>
+    </plurals>
+    <plurals name="yt_batch_added">
+        <item quantity="other">已将 %1$d 个视频添加到下载</item>
+    </plurals>
+    <plurals name="yt_batch_already">
+        <item quantity="other">%1$d 个已在下载中</item>
+    </plurals>
+    <plurals name="yt_batch_failed">
+        <item quantity="other">%1$d 个无法添加</item>
+    </plurals>
 
     <!-- Media -->
     <string name="media_title">媒体</string>

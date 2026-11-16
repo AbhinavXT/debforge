@@ -840,6 +840,29 @@
     <string name="yt_err_network">Check your connection and try again.</string>
     <string name="yt_err_generic">Something went wrong reading this video. Try again in a moment.</string>
     <string name="yt_err_queue">Couldn\'t add the download. Try again.</string>
+    <string name="yt_playlist">Playlist</string>
+    <string name="yt_selected_count">%1$d of %2$d selected</string>
+    <string name="yt_select_all">Select all</string>
+    <string name="yt_select_none">Select none</string>
+    <string name="yt_adding">Adding %1$d of %2$d…</string>
+    <string name="yt_playlist_empty_title">Nothing to download</string>
+    <string name="yt_playlist_empty_body">This playlist has no videos you can see.</string>
+    <plurals name="yt_download_n">
+        <item quantity="one">Download %1$d video</item>
+        <item quantity="other">Download %1$d videos</item>
+    </plurals>
+    <plurals name="yt_batch_added">
+        <item quantity="one">Added %1$d video to downloads</item>
+        <item quantity="other">Added %1$d videos to downloads</item>
+    </plurals>
+    <plurals name="yt_batch_already">
+        <item quantity="one">%1$d already in your downloads</item>
+        <item quantity="other">%1$d already in your downloads</item>
+    </plurals>
+    <plurals name="yt_batch_failed">
+        <item quantity="one">%1$d couldn\'t be added</item>
+        <item quantity="other">%1$d couldn\'t be added</item>
+    </plurals>
 
     <!-- Media -->
     <string name="media_title">Media</string>
