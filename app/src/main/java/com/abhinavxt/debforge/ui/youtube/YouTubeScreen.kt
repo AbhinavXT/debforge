@@ -23,6 +23,8 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.foundation.layout.Row
@@ -80,6 +82,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -209,6 +213,8 @@ fun YouTubeScreen(
                     onSelectAll = viewModel::selectAllPlaylist,
                     onQuality = viewModel::setPlaylistQuality,
                     onDownloadPlaylist = viewModel::downloadPlaylist,
+                    onLoadMore = viewModel::loadMore,
+                    resultsList = viewModel.resultsList,
                 )
             }
         }
@@ -240,6 +246,8 @@ internal fun YouTubeContent(
     onSelectAll: (Boolean) -> Unit,
     onQuality: (DefaultQuality) -> Unit,
     onDownloadPlaylist: () -> Unit,
+    onLoadMore: () -> Unit,
+    resultsList: LazyListState = rememberLazyListState(),
 ) {
     AnimatedContent(
         ui,
@@ -251,7 +259,7 @@ internal fun YouTubeContent(
         when (state) {
             YouTubeUi.Empty -> EmptyState(input, clipLink, onInput, onSubmit, onPaste)
             YouTubeUi.Resolving -> Skeleton()
-            is YouTubeUi.Results -> ResultsState(state, input, onInput, onSubmit, onPaste, onPick)
+            is YouTubeUi.Results -> ResultsState(state, input, onInput, onSubmit, onPaste, onPick, onLoadMore, resultsList)
             is YouTubeUi.Preview -> PreviewState(state, onReset, onMode, onSelect, onDownload)
             is YouTubeUi.Playlist -> PlaylistState(state, onReset, onToggle, onSelectAll, onQuality, onDownloadPlaylist)
             is YouTubeUi.Error -> MessageState(
@@ -337,10 +345,19 @@ private fun ResultsState(
     onSubmit: (String) -> Unit,
     onPaste: () -> Unit,
     onPick: (YouTubeSearchResult) -> Unit,
+    onLoadMore: () -> Unit,
+    listState: LazyListState,
 ) {
     val focus = remember { FocusRequester() }
+    val loadMore by rememberUpdatedState(onLoadMore)
+    // Each scroll step near the end asks again, which is also the retry after a failed page.
+    LaunchedEffect(listState) {
+        snapshotFlow { listState.layoutInfo.let { it.visibleItemsInfo.lastOrNull()?.index?.minus(it.totalItemsCount) } }
+            .collect { if (it != null && it >= -5) loadMore() }
+    }
     LazyColumn(
         Modifier.fillMaxSize(),
+        state = listState,
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
@@ -356,6 +373,7 @@ private fun ResultsState(
             }
         }
         items(r.items, key = { it.url }) { ResultRow(it, onClick = { onPick(it) }) }
+        if (r.loadingMore) item { LinearProgressIndicator(Modifier.fillMaxWidth().padding(vertical = 8.dp)) }
     }
 }
 
@@ -670,7 +688,7 @@ private val fakeChoices = listOf(
 private fun PreviewHost(ui: YouTubeUi, clip: String? = null, input: String = "") {
     MaterialTheme {
         Surface {
-            YouTubeContent(ui, input, clip, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})
+            YouTubeContent(ui, input, clip, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})
         }
     }
 }

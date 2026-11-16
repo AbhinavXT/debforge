@@ -11,7 +11,9 @@ import com.abhinavxt.debforge.domain.YouTubeVideo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
+import org.schabi.newpipe.extractor.InfoItem
 import org.schabi.newpipe.extractor.NewPipe
+import org.schabi.newpipe.extractor.Page
 import org.schabi.newpipe.extractor.ServiceList
 import org.schabi.newpipe.extractor.exceptions.AgeRestrictedContentException
 import org.schabi.newpipe.extractor.exceptions.ContentNotAvailableException
@@ -63,19 +65,35 @@ class YouTubeResolver @Inject constructor(@ApiHttpClient private val client: OkH
         )
     }
 
-    suspend fun search(query: String): List<YouTubeSearchResult> = withContext(Dispatchers.IO) {
+    /** One page of search results and the extractor's cursor for the next, null at the end. */
+    class SearchPage(val items: List<YouTubeSearchResult>, val next: Page?)
+
+    suspend fun search(query: String): SearchPage = withContext(Dispatchers.IO) {
         try {
             init
-            val yt = ServiceList.YouTube
-            // shortcut: first page of results only, add paging when users ask for more
-            SearchInfo.getInfo(yt, yt.searchQHFactory.fromQuery(query, listOf(YoutubeSearchQueryHandlerFactory.VIDEOS), ""))
-                .relatedItems.filterIsInstance<StreamInfoItem>().map {
-                    YouTubeSearchResult(it.url, it.name.orEmpty(), it.uploaderName, it.duration, it.thumbnails.maxByOrNull { t -> t.height }?.url)
-                }.distinctBy { it.url } // rows are keyed by url; a repeat would crash the list
+            val info = SearchInfo.getInfo(ServiceList.YouTube, searchHandler(query))
+            SearchPage(searchResults(info.relatedItems), info.nextPage)
         } catch (e: Exception) {
             throw map(e)
         }
     }
+
+    suspend fun searchMore(query: String, page: Page): SearchPage = withContext(Dispatchers.IO) {
+        try {
+            init
+            val more = SearchInfo.getMoreItems(ServiceList.YouTube, searchHandler(query), page)
+            SearchPage(searchResults(more.items), more.nextPage)
+        } catch (e: Exception) {
+            throw map(e)
+        }
+    }
+
+    private fun searchHandler(query: String) =
+        ServiceList.YouTube.searchQHFactory.fromQuery(query, listOf(YoutubeSearchQueryHandlerFactory.VIDEOS), "")
+
+    private fun searchResults(items: List<InfoItem>) = items.filterIsInstance<StreamInfoItem>().map {
+        YouTubeSearchResult(it.url, it.name.orEmpty(), it.uploaderName, it.duration, it.thumbnails.maxByOrNull { t -> t.height }?.url)
+    }.distinctBy { it.url } // rows are keyed by url; a repeat would crash the list
 
     suspend fun playlist(url: String): YouTubePlaylist = withContext(Dispatchers.IO) {
         try {

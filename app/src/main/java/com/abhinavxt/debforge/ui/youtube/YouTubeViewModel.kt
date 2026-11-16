@@ -3,6 +3,7 @@ package com.abhinavxt.debforge.ui.youtube
 import android.content.Context
 import android.os.Build
 import androidx.lifecycle.SavedStateHandle
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.abhinavxt.debforge.data.local.DownloadDao
@@ -38,6 +39,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import org.schabi.newpipe.extractor.Page
 import java.io.File
 import java.time.Instant
 import javax.inject.Inject
@@ -46,7 +48,7 @@ sealed interface YouTubeUi {
     data object Empty : YouTubeUi
     data object Resolving : YouTubeUi
     data class Preview(val video: YouTubeVideo, val choices: List<FormatChoice>, val selected: FormatChoice) : YouTubeUi
-    data class Results(val query: String, val items: List<YouTubeSearchResult>) : YouTubeUi
+    data class Results(val query: String, val items: List<YouTubeSearchResult>, val loadingMore: Boolean = false) : YouTubeUi
     /** [progress] is (current, total) while the selected videos are being added one by one. */
     data class Playlist(
         val title: String,
@@ -89,6 +91,9 @@ class YouTubeViewModel @Inject constructor(
     private var job: Job? = null
     private var enqueueJob: Job? = null
     private var batchJob: Job? = null
+    private var moreJob: Job? = null
+    /** Extractor cursor for the shown search results; null when there are no more. */
+    private var nextPage: Page? = null
 
     init {
         // Process death: bring the preview back for the last link the user submitted.
@@ -108,6 +113,8 @@ class YouTubeViewModel @Inject constructor(
         _input.value = text
         saved[LINK_KEY] = text
         job?.cancel()
+        moreJob?.cancel()
+        nextPage = null
         batchJob?.cancel()
         pending = null // a download waiting on the folder prompt belongs to the screen being left
         when {
@@ -118,16 +125,46 @@ class YouTubeViewModel @Inject constructor(
         }
     }
 
+    /** Held here so the results keep their scroll position while a tapped result's preview is open. */
+    var resultsList = LazyListState()
+        private set
+
     private fun search(query: String) {
+        resultsList = LazyListState()
         _ui.value = YouTubeUi.Resolving
         job = viewModelScope.launch {
             _ui.value = try {
-                YouTubeUi.Results(query, resolver.search(query))
+                val page = resolver.search(query)
+                nextPage = page.next
+                YouTubeUi.Results(query, page.items)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
                 ensureActive() // a cancelled job must not overwrite the state Back just set
                 YouTubeUi.Error(errorKind(e), search = true)
+            }
+        }
+    }
+
+    /** Appends the next page of results; a failure keeps the list and the next scroll tries again. */
+    fun loadMore() {
+        val r = _ui.value as? YouTubeUi.Results ?: return
+        val page = nextPage ?: return
+        if (r.loadingMore) return
+        _ui.value = r.copy(loadingMore = true)
+        moreJob = viewModelScope.launch {
+            try {
+                val more = resolver.searchMore(r.query, page)
+                nextPage = more.next
+                _ui.update { cur ->
+                    if (cur !is YouTubeUi.Results || cur.query != r.query) cur
+                    else { val seen = cur.items.mapTo(HashSet()) { it.url }; cur.copy(items = cur.items + more.items.filter { it.url !in seen }, loadingMore = false) }
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                ensureActive()
+                _ui.update { if (it is YouTubeUi.Results) it.copy(loadingMore = false) else it }
             }
         }
     }
@@ -161,10 +198,11 @@ class YouTubeViewModel @Inject constructor(
     fun pick(result: YouTubeSearchResult) {
         val results = _ui.value as? YouTubeUi.Results ?: return
         job?.cancel()
+        moreJob?.cancel()
         _input.value = result.url
         saved[LINK_KEY] = result.url
         resolve(result.url)
-        fromResults = results
+        fromResults = results.copy(loadingMore = false) // a cancelled page load must not leave the spinner on
     }
 
     private fun resolve(text: String) {
@@ -191,6 +229,7 @@ class YouTubeViewModel @Inject constructor(
 
     fun reset() {
         job?.cancel()
+        moreJob?.cancel()
         batchJob?.cancel()
         pending = null // a download waiting on the folder prompt belongs to the screen being left
         fromResults?.let {
