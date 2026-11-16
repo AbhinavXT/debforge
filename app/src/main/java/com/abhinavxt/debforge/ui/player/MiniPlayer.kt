@@ -73,10 +73,12 @@ internal fun Modifier.focusRing(source: MutableInteractionSource, shape: android
 
 @Composable
 internal fun PlayPauseIcon(playing: Boolean, modifier: Modifier = Modifier) {
-    Crossfade(playing, modifier, label = "playPause") {
+    Crossfade(playing, label = "playPause") {
+        // The size goes on the icon: on the Crossfade it left a 24dp icon in the box's top corner.
         Icon(
             if (it) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
-            contentDescription = stringResource(if (it) R.string.audio_pause else R.string.audio_play)
+            contentDescription = stringResource(if (it) R.string.audio_pause else R.string.audio_play),
+            modifier = modifier
         )
     }
 }
