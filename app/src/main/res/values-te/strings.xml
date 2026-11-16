@@ -800,13 +800,15 @@
     <!-- YouTube -->
     <string name="yt_title">YouTube</string>
     <string name="yt_subtitle">వీడియో లేదా దాని ఆడియోను సేవ్ చేయండి</string>
-    <string name="yt_field_hint">YouTube లింక్‌ను పేస్ట్ చేయండి</string>
+    <string name="yt_field_hint">లింక్ అతికించండి లేదా YouTubeలో వెతకండి</string>
     <string name="yt_paste">పేస్ట్</string>
     <string name="yt_paste_chip">%1$s లింక్‌ను పేస్ట్ చేయి</string>
     <string name="yt_paste_none">క్లిప్‌బోర్డ్‌లో YouTube లింక్ లేదు</string>
     <string name="yt_clear">లింక్‌ను తొలగించు</string>
     <string name="yt_empty_title">YouTube నుండి సేవ్ చేయండి</string>
-    <string name="yt_empty_body">వీడియో లింక్‌ను పేస్ట్ చేయండి లేదా షేర్ చేయండి, క్వాలిటీని ఎంచుకోండి, అది మీ పరికరానికి డౌన్‌లోడ్ అవుతుంది.</string>
+    <string name="yt_empty_body">YouTubeలో వెతకండి లేదా లింక్ అతికించండి, క్వాలిటీ ఎంచుకోండి, అది మీ పరికరానికి డౌన్‌లోడ్ అవుతుంది.</string>
+    <string name="yt_no_results_title">ఫలితాలు లేవు</string>
+    <string name="yt_no_results_body">\"%1$s\" కోసం ఏమీ దొరకలేదు. వేరే పదాలు ప్రయత్నించండి.</string>
     <string name="yt_loading">వీడియో లోడ్ అవుతోంది</string>
     <string name="yt_thumbnail">వీడియో థంబ్‌నెయిల్</string>
     <string name="yt_mode_video">వీడియో</string>

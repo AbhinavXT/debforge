@@ -25,6 +25,15 @@ data class YouTubeVideo(
     val streams: List<YouTubeStream>,
 )
 
+/** One row of a YouTube search; [url] goes through the normal link path. */
+data class YouTubeSearchResult(
+    val url: String,
+    val title: String,
+    val channel: String?,
+    val durationSec: Long,
+    val thumbnailUrl: String?,
+)
+
 /** One downloadable option. [videoItag] is null for audio only; [height] 0 then. */
 data class FormatChoice(
     val videoItag: Int?,

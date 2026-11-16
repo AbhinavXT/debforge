@@ -4,20 +4,25 @@ import com.abhinavxt.debforge.di.ApiHttpClient
 import com.abhinavxt.debforge.domain.Container
 import com.abhinavxt.debforge.domain.StreamKind
 import com.abhinavxt.debforge.domain.YouTubeLinks
+import com.abhinavxt.debforge.domain.YouTubeSearchResult
 import com.abhinavxt.debforge.domain.YouTubeStream
 import com.abhinavxt.debforge.domain.YouTubeVideo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import org.schabi.newpipe.extractor.NewPipe
+import org.schabi.newpipe.extractor.ServiceList
 import org.schabi.newpipe.extractor.exceptions.AgeRestrictedContentException
 import org.schabi.newpipe.extractor.exceptions.ContentNotAvailableException
 import org.schabi.newpipe.extractor.exceptions.ReCaptchaException
 import org.schabi.newpipe.extractor.exceptions.SignInConfirmNotBotException
 import org.schabi.newpipe.extractor.localization.Localization
+import org.schabi.newpipe.extractor.search.SearchInfo
+import org.schabi.newpipe.extractor.services.youtube.linkHandler.YoutubeSearchQueryHandlerFactory
 import org.schabi.newpipe.extractor.stream.AudioStream
 import org.schabi.newpipe.extractor.stream.AudioTrackType
 import org.schabi.newpipe.extractor.stream.StreamInfo
+import org.schabi.newpipe.extractor.stream.StreamInfoItem
 import org.schabi.newpipe.extractor.stream.VideoStream
 import java.io.IOException
 import javax.inject.Inject
@@ -54,6 +59,20 @@ class YouTubeResolver @Inject constructor(@ApiHttpClient private val client: OkH
             thumbnailUrl = info.thumbnails.maxByOrNull { it.height }?.url,
             streams = info.videoOnlyStreams.mapNotNull { video(it) } + info.audioStreams.mapNotNull { audio(it) },
         )
+    }
+
+    suspend fun search(query: String): List<YouTubeSearchResult> = withContext(Dispatchers.IO) {
+        try {
+            init
+            val yt = ServiceList.YouTube
+            // shortcut: first page of results only, add paging when users ask for more
+            SearchInfo.getInfo(yt, yt.searchQHFactory.fromQuery(query, listOf(YoutubeSearchQueryHandlerFactory.VIDEOS), ""))
+                .relatedItems.filterIsInstance<StreamInfoItem>().map {
+                    YouTubeSearchResult(it.url, it.name.orEmpty(), it.uploaderName, it.duration, it.thumbnails.maxByOrNull { t -> t.height }?.url)
+                }
+        } catch (e: Exception) {
+            throw map(e)
+        }
     }
 
     private fun map(e: Exception): YouTubeException = when {

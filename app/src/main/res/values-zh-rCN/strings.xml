@@ -761,13 +761,15 @@
     <!-- YouTube -->
     <string name="yt_title">YouTube</string>
     <string name="yt_subtitle">保存视频或其音频</string>
-    <string name="yt_field_hint">粘贴 YouTube 链接</string>
+    <string name="yt_field_hint">粘贴链接或搜索 YouTube</string>
     <string name="yt_paste">粘贴</string>
     <string name="yt_paste_chip">粘贴 %1$s 链接</string>
     <string name="yt_paste_none">剪贴板中没有 YouTube 链接</string>
     <string name="yt_clear">清除链接</string>
     <string name="yt_empty_title">从 YouTube 保存</string>
-    <string name="yt_empty_body">粘贴或分享视频链接，选择画质，即可下载到你的设备。</string>
+    <string name="yt_empty_body">搜索 YouTube 或粘贴链接，选择画质，即可下载到你的设备。</string>
+    <string name="yt_no_results_title">没有结果</string>
+    <string name="yt_no_results_body">未找到与“%1$s”相关的内容，换个关键词试试。</string>
     <string name="yt_loading">正在加载视频</string>
     <string name="yt_thumbnail">视频缩略图</string>
     <string name="yt_mode_video">视频</string>

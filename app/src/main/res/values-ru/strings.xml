@@ -878,13 +878,15 @@
     <!-- YouTube -->
     <string name="yt_title">YouTube</string>
     <string name="yt_subtitle">Сохраните видео или только звук</string>
-    <string name="yt_field_hint">Вставьте ссылку на YouTube</string>
+    <string name="yt_field_hint">Вставьте ссылку или найдите на YouTube</string>
     <string name="yt_paste">Вставить</string>
     <string name="yt_paste_chip">Вставить ссылку %1$s</string>
     <string name="yt_paste_none">В буфере обмена нет ссылки на YouTube</string>
     <string name="yt_clear">Очистить ссылку</string>
     <string name="yt_empty_title">Сохранение с YouTube</string>
-    <string name="yt_empty_body">Вставьте или поделитесь ссылкой на видео, выберите качество, и оно загрузится на устройство.</string>
+    <string name="yt_empty_body">Найдите видео на YouTube или вставьте ссылку, выберите качество, и оно скачается на устройство.</string>
+    <string name="yt_no_results_title">Ничего не найдено</string>
+    <string name="yt_no_results_body">По запросу \"%1$s\" ничего нет. Попробуйте другие слова.</string>
     <string name="yt_loading">Загрузка видео</string>
     <string name="yt_thumbnail">Превью видео</string>
     <string name="yt_mode_video">Видео</string>

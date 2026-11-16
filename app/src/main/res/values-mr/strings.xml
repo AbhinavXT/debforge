@@ -800,13 +800,15 @@
     <!-- YouTube -->
     <string name="yt_title">YouTube</string>
     <string name="yt_subtitle">व्हिडिओ किंवा त्याचा ऑडिओ सेव्ह करा</string>
-    <string name="yt_field_hint">YouTube लिंक पेस्ट करा</string>
+    <string name="yt_field_hint">लिंक पेस्ट करा किंवा YouTube वर शोधा</string>
     <string name="yt_paste">पेस्ट करा</string>
     <string name="yt_paste_chip">%1$s लिंक पेस्ट करा</string>
     <string name="yt_paste_none">क्लिपबोर्डवर YouTube लिंक नाही</string>
     <string name="yt_clear">लिंक काढा</string>
     <string name="yt_empty_title">YouTube वरून सेव्ह करा</string>
-    <string name="yt_empty_body">व्हिडिओ लिंक पेस्ट किंवा शेअर करा, क्वालिटी निवडा, आणि तो तुमच्या डिव्हाइसवर डाउनलोड होईल.</string>
+    <string name="yt_empty_body">YouTube वर शोधा किंवा लिंक पेस्ट करा, क्वालिटी निवडा, आणि ते तुमच्या डिव्हाइसवर डाउनलोड होईल.</string>
+    <string name="yt_no_results_title">निकाल नाहीत</string>
+    <string name="yt_no_results_body">\"%1$s\" साठी काहीही सापडले नाही. वेगळे शब्द वापरून पहा.</string>
     <string name="yt_loading">व्हिडिओ लोड होत आहे</string>
     <string name="yt_thumbnail">व्हिडिओ थंबनेल</string>
     <string name="yt_mode_video">व्हिडिओ</string>

@@ -800,13 +800,15 @@
     <!-- YouTube -->
     <string name="yt_title">YouTube</string>
     <string name="yt_subtitle">वीडियो या उसका ऑडियो सेव करें</string>
-    <string name="yt_field_hint">YouTube लिंक पेस्ट करें</string>
+    <string name="yt_field_hint">लिंक पेस्ट करें या YouTube पर खोजें</string>
     <string name="yt_paste">पेस्ट करें</string>
     <string name="yt_paste_chip">%1$s लिंक पेस्ट करें</string>
     <string name="yt_paste_none">क्लिपबोर्ड में कोई YouTube लिंक नहीं है</string>
     <string name="yt_clear">लिंक साफ़ करें</string>
     <string name="yt_empty_title">YouTube से सेव करें</string>
-    <string name="yt_empty_body">वीडियो लिंक पेस्ट या शेयर करें, क्वालिटी चुनें, और वह आपके डिवाइस में डाउनलोड हो जाएगा।</string>
+    <string name="yt_empty_body">YouTube पर खोजें या लिंक पेस्ट करें, क्वालिटी चुनें, और यह आपके डिवाइस पर डाउनलोड हो जाएगा।</string>
+    <string name="yt_no_results_title">कोई नतीजा नहीं</string>
+    <string name="yt_no_results_body">\"%1$s\" के लिए कुछ नहीं मिला। दूसरे शब्द आज़माएँ।</string>
     <string name="yt_loading">वीडियो लोड हो रहा है</string>
     <string name="yt_thumbnail">वीडियो थंबनेल</string>
     <string name="yt_mode_video">वीडियो</string>

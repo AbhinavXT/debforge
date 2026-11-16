@@ -13,6 +13,7 @@ import com.abhinavxt.debforge.domain.FormatChoice
 import com.abhinavxt.debforge.domain.ProviderId
 import com.abhinavxt.debforge.domain.YouTubeFormats
 import com.abhinavxt.debforge.domain.YouTubeLinks
+import com.abhinavxt.debforge.domain.YouTubeSearchResult
 import com.abhinavxt.debforge.domain.YouTubeVideo
 import com.abhinavxt.debforge.download.DownloadController
 import com.abhinavxt.debforge.download.StorageAccess
@@ -41,6 +42,7 @@ sealed interface YouTubeUi {
     data object Empty : YouTubeUi
     data object Resolving : YouTubeUi
     data class Preview(val video: YouTubeVideo, val choices: List<FormatChoice>, val selected: FormatChoice) : YouTubeUi
+    data class Results(val query: String, val items: List<YouTubeSearchResult>) : YouTubeUi
     data class Error(val kind: YouTubeErrorKind) : YouTubeUi
 }
 
@@ -79,11 +81,45 @@ class YouTubeViewModel @Inject constructor(
     /** Called by the shell with a shared link. */
     fun offer(link: String) = submit(link)
 
+    /** The results a tapped result came from, so Back returns there; cleared by any new submit. */
+    private var fromResults: YouTubeUi.Results? = null
+
     fun submit(text: String) {
+        fromResults = null
         _input.value = text
         saved[LINK_KEY] = text
         job?.cancel()
-        if (!looksLikeYouTube(text)) { _ui.value = YouTubeUi.Error(YouTubeErrorKind.NOT_LINK); return }
+        when {
+            looksLikeYouTube(text) -> resolve(text)
+            YouTubeLinks.isSearchQuery(text) -> search(text.trim())
+            else -> _ui.value = YouTubeUi.Error(YouTubeErrorKind.NOT_LINK)
+        }
+    }
+
+    private fun search(query: String) {
+        _ui.value = YouTubeUi.Resolving
+        job = viewModelScope.launch {
+            _ui.value = try {
+                YouTubeUi.Results(query, resolver.search(query))
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                YouTubeUi.Error(errorKind(e))
+            }
+        }
+    }
+
+    /** A tapped search result: same path as a pasted link, but Back returns to the results. */
+    fun pick(result: YouTubeSearchResult) {
+        val results = _ui.value as? YouTubeUi.Results ?: return
+        job?.cancel()
+        _input.value = result.url
+        saved[LINK_KEY] = result.url
+        resolve(result.url)
+        fromResults = results
+    }
+
+    private fun resolve(text: String) {
         _ui.value = YouTubeUi.Resolving
         job = viewModelScope.launch {
             _ui.value = try {
@@ -103,6 +139,13 @@ class YouTubeViewModel @Inject constructor(
 
     fun reset() {
         job?.cancel()
+        fromResults?.let {
+            fromResults = null
+            _input.value = it.query
+            saved[LINK_KEY] = it.query
+            _ui.value = it
+            return
+        }
         saved.remove<String>(LINK_KEY)
         _input.value = ""
         _ui.value = YouTubeUi.Empty

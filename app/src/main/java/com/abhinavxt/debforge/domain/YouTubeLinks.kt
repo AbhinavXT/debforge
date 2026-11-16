@@ -15,6 +15,12 @@ object YouTubeLinks {
 
     fun isPlaylistOnly(text: String): Boolean = videoId(text) == null && playlist.containsMatchIn(text)
 
+    private val anyUrl = Regex("^\\s*https?://", RegexOption.IGNORE_CASE)
+
+    /** Plain words to search for: not blank, not a video/playlist link, and not some other web address. */
+    fun isSearchQuery(text: String): Boolean =
+        text.isNotBlank() && videoId(text) == null && !isPlaylistOnly(text) && !anyUrl.containsMatchIn(text)
+
     const val PREFIX = "yt:"
 
     /** `yt:<videoId>:<videoItag|->:<audioItag>` */

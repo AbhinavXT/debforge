@@ -839,13 +839,15 @@
     <!-- YouTube -->
     <string name="yt_title">YouTube</string>
     <string name="yt_subtitle">Enregistrez une vidéo ou son audio</string>
-    <string name="yt_field_hint">Collez un lien YouTube</string>
+    <string name="yt_field_hint">Collez un lien ou cherchez sur YouTube</string>
     <string name="yt_paste">Coller</string>
     <string name="yt_paste_chip">Coller le lien %1$s</string>
     <string name="yt_paste_none">Aucun lien YouTube dans le presse-papiers</string>
     <string name="yt_clear">Effacer le lien</string>
     <string name="yt_empty_title">Enregistrer depuis YouTube</string>
-    <string name="yt_empty_body">Collez ou partagez un lien vidéo, choisissez la qualité, et le téléchargement démarre sur votre appareil.</string>
+    <string name="yt_empty_body">Cherchez sur YouTube ou collez un lien, choisissez la qualité, et le téléchargement arrive sur votre appareil.</string>
+    <string name="yt_no_results_title">Aucun résultat</string>
+    <string name="yt_no_results_body">Rien trouvé pour \"%1$s\". Essayez d\'autres mots.</string>
     <string name="yt_loading">Chargement de la vidéo</string>
     <string name="yt_thumbnail">Miniature de la vidéo</string>
     <string name="yt_mode_video">Vidéo</string>

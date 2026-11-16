@@ -50,4 +50,14 @@ class YouTubeLinksTest {
         assertNull(YouTubeLinks.parseSourceRef("magnet:?xt=1"))
         assertNull(YouTubeLinks.parseSourceRef("yt:$id:x:140"))
     }
+
+    @Test fun searchQueryVsLink() {
+        assertTrue(YouTubeLinks.isSearchQuery("big buck bunny"))
+        assertTrue(YouTubeLinks.isSearchQuery("  lofi beats  "))
+        assertFalse(YouTubeLinks.isSearchQuery("   "))
+        assertFalse(YouTubeLinks.isSearchQuery("https://youtu.be/$id"))
+        assertFalse(YouTubeLinks.isSearchQuery("watch this https://www.youtube.com/watch?v=$id"))
+        assertFalse(YouTubeLinks.isSearchQuery("https://www.youtube.com/playlist?list=PL123"))
+        assertFalse(YouTubeLinks.isSearchQuery("https://example.com/page"))
+    }
 }

@@ -802,13 +802,15 @@
     <!-- YouTube -->
     <string name="yt_title">YouTube</string>
     <string name="yt_subtitle">Save a video or its audio</string>
-    <string name="yt_field_hint">Paste a YouTube link</string>
+    <string name="yt_field_hint">Paste a link or search YouTube</string>
     <string name="yt_paste">Paste</string>
     <string name="yt_paste_chip">Paste %1$s link</string>
     <string name="yt_paste_none">No YouTube link on the clipboard</string>
     <string name="yt_clear">Clear link</string>
     <string name="yt_empty_title">Save from YouTube</string>
-    <string name="yt_empty_body">Paste or share a video link, pick a quality, and it downloads to your device.</string>
+    <string name="yt_empty_body">Search YouTube or paste a link, pick a quality, and it downloads to your device.</string>
+    <string name="yt_no_results_title">No results</string>
+    <string name="yt_no_results_body">Nothing found for \"%1$s\". Try different words.</string>
     <string name="yt_loading">Loading video</string>
     <string name="yt_thumbnail">Video thumbnail</string>
     <string name="yt_mode_video">Video</string>

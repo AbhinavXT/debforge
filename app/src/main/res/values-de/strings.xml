@@ -800,13 +800,15 @@
     <!-- YouTube -->
     <string name="yt_title">YouTube</string>
     <string name="yt_subtitle">Video oder Audio speichern</string>
-    <string name="yt_field_hint">YouTube-Link einfügen</string>
+    <string name="yt_field_hint">Link einfügen oder YouTube durchsuchen</string>
     <string name="yt_paste">Einfügen</string>
     <string name="yt_paste_chip">%1$s-Link einfügen</string>
     <string name="yt_paste_none">Kein YouTube-Link in der Zwischenablage</string>
     <string name="yt_clear">Link löschen</string>
     <string name="yt_empty_title">Von YouTube speichern</string>
-    <string name="yt_empty_body">Videolink einfügen oder teilen, Qualität wählen – und der Download landet auf deinem Gerät.</string>
+    <string name="yt_empty_body">YouTube durchsuchen oder Link einfügen, Qualität wählen – und der Download landet auf deinem Gerät.</string>
+    <string name="yt_no_results_title">Keine Ergebnisse</string>
+    <string name="yt_no_results_body">Nichts gefunden für \"%1$s\". Versuche andere Suchbegriffe.</string>
     <string name="yt_loading">Video wird geladen</string>
     <string name="yt_thumbnail">Videovorschaubild</string>
     <string name="yt_mode_video">Video</string>

@@ -19,6 +19,12 @@ import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.clickable
+import androidx.compose.material.icons.rounded.Search
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -42,7 +48,6 @@ import androidx.compose.material.icons.rounded.ContentPaste
 import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.icons.rounded.ErrorOutline
 import androidx.compose.material.icons.rounded.FolderOpen
-import androidx.compose.material.icons.rounded.Link
 import androidx.compose.material.icons.rounded.PlayCircle
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
@@ -97,7 +102,9 @@ import kotlinx.coroutines.launch
 import com.abhinavxt.debforge.R
 import com.abhinavxt.debforge.domain.Container
 import com.abhinavxt.debforge.domain.FormatChoice
+import com.abhinavxt.debforge.domain.YouTubeSearchResult
 import com.abhinavxt.debforge.domain.YouTubeVideo
+import com.abhinavxt.debforge.ui.player.focusRing
 import com.abhinavxt.debforge.ui.components.MessageState
 import com.abhinavxt.debforge.ui.components.ScreenHeader
 
@@ -111,6 +118,8 @@ fun YouTubeScreen(
     viewModel: YouTubeViewModel = hiltViewModel()
 ) {
     val ui by viewModel.ui.collectAsStateWithLifecycle()
+    // Back steps out of a preview (to its search results, if any) or a search before it leaves the tab.
+    androidx.activity.compose.BackHandler(ui !is YouTubeUi.Empty, viewModel::reset)
     val input by viewModel.input.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
     val context = LocalContext.current
@@ -176,6 +185,7 @@ fun YouTubeScreen(
                         if (link != null) viewModel.submit(link)
                         else scope.launch { snackbar.currentSnackbarData?.dismiss(); snackbar.showSnackbar(msgNoLink) }
                     },
+                    onPick = viewModel::pick,
                     onReset = viewModel::reset,
                     onRetry = viewModel::retry,
                     onMode = viewModel::selectMode,
@@ -202,6 +212,7 @@ internal fun YouTubeContent(
     onInput: (String) -> Unit,
     onSubmit: (String) -> Unit,
     onPaste: () -> Unit,
+    onPick: (YouTubeSearchResult) -> Unit,
     onReset: () -> Unit,
     onRetry: () -> Unit,
     onMode: (Boolean) -> Unit,
@@ -218,6 +229,7 @@ internal fun YouTubeContent(
         when (state) {
             YouTubeUi.Empty -> EmptyState(input, clipLink, onInput, onSubmit, onPaste)
             YouTubeUi.Resolving -> Skeleton()
+            is YouTubeUi.Results -> ResultsState(state, input, onInput, onSubmit, onPaste, onPick)
             is YouTubeUi.Preview -> PreviewState(state, onReset, onMode, onSelect, onDownload)
             is YouTubeUi.Error -> MessageState(
                 icon = Icons.Rounded.ErrorOutline,
@@ -249,6 +261,113 @@ private fun errorText(k: YouTubeErrorKind) = when (k) {
 }
 
 @Composable
+private fun LinkOrSearchField(
+    input: String,
+    onInput: (String) -> Unit,
+    onSubmit: (String) -> Unit,
+    onPaste: () -> Unit,
+    focus: FocusRequester,
+) {
+    val keyboard = LocalSoftwareKeyboardController.current
+    val source = remember { MutableInteractionSource() }
+    val focused by source.collectIsFocusedAsState()
+    TextField(
+        value = input,
+        onValueChange = onInput,
+        modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp).focusRequester(focus)
+            .then(if (focused) Modifier.border(2.dp, MaterialTheme.colorScheme.primary, FieldShape) else Modifier),
+        interactionSource = source,
+        placeholder = { Text(stringResource(R.string.yt_field_hint), maxLines = 1) },
+        leadingIcon = { Icon(Icons.Rounded.Search, contentDescription = null) },
+        trailingIcon = {
+            if (input.isEmpty()) {
+                TextButton(onClick = onPaste, modifier = Modifier.heightIn(min = 48.dp)) {
+                    Icon(Icons.Rounded.ContentPaste, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(Modifier.size(6.dp))
+                    Text(stringResource(R.string.yt_paste))
+                }
+            } else {
+                IconButton(onClick = { onInput("") }) {
+                    Icon(Icons.Rounded.Close, contentDescription = stringResource(R.string.yt_clear))
+                }
+            }
+        },
+        singleLine = true,
+        shape = FieldShape,
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Go),
+        keyboardActions = KeyboardActions(onGo = { keyboard?.hide(); if (input.isNotBlank()) onSubmit(input) }),
+        colors = TextFieldDefaults.colors(
+            focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent,
+        ),
+    )
+}
+
+@Composable
+private fun ResultsState(
+    r: YouTubeUi.Results,
+    input: String,
+    onInput: (String) -> Unit,
+    onSubmit: (String) -> Unit,
+    onPaste: () -> Unit,
+    onPick: (YouTubeSearchResult) -> Unit,
+) {
+    val focus = remember { FocusRequester() }
+    LazyColumn(
+        Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        item { LinkOrSearchField(input, onInput, onSubmit, onPaste, focus) }
+        if (r.items.isEmpty()) {
+            item {
+                MessageState(
+                    icon = Icons.Rounded.Search,
+                    title = stringResource(R.string.yt_no_results_title),
+                    body = stringResource(R.string.yt_no_results_body, r.query),
+                    modifier = Modifier.heightIn(min = 280.dp),
+                )
+            }
+        }
+        items(r.items, key = { it.url }) { ResultRow(it, onClick = { onPick(it) }) }
+    }
+}
+
+@Composable
+private fun ResultRow(r: YouTubeSearchResult, onClick: () -> Unit) {
+    val source = remember { MutableInteractionSource() }
+    Row(
+        Modifier.fillMaxWidth().heightIn(min = 56.dp).clip(RowShape).focusRing(source, RowShape)
+            .clickable(interactionSource = source, indication = androidx.compose.foundation.LocalIndication.current, role = Role.Button, onClick = onClick)
+            .padding(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(Modifier.width(128.dp).aspectRatio(16f / 9f).clip(RoundedCornerShape(12.dp)).background(MaterialTheme.colorScheme.surfaceContainerHigh)) {
+            AsyncImage(model = r.thumbnailUrl, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
+            if (r.durationSec > 0) {
+                Surface(
+                    color = Color.Black.copy(alpha = 0.75f),
+                    contentColor = Color.White,
+                    shape = RoundedCornerShape(6.dp),
+                    modifier = Modifier.align(Alignment.BottomEnd).padding(4.dp),
+                ) {
+                    Text(durationText(r.durationSec), style = MaterialTheme.typography.labelSmall, modifier = Modifier.padding(horizontal = 6.dp, vertical = 1.dp))
+                }
+            }
+        }
+        Column(Modifier.weight(1f)) {
+            Text(r.title, style = MaterialTheme.typography.titleSmall, maxLines = 2, overflow = TextOverflow.Ellipsis)
+            if (!r.channel.isNullOrBlank()) {
+                Text(r.channel, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            }
+        }
+    }
+}
+
+@Composable
 private fun EmptyState(
     input: String,
     clipLink: String?,
@@ -263,40 +382,7 @@ private fun EmptyState(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        val source = remember { MutableInteractionSource() }
-        val focused by source.collectIsFocusedAsState()
-        TextField(
-            value = input,
-            onValueChange = onInput,
-            modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp).focusRequester(focus)
-                .then(if (focused) Modifier.border(2.dp, MaterialTheme.colorScheme.primary, FieldShape) else Modifier),
-            interactionSource = source,
-            placeholder = { Text(stringResource(R.string.yt_field_hint), maxLines = 1) },
-            leadingIcon = { Icon(Icons.Rounded.Link, contentDescription = null) },
-            trailingIcon = {
-                if (input.isEmpty()) {
-                    TextButton(onClick = onPaste, modifier = Modifier.heightIn(min = 48.dp)) {
-                        Icon(Icons.Rounded.ContentPaste, contentDescription = null, modifier = Modifier.size(18.dp))
-                        Spacer(Modifier.size(6.dp))
-                        Text(stringResource(R.string.yt_paste))
-                    }
-                } else {
-                    IconButton(onClick = { onInput("") }) {
-                        Icon(Icons.Rounded.Close, contentDescription = stringResource(R.string.yt_clear))
-                    }
-                }
-            },
-            singleLine = true,
-            shape = FieldShape,
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Go),
-            keyboardActions = KeyboardActions(onGo = { keyboard?.hide(); if (input.isNotBlank()) onSubmit(input) }),
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent,
-            ),
-        )
+        LinkOrSearchField(input, onInput, onSubmit, onPaste, focus)
         if (clipLink != null) {
             AssistChip(
                 onClick = { keyboard?.hide(); onSubmit(clipLink) },
@@ -450,7 +536,7 @@ private val fakeChoices = listOf(
 private fun PreviewHost(ui: YouTubeUi, clip: String? = null, input: String = "") {
     MaterialTheme {
         Surface {
-            YouTubeContent(ui, input, clip, {}, {}, {}, {}, {}, {}, {}, {})
+            YouTubeContent(ui, input, clip, {}, {}, {}, {}, {}, {}, {}, {}, {})
         }
     }
 }
@@ -459,4 +545,5 @@ private fun PreviewHost(ui: YouTubeUi, clip: String? = null, input: String = "")
 @Preview(showBackground = true) @Composable private fun ResolvingPreview() = PreviewHost(YouTubeUi.Resolving)
 @Preview(showBackground = true, heightDp = 900) @Composable private fun VideoPreview() = PreviewHost(YouTubeUi.Preview(fakeVideo, fakeChoices, fakeChoices[0]))
 @Preview(showBackground = true, heightDp = 900) @Composable private fun AudioPreview() = PreviewHost(YouTubeUi.Preview(fakeVideo, fakeChoices, fakeChoices[2]))
+@Preview(showBackground = true, heightDp = 700) @Composable private fun ResultsPreview() = PreviewHost(YouTubeUi.Results("big buck bunny", listOf(YouTubeSearchResult("u", fakeVideo.title, "Example Channel", 596, null))), input = "big buck bunny")
 @Preview(showBackground = true) @Composable private fun ErrorPreview() = PreviewHost(YouTubeUi.Error(YouTubeErrorKind.PLAYLIST))

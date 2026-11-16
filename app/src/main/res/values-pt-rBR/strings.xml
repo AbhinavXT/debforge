@@ -839,13 +839,15 @@
     <!-- YouTube -->
     <string name="yt_title">YouTube</string>
     <string name="yt_subtitle">Salve um vídeo ou só o áudio</string>
-    <string name="yt_field_hint">Cole um link do YouTube</string>
+    <string name="yt_field_hint">Cole um link ou pesquise no YouTube</string>
     <string name="yt_paste">Colar</string>
     <string name="yt_paste_chip">Colar link do %1$s</string>
     <string name="yt_paste_none">Nenhum link do YouTube na área de transferência</string>
     <string name="yt_clear">Limpar link</string>
     <string name="yt_empty_title">Salvar do YouTube</string>
-    <string name="yt_empty_body">Cole ou compartilhe o link de um vídeo, escolha a qualidade e ele é baixado para o seu dispositivo.</string>
+    <string name="yt_empty_body">Pesquise no YouTube ou cole um link, escolha a qualidade e o download vai para o seu dispositivo.</string>
+    <string name="yt_no_results_title">Nenhum resultado</string>
+    <string name="yt_no_results_body">Nada encontrado para \"%1$s\". Tente outras palavras.</string>
     <string name="yt_loading">Carregando vídeo</string>
     <string name="yt_thumbnail">Miniatura do vídeo</string>
     <string name="yt_mode_video">Vídeo</string>
