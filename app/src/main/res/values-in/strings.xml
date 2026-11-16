@@ -899,6 +899,7 @@
     <string name="media_fav_add">Tambahkan ke favorit</string>
     <string name="media_fav_remove">Hapus dari favorit</string>
     <string name="media_add_to_playlist">Tambahkan ke playlist</string>
+    <string name="media_add_to_playlist_menu">Tambahkan ke playlist…</string>
     <string name="media_playlist_name">Nama playlist</string>
     <string name="media_playlist_rename">Ganti nama playlist</string>
     <string name="media_playlist_delete">Hapus playlist</string>

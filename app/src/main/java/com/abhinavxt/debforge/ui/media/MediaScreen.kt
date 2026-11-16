@@ -385,7 +385,7 @@ internal fun MediaContent(
         PlaylistNameDialog(
             title = stringResource(if (renaming == null) R.string.media_new_playlist else R.string.media_playlist_rename),
             initial = state.lists.playlists.firstOrNull { it.id == renaming }?.name.orEmpty(),
-            onSave = { n -> if (renaming == null) { lists.onCreate(n, ids); onClearSelection() } else lists.onRename(renaming, n) },
+            onSave = { n -> if (renaming == null) { lists.onCreate(n, ids); if (ids.isNotEmpty()) onClearSelection() } else lists.onRename(renaming, n) },
             onDismiss = { nameFor = null }
         )
     }
@@ -568,7 +568,7 @@ private fun MediaRow(
                     onClick = { menu = false; onFavourite() }
                 )
                 if (onAddToPlaylist != null) DropdownMenuItem(
-                    text = { Text(stringResource(R.string.media_add_to_playlist) + "…") },
+                    text = { Text(stringResource(R.string.media_add_to_playlist_menu)) },
                     leadingIcon = { Icon(Icons.Rounded.PlaylistAdd, null) },
                     onClick = { menu = false; onAddToPlaylist() }
                 )

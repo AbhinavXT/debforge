@@ -995,6 +995,7 @@
     <string name="media_fav_add">Añadir a favoritos</string>
     <string name="media_fav_remove">Quitar de favoritos</string>
     <string name="media_add_to_playlist">Añadir a una lista</string>
+    <string name="media_add_to_playlist_menu">Añadir a una lista…</string>
     <string name="media_playlist_name">Nombre de la lista</string>
     <string name="media_playlist_rename">Renombrar lista</string>
     <string name="media_playlist_delete">Eliminar lista</string>

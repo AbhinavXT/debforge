@@ -949,6 +949,7 @@
     <string name="media_fav_add">Add to favourites</string>
     <string name="media_fav_remove">Remove from favourites</string>
     <string name="media_add_to_playlist">Add to playlist</string>
+    <string name="media_add_to_playlist_menu">Add to playlist…</string>
     <string name="media_playlist_name">Playlist name</string>
     <string name="media_playlist_rename">Rename playlist</string>
     <string name="media_playlist_delete">Delete playlist</string>

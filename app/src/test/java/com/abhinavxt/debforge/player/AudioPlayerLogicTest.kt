@@ -88,4 +88,20 @@ class AudioPlayerLogicTest {
         assertEquals(0L, resumePositionMs(58 * min + 30_000L, 60 * min)) // past 97%
         assertEquals(58 * min, resumePositionMs(58 * min, 60 * min)) // 96.7%, still over 30 s from the end
     }
+
+    @Test fun peekKeepsAnEarlierSpotAndFinishForgetsIt() {
+        assertEquals(ResumeAction.KEEP, resumeActionFor(0, 60 * min))
+        assertEquals(ResumeAction.KEEP, resumeActionFor(29_999L, 60 * min))
+        assertEquals(ResumeAction.SAVE, resumeActionFor(30 * min, 60 * min))
+        assertEquals(ResumeAction.FORGET, resumeActionFor(60 * min - 30_000L, 60 * min))
+        assertEquals(ResumeAction.FORGET, resumeActionFor(58 * min + 30_000L, 60 * min))
+        assertEquals(ResumeAction.KEEP, resumeActionFor(30 * min, 5 * min)) // short track: never remembered
+    }
+
+    @Test fun sleepAtEndOnlyHoldsForItsOwnItem() {
+        assertEquals(true, sleepEndStillApplies("a", "a"))
+        assertEquals(false, sleepEndStillApplies("a", "b"))
+        assertEquals(false, sleepEndStillApplies("a", null))
+        assertEquals(false, sleepEndStillApplies(null, null))
+    }
 }

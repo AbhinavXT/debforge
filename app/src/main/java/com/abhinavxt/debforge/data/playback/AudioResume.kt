@@ -39,6 +39,8 @@ class AudioResume @Inject constructor(@ApplicationContext private val context: C
 
     suspend fun forget(id: String) = update { it.remove(id) }
 
+    suspend fun forgetAll(ids: Collection<String>) = update { all -> ids.forEach { all.remove(it) } }
+
     private suspend fun update(change: (JSONObject) -> Unit) {
         runCatching {
             context.audioResumeStore.edit { prefs ->

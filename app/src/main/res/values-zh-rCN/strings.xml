@@ -899,6 +899,7 @@
     <string name="media_fav_add">添加到收藏</string>
     <string name="media_fav_remove">从收藏中移除</string>
     <string name="media_add_to_playlist">添加到播放列表</string>
+    <string name="media_add_to_playlist_menu">添加到播放列表…</string>
     <string name="media_playlist_name">播放列表名称</string>
     <string name="media_playlist_rename">重命名播放列表</string>
     <string name="media_playlist_delete">删除播放列表</string>

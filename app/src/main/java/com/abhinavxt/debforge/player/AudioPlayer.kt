@@ -121,6 +121,20 @@ fun resumePositionMs(savedMs: Long, durationMs: Long): Long = when {
     else -> savedMs
 }
 
+/** What a track's position means for its saved spot: keep what is saved (a peek), update it, or drop it (finished). */
+enum class ResumeAction { KEEP, SAVE, FORGET }
+
+/** A peek must not erase an earlier spot (the new track reports ~0 while its saved spot is still being looked up). */
+fun resumeActionFor(positionMs: Long, durationMs: Long): ResumeAction = when {
+    !shouldRemember(durationMs) -> ResumeAction.KEEP
+    resumePositionMs(positionMs, durationMs) > 0 -> ResumeAction.SAVE
+    positionMs < AUDIO_RESUME_EDGE_MS -> ResumeAction.KEEP
+    else -> ResumeAction.FORGET
+}
+
+/** "End of track" belongs to the item it was set on: it only holds while that item is still the current one. */
+fun sleepEndStillApplies(setForId: String?, currentId: String?): Boolean = setForId != null && setForId == currentId
+
 /** "1x", "1.25x". */
 fun speedLabel(speed: Float): String = (if (speed == speed.toInt().toFloat()) speed.toInt().toString() else speed.toString()) + "x"
 
@@ -165,6 +179,11 @@ class AudioPlayer @Inject constructor(
             if (reason == Player.PLAY_WHEN_READY_CHANGE_REASON_END_OF_MEDIA_ITEM && sleepAtEnd) cancelSleep()
         }
 
+        override fun onPlaybackStateChanged(playbackState: Int) {
+            // Ran off the end of the queue: nothing is left for the timer to wait for.
+            if (playbackState == Player.STATE_ENDED && sleepAtEnd) cancelSleep()
+        }
+
         override fun onIsPlayingChanged(isPlaying: Boolean) { if (!isPlaying) saveCurrent() }
 
         override fun onPositionDiscontinuity(old: Player.PositionInfo, new: Player.PositionInfo, reason: Int) {
@@ -178,13 +197,10 @@ class AudioPlayer @Inject constructor(
         }
 
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+            // Repeat-one keeps the same item, so the timer still applies; any other change of item drops it.
+            if (sleepAtEnd && !sleepEndStillApplies(sleepItemId, mediaItem?.mediaId)) cancelSleep()
             if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED || reason == Player.MEDIA_ITEM_TRANSITION_REASON_REPEAT) return
-            val id = mediaItem?.mediaId ?: return
-            scope.launch {
-                val at = resumeFor(id)
-                val p = player ?: return@launch
-                if (at > 0 && p.currentMediaItem?.mediaId == id && p.currentPosition < AUDIO_RESUME_EDGE_MS) p.seekTo(at)
-            }
+            applyResume(mediaItem?.mediaId ?: return)
         }
 
         override fun onPlayerError(error: PlaybackException) {
@@ -229,12 +245,22 @@ class AudioPlayer @Inject constructor(
         playJob = scope.launch { start(queue, startIndex, resumeFor(queue[startIndex.coerceIn(queue.indices)].id)) }
     }
 
+    /** Seeks the current item to where it was left, unless playback has already moved on or past the start. */
+    private fun applyResume(id: String) {
+        scope.launch {
+            val at = resumeFor(id)
+            val p = player ?: return@launch
+            if (at > 0 && p.currentMediaItem?.mediaId == id && p.currentPosition < AUDIO_RESUME_EDGE_MS) p.seekTo(at)
+        }
+    }
+
     private suspend fun resumeFor(id: String): Long =
         resume.get(id)?.let { resumePositionMs(it.positionMs, it.durationMs) } ?: 0L
 
     private fun start(queue: List<AudioTrack>, startIndex: Int, startMs: Long) {
         saveCurrent() // the queue being replaced
         val p = exo()
+        cancelSleep() // "End of track" was for a track of the old queue
         pauseBackgroundedVideo()
         tracks = queue
         p.setMediaItems(queue.map { it.toMediaItem() }, startIndex.coerceIn(queue.indices), startMs)
@@ -256,6 +282,7 @@ class AudioPlayer @Inject constructor(
     private var sleepJob: Job? = null
     private var sleepDeadline = 0L
     private var sleepAtEnd = false
+    private var sleepItemId: String? = null
 
     fun setSpeed(speed: Float) { player?.setPlaybackSpeed(speed) }
 
@@ -263,7 +290,7 @@ class AudioPlayer @Inject constructor(
     fun setSleepTimer(minutes: Int) {
         val p = player ?: return
         cancelSleep()
-        if (minutes == SLEEP_END_OF_TRACK) { sleepAtEnd = true; p.pauseAtEndOfMediaItems = true }
+        if (minutes == SLEEP_END_OF_TRACK) { sleepAtEnd = true; sleepItemId = p.currentMediaItem?.mediaId; p.pauseAtEndOfMediaItems = true }
         else if (minutes > 0) {
             val ms = minutes * 60_000L
             sleepDeadline = SystemClock.uptimeMillis() + ms // uptime, like delay() on the main dispatcher
@@ -276,6 +303,7 @@ class AudioPlayer @Inject constructor(
         sleepJob?.cancel()
         sleepJob = null
         sleepAtEnd = false
+        sleepItemId = null
         player?.pauseAtEndOfMediaItems = false
         publish()
     }
@@ -291,27 +319,37 @@ class AudioPlayer @Inject constructor(
     /** Plays [index] of the current queue (tapping "Up next"). */
     fun skipTo(index: Int) { player?.let { it.seekToDefaultPosition(index); it.play() } }
 
-    /** Files were deleted: take them out of the queue, moving on if the current one went. */
+    /** Files were deleted: take them out of the queue, moving on if the current one went, and forget where they were left. */
     fun removeTracks(ids: Set<String>) {
+        removeFromQueue(ids)
+        scope.launch { resume.forgetAll(ids) } // after any save the removal itself triggered
+    }
+
+    private fun removeFromQueue(ids: Set<String>) {
         val p = player ?: return
         val gone = tracks.indices.filter { tracks[it].id in ids }
         if (gone.isEmpty()) return
         if (gone.size == tracks.size) { clear(); return }
+        val before = p.currentMediaItem?.mediaId
         tracks = queueWithout(tracks, ids) { it.id }
         gone.asReversed().forEach { p.removeMediaItem(it) }
         if (p.playbackState == Player.STATE_IDLE) { p.prepare(); p.play() }
+        // The removal's own transition is skipped (it also fires for a new queue), so start the next track where it was left.
+        p.currentMediaItem?.mediaId?.takeIf { it != before }?.let { applyResume(it) }
         publish()
     }
 
     private fun saveCurrent() { player?.let { save(it, it.currentMediaItemIndex, it.currentPosition) } }
 
-    /** Remembers a long track's spot; a peek or a finished track forgets it instead. */
+    /** Remembers a long track's spot; a finished track forgets it, a peek leaves an earlier spot alone. */
     private fun save(p: Player, index: Int, positionMs: Long) {
         val id = tracks.getOrNull(index)?.id ?: return
         val duration = if (index < p.currentTimeline.windowCount) p.currentTimeline.getWindow(index, Timeline.Window()).durationMs else C.TIME_UNSET
         if (duration == C.TIME_UNSET || !shouldRemember(duration)) return
-        scope.launch {
-            if (resumePositionMs(positionMs, duration) > 0) resume.save(id, positionMs, duration) else resume.forget(id)
+        when (resumeActionFor(positionMs, duration)) {
+            ResumeAction.SAVE -> scope.launch { resume.save(id, positionMs, duration) }
+            ResumeAction.FORGET -> scope.launch { resume.forget(id) }
+            ResumeAction.KEEP -> Unit
         }
     }
 

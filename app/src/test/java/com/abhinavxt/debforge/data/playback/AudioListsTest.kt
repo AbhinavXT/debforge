@@ -46,4 +46,28 @@ class AudioListsTest {
         assertEquals(AudioListsState(), decodeAudioLists("{nope", "[{\"i\":1"))
         assertEquals(AudioListsState(), decodeAudioLists(null, null))
     }
+
+    @Test fun duplicateNamesGetNumericSuffix() {
+        val s = base.create("p2", " road ").create("p3", "ROAD")
+        assertEquals(listOf("Road", "road (2)", "ROAD (3)"), s.playlists.map { it.name })
+    }
+
+    @Test fun renameAvoidsOthersButNotItself() {
+        val s = base.create("p2", "Gym")
+        assertEquals("road (2)", s.rename("p2", "road").playlists[1].name)
+        assertEquals("ROAD", s.rename("p1", "ROAD").playlists[0].name)
+    }
+
+    @Test fun pruneDropsIdsEverywhere() {
+        val s = base.add("p1", listOf("a", "b")).toggleFavourite("a").toggleFavourite("c").pruneTracks(setOf("a", "c"))
+        assertEquals(listOf("b"), s.playlists.single().trackIds)
+        assertTrue(s.favourites.isEmpty())
+    }
+
+    @Test fun oneBadPlaylistDoesNotWipeTheOthers() {
+        val raw = """[{"i":"p1","n":"Good","t":["a"]},{"i":"p2"},"junk",{"i":"p3","n":"Also","t":["b"]}]"""
+        val s = decodeAudioLists("[]", raw)
+        assertEquals(listOf("Good", "Also"), s.playlists.map { it.name })
+        assertEquals(listOf("a"), s.playlists[0].trackIds)
+    }
 }

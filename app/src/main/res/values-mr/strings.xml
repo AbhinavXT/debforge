@@ -947,6 +947,7 @@
     <string name="media_fav_add">आवडत्यांमध्ये जोडा</string>
     <string name="media_fav_remove">आवडत्यांमधून काढा</string>
     <string name="media_add_to_playlist">प्लेलिस्टमध्ये जोडा</string>
+    <string name="media_add_to_playlist_menu">प्लेलिस्टमध्ये जोडा…</string>
     <string name="media_playlist_name">प्लेलिस्टचे नाव</string>
     <string name="media_playlist_rename">प्लेलिस्टचे नाव बदला</string>
     <string name="media_playlist_delete">प्लेलिस्ट हटवा</string>

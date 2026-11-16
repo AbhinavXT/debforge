@@ -947,6 +947,7 @@
     <string name="media_fav_add">প্রিয়তে যোগ করুন</string>
     <string name="media_fav_remove">প্রিয় থেকে সরান</string>
     <string name="media_add_to_playlist">প্লেলিস্টে যোগ করুন</string>
+    <string name="media_add_to_playlist_menu">প্লেলিস্টে যোগ করুন…</string>
     <string name="media_playlist_name">প্লেলিস্টের নাম</string>
     <string name="media_playlist_rename">প্লেলিস্টের নাম বদলান</string>
     <string name="media_playlist_delete">প্লেলিস্ট মুছুন</string>

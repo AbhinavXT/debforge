@@ -25,13 +25,28 @@ internal fun AudioListsState.toggleFavourite(id: String) =
 /** Blank names are ignored (state unchanged). */
 internal fun AudioListsState.create(listId: String, name: String): AudioListsState {
     val n = name.trim()
-    return if (n.isEmpty()) this else copy(playlists = playlists + Playlist(listId, n, emptyList()))
+    return if (n.isEmpty()) this else copy(playlists = playlists + Playlist(listId, uniqueName(n, null), emptyList()))
 }
 
 internal fun AudioListsState.rename(listId: String, name: String): AudioListsState {
     val n = name.trim()
-    return if (n.isEmpty()) this else mapList(listId) { it.copy(name = n) }
+    return if (n.isEmpty()) this else mapList(listId) { it.copy(name = uniqueName(n, listId)) }
 }
+
+/** [name] as is, or with " (2)", " (3)"... when another playlist (not [ownId]) has it, ignoring case and outer spaces. */
+private fun AudioListsState.uniqueName(name: String, ownId: String?): String {
+    val taken = playlists.filter { it.id != ownId }.map { it.name.trim().lowercase() }.toSet()
+    if (name.lowercase() !in taken) return name
+    var k = 2
+    while ("$name ($k)".lowercase() in taken) k++
+    return "$name ($k)"
+}
+
+/** Drops deleted tracks from the favourites and every playlist. */
+internal fun AudioListsState.pruneTracks(ids: Set<String>) = copy(
+    favourites = favourites - ids,
+    playlists = playlists.map { it.copy(trackIds = it.trackIds.filter { t -> t !in ids }) }
+)
 
 internal fun AudioListsState.delete(listId: String) = copy(playlists = playlists.filter { it.id != listId })
 
@@ -50,17 +65,19 @@ internal fun encodePlaylists(s: AudioListsState): String = JSONArray().also { a 
     s.playlists.forEach { a.put(JSONObject().put("i", it.id).put("n", it.name).put("t", JSONArray(it.trackIds))) }
 }.toString()
 
-/** Corrupt or missing JSON gives an empty state, never throws. */
+/** Corrupt or missing JSON gives an empty state, never throws; one bad playlist or id is skipped, the rest kept. */
 internal fun decodeAudioLists(fav: String?, lists: String?): AudioListsState = AudioListsState(
     favourites = runCatching {
         JSONArray(fav).let { a -> (0 until a.length()).map { a.getString(it) }.toSet() }
     }.getOrDefault(emptySet()),
     playlists = runCatching {
         JSONArray(lists).let { a ->
-            (0 until a.length()).map { i ->
-                val o = a.getJSONObject(i)
-                val t = o.getJSONArray("t")
-                Playlist(o.getString("i"), o.getString("n"), (0 until t.length()).map { t.getString(it) })
+            (0 until a.length()).mapNotNull { i ->
+                runCatching {
+                    val o = a.getJSONObject(i)
+                    val t = o.getJSONArray("t")
+                    Playlist(o.getString("i"), o.getString("n"), (0 until t.length()).mapNotNull { runCatching { t.getString(it) }.getOrNull() })
+                }.getOrNull()
             }
         }
     }.getOrDefault(emptyList())
@@ -74,6 +91,9 @@ class AudioLists @Inject constructor(@ApplicationContext private val context: Co
     private val listsKey = stringPreferencesKey("lists")
 
     val state: Flow<AudioListsState> = context.audioListsStore.data.map { decodeAudioLists(it[favKey], it[listsKey]) }
+
+    /** Files were deleted: forget their ids everywhere. */
+    suspend fun prune(ids: Set<String>) = update { it.pruneTracks(ids) }
 
     suspend fun toggleFavourite(id: String) = update { it.toggleFavourite(id) }
 

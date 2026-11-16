@@ -947,6 +947,7 @@
     <string name="media_fav_add">பிடித்தவையில் சேர்</string>
     <string name="media_fav_remove">பிடித்தவையிலிருந்து நீக்கு</string>
     <string name="media_add_to_playlist">பிளேலிஸ்ட்டில் சேர்</string>
+    <string name="media_add_to_playlist_menu">பிளேலிஸ்ட்டில் சேர்…</string>
     <string name="media_playlist_name">பிளேலிஸ்ட் பெயர்</string>
     <string name="media_playlist_rename">பிளேலிஸ்ட்டை மறுபெயரிடு</string>
     <string name="media_playlist_delete">பிளேலிஸ்ட்டை நீக்கு</string>

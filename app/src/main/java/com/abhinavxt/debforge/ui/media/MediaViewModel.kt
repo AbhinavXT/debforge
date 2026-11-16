@@ -46,7 +46,7 @@ data class MediaUiState(
     /** Audio segment only: null = all, "fav", or a playlist id. */
     val audioList: String? = null,
     val lists: AudioListsState = AudioListsState(),
-    /** Number of audio tracks before the list pick (what the tab badge shows). */
+    /** Number of audio tracks matching the search, before the list pick (what the tab badge shows). */
     val audioTotal: Int = 0
 ) {
     /** Tab badge count: the audio badge ignores the list pick. */
@@ -121,11 +121,13 @@ class MediaViewModel @Inject constructor(
                 .filter { q.isEmpty() || it.title.contains(q, true) || it.entity.filename.contains(q, true) || it.entity.artist?.contains(q, true) == true }
                 .sortedWith(comparator(u.sort))
                 .map { it.entity }
-        }.toMutableMap().also { m ->
+        }
+        val audioMatching = shown[FileKind.Audio].orEmpty().size
+        val view = shown.toMutableMap().also { m ->
             if (u.audioList != null) m[FileKind.Audio] = audioListView(m[FileKind.Audio].orEmpty(), lists, u.audioList)
         }
-        val selected = pruneSelection(u.selected, shown[u.kind].orEmpty().map { it.id })
-        MediaUiState(shown, rows.size, u.query, u.sort, u.kind, selected, active, u.audioList, lists, byKind[FileKind.Audio].orEmpty().size)
+        val selected = pruneSelection(u.selected, view[u.kind].orEmpty().map { it.id })
+        MediaUiState(view, rows.size, u.query, u.sort, u.kind, selected, active, u.audioList, lists, audioMatching)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), MediaUiState())
 
     private fun comparator(sort: SortOrder): Comparator<Row> = when (sort) {
@@ -175,7 +177,10 @@ class MediaViewModel @Inject constructor(
             val deleted = ids.filter { controller.deleteFromDevice(it) }
             val failed = ids.size - deleted.size
             ui.update { it.copy(selected = it.selected - ids.toSet()) }
-            if (deleted.isNotEmpty()) audioPlayer.removeTracks(deleted.toSet())
+            if (deleted.isNotEmpty()) {
+                audioPlayer.removeTracks(deleted.toSet())
+                audioLists.prune(deleted.toSet())
+            }
             if (failed > 0) onFailed(failed)
         }
     }
