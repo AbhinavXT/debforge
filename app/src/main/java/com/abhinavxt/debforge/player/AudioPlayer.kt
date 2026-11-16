@@ -12,9 +12,11 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
+import androidx.media3.common.Timeline
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import com.abhinavxt.debforge.MainActivity
+import com.abhinavxt.debforge.data.playback.AudioResume
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -106,6 +108,19 @@ val AUDIO_SPEEDS = listOf(0.5f, 0.75f, 1f, 1.25f, 1.5f, 2f)
 val SLEEP_MINUTES = listOf(15, 30, 45, 60)
 const val SLEEP_END_OF_TRACK = -1
 
+const val AUDIO_REMEMBER_OVER_MS = 20 * 60_000L
+const val AUDIO_RESUME_EDGE_MS = 30_000L
+
+/** Only long tracks with a known length are worth remembering. */
+fun shouldRemember(durationMs: Long): Boolean = durationMs > AUDIO_REMEMBER_OVER_MS
+
+/** Where to start a track saved at [savedMs]; 0 = from the start (not remembered, a peek, or finished). */
+fun resumePositionMs(savedMs: Long, durationMs: Long): Long = when {
+    !shouldRemember(durationMs) -> 0L
+    savedMs < AUDIO_RESUME_EDGE_MS || durationMs - savedMs <= AUDIO_RESUME_EDGE_MS || savedMs * 100 >= durationMs * 97 -> 0L
+    else -> savedMs
+}
+
 /** "1x", "1.25x". */
 fun speedLabel(speed: Float): String = (if (speed == speed.toInt().toFloat()) speed.toInt().toString() else speed.toString()) + "x"
 
@@ -127,7 +142,10 @@ fun formatClock(ms: Long): String {
  */
 @OptIn(UnstableApi::class)
 @Singleton
-class AudioPlayer @Inject constructor(@ApplicationContext private val context: Context) {
+class AudioPlayer @Inject constructor(
+    @ApplicationContext private val context: Context,
+    private val resume: AudioResume
+) {
 
     private val _state = MutableStateFlow(AudioState())
     val state: StateFlow<AudioState> = _state.asStateFlow()
@@ -147,6 +165,28 @@ class AudioPlayer @Inject constructor(@ApplicationContext private val context: C
             if (reason == Player.PLAY_WHEN_READY_CHANGE_REASON_END_OF_MEDIA_ITEM && sleepAtEnd) cancelSleep()
         }
 
+        override fun onIsPlayingChanged(isPlaying: Boolean) { if (!isPlaying) saveCurrent() }
+
+        override fun onPositionDiscontinuity(old: Player.PositionInfo, new: Player.PositionInfo, reason: Int) {
+            val p = player ?: return
+            val id = tracks.getOrNull(old.mediaItemIndex)?.id ?: return
+            when {
+                reason == Player.DISCONTINUITY_REASON_AUTO_TRANSITION -> scope.launch { resume.forget(id) } // finished
+                reason == Player.DISCONTINUITY_REASON_SEEK && old.mediaItemIndex != new.mediaItemIndex ->
+                    save(p, old.mediaItemIndex, old.positionMs)
+            }
+        }
+
+        override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+            if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED || reason == Player.MEDIA_ITEM_TRANSITION_REASON_REPEAT) return
+            val id = mediaItem?.mediaId ?: return
+            scope.launch {
+                val at = resumeFor(id)
+                val p = player ?: return@launch
+                if (at > 0 && p.currentMediaItem?.mediaId == id && p.currentPosition < AUDIO_RESUME_EDGE_MS) p.seekTo(at)
+            }
+        }
+
         override fun onPlayerError(error: PlaybackException) {
             // A file deleted while queued or playing: drop it and carry on with the next one.
             val p = player ?: return
@@ -160,6 +200,8 @@ class AudioPlayer @Inject constructor(@ApplicationContext private val context: C
     }
 
     init {
+        // Save the position now and then while playing, so a killed process loses little.
+        scope.launch { playing.collectLatest { if (it) while (true) { delay(15_000); saveCurrent() } } }
         // Republish the position only while playing and somebody is watching.
         scope.launch {
             combine(_state.subscriptionCount.map { it > 0 }, playing) { watched, on -> watched && on }
@@ -178,13 +220,24 @@ class AudioPlayer @Inject constructor(@ApplicationContext private val context: C
         .build()
         .also { it.addListener(listener); player = it }
 
-    /** Replaces the queue and starts at [startIndex]. */
+    private var playJob: Job? = null
+
+    /** Replaces the queue and starts at [startIndex], where it was left if it is a remembered long track. */
     fun play(queue: List<AudioTrack>, startIndex: Int) {
         if (queue.isEmpty()) return
+        playJob?.cancel()
+        playJob = scope.launch { start(queue, startIndex, resumeFor(queue[startIndex.coerceIn(queue.indices)].id)) }
+    }
+
+    private suspend fun resumeFor(id: String): Long =
+        resume.get(id)?.let { resumePositionMs(it.positionMs, it.durationMs) } ?: 0L
+
+    private fun start(queue: List<AudioTrack>, startIndex: Int, startMs: Long) {
+        saveCurrent() // the queue being replaced
         val p = exo()
         pauseBackgroundedVideo()
         tracks = queue
-        p.setMediaItems(queue.map { it.toMediaItem() }, startIndex.coerceIn(queue.indices), 0)
+        p.setMediaItems(queue.map { it.toMediaItem() }, startIndex.coerceIn(queue.indices), startMs)
         p.prepare()
         p.play()
         // Hand over before the first publish so the session exists when playback starts.
@@ -250,8 +303,21 @@ class AudioPlayer @Inject constructor(@ApplicationContext private val context: C
         publish()
     }
 
+    private fun saveCurrent() { player?.let { save(it, it.currentMediaItemIndex, it.currentPosition) } }
+
+    /** Remembers a long track's spot; a peek or a finished track forgets it instead. */
+    private fun save(p: Player, index: Int, positionMs: Long) {
+        val id = tracks.getOrNull(index)?.id ?: return
+        val duration = if (index < p.currentTimeline.windowCount) p.currentTimeline.getWindow(index, Timeline.Window()).durationMs else C.TIME_UNSET
+        if (duration == C.TIME_UNSET || !shouldRemember(duration)) return
+        scope.launch {
+            if (resumePositionMs(positionMs, duration) > 0) resume.save(id, positionMs, duration) else resume.forget(id)
+        }
+    }
+
     /** Stops, releases the player and the notification. */
     fun clear() {
+        saveCurrent()
         playing.value = false
         BackgroundPlayback.openIntent = null // only audio sets it; a later video must open itself
         val p = player ?: return

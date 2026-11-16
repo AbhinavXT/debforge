@@ -67,4 +67,25 @@ class AudioPlayerLogicTest {
         org.junit.Assert.assertTrue(AudioState().hasNext && AudioState().hasPrevious)
         org.junit.Assert.assertFalse(AudioState(hasNext = false).hasNext)
     }
+
+    private val min = 60_000L
+
+    @Test fun shortAndUnknownTracksAreNotRemembered() {
+        assertEquals(0L, resumePositionMs(5 * min, 10 * min))
+        assertEquals(0L, resumePositionMs(20 * min, 20 * min)) // exactly 20 min is not over
+        assertEquals(0L, resumePositionMs(10 * min, 0))
+        assertEquals(0L, resumePositionMs(10 * min, Long.MIN_VALUE + 1))
+    }
+
+    @Test fun longTrackResumesMidway() {
+        assertEquals(30 * min, resumePositionMs(30 * min, 60 * min))
+        assertEquals(30_000L, resumePositionMs(30_000L, 60 * min))
+    }
+
+    @Test fun peekAndFinishedStartOver() {
+        assertEquals(0L, resumePositionMs(29_999L, 60 * min))
+        assertEquals(0L, resumePositionMs(60 * min - 30_000L, 60 * min))
+        assertEquals(0L, resumePositionMs(58 * min + 30_000L, 60 * min)) // past 97%
+        assertEquals(58 * min, resumePositionMs(58 * min, 60 * min)) // 96.7%, still over 30 s from the end
+    }
 }
