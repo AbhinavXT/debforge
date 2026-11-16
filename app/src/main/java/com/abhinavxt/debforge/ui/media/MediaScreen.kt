@@ -245,7 +245,7 @@ internal fun MediaContent(
                         onClick = { onKind(kind) },
                         shape = SegmentedButtonDefaults.itemShape(i, tabs.size),
                         modifier = Modifier.heightIn(min = 48.dp)
-                    ) { Text(stringResource(label, state.shown[kind].orEmpty().size), maxLines = 1) }
+                    ) { Text(stringResource(label, state.count(kind)), maxLines = 1) }
                 }
             }
             Row(Modifier.padding(start = 16.dp, end = 8.dp, bottom = 8.dp), verticalAlignment = Alignment.CenterVertically) {

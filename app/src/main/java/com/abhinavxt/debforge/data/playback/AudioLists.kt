@@ -1,0 +1,102 @@
+package com.abhinavxt.debforge.data.playback
+
+import android.content.Context
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.preferencesDataStore
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import org.json.JSONArray
+import org.json.JSONObject
+import java.util.UUID
+import javax.inject.Inject
+import javax.inject.Singleton
+
+private val Context.audioListsStore by preferencesDataStore(name = "debforge_audio_lists")
+
+data class Playlist(val id: String, val name: String, val trackIds: List<String>)
+
+data class AudioListsState(val favourites: Set<String> = emptySet(), val playlists: List<Playlist> = emptyList())
+
+internal fun AudioListsState.toggleFavourite(id: String) =
+    copy(favourites = if (id in favourites) favourites - id else favourites + id)
+
+/** Blank names are ignored (state unchanged). */
+internal fun AudioListsState.create(listId: String, name: String): AudioListsState {
+    val n = name.trim()
+    return if (n.isEmpty()) this else copy(playlists = playlists + Playlist(listId, n, emptyList()))
+}
+
+internal fun AudioListsState.rename(listId: String, name: String): AudioListsState {
+    val n = name.trim()
+    return if (n.isEmpty()) this else mapList(listId) { it.copy(name = n) }
+}
+
+internal fun AudioListsState.delete(listId: String) = copy(playlists = playlists.filter { it.id != listId })
+
+internal fun AudioListsState.add(listId: String, ids: Collection<String>) =
+    mapList(listId) { it.copy(trackIds = (it.trackIds + ids).distinct()) }
+
+internal fun AudioListsState.remove(listId: String, id: String) =
+    mapList(listId) { it.copy(trackIds = it.trackIds - id) }
+
+private fun AudioListsState.mapList(listId: String, f: (Playlist) -> Playlist) =
+    copy(playlists = playlists.map { if (it.id == listId) f(it) else it })
+
+internal fun encodeFavourites(s: AudioListsState): String = JSONArray(s.favourites.toList()).toString()
+
+internal fun encodePlaylists(s: AudioListsState): String = JSONArray().also { a ->
+    s.playlists.forEach { a.put(JSONObject().put("i", it.id).put("n", it.name).put("t", JSONArray(it.trackIds))) }
+}.toString()
+
+/** Corrupt or missing JSON gives an empty state, never throws. */
+internal fun decodeAudioLists(fav: String?, lists: String?): AudioListsState = AudioListsState(
+    favourites = runCatching {
+        JSONArray(fav).let { a -> (0 until a.length()).map { a.getString(it) }.toSet() }
+    }.getOrDefault(emptySet()),
+    playlists = runCatching {
+        JSONArray(lists).let { a ->
+            (0 until a.length()).map { i ->
+                val o = a.getJSONObject(i)
+                val t = o.getJSONArray("t")
+                Playlist(o.getString("i"), o.getString("n"), (0 until t.length()).map { t.getString(it) })
+            }
+        }
+    }.getOrDefault(emptyList())
+)
+
+/** Favourites and playlists of downloaded audio, by download id. Ids whose file is gone are filtered at read time. */
+@Singleton
+class AudioLists @Inject constructor(@ApplicationContext private val context: Context) {
+
+    private val favKey = stringPreferencesKey("fav")
+    private val listsKey = stringPreferencesKey("lists")
+
+    val state: Flow<AudioListsState> = context.audioListsStore.data.map { decodeAudioLists(it[favKey], it[listsKey]) }
+
+    suspend fun toggleFavourite(id: String) = update { it.toggleFavourite(id) }
+
+    /** Returns the new playlist id, or "" when the name is blank. */
+    suspend fun create(name: String): String {
+        if (name.isBlank()) return ""
+        val id = UUID.randomUUID().toString()
+        update { it.create(id, name) }
+        return id
+    }
+
+    suspend fun rename(listId: String, name: String) = update { it.rename(listId, name) }
+    suspend fun delete(listId: String) = update { it.delete(listId) }
+    suspend fun add(listId: String, ids: Collection<String>) = update { it.add(listId, ids) }
+    suspend fun remove(listId: String, id: String) = update { it.remove(listId, id) }
+
+    private suspend fun update(change: (AudioListsState) -> AudioListsState) {
+        runCatching {
+            context.audioListsStore.edit { prefs ->
+                val next = change(decodeAudioLists(prefs[favKey], prefs[listsKey]))
+                prefs[favKey] = encodeFavourites(next)
+                prefs[listsKey] = encodePlaylists(next)
+            }
+        }
+    }
+}

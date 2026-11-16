@@ -3,6 +3,8 @@ package com.abhinavxt.debforge.ui.media
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.abhinavxt.debforge.data.local.DownloadDao
+import com.abhinavxt.debforge.data.playback.AudioLists
+import com.abhinavxt.debforge.data.playback.AudioListsState
 import com.abhinavxt.debforge.data.local.DownloadEntity
 import com.abhinavxt.debforge.domain.DownloadState
 import com.abhinavxt.debforge.domain.FileKind
@@ -40,8 +42,15 @@ data class MediaUiState(
     val sort: SortOrder = SortOrder.DATE_DESC,
     val kind: FileKind = FileKind.Video,
     val selected: Set<String> = emptySet(),
-    val active: ActiveSummary? = null
+    val active: ActiveSummary? = null,
+    /** Audio segment only: null = all, "fav", or a playlist id. */
+    val audioList: String? = null,
+    val lists: AudioListsState = AudioListsState(),
+    /** Number of audio tracks before the list pick (what the tab badge shows). */
+    val audioTotal: Int = 0
 ) {
+    /** Tab badge count: the audio badge ignores the list pick. */
+    fun count(k: FileKind): Int = shown[k].orEmpty().size.let { if (k == FileKind.Audio) maxOf(it, audioTotal) else it }
     val current: List<DownloadEntity> get() = shown[kind].orEmpty()
 }
 
@@ -51,6 +60,15 @@ enum class MediaMessage { FILE_MISSING }
 /** The selection restricted to rows that are still on screen, so the count always matches what an action touches. */
 internal fun pruneSelection(selected: Set<String>, visibleIds: Collection<String>): Set<String> =
     if (selected.isEmpty()) selected else selected.intersect(visibleIds.toSet())
+
+/** Audio rows for a list pick: null = all, "fav" = favourites in row order, else that playlist in its own order (unknown id = all). */
+internal fun audioListView(rows: List<DownloadEntity>, lists: AudioListsState, pick: String?): List<DownloadEntity> {
+    if (pick == null) return rows
+    if (pick == "fav") return rows.filter { it.id in lists.favourites }
+    val playlist = lists.playlists.firstOrNull { it.id == pick } ?: return rows
+    val byId = rows.associateBy { it.id }
+    return playlist.trackIds.mapNotNull { byId[it] }
+}
 
 /** Name shown for a download: its title (YouTube) or the cleaned release name. */
 fun DownloadEntity.displayTitle(): String = title?.takeIf { it.isNotBlank() } ?: releaseLabels(filename).title
@@ -62,10 +80,11 @@ class MediaViewModel @Inject constructor(
     private val controller: DownloadController,
     private val localPlayback: LocalPlayback,
     private val audioPlayer: AudioPlayer,
-    settings: SettingsStore
+    settings: SettingsStore,
+    private val audioLists: AudioLists
 ) : ViewModel() {
 
-    private data class Ui(val query: String, val sort: SortOrder, val kind: FileKind, val selected: Set<String>)
+    private data class Ui(val query: String, val sort: SortOrder, val kind: FileKind, val selected: Set<String>, val audioList: String? = null)
 
     private val ui = MutableStateFlow(Ui("", SortOrder.DATE_DESC, FileKind.Video, emptySet()))
 
@@ -94,7 +113,7 @@ class MediaViewModel @Inject constructor(
     private val completed = dao.observeCompleted().distinctUntilChanged()
         .map { rows -> rows.map { Row(it, kindOf(it.filename), it.displayTitle()) } }
 
-    val state: StateFlow<MediaUiState> = combine(completed, ui, activeSummary) { rows, u, active ->
+    val state: StateFlow<MediaUiState> = combine(completed, ui, activeSummary, audioLists.state) { rows, u, active, lists ->
         val q = u.query.trim()
         val byKind = rows.groupBy { it.kind }
         val shown = FileKind.entries.associateWith { kind ->
@@ -102,9 +121,11 @@ class MediaViewModel @Inject constructor(
                 .filter { q.isEmpty() || it.title.contains(q, true) || it.entity.filename.contains(q, true) || it.entity.artist?.contains(q, true) == true }
                 .sortedWith(comparator(u.sort))
                 .map { it.entity }
+        }.toMutableMap().also { m ->
+            if (u.audioList != null) m[FileKind.Audio] = audioListView(m[FileKind.Audio].orEmpty(), lists, u.audioList)
         }
         val selected = pruneSelection(u.selected, shown[u.kind].orEmpty().map { it.id })
-        MediaUiState(shown, rows.size, u.query, u.sort, u.kind, selected, active)
+        MediaUiState(shown, rows.size, u.query, u.sort, u.kind, selected, active, u.audioList, lists, byKind[FileKind.Audio].orEmpty().size)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), MediaUiState())
 
     private fun comparator(sort: SortOrder): Comparator<Row> = when (sort) {
@@ -120,6 +141,22 @@ class MediaViewModel @Inject constructor(
     fun setSort(s: SortOrder) = ui.update { it.copy(sort = s) }
     /** Selection belongs to one segment, so switching drops it. */
     fun setKind(k: FileKind) = ui.update { it.copy(kind = k, selected = emptySet()) }
+
+    fun selectAudioList(pick: String?) = ui.update { it.copy(audioList = pick, selected = emptySet()) }
+    fun toggleFavourite(id: String) { viewModelScope.launch { audioLists.toggleFavourite(id) } }
+    fun createPlaylist(name: String, addIds: Collection<String> = emptyList()) {
+        viewModelScope.launch {
+            val id = audioLists.create(name)
+            if (id.isNotEmpty() && addIds.isNotEmpty()) audioLists.add(id, addIds)
+        }
+    }
+    fun renamePlaylist(listId: String, name: String) { viewModelScope.launch { audioLists.rename(listId, name) } }
+    fun deletePlaylist(listId: String) {
+        viewModelScope.launch { audioLists.delete(listId) }
+        ui.update { if (it.audioList == listId) it.copy(audioList = null, selected = emptySet()) else it }
+    }
+    fun addToPlaylist(listId: String, ids: Collection<String>) { viewModelScope.launch { audioLists.add(listId, ids) } }
+    fun removeFromPlaylist(listId: String, id: String) { viewModelScope.launch { audioLists.remove(listId, id) } }
 
     fun toggleSelected(id: String) = ui.update { it.copy(selected = if (id in it.selected) it.selected - id else it.selected + id) }
     fun selectAll() = ui.update { u -> u.copy(selected = state.value.current.map { it.id }.toSet()) }
