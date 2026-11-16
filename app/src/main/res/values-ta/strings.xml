@@ -819,6 +819,9 @@
     <string name="yt_loading">வீடியோ ஏற்றப்படுகிறது</string>
     <string name="yt_thumbnail">வீடியோ சிறுபடம்</string>
     <string name="yt_mode_video">வீடியோ</string>
+    <string name="yt_subtitles">வசனங்கள்</string>
+    <string name="yt_subtitles_none">எதுவுமில்லை</string>
+    <string name="yt_subtitles_auto">%s (தானியங்கி)</string>
     <string name="yt_mode_audio">ஆடியோ</string>
     <string name="yt_best">சிறந்தது</string>
     <string name="yt_download_format">பதிவிறக்கு · %1$s · %2$s</string>

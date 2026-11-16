@@ -780,6 +780,9 @@
     <string name="yt_loading">Memuat video</string>
     <string name="yt_thumbnail">Gambar mini video</string>
     <string name="yt_mode_video">Video</string>
+    <string name="yt_subtitles">Subtitel</string>
+    <string name="yt_subtitles_none">Tidak ada</string>
+    <string name="yt_subtitles_auto">%s (otomatis)</string>
     <string name="yt_mode_audio">Audio</string>
     <string name="yt_best">Terbaik</string>
     <string name="yt_download_format">Unduh · %1$s · %2$s</string>

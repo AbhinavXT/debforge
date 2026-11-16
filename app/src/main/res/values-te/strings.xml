@@ -819,6 +819,9 @@
     <string name="yt_loading">వీడియో లోడ్ అవుతోంది</string>
     <string name="yt_thumbnail">వీడియో థంబ్‌నెయిల్</string>
     <string name="yt_mode_video">వీడియో</string>
+    <string name="yt_subtitles">ఉపశీర్షికలు</string>
+    <string name="yt_subtitles_none">ఏదీ లేదు</string>
+    <string name="yt_subtitles_auto">%s (స్వయంచాలకం)</string>
     <string name="yt_mode_audio">ఆడియో</string>
     <string name="yt_best">ఉత్తమం</string>
     <string name="yt_download_format">డౌన్‌లోడ్ · %1$s · %2$s</string>

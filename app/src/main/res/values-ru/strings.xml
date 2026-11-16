@@ -897,6 +897,9 @@
     <string name="yt_loading">Загрузка видео</string>
     <string name="yt_thumbnail">Превью видео</string>
     <string name="yt_mode_video">Видео</string>
+    <string name="yt_subtitles">Субтитры</string>
+    <string name="yt_subtitles_none">Нет</string>
+    <string name="yt_subtitles_auto">%s (авто)</string>
     <string name="yt_mode_audio">Аудио</string>
     <string name="yt_best">Лучшее</string>
     <string name="yt_download_format">Скачать · %1$s · %2$s</string>

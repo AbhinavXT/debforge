@@ -819,6 +819,9 @@
     <string name="yt_loading">Video yükleniyor</string>
     <string name="yt_thumbnail">Video küçük resmi</string>
     <string name="yt_mode_video">Video</string>
+    <string name="yt_subtitles">Altyazılar</string>
+    <string name="yt_subtitles_none">Yok</string>
+    <string name="yt_subtitles_auto">%s (otomatik)</string>
     <string name="yt_mode_audio">Ses</string>
     <string name="yt_best">En iyi</string>
     <string name="yt_download_format">İndir · %1$s · %2$s</string>

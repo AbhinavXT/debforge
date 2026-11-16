@@ -104,6 +104,9 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import com.abhinavxt.debforge.domain.YouTubeSubtitle
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -209,6 +212,7 @@ fun YouTubeScreen(
                     onMode = viewModel::selectMode,
                     onSelect = viewModel::select,
                     onDownload = viewModel::download,
+                    onSubtitle = viewModel::selectSubtitle,
                     onToggle = viewModel::togglePlaylistItem,
                     onSelectAll = viewModel::selectAllPlaylist,
                     onQuality = viewModel::setPlaylistQuality,
@@ -242,6 +246,7 @@ internal fun YouTubeContent(
     onMode: (Boolean) -> Unit,
     onSelect: (FormatChoice) -> Unit,
     onDownload: () -> Unit,
+    onSubtitle: (YouTubeSubtitle?) -> Unit,
     onToggle: (String) -> Unit,
     onSelectAll: (Boolean) -> Unit,
     onQuality: (DefaultQuality) -> Unit,
@@ -260,7 +265,7 @@ internal fun YouTubeContent(
             YouTubeUi.Empty -> EmptyState(input, clipLink, onInput, onSubmit, onPaste)
             YouTubeUi.Resolving -> Skeleton()
             is YouTubeUi.Results -> ResultsState(state, input, onInput, onSubmit, onPaste, onPick, onLoadMore, resultsList)
-            is YouTubeUi.Preview -> PreviewState(state, onReset, onMode, onSelect, onDownload)
+            is YouTubeUi.Preview -> PreviewState(state, onReset, onMode, onSelect, onSubtitle, onDownload)
             is YouTubeUi.Playlist -> PlaylistState(state, onReset, onToggle, onSelectAll, onQuality, onDownloadPlaylist)
             is YouTubeUi.Error -> MessageState(
                 icon = Icons.Rounded.ErrorOutline,
@@ -558,6 +563,7 @@ private fun PreviewState(
     onReset: () -> Unit,
     onMode: (Boolean) -> Unit,
     onSelect: (FormatChoice) -> Unit,
+    onSubtitle: (YouTubeSubtitle?) -> Unit,
     onDownload: () -> Unit,
 ) {
     val audio = p.selected.isAudio
@@ -603,6 +609,7 @@ private fun PreviewState(
                     modifier = if (c == p.selected) Modifier.focusRequester(firstFocus) else Modifier)
             }
         }
+        if (!audio && p.video.subtitles.isNotEmpty()) SubtitleRow(p.video.subtitles, p.subtitle, onSubtitle)
     }
     // Pinned: the list scrolls, the primary action does not.
     Surface(color = MaterialTheme.colorScheme.surfaceContainer, tonalElevation = 3.dp, shadowElevation = 6.dp, modifier = Modifier.fillMaxWidth()) {
@@ -612,6 +619,27 @@ private fun PreviewState(
             Text(stringResource(R.string.yt_download_format, choiceLabel(p.selected), sizeText(p.selected)), maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
     }
+    }
+}
+
+@Composable
+private fun subtitleName(s: YouTubeSubtitle) = if (s.auto) stringResource(R.string.yt_subtitles_auto, s.label) else s.label
+
+/** Video mode only: None, or one language to save beside the video. */
+@Composable
+private fun SubtitleRow(options: List<YouTubeSubtitle>, chosen: YouTubeSubtitle?, onChoose: (YouTubeSubtitle?) -> Unit) {
+    var open by remember { mutableStateOf(false) }
+    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        Text(stringResource(R.string.yt_subtitles), style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
+        Box {
+            TextButton(onClick = { open = true }, modifier = Modifier.heightIn(min = 48.dp)) {
+                Text(chosen?.let { subtitleName(it) } ?: stringResource(R.string.yt_subtitles_none), maxLines = 1, overflow = TextOverflow.Ellipsis)
+            }
+            DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
+                DropdownMenuItem(text = { Text(stringResource(R.string.yt_subtitles_none)) }, onClick = { open = false; onChoose(null) })
+                options.forEach { o -> DropdownMenuItem(text = { Text(subtitleName(o)) }, onClick = { open = false; onChoose(o) }) }
+            }
+        }
     }
 }
 
@@ -688,7 +716,7 @@ private val fakeChoices = listOf(
 private fun PreviewHost(ui: YouTubeUi, clip: String? = null, input: String = "") {
     MaterialTheme {
         Surface {
-            YouTubeContent(ui, input, clip, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})
+            YouTubeContent(ui, input, clip, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})
         }
     }
 }

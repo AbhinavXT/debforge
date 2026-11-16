@@ -819,6 +819,9 @@
     <string name="yt_loading">वीडियो लोड हो रहा है</string>
     <string name="yt_thumbnail">वीडियो थंबनेल</string>
     <string name="yt_mode_video">वीडियो</string>
+    <string name="yt_subtitles">उपशीर्षक</string>
+    <string name="yt_subtitles_none">कोई नहीं</string>
+    <string name="yt_subtitles_auto">%s (स्वचालित)</string>
     <string name="yt_mode_audio">ऑडियो</string>
     <string name="yt_best">सर्वश्रेष्ठ</string>
     <string name="yt_download_format">डाउनलोड · %1$s · %2$s</string>

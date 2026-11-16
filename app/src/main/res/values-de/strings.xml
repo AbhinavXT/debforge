@@ -819,6 +819,9 @@
     <string name="yt_loading">Video wird geladen</string>
     <string name="yt_thumbnail">Videovorschaubild</string>
     <string name="yt_mode_video">Video</string>
+    <string name="yt_subtitles">Untertitel</string>
+    <string name="yt_subtitles_none">Keine</string>
+    <string name="yt_subtitles_auto">%s (automatisch)</string>
     <string name="yt_mode_audio">Audio</string>
     <string name="yt_best">Beste</string>
     <string name="yt_download_format">Herunterladen · %1$s · %2$s</string>

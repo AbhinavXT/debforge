@@ -147,7 +147,8 @@ class DownloadController @Inject constructor(
      * anything unrecognised (stays in the root folder).
      */
     private fun libraryFolderFor(filename: String): String {
-        val info = ReleaseNameParser.parse(filename)
+        // A subtitle is filed where its video goes ("Name.en.vtt" as "Name.mp4"), or the player cannot pair them.
+        val info = ReleaseNameParser.parse(filename.replace(SUBTITLE_SUFFIX, ".mp4"))
         if (!info.isVideo) return ""
         return when (info.kind) {
             MediaKind.SHOW -> {
@@ -159,6 +160,8 @@ class DownloadController @Inject constructor(
             MediaKind.OTHER -> ""
         }
     }
+
+    private val SUBTITLE_SUFFIX = Regex("""(\.[A-Za-z]{2,3})?\.(srt|ass|ssa|vtt)$""", RegexOption.IGNORE_CASE)
 
     /** Strip path separators and characters illegal on common filesystems. */
     private fun sanitizeFilename(raw: String): String {

@@ -23,7 +23,22 @@ data class YouTubeVideo(
     val durationSec: Long,
     val thumbnailUrl: String?,
     val streams: List<YouTubeStream>,
+    val subtitles: List<YouTubeSubtitle> = emptyList(),
 )
+
+/** A WebVTT track YouTube offers for a video; [languageCode] is a BCP 47 tag, [auto] marks machine captions. */
+data class YouTubeSubtitle(val languageCode: String, val label: String, val url: String, val auto: Boolean)
+
+/** One track per language, a manual one winning over an auto-generated one, sorted by label. */
+fun List<YouTubeSubtitle>.onePerLanguage(): List<YouTubeSubtitle> =
+    sortedBy { it.auto }.distinctBy { it.languageCode }.sortedBy { it.label }
+
+/**
+ * `<video base name>.<language>.vtt`: the player pairs a subtitle with the video in its folder by this
+ * name ([com.abhinavxt.debforge.domain.Subtitles.forVideo]), reading the language from the token before ".vtt".
+ */
+fun subtitleFileName(videoFilename: String, s: YouTubeSubtitle) =
+    "${videoFilename.substringBeforeLast('.')}.${s.languageCode.substringBefore('-')}.vtt"
 
 /** One row of a YouTube search; [url] goes through the normal link path. */
 data class YouTubeSearchResult(

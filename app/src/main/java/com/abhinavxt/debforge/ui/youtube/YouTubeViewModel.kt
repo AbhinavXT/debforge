@@ -17,7 +17,9 @@ import com.abhinavxt.debforge.domain.YouTubeFormats
 import com.abhinavxt.debforge.domain.pickDefaultChoice
 import com.abhinavxt.debforge.domain.YouTubeLinks
 import com.abhinavxt.debforge.domain.YouTubeSearchResult
+import com.abhinavxt.debforge.domain.YouTubeSubtitle
 import com.abhinavxt.debforge.domain.YouTubeVideo
+import com.abhinavxt.debforge.domain.subtitleFileName
 import com.abhinavxt.debforge.download.DownloadController
 import com.abhinavxt.debforge.download.StorageAccess
 import com.abhinavxt.debforge.download.artworkFile
@@ -47,7 +49,7 @@ import javax.inject.Inject
 sealed interface YouTubeUi {
     data object Empty : YouTubeUi
     data object Resolving : YouTubeUi
-    data class Preview(val video: YouTubeVideo, val choices: List<FormatChoice>, val selected: FormatChoice) : YouTubeUi
+    data class Preview(val video: YouTubeVideo, val choices: List<FormatChoice>, val selected: FormatChoice, val subtitle: YouTubeSubtitle? = null) : YouTubeUi
     data class Results(val query: String, val items: List<YouTubeSearchResult>, val loadingMore: Boolean = false) : YouTubeUi
     /** [progress] is (current, total) while the selected videos are being added one by one. */
     data class Playlist(
@@ -248,6 +250,10 @@ class YouTubeViewModel @Inject constructor(
         (_ui.value as? YouTubeUi.Preview)?.let { _ui.value = it.copy(selected = choice) }
     }
 
+    fun selectSubtitle(s: YouTubeSubtitle?) {
+        (_ui.value as? YouTubeUi.Preview)?.let { _ui.value = it.copy(subtitle = s) }
+    }
+
     /** Segmented Video | Audio switch: selects that mode's default (first) row. */
     fun selectMode(audio: Boolean) {
         val p = _ui.value as? YouTubeUi.Preview ?: return
@@ -261,16 +267,24 @@ class YouTubeViewModel @Inject constructor(
         val c = p.selected
         if (enqueueJob?.isActive == true) return // double tap
         val item = itemFor(p.video, c)
+        val subtitle = p.subtitle?.takeIf { !c.isAudio }?.let { subtitleItemFor(item, it) }
         enqueueJob = viewModelScope.launch {
             // Same rule as Library: no writable download folder yet means ask, never queue to the filesystem root.
             if (!StorageAccess.canWrite(context, settings.downloadDirFlow.first())) {
-                pending = { enqueue(item, p.video.thumbnailUrl) }
+                pending = { enqueue(item, p.video.thumbnailUrl, subtitle) }
                 _folderPrompt.value = true
                 return@launch
             }
-            enqueue(item, p.video.thumbnailUrl)
+            enqueue(item, p.video.thumbnailUrl, subtitle)
         }
     }
+
+    /** A plain download of the track next to the video; the player finds it by the shared base name. */
+    private fun subtitleItemFor(video: DownloadItem, s: YouTubeSubtitle) = DownloadItem(
+        id = "${video.id}:sub:${s.languageCode}", provider = ProviderId.DIRECT, filename = subtitleFileName(video.filename, s),
+        sourceRef = s.url, downloadUrl = s.url, host = "YouTube", filesize = 0, maxConnections = 1,
+        addedAt = Instant.now().toString(),
+    )
 
     private fun itemFor(video: YouTubeVideo, c: FormatChoice): DownloadItem {
         val ref = YouTubeLinks.sourceRef(video.id, c.videoItag, c.audioItag)
@@ -283,7 +297,14 @@ class YouTubeViewModel @Inject constructor(
         )
     }
 
-    private suspend fun enqueue(item: DownloadItem, thumbnailUrl: String?) = _events.send(tryEnqueue(item, thumbnailUrl))
+    private suspend fun enqueue(item: DownloadItem, thumbnailUrl: String?, subtitle: DownloadItem? = null) {
+        val result = tryEnqueue(item, thumbnailUrl)
+        // A failed subtitle never fails the video that is already queued.
+        if (result == YouTubeEvent.QUEUED && subtitle != null) {
+            try { downloads.enqueue(subtitle) } catch (e: CancellationException) { throw e } catch (e: Exception) { }
+        }
+        _events.send(result)
+    }
 
     /** Queues [item] and says what happened: QUEUED, ALREADY_QUEUED or QUEUE_FAILED. */
     private suspend fun tryEnqueue(item: DownloadItem, thumbnailUrl: String?): YouTubeEvent {

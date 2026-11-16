@@ -780,6 +780,9 @@
     <string name="yt_loading">正在加载视频</string>
     <string name="yt_thumbnail">视频缩略图</string>
     <string name="yt_mode_video">视频</string>
+    <string name="yt_subtitles">字幕</string>
+    <string name="yt_subtitles_none">无</string>
+    <string name="yt_subtitles_auto">%s（自动）</string>
     <string name="yt_mode_audio">音频</string>
     <string name="yt_best">最佳</string>
     <string name="yt_download_format">下载 · %1$s · %2$s</string>
