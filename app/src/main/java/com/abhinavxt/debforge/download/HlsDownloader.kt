@@ -146,6 +146,8 @@ class HlsDownloader @Inject constructor(
             withContext(NonCancellable) { downloadDao.updateBytes(entity.id, downloaded) }
         }
 
+        // The join below can take a minute or more with the bar at 100%: say so.
+        progressTracker.update(entity.id, downloaded, downloaded, DownloadState.DOWNLOADING, finishing = true)
         val size = try {
             when {
                 tracks.size == 2 -> combine(partPath, finalPath, separateAudio = true)

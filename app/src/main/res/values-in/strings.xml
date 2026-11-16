@@ -114,6 +114,7 @@
     <string name="dl_section_failed">Gagal</string>
     <string name="dl_section_completed">Selesai</string>
     <string name="dl_waiting">Menunggu</string>
+    <string name="dl_finishing">Menyelesaikan…</string>
     <string name="dl_so_far">sejauh ini</string>
     <string name="dl_waiting_size">Menunggu · %1$s</string>
     <string name="dl_paused_status">Dijeda · %1$s · %2$s</string>

@@ -54,6 +54,9 @@ object DownloadNotifications {
             progress == null -> builder
                 .setContentText(context.getString(R.string.notif_preparing))
                 .setProgress(0, 0, true)
+            progress.finishing -> builder
+                .setContentText(context.getString(R.string.dl_finishing))
+                .setProgress(0, 0, true)
             progress.waitingReasonRes != null -> builder
                 .setContentText(
                     context.getString(R.string.notif_waiting_resume, context.getString(progress.waitingReasonRes))

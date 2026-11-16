@@ -40,7 +40,8 @@ class DownloadProgressTracker @Inject constructor() {
         bytesDownloaded: Long,
         totalBytes: Long,
         state: DownloadState,
-        waitingReasonRes: Int? = null
+        waitingReasonRes: Int? = null,
+        finishing: Boolean = false
     ) {
         val now = System.currentTimeMillis()
         val prevBytes = lastBytes[id]
@@ -62,7 +63,8 @@ class DownloadProgressTracker @Inject constructor() {
                 // out so the UI doesn't show a frozen old speed.
                 bytesPerSecond = if (waitingReasonRes != null) 0L else bps,
                 state = state,
-                waitingReasonRes = waitingReasonRes
+                waitingReasonRes = waitingReasonRes,
+                finishing = finishing
             ))
         }
     }

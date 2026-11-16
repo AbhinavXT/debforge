@@ -116,6 +116,7 @@
     <string name="dl_section_failed">தோல்வியடைந்தவை</string>
     <string name="dl_section_completed">முடிந்தவை</string>
     <string name="dl_waiting">காத்திருக்கிறது</string>
+    <string name="dl_finishing">முடிக்கிறது…</string>
     <string name="dl_so_far">இதுவரை</string>
     <string name="dl_waiting_size">காத்திருக்கிறது · %1$s</string>
     <string name="dl_paused_status">இடைநிறுத்தப்பட்டது · %1$s · %2$s</string>

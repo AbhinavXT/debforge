@@ -116,6 +116,7 @@
     <string name="dl_section_failed">ব্যর্থ</string>
     <string name="dl_section_completed">সম্পূর্ণ</string>
     <string name="dl_waiting">অপেক্ষমাণ</string>
+    <string name="dl_finishing">শেষ হচ্ছে…</string>
     <string name="dl_so_far">এ পর্যন্ত</string>
     <string name="dl_waiting_size">অপেক্ষমাণ · %1$s</string>
     <string name="dl_paused_status">থামানো · %1$s · %2$s</string>

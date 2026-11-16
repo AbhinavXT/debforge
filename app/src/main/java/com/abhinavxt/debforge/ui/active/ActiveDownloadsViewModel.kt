@@ -33,6 +33,7 @@ data class ActiveRow(
     val bytesPerSecond: Long get() = live?.bytesPerSecond ?: 0L
     val waitingForNetwork: Boolean get() = live?.waitingForNetwork == true
     val waitingReasonRes: Int? get() = live?.waitingReasonRes
+    val finishing: Boolean get() = live?.finishing == true
     val fraction: Float
         get() = if (entity.filesize > 0) {
             (bytesNow.toFloat() / entity.filesize).coerceIn(0f, 1f)

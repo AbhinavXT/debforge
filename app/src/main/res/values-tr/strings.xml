@@ -116,6 +116,7 @@
     <string name="dl_section_failed">Başarısız</string>
     <string name="dl_section_completed">Tamamlandı</string>
     <string name="dl_waiting">Bekliyor</string>
+    <string name="dl_finishing">Tamamlanıyor…</string>
     <string name="dl_so_far">şu ana kadar</string>
     <string name="dl_waiting_size">Bekliyor · %1$s</string>
     <string name="dl_paused_status">Duraklatıldı · %1$s · %2$s</string>

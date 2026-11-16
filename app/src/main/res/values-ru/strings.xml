@@ -120,6 +120,7 @@
     <string name="dl_section_failed">С ошибкой</string>
     <string name="dl_section_completed">Завершены</string>
     <string name="dl_waiting">Ожидание</string>
+    <string name="dl_finishing">Завершение…</string>
     <string name="dl_so_far">пока</string>
     <string name="dl_waiting_size">Ожидание · %1$s</string>
     <string name="dl_paused_status">Приостановлено · %1$s · %2$s</string>

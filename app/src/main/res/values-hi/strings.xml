@@ -116,6 +116,7 @@
     <string name="dl_section_failed">विफल</string>
     <string name="dl_section_completed">पूरे हुए</string>
     <string name="dl_waiting">इंतज़ार</string>
+    <string name="dl_finishing">पूरा हो रहा है…</string>
     <string name="dl_so_far">अब तक</string>
     <string name="dl_waiting_size">इंतज़ार · %1$s</string>
     <string name="dl_paused_status">रुका हुआ · %1$s · %2$s</string>

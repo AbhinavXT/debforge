@@ -116,6 +116,7 @@
     <string name="dl_section_failed">విఫలమైనవి</string>
     <string name="dl_section_completed">పూర్తయినవి</string>
     <string name="dl_waiting">వేచి ఉంది</string>
+    <string name="dl_finishing">ముగుస్తోంది…</string>
     <string name="dl_so_far">ఇప్పటివరకు</string>
     <string name="dl_waiting_size">వేచి ఉంది · %1$s</string>
     <string name="dl_paused_status">పాజ్ చేయబడింది · %1$s · %2$s</string>

@@ -191,7 +191,9 @@ private fun DownloadingRow(row: ActiveRow, vm: ActiveDownloadsViewModel, modifie
     val sizePart = if (known) formatBytePair(row.bytesNow, row.entity.filesize) else "${formatBytes(row.bytesNow)} $soFar"
     val speed = formatSpeed(row.bytesPerSecond)
     // Longest first; parts drop from the middle (speed, then size), never the percentage or the ETA.
-    val statusOptions = if (row.waitingForNetwork) {
+    val statusOptions = if (row.finishing) {
+        listOf(stringResource(R.string.dl_finishing))
+    } else if (row.waitingForNetwork) {
         listOf(
             listOfNotNull(waitingLabel, pct, sizePart).joinToString(" · "),
             listOfNotNull(waitingLabel, pct).joinToString(" · ")
@@ -216,7 +218,7 @@ private fun DownloadingRow(row: ActiveRow, vm: ActiveDownloadsViewModel, modifie
         // Frozen at last-known fraction while waiting — gives the user a sense
         // of how far along the download already is, even without progress.
         // Unknown size -> indeterminate bar rather than a stuck 0%.
-        progress = if (row.entity.filesize > 0) row.fraction else -1f,
+        progress = if (row.entity.filesize > 0 && !row.finishing) row.fraction else -1f,
         actions = {
             FilledTonalIconButton(onClick = { view.click(); vm.pause(row.id) }) {
                 Icon(Icons.Rounded.Pause, contentDescription = stringResource(R.string.dl_cd_pause, labels.title))

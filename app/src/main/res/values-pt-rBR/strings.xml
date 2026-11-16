@@ -118,6 +118,7 @@
     <string name="dl_section_failed">Com falha</string>
     <string name="dl_section_completed">Concluídos</string>
     <string name="dl_waiting">Aguardando</string>
+    <string name="dl_finishing">Finalizando…</string>
     <string name="dl_so_far">até agora</string>
     <string name="dl_waiting_size">Aguardando · %1$s</string>
     <string name="dl_paused_status">Pausado · %1$s · %2$s</string>

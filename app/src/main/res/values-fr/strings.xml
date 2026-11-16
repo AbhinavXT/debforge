@@ -118,6 +118,7 @@
     <string name="dl_section_failed">Échecs</string>
     <string name="dl_section_completed">Terminés</string>
     <string name="dl_waiting">En attente</string>
+    <string name="dl_finishing">Finalisation…</string>
     <string name="dl_so_far">jusqu\'ici</string>
     <string name="dl_waiting_size">En attente · %1$s</string>
     <string name="dl_paused_status">En pause · %1$s · %2$s</string>

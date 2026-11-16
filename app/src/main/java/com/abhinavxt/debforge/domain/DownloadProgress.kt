@@ -18,7 +18,9 @@ data class DownloadProgress(
     val bytesPerSecond: Long,
     val state: DownloadState,
     /** String resource of the condition we're waiting on ("Waiting for Wi-Fi"...), or null. */
-    val waitingReasonRes: Int? = null
+    val waitingReasonRes: Int? = null,
+    /** All bytes are in; joining the streams / moving the file into place. Shown as "Finishing…". */
+    val finishing: Boolean = false
 ) {
     val waitingForNetwork: Boolean get() = waitingReasonRes != null
 
