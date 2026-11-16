@@ -109,6 +109,7 @@ class YouTubeViewModel @Inject constructor(
         saved[LINK_KEY] = text
         job?.cancel()
         batchJob?.cancel()
+        pending = null // a download waiting on the folder prompt belongs to the screen being left
         when {
             YouTubeLinks.isPlaylistOnly(text) && YouTubeLinks.playlistUrl(text) != null -> loadPlaylist(text)
             looksLikeYouTube(text) -> resolve(text)
@@ -191,6 +192,7 @@ class YouTubeViewModel @Inject constructor(
     fun reset() {
         job?.cancel()
         batchJob?.cancel()
+        pending = null // a download waiting on the folder prompt belongs to the screen being left
         fromResults?.let {
             fromResults = null
             _input.value = it.query

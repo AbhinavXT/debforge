@@ -86,7 +86,9 @@ class YouTubeResolver @Inject constructor(@ApiHttpClient private val client: OkH
             var page = info.nextPage
             // shortcut: first 200 videos of a playlist, raise or page lazily when users ask
             while (page != null && items.size < 200) {
-                val more = PlaylistInfo.getMoreItems(ServiceList.YouTube, listUrl, page)
+                // A later page failing, or coming back empty, keeps what already loaded.
+                val more = try { PlaylistInfo.getMoreItems(ServiceList.YouTube, listUrl, page) } catch (e: Exception) { break }
+                if (more.items.isEmpty()) break
                 items += more.items.filterIsInstance<StreamInfoItem>()
                 page = more.nextPage
             }
