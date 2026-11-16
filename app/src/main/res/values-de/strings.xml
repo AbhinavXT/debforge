@@ -908,6 +908,14 @@
     <string name="audio_close">Wiedergabe schließen</string>
     <string name="audio_expand">Wiedergabe öffnen</string>
     <string name="audio_up_next">Als Nächstes</string>
+    <string name="audio_speed_cd">Wiedergabegeschwindigkeit, %1$s</string>
+    <string name="audio_sleep_off_cd">Sleep-Timer, aus</string>
+    <string name="audio_sleep_end">Ende des Titels</string>
+    <string name="audio_sleep_end_cd">Sleep-Timer, Ende des Titels</string>
+    <plurals name="audio_sleep_left_cd">
+        <item quantity="one">Sleep-Timer, noch %d Minute</item>
+        <item quantity="other">Sleep-Timer, noch %d Minuten</item>
+    </plurals>
     <string name="audio_unknown_artist">Unbekannter Interpret</string>
     <string name="audio_position_state">%1$s von %2$s</string>
     <string name="audio_time_minutes_seconds">%1$s %2$s</string>

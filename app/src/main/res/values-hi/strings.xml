@@ -908,6 +908,14 @@
     <string name="audio_close">अभी चल रहा बंद करें</string>
     <string name="audio_expand">अभी चल रहा खोलें</string>
     <string name="audio_up_next">आगे</string>
+    <string name="audio_speed_cd">प्लेबैक गति, %1$s</string>
+    <string name="audio_sleep_off_cd">स्लीप टाइमर, बंद</string>
+    <string name="audio_sleep_end">ट्रैक के अंत में</string>
+    <string name="audio_sleep_end_cd">स्लीप टाइमर, ट्रैक के अंत में</string>
+    <plurals name="audio_sleep_left_cd">
+        <item quantity="one">स्लीप टाइमर, %d मिनट बाकी</item>
+        <item quantity="other">स्लीप टाइमर, %d मिनट बाकी</item>
+    </plurals>
     <string name="audio_unknown_artist">अज्ञात कलाकार</string>
     <string name="audio_position_state">%2$s में से %1$s</string>
     <string name="audio_time_minutes_seconds">%1$s %2$s</string>

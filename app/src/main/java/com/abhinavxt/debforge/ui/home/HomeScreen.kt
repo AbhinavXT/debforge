@@ -345,6 +345,8 @@ fun HomeScreen(signedIn: Boolean) {
                     onSeek = shell.audio::seekTo,
                     onShuffle = shell.audio::setShuffle,
                     onRepeat = shell.audio::cycleRepeat,
+                    onSpeed = shell.audio::setSpeed,
+                    onSleep = shell.audio::setSleepTimer,
                     onSkipTo = shell.audio::skipTo,
                     onClose = { nowPlaying = false }
                 )

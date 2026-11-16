@@ -953,6 +953,15 @@
     <string name="audio_close">Fermer la lecture en cours</string>
     <string name="audio_expand">Ouvrir la lecture en cours</string>
     <string name="audio_up_next">À suivre</string>
+    <string name="audio_speed_cd">Vitesse de lecture, %1$s</string>
+    <string name="audio_sleep_off_cd">Minuterie de veille, désactivée</string>
+    <string name="audio_sleep_end">À la fin du titre</string>
+    <string name="audio_sleep_end_cd">Minuterie de veille, à la fin du titre</string>
+    <plurals name="audio_sleep_left_cd">
+        <item quantity="one">Minuterie de veille, %d minute restante</item>
+        <item quantity="many">Minuterie de veille, %d minutes restantes</item>
+        <item quantity="other">Minuterie de veille, %d de minutes restantes</item>
+    </plurals>
     <string name="audio_unknown_artist">Artiste inconnu</string>
     <string name="audio_position_state">%1$s sur %2$s</string>
     <string name="audio_time_minutes_seconds">%1$s %2$s</string>

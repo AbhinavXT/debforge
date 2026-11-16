@@ -953,6 +953,15 @@
     <string name="audio_close">Fechar reprodução atual</string>
     <string name="audio_expand">Abrir reprodução atual</string>
     <string name="audio_up_next">A seguir</string>
+    <string name="audio_speed_cd">Velocidade de reprodução, %1$s</string>
+    <string name="audio_sleep_off_cd">Timer de soneca, desligado</string>
+    <string name="audio_sleep_end">No fim da faixa</string>
+    <string name="audio_sleep_end_cd">Timer de soneca, no fim da faixa</string>
+    <plurals name="audio_sleep_left_cd">
+        <item quantity="one">Timer de soneca, falta %d minuto</item>
+        <item quantity="many">Timer de soneca, faltam %d minutos</item>
+        <item quantity="other">Timer de soneca, faltam %d de minutos</item>
+    </plurals>
     <string name="audio_unknown_artist">Artista desconhecido</string>
     <string name="audio_position_state">%1$s de %2$s</string>
     <string name="audio_time_minutes_seconds">%1$s %2$s</string>

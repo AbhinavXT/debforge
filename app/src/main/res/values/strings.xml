@@ -910,6 +910,14 @@
     <string name="audio_close">Close now playing</string>
     <string name="audio_expand">Open now playing</string>
     <string name="audio_up_next">Up next</string>
+    <string name="audio_speed_cd">Playback speed, %1$s</string>
+    <string name="audio_sleep_off_cd">Sleep timer, off</string>
+    <string name="audio_sleep_end">End of track</string>
+    <string name="audio_sleep_end_cd">Sleep timer, end of track</string>
+    <plurals name="audio_sleep_left_cd">
+        <item quantity="one">Sleep timer, %d minute left</item>
+        <item quantity="other">Sleep timer, %d minutes left</item>
+    </plurals>
     <string name="audio_unknown_artist">Unknown artist</string>
     <string name="audio_position_state">%1$s of %2$s</string>
     <string name="audio_time_minutes_seconds">%1$s %2$s</string>

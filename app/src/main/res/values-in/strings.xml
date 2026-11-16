@@ -863,6 +863,13 @@
     <string name="audio_close">Tutup yang sedang diputar</string>
     <string name="audio_expand">Buka yang sedang diputar</string>
     <string name="audio_up_next">Berikutnya</string>
+    <string name="audio_speed_cd">Kecepatan pemutaran, %1$s</string>
+    <string name="audio_sleep_off_cd">Timer tidur, mati</string>
+    <string name="audio_sleep_end">Di akhir trek</string>
+    <string name="audio_sleep_end_cd">Timer tidur, di akhir trek</string>
+    <plurals name="audio_sleep_left_cd">
+        <item quantity="other">Timer tidur, sisa %d menit</item>
+    </plurals>
     <string name="audio_unknown_artist">Artis tidak dikenal</string>
     <string name="audio_position_state">%1$s dari %2$s</string>
     <string name="audio_time_minutes_seconds">%1$s %2$s</string>

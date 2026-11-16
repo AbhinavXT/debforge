@@ -908,6 +908,14 @@
     <string name="audio_close">Çalan parçayı kapat</string>
     <string name="audio_expand">Çalan parçayı aç</string>
     <string name="audio_up_next">Sıradaki</string>
+    <string name="audio_speed_cd">Oynatma hızı, %1$s</string>
+    <string name="audio_sleep_off_cd">Uyku zamanlayıcısı, kapalı</string>
+    <string name="audio_sleep_end">Parçanın sonunda</string>
+    <string name="audio_sleep_end_cd">Uyku zamanlayıcısı, parçanın sonunda</string>
+    <plurals name="audio_sleep_left_cd">
+        <item quantity="one">Uyku zamanlayıcısı, %d dakika kaldı</item>
+        <item quantity="other">Uyku zamanlayıcısı, %d dakika kaldı</item>
+    </plurals>
     <string name="audio_unknown_artist">Bilinmeyen sanatçı</string>
     <string name="audio_position_state">%1$s / %2$s</string>
     <string name="audio_time_minutes_seconds">%1$s %2$s</string>

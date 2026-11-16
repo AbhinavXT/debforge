@@ -863,6 +863,13 @@
     <string name="audio_close">关闭正在播放</string>
     <string name="audio_expand">打开正在播放</string>
     <string name="audio_up_next">接下来播放</string>
+    <string name="audio_speed_cd">播放速度，%1$s</string>
+    <string name="audio_sleep_off_cd">睡眠定时，已关闭</string>
+    <string name="audio_sleep_end">当前曲目结束时</string>
+    <string name="audio_sleep_end_cd">睡眠定时，当前曲目结束时</string>
+    <plurals name="audio_sleep_left_cd">
+        <item quantity="other">睡眠定时，还剩 %d 分钟</item>
+    </plurals>
     <string name="audio_unknown_artist">未知艺术家</string>
     <string name="audio_position_state">%1$s / %2$s</string>
     <string name="audio_time_minutes_seconds">%1$s %2$s</string>

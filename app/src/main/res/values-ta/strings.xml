@@ -908,6 +908,14 @@
     <string name="audio_close">இப்போது இயங்குவதை மூடு</string>
     <string name="audio_expand">இப்போது இயங்குவதைத் திற</string>
     <string name="audio_up_next">அடுத்து</string>
+    <string name="audio_speed_cd">பிளேபேக் வேகம், %1$s</string>
+    <string name="audio_sleep_off_cd">ஸ்லீப் டைமர், அணைப்பு</string>
+    <string name="audio_sleep_end">டிராக் முடிவில்</string>
+    <string name="audio_sleep_end_cd">ஸ்லீப் டைமர், டிராக் முடிவில்</string>
+    <plurals name="audio_sleep_left_cd">
+        <item quantity="one">ஸ்லீப் டைமர், %d நிமிடம் மீதம்</item>
+        <item quantity="other">ஸ்லீப் டைமர், %d நிமிடங்கள் மீதம்</item>
+    </plurals>
     <string name="audio_unknown_artist">அறியப்படாத கலைஞர்</string>
     <string name="audio_position_state">%2$s இல் %1$s</string>
     <string name="audio_time_minutes_seconds">%1$s %2$s</string>

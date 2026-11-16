@@ -998,6 +998,16 @@
     <string name="audio_close">Закрыть плеер</string>
     <string name="audio_expand">Открыть плеер</string>
     <string name="audio_up_next">Далее в очереди</string>
+    <string name="audio_speed_cd">Скорость воспроизведения, %1$s</string>
+    <string name="audio_sleep_off_cd">Таймер сна, выключен</string>
+    <string name="audio_sleep_end">В конце трека</string>
+    <string name="audio_sleep_end_cd">Таймер сна, в конце трека</string>
+    <plurals name="audio_sleep_left_cd">
+        <item quantity="one">Таймер сна, осталась %d минута</item>
+        <item quantity="few">Таймер сна, осталось %d минуты</item>
+        <item quantity="many">Таймер сна, осталось %d минут</item>
+        <item quantity="other">Таймер сна, осталось %d минуты</item>
+    </plurals>
     <string name="audio_unknown_artist">Неизвестный исполнитель</string>
     <string name="audio_position_state">%1$s из %2$s</string>
     <string name="audio_time_minutes_seconds">%1$s %2$s</string>

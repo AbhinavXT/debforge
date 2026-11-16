@@ -908,6 +908,14 @@
     <string name="audio_close">ఇప్పుడు ప్లే అవుతున్నదాన్ని మూసివేయి</string>
     <string name="audio_expand">ఇప్పుడు ప్లే అవుతున్నదాన్ని తెరువు</string>
     <string name="audio_up_next">తర్వాత</string>
+    <string name="audio_speed_cd">ప్లేబ్యాక్ వేగం, %1$s</string>
+    <string name="audio_sleep_off_cd">స్లీప్ టైమర్, ఆఫ్</string>
+    <string name="audio_sleep_end">ట్రాక్ చివరిలో</string>
+    <string name="audio_sleep_end_cd">స్లీప్ టైమర్, ట్రాక్ చివరిలో</string>
+    <plurals name="audio_sleep_left_cd">
+        <item quantity="one">స్లీప్ టైమర్, %d నిమిషం మిగిలి ఉంది</item>
+        <item quantity="other">స్లీప్ టైమర్, %d నిమిషాలు మిగిలి ఉన్నాయి</item>
+    </plurals>
     <string name="audio_unknown_artist">తెలియని కళాకారుడు</string>
     <string name="audio_position_state">%2$s లో %1$s</string>
     <string name="audio_time_minutes_seconds">%1$s %2$s</string>

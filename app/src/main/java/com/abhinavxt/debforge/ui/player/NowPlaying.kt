@@ -20,12 +20,15 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Bedtime
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material.icons.rounded.Repeat
 import androidx.compose.material.icons.rounded.RepeatOne
 import androidx.compose.material.icons.rounded.Shuffle
 import androidx.compose.material.icons.rounded.SkipNext
 import androidx.compose.material.icons.rounded.SkipPrevious
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -34,6 +37,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -45,6 +49,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.style.TextAlign
@@ -53,7 +58,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.abhinavxt.debforge.R
 import com.abhinavxt.debforge.player.AudioRepeat
+import com.abhinavxt.debforge.player.AUDIO_SPEEDS
 import com.abhinavxt.debforge.player.AudioState
+import com.abhinavxt.debforge.player.SLEEP_END_OF_TRACK
+import com.abhinavxt.debforge.player.SLEEP_MINUTES
+import com.abhinavxt.debforge.player.sleepMinutesLeft
+import com.abhinavxt.debforge.player.speedLabel
 import com.abhinavxt.debforge.player.formatClock
 import com.abhinavxt.debforge.player.upNextOrder
 import com.abhinavxt.debforge.ui.theme.DebforgeTheme
@@ -68,6 +78,8 @@ fun NowPlaying(
     onSeek: (Long) -> Unit,
     onShuffle: (Boolean) -> Unit,
     onRepeat: () -> Unit,
+    onSpeed: (Float) -> Unit,
+    onSleep: (Int) -> Unit,
     onSkipTo: (Int) -> Unit,
     onClose: () -> Unit,
     modifier: Modifier = Modifier
@@ -87,7 +99,7 @@ fun NowPlaying(
                             Artwork(state, Modifier.fillMaxWidth(0.7f).widthIn(max = 360.dp))
                         }
                         Column(Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
-                            Controls(state, onToggle, onNext, onPrevious, onSeek, onShuffle, onRepeat)
+                            Controls(state, onToggle, onNext, onPrevious, onSeek, onShuffle, onRepeat, onSpeed, onSleep)
                             Queue(state, onSkipTo, Modifier.weight(1f, fill = false).heightIn(max = 220.dp))
                         }
                     }
@@ -103,7 +115,7 @@ fun NowPlaying(
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
                                 Artwork(state, Modifier.fillMaxWidth(0.85f))
-                                Controls(state, onToggle, onNext, onPrevious, onSeek, onShuffle, onRepeat, Modifier.padding(top = 24.dp))
+                                Controls(state, onToggle, onNext, onPrevious, onSeek, onShuffle, onRepeat, onSpeed, onSleep, Modifier.padding(top = 24.dp))
                             }
                         }
                     )
@@ -134,6 +146,8 @@ private fun Controls(
     onSeek: (Long) -> Unit,
     onShuffle: (Boolean) -> Unit,
     onRepeat: () -> Unit,
+    onSpeed: (Float) -> Unit,
+    onSleep: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val track = state.track ?: return
@@ -181,6 +195,60 @@ private fun Controls(
                 ),
                 onRepeat
             )
+        }
+        Row(Modifier.fillMaxWidth().padding(top = 8.dp), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically) {
+            SpeedButton(state.speed, onSpeed)
+            SleepButton(state, onSleep)
+        }
+    }
+}
+
+@Composable
+private fun SpeedButton(speed: Float, onSpeed: (Float) -> Unit) {
+    var open by remember { mutableStateOf(false) }
+    val s = remember { MutableInteractionSource() }
+    val desc = stringResource(R.string.audio_speed_cd, speedLabel(speed))
+    Box {
+        TextButton(
+            { open = true }, Modifier.heightIn(min = 48.dp).focusRing(s, CircleShape).semantics { contentDescription = desc },
+            interactionSource = s
+        ) { Text(speedLabel(speed), color = if (speed == 1f) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.primary) }
+        DropdownMenu(open, { open = false }) {
+            AUDIO_SPEEDS.forEach { v -> DropdownMenuItem({ Text(speedLabel(v)) }, { open = false; onSpeed(v) }) }
+        }
+    }
+}
+
+@Composable
+private fun SleepButton(state: AudioState, onSleep: (Int) -> Unit) {
+    var open by remember { mutableStateOf(false) }
+    val s = remember { MutableInteractionSource() }
+    val left = state.sleepLeftMs?.let { sleepMinutesLeft(it) }
+    val label = when {
+        state.sleepAtEnd -> stringResource(R.string.audio_sleep_end)
+        left != null -> pluralStringResource(R.plurals.player_minutes_n, left, left)
+        else -> null
+    }
+    val desc = when {
+        state.sleepAtEnd -> stringResource(R.string.audio_sleep_end_cd)
+        left != null -> pluralStringResource(R.plurals.audio_sleep_left_cd, left, left)
+        else -> stringResource(R.string.audio_sleep_off_cd)
+    }
+    val tint = if (label != null) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+    Box {
+        TextButton(
+            { open = true }, Modifier.heightIn(min = 48.dp).focusRing(s, CircleShape).semantics { contentDescription = desc },
+            interactionSource = s
+        ) {
+            Icon(Icons.Rounded.Bedtime, null, tint = tint)
+            if (label != null) Text(label, Modifier.padding(start = 8.dp), color = tint)
+        }
+        DropdownMenu(open, { open = false }) {
+            DropdownMenuItem({ Text(stringResource(R.string.player_sleep_off)) }, { open = false; onSleep(0) })
+            SLEEP_MINUTES.forEach { m ->
+                DropdownMenuItem({ Text(pluralStringResource(R.plurals.player_minutes_n, m, m)) }, { open = false; onSleep(m) })
+            }
+            DropdownMenuItem({ Text(stringResource(R.string.audio_sleep_end)) }, { open = false; onSleep(SLEEP_END_OF_TRACK) })
         }
     }
 }
@@ -271,11 +339,11 @@ private fun Queue(state: AudioState, onSkipTo: (Int) -> Unit, modifier: Modifier
 @Preview(showBackground = true, heightDp = 780)
 @Composable
 private fun NowPlayingPreview() = DebforgeTheme {
-    NowPlaying(previewState, {}, {}, {}, {}, {}, {}, {}, {})
+    NowPlaying(previewState, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})
 }
 
 @Preview(showBackground = true, widthDp = 900, heightDp = 480)
 @Composable
 private fun NowPlayingWidePreview() = DebforgeTheme {
-    NowPlaying(previewState.copy(shuffle = true, repeat = AudioRepeat.ONE), {}, {}, {}, {}, {}, {}, {}, {})
+    NowPlaying(previewState.copy(shuffle = true, repeat = AudioRepeat.ONE), {}, {}, {}, {}, {}, {}, {}, {}, {}, {})
 }

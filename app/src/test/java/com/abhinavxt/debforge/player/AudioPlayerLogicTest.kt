@@ -16,6 +16,20 @@ class AudioPlayerLogicTest {
         assertEquals(Player.REPEAT_MODE_ONE, AudioRepeat.ONE.toPlayerMode())
     }
 
+    @Test fun sleepMinutesRoundUpAndNeverShowZero() {
+        assertEquals(1, sleepMinutesLeft(0))
+        assertEquals(1, sleepMinutesLeft(1))
+        assertEquals(1, sleepMinutesLeft(60_000))
+        assertEquals(2, sleepMinutesLeft(60_001))
+        assertEquals(15, sleepMinutesLeft(15 * 60_000L))
+    }
+
+    @Test fun speedLabelsDropTrailingZero() {
+        assertEquals("1x", speedLabel(1f))
+        assertEquals("0.75x", speedLabel(0.75f))
+        assertEquals("2x", speedLabel(2f))
+    }
+
     @Test fun clockFormats() {
         assertEquals("0:00", formatClock(-5))
         assertEquals("3:05", formatClock(185_900))

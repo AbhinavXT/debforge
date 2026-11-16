@@ -3,6 +3,7 @@ package com.abhinavxt.debforge.player
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.SystemClock
 import androidx.annotation.OptIn
 import androidx.core.net.toUri
 import androidx.media3.common.AudioAttributes
@@ -17,6 +18,7 @@ import com.abhinavxt.debforge.MainActivity
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -54,7 +56,11 @@ data class AudioState(
     val order: List<Int> = queue.indices.toList(),
     /** From the player, so shuffle and repeat count: Next does nothing on the last item with repeat off. */
     val hasNext: Boolean = true,
-    val hasPrevious: Boolean = true
+    val hasPrevious: Boolean = true,
+    val speed: Float = 1f,
+    /** Sleep timer: time left when counting down, [sleepAtEnd] when pausing after this track; both unset = off. */
+    val sleepLeftMs: Long? = null,
+    val sleepAtEnd: Boolean = false
 ) {
     val track: AudioTrack? get() = queue.getOrNull(index)
 }
@@ -96,6 +102,16 @@ fun upNextOrder(order: List<Int>, current: Int, repeat: AudioRepeat): List<Int> 
 /** [queue] without the entries whose [id] is in [ids]. */
 fun <T> queueWithout(queue: List<T>, ids: Set<String>, id: (T) -> String): List<T> = queue.filter { id(it) !in ids }
 
+val AUDIO_SPEEDS = listOf(0.5f, 0.75f, 1f, 1.25f, 1.5f, 2f)
+val SLEEP_MINUTES = listOf(15, 30, 45, 60)
+const val SLEEP_END_OF_TRACK = -1
+
+/** "1x", "1.25x". */
+fun speedLabel(speed: Float): String = (if (speed == speed.toInt().toFloat()) speed.toInt().toString() else speed.toString()) + "x"
+
+/** Whole minutes to show for a running timer: rounds up, so never "0" while it is still active. */
+fun sleepMinutesLeft(remainingMs: Long): Int = maxOf(1L, (remainingMs + 59_999) / 60_000).toInt()
+
 /** "3:05" or "1:02:03"; negative and unknown (time unset) durations show as 0:00. */
 fun formatClock(ms: Long): String {
     val s = (ms.coerceAtLeast(0) / 1000)
@@ -124,6 +140,11 @@ class AudioPlayer @Inject constructor(@ApplicationContext private val context: C
         override fun onEvents(player: Player, events: Player.Events) {
             publish()
             playing.value = player.isPlaying // position only moves while playing
+        }
+
+        override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
+            // "End of track" has paused at the end of the item: the timer is spent.
+            if (reason == Player.PLAY_WHEN_READY_CHANGE_REASON_END_OF_MEDIA_ITEM && sleepAtEnd) cancelSleep()
         }
 
         override fun onPlayerError(error: PlaybackException) {
@@ -178,6 +199,34 @@ class AudioPlayer @Inject constructor(@ApplicationContext private val context: C
 
     private var tracks: List<AudioTrack> = emptyList()
 
+    // The sleep timer lives here, with the player, so it outlasts the screen; it is not persisted.
+    private var sleepJob: Job? = null
+    private var sleepDeadline = 0L
+    private var sleepAtEnd = false
+
+    fun setSpeed(speed: Float) { player?.setPlaybackSpeed(speed) }
+
+    /** [minutes] 0 = off, [SLEEP_END_OF_TRACK], or a countdown; pauses (keeps the queue) when it fires. */
+    fun setSleepTimer(minutes: Int) {
+        val p = player ?: return
+        cancelSleep()
+        if (minutes == SLEEP_END_OF_TRACK) { sleepAtEnd = true; p.pauseAtEndOfMediaItems = true }
+        else if (minutes > 0) {
+            val ms = minutes * 60_000L
+            sleepDeadline = SystemClock.uptimeMillis() + ms // uptime, like delay() on the main dispatcher
+            sleepJob = scope.launch { delay(ms); p.pause(); cancelSleep() }
+        }
+        publish()
+    }
+
+    private fun cancelSleep() {
+        sleepJob?.cancel()
+        sleepJob = null
+        sleepAtEnd = false
+        player?.pauseAtEndOfMediaItems = false
+        publish()
+    }
+
     fun toggle() { player?.let { if (wantsToPlay(it.playWhenReady, it.playbackState)) it.pause() else it.play() } }
     fun next() { player?.seekToNextMediaItem() }
     /** Past 3 seconds restarts the track, like every music player. */
@@ -206,6 +255,7 @@ class AudioPlayer @Inject constructor(@ApplicationContext private val context: C
         playing.value = false
         BackgroundPlayback.openIntent = null // only audio sets it; a later video must open itself
         val p = player ?: return
+        cancelSleep()
         player = null
         if (BackgroundPlayback.player === p) {
             BackgroundPlayback.player = null
@@ -242,6 +292,9 @@ class AudioPlayer @Inject constructor(@ApplicationContext private val context: C
             repeat = repeatFromPlayerMode(p.repeatMode),
             hasNext = p.hasNextMediaItem(),
             hasPrevious = p.hasPreviousMediaItem(),
+            speed = p.playbackParameters.speed,
+            sleepLeftMs = if (sleepJob != null) (sleepDeadline - SystemClock.uptimeMillis()).coerceAtLeast(0) else null,
+            sleepAtEnd = sleepAtEnd,
             order = if (p.shuffleModeEnabled && p.mediaItemCount == tracks.size) {
                 val tl = p.currentTimeline
                 playOrder(tracks.size, p.currentMediaItemIndex) { tl.getNextWindowIndex(it, if (p.repeatMode == Player.REPEAT_MODE_ALL) Player.REPEAT_MODE_ALL else Player.REPEAT_MODE_OFF, true) }
