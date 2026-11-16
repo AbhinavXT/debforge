@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -37,6 +39,10 @@ import androidx.compose.material.icons.rounded.DeleteOutline
 import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.icons.rounded.GraphicEq
 import androidx.compose.material.icons.rounded.InsertDriveFile
+import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.Favorite
+import androidx.compose.material.icons.rounded.FavoriteBorder
+import androidx.compose.material.icons.rounded.PlaylistAdd
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.MusicNote
 import androidx.compose.material.icons.rounded.PlayArrow
@@ -50,6 +56,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -155,7 +162,16 @@ fun MediaScreen(
         },
         onOpenDownloads = onOpenDownloads,
         onOpenSettings = onOpenSettings,
-        onOpenYouTube = onOpenYouTube
+        onOpenYouTube = onOpenYouTube,
+        lists = AudioListActions(
+            onPick = viewModel::selectAudioList,
+            onToggleFavourite = viewModel::toggleFavourite,
+            onCreate = { n, ids -> viewModel.createPlaylist(n, ids) },
+            onRename = viewModel::renamePlaylist,
+            onDelete = viewModel::deletePlaylist,
+            onAddTo = viewModel::addToPlaylist,
+            onRemoveFrom = viewModel::removeFromPlaylist
+        )
     )
     SnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter).padding(bottom = 16.dp))
     }
@@ -178,12 +194,17 @@ internal fun MediaContent(
     onDelete: (List<String>) -> Unit,
     onOpenDownloads: () -> Unit,
     onOpenSettings: () -> Unit,
-    onOpenYouTube: () -> Unit
+    onOpenYouTube: () -> Unit,
+    lists: AudioListActions = AudioListActions()
 ) {
     val cs = MaterialTheme.colorScheme
     val selecting = state.selected.isNotEmpty()
     var confirm by remember { mutableStateOf<List<DownloadEntity>?>(null) }
     BackHandler(selecting, onClearSelection)
+    var addTo by remember { mutableStateOf<List<String>?>(null) }
+    var nameFor by remember { mutableStateOf<Pair<String?, List<String>>?>(null) } // (playlist id when renaming, tracks to add when creating)
+    var deleteList by remember { mutableStateOf<com.abhinavxt.debforge.data.playback.Playlist?>(null) }
+    val pickedList = state.lists.playlists.firstOrNull { it.id == state.audioList }
 
     Column(Modifier.fillMaxSize()) {
         if (selecting) {
@@ -195,6 +216,9 @@ internal fun MediaContent(
                         val queue = state.current.filter { it.id in state.selected }
                         onClearSelection(); onPlayAudio(queue, 0)
                     }) { Icon(Icons.Rounded.PlayArrow, stringResource(R.string.action_play)) }
+                    IconButton(onClick = { addTo = state.current.filter { it.id in state.selected }.map { it.id } }) {
+                        Icon(Icons.Rounded.PlaylistAdd, stringResource(R.string.media_add_to_playlist))
+                    }
                 }
                 IconButton(onClick = { confirm = state.current.filter { it.id in state.selected } }) {
                     Icon(Icons.Rounded.Delete, stringResource(R.string.media_delete), tint = cs.error)
@@ -259,8 +283,51 @@ internal fun MediaContent(
                 SortMenu(state.sort, onSort)
             }
 
+            if (state.kind == FileKind.Audio) {
+                // The options button stays outside the scrolling chips, so a long row cannot push it off screen.
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    Modifier.weight(1f).horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    FilterChip(state.audioList == null, { lists.onPick(null) }, { Text(stringResource(R.string.search_kind_all)) })
+                    FilterChip(state.audioList == "fav", { lists.onPick("fav") }, { Text(stringResource(R.string.media_list_favourites)) })
+                    state.lists.playlists.forEach { p ->
+                        FilterChip(state.audioList == p.id, { lists.onPick(p.id) }, { Text(p.name, maxLines = 1, overflow = TextOverflow.Ellipsis) })
+                    }
+                    FilterChip(
+                        false, { nameFor = null to emptyList() }, { Text(stringResource(R.string.media_new_playlist)) },
+                        leadingIcon = { Icon(Icons.Rounded.Add, null) }
+                    )
+                }
+                    if (pickedList != null) {
+                        var menu by remember { mutableStateOf(false) }
+                        Box {
+                            IconButton(onClick = { menu = true }) { Icon(Icons.Rounded.MoreVert, stringResource(R.string.media_playlist_options)) }
+                            DropdownMenu(menu, { menu = false }) {
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.media_playlist_rename)) },
+                                    onClick = { menu = false; nameFor = pickedList.id to emptyList() }
+                                )
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.media_playlist_delete), color = cs.error) },
+                                    onClick = { menu = false; deleteList = pickedList }
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
             val items = state.current
-            if (items.isEmpty()) {
+            if (items.isEmpty() && state.kind == FileKind.Audio && state.audioList != null && state.query.isBlank()) {
+                MessageState(
+                    icon = Icons.Rounded.MusicNote,
+                    title = stringResource(R.string.media_list_empty_title),
+                    body = stringResource(R.string.media_list_empty_body)
+                )
+            } else if (items.isEmpty()) {
                 MessageState(
                     icon = Icons.Rounded.Download,
                     title = stringResource(R.string.media_no_match_title),
@@ -286,7 +353,11 @@ internal fun MediaContent(
                                 onClick = { if (selecting) onToggle(e.id) else onPlayAudio(items, items.indexOf(e)) },
                                 onLong = { onToggle(e.id) },
                                 onPlay = { onPlayAudio(items, items.indexOf(e)) },
-                                onDelete = { confirm = listOf(e) }
+                                onDelete = { confirm = listOf(e) },
+                                favourite = e.id in state.lists.favourites,
+                                onFavourite = { lists.onToggleFavourite(e.id) },
+                                onAddToPlaylist = { addTo = listOf(e.id) },
+                                removeFrom = pickedList?.let { p -> p.name to { lists.onRemoveFrom(p.id, e.id) } }
                             )
                             FileKind.File -> MediaRow(
                                 e, FileKind.File, selected, false, m,
@@ -300,6 +371,35 @@ internal fun MediaContent(
                 }
             }
         }
+    }
+
+    addTo?.let { ids ->
+        AddToPlaylistDialog(
+            state.lists.playlists,
+            onPick = { lists.onAddTo(it.id, ids); onClearSelection() },
+            onNew = { nameFor = null to ids },
+            onDismiss = { addTo = null }
+        )
+    }
+    nameFor?.let { (renaming, ids) ->
+        PlaylistNameDialog(
+            title = stringResource(if (renaming == null) R.string.media_new_playlist else R.string.media_playlist_rename),
+            initial = state.lists.playlists.firstOrNull { it.id == renaming }?.name.orEmpty(),
+            onSave = { n -> if (renaming == null) { lists.onCreate(n, ids); onClearSelection() } else lists.onRename(renaming, n) },
+            onDismiss = { nameFor = null }
+        )
+    }
+    deleteList?.let { p ->
+        AlertDialog(
+            onDismissRequest = { deleteList = null },
+            icon = { Icon(Icons.Rounded.DeleteOutline, null, tint = cs.error) },
+            title = { Text(stringResource(R.string.media_playlist_delete)) },
+            text = { Text(stringResource(R.string.media_playlist_delete_body, p.name)) },
+            confirmButton = {
+                TextButton(onClick = { deleteList = null; lists.onDelete(p.id) }) { Text(stringResource(R.string.media_delete), color = cs.error) }
+            },
+            dismissButton = { TextButton(onClick = { deleteList = null }) { Text(stringResource(R.string.action_cancel)) } }
+        )
     }
 
     confirm?.let { list ->
@@ -404,7 +504,11 @@ private fun MediaRow(
     onClick: () -> Unit,
     onLong: () -> Unit,
     onPlay: (() -> Unit)?,
-    onDelete: () -> Unit
+    onDelete: () -> Unit,
+    favourite: Boolean = false,
+    onFavourite: (() -> Unit)? = null,
+    onAddToPlaylist: (() -> Unit)? = null,
+    removeFrom: Pair<String, () -> Unit>? = null
 ) {
     val cs = MaterialTheme.colorScheme
     val shape = RoundedCornerShape(16.dp)
@@ -436,12 +540,18 @@ private fun MediaRow(
         }
         Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f)) {
-            Text(
-                if (kind == FileKind.File) e.filename else e.displayTitle(),
-                style = MaterialTheme.typography.titleMedium,
-                color = if (playing) cs.primary else cs.onSurface,
-                maxLines = 1, overflow = TextOverflow.Ellipsis
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    if (kind == FileKind.File) e.filename else e.displayTitle(),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = if (playing) cs.primary else cs.onSurface,
+                    maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false)
+                )
+                if (favourite) Icon(
+                    Icons.Rounded.Favorite, stringResource(R.string.media_favourite),
+                    tint = cs.primary, modifier = Modifier.padding(start = 6.dp).size(16.dp)
+                )
+            }
             if (sub.isNotEmpty()) Text(sub, style = MaterialTheme.typography.bodyMedium, color = cs.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
         Box {
@@ -451,6 +561,21 @@ private fun MediaRow(
                     text = { Text(stringResource(R.string.action_play)) },
                     leadingIcon = { Icon(Icons.Rounded.MusicNote, null) },
                     onClick = { menu = false; onPlay() }
+                )
+                if (onFavourite != null) DropdownMenuItem(
+                    text = { Text(stringResource(if (favourite) R.string.media_fav_remove else R.string.media_fav_add)) },
+                    leadingIcon = { Icon(if (favourite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder, null) },
+                    onClick = { menu = false; onFavourite() }
+                )
+                if (onAddToPlaylist != null) DropdownMenuItem(
+                    text = { Text(stringResource(R.string.media_add_to_playlist) + "…") },
+                    leadingIcon = { Icon(Icons.Rounded.PlaylistAdd, null) },
+                    onClick = { menu = false; onAddToPlaylist() }
+                )
+                if (removeFrom != null) DropdownMenuItem(
+                    text = { Text(stringResource(R.string.action_remove_from, removeFrom.first)) },
+                    leadingIcon = { Icon(Icons.Rounded.Close, null) },
+                    onClick = { menu = false; removeFrom.second() }
                 )
                 DropdownMenuItem(
                     text = { Text(stringResource(R.string.media_delete), color = cs.error) },

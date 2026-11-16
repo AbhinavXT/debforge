@@ -892,4 +892,17 @@
     <string name="shell_dl_empty_title">Tidak ada yang diunduh</string>
     <string name="shell_dl_empty_body">Unduhan yang selesai ada di Media.</string>
     <string name="shell_dl_open_media">Buka Media</string>
+    <string name="media_list_favourites">Favorit</string>
+    <string name="media_new_playlist">Playlist baru</string>
+    <string name="media_fav_add">Tambahkan ke favorit</string>
+    <string name="media_fav_remove">Hapus dari favorit</string>
+    <string name="media_add_to_playlist">Tambahkan ke playlist</string>
+    <string name="media_playlist_name">Nama playlist</string>
+    <string name="media_playlist_rename">Ganti nama playlist</string>
+    <string name="media_playlist_delete">Hapus playlist</string>
+    <string name="media_playlist_delete_body">“%1$s” akan dihapus. Lagu tetap terunduh.</string>
+    <string name="media_list_empty_title">Belum ada apa-apa</string>
+    <string name="media_list_empty_body">Tambahkan lagu lewat menu “Tindakan lainnya” pada lagu.</string>
+    <string name="media_playlist_options">Opsi playlist</string>
+    <string name="media_favourite">Favorit</string>
 </resources>

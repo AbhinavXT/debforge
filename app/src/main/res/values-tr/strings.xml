@@ -940,4 +940,17 @@
     <string name="shell_dl_empty_title">İndirilen bir şey yok</string>
     <string name="shell_dl_empty_body">Biten indirmeler Medya\'da.</string>
     <string name="shell_dl_open_media">Medya\'yı aç</string>
+    <string name="media_list_favourites">Favoriler</string>
+    <string name="media_new_playlist">Yeni çalma listesi</string>
+    <string name="media_fav_add">Favorilere ekle</string>
+    <string name="media_fav_remove">Favorilerden kaldır</string>
+    <string name="media_add_to_playlist">Çalma listesine ekle</string>
+    <string name="media_playlist_name">Çalma listesi adı</string>
+    <string name="media_playlist_rename">Çalma listesini yeniden adlandır</string>
+    <string name="media_playlist_delete">Çalma listesini sil</string>
+    <string name="media_playlist_delete_body">“%1$s” silinecek. Parçalar indirilmiş olarak kalır.</string>
+    <string name="media_list_empty_title">Burada henüz bir şey yok</string>
+    <string name="media_list_empty_body">Parçaları, parçanın “Diğer işlemler” menüsünden ekleyin.</string>
+    <string name="media_playlist_options">Çalma listesi seçenekleri</string>
+    <string name="media_favourite">Favori</string>
 </resources>

@@ -940,4 +940,17 @@
     <string name="shell_dl_empty_title">कुछ डाउनलोड नहीं हो रहा</string>
     <string name="shell_dl_empty_body">पूरे हो चुके डाउनलोड मीडिया में हैं।</string>
     <string name="shell_dl_open_media">मीडिया खोलें</string>
+    <string name="media_list_favourites">पसंदीदा</string>
+    <string name="media_new_playlist">नई प्लेलिस्ट</string>
+    <string name="media_fav_add">पसंदीदा में जोड़ें</string>
+    <string name="media_fav_remove">पसंदीदा से हटाएँ</string>
+    <string name="media_add_to_playlist">प्लेलिस्ट में जोड़ें</string>
+    <string name="media_playlist_name">प्लेलिस्ट का नाम</string>
+    <string name="media_playlist_rename">प्लेलिस्ट का नाम बदलें</string>
+    <string name="media_playlist_delete">प्लेलिस्ट हटाएँ</string>
+    <string name="media_playlist_delete_body">“%1$s” हटा दी जाएगी। ट्रैक डाउनलोड ही रहेंगे।</string>
+    <string name="media_list_empty_title">यहाँ अभी कुछ नहीं है</string>
+    <string name="media_list_empty_body">ट्रैक के “और विकल्प” मेनू से ट्रैक जोड़ें।</string>
+    <string name="media_playlist_options">प्लेलिस्ट विकल्प</string>
+    <string name="media_favourite">पसंदीदा</string>
 </resources>

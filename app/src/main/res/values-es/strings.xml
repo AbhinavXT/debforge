@@ -988,4 +988,17 @@
     <string name="shell_dl_empty_title">Nada en descarga</string>
     <string name="shell_dl_empty_body">Las descargas terminadas están en Medios.</string>
     <string name="shell_dl_open_media">Abrir Medios</string>
+    <string name="media_list_favourites">Favoritos</string>
+    <string name="media_new_playlist">Nueva lista</string>
+    <string name="media_fav_add">Añadir a favoritos</string>
+    <string name="media_fav_remove">Quitar de favoritos</string>
+    <string name="media_add_to_playlist">Añadir a una lista</string>
+    <string name="media_playlist_name">Nombre de la lista</string>
+    <string name="media_playlist_rename">Renombrar lista</string>
+    <string name="media_playlist_delete">Eliminar lista</string>
+    <string name="media_playlist_delete_body">Se eliminará «%1$s». Las pistas siguen descargadas.</string>
+    <string name="media_list_empty_title">Aún no hay nada</string>
+    <string name="media_list_empty_body">Añade pistas desde el menú «Más acciones» de una pista.</string>
+    <string name="media_playlist_options">Opciones de la lista</string>
+    <string name="media_favourite">Favorita</string>
 </resources>

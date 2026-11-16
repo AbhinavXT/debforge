@@ -892,4 +892,17 @@
     <string name="shell_dl_empty_title">没有正在下载的内容</string>
     <string name="shell_dl_empty_body">已完成的下载在“媒体”中。</string>
     <string name="shell_dl_open_media">打开媒体</string>
+    <string name="media_list_favourites">收藏</string>
+    <string name="media_new_playlist">新建播放列表</string>
+    <string name="media_fav_add">添加到收藏</string>
+    <string name="media_fav_remove">从收藏中移除</string>
+    <string name="media_add_to_playlist">添加到播放列表</string>
+    <string name="media_playlist_name">播放列表名称</string>
+    <string name="media_playlist_rename">重命名播放列表</string>
+    <string name="media_playlist_delete">删除播放列表</string>
+    <string name="media_playlist_delete_body">将删除“%1$s”。曲目仍保留在已下载中。</string>
+    <string name="media_list_empty_title">这里还没有内容</string>
+    <string name="media_list_empty_body">请从曲目的“更多操作”菜单中添加曲目。</string>
+    <string name="media_playlist_options">播放列表选项</string>
+    <string name="media_favourite">已收藏</string>
 </resources>

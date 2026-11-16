@@ -940,4 +940,17 @@
     <string name="shell_dl_empty_title">ఏదీ డౌన్‌లోడ్ అవ్వడం లేదు</string>
     <string name="shell_dl_empty_body">పూర్తయిన డౌన్‌లోడ్‌లు మీడియాలో ఉన్నాయి.</string>
     <string name="shell_dl_open_media">మీడియా తెరువు</string>
+    <string name="media_list_favourites">ఇష్టమైనవి</string>
+    <string name="media_new_playlist">కొత్త ప్లేలిస్ట్</string>
+    <string name="media_fav_add">ఇష్టమైనవాటికి జోడించండి</string>
+    <string name="media_fav_remove">ఇష్టమైనవాటి నుండి తీసివేయండి</string>
+    <string name="media_add_to_playlist">ప్లేలిస్ట్‌కు జోడించండి</string>
+    <string name="media_playlist_name">ప్లేలిస్ట్ పేరు</string>
+    <string name="media_playlist_rename">ప్లేలిస్ట్ పేరు మార్చండి</string>
+    <string name="media_playlist_delete">ప్లేలిస్ట్‌ను తొలగించండి</string>
+    <string name="media_playlist_delete_body">“%1$s” తొలగించబడుతుంది. ట్రాక్‌లు డౌన్‌లోడ్ అయినట్లే ఉంటాయి.</string>
+    <string name="media_list_empty_title">ఇక్కడ ఇంకా ఏమీ లేదు</string>
+    <string name="media_list_empty_body">ట్రాక్ యొక్క “మరిన్ని చర్యలు” మెనూ నుండి ట్రాక్‌లను జోడించండి.</string>
+    <string name="media_playlist_options">ప్లేలిస్ట్ ఎంపికలు</string>
+    <string name="media_favourite">ఇష్టమైనది</string>
 </resources>

@@ -1036,4 +1036,17 @@
     <string name="shell_dl_empty_title">Ничего не загружается</string>
     <string name="shell_dl_empty_body">Завершённые загрузки находятся в разделе «Медиа».</string>
     <string name="shell_dl_open_media">Открыть «Медиа»</string>
+    <string name="media_list_favourites">Избранное</string>
+    <string name="media_new_playlist">Новый плейлист</string>
+    <string name="media_fav_add">Добавить в избранное</string>
+    <string name="media_fav_remove">Убрать из избранного</string>
+    <string name="media_add_to_playlist">Добавить в плейлист</string>
+    <string name="media_playlist_name">Название плейлиста</string>
+    <string name="media_playlist_rename">Переименовать плейлист</string>
+    <string name="media_playlist_delete">Удалить плейлист</string>
+    <string name="media_playlist_delete_body">Плейлист «%1$s» будет удалён. Треки останутся загруженными.</string>
+    <string name="media_list_empty_title">Пока пусто</string>
+    <string name="media_list_empty_body">Добавляйте треки через меню «Ещё» у трека.</string>
+    <string name="media_playlist_options">Параметры плейлиста</string>
+    <string name="media_favourite">В избранном</string>
 </resources>

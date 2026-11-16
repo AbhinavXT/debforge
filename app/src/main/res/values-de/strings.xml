@@ -940,4 +940,17 @@
     <string name="shell_dl_empty_title">Keine laufenden Downloads</string>
     <string name="shell_dl_empty_body">Fertige Downloads findest du unter Medien.</string>
     <string name="shell_dl_open_media">Medien öffnen</string>
+    <string name="media_list_favourites">Favoriten</string>
+    <string name="media_new_playlist">Neue Playlist</string>
+    <string name="media_fav_add">Zu Favoriten hinzufügen</string>
+    <string name="media_fav_remove">Aus Favoriten entfernen</string>
+    <string name="media_add_to_playlist">Zur Playlist hinzufügen</string>
+    <string name="media_playlist_name">Name der Playlist</string>
+    <string name="media_playlist_rename">Playlist umbenennen</string>
+    <string name="media_playlist_delete">Playlist löschen</string>
+    <string name="media_playlist_delete_body">„%1$s“ wird gelöscht. Die Titel bleiben heruntergeladen.</string>
+    <string name="media_list_empty_title">Noch nichts hier</string>
+    <string name="media_list_empty_body">Füge Titel über das Menü „Weitere Aktionen“ eines Titels hinzu.</string>
+    <string name="media_playlist_options">Playlist-Optionen</string>
+    <string name="media_favourite">Favorit</string>
 </resources>

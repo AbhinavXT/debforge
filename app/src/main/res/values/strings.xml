@@ -942,4 +942,17 @@
     <string name="shell_dl_empty_title">Nothing downloading</string>
     <string name="shell_dl_empty_body">Finished downloads are in Media.</string>
     <string name="shell_dl_open_media">Open Media</string>
+    <string name="media_list_favourites">Favourites</string>
+    <string name="media_new_playlist">New playlist</string>
+    <string name="media_fav_add">Add to favourites</string>
+    <string name="media_fav_remove">Remove from favourites</string>
+    <string name="media_add_to_playlist">Add to playlist</string>
+    <string name="media_playlist_name">Playlist name</string>
+    <string name="media_playlist_rename">Rename playlist</string>
+    <string name="media_playlist_delete">Delete playlist</string>
+    <string name="media_playlist_delete_body">“%1$s” will be deleted. The tracks stay downloaded.</string>
+    <string name="media_list_empty_title">Nothing here yet</string>
+    <string name="media_list_empty_body">Add tracks from a track’s More actions menu.</string>
+    <string name="media_playlist_options">Playlist options</string>
+    <string name="media_favourite">Favourite</string>
 </resources>
