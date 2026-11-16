@@ -814,6 +814,8 @@
     <string name="yt_clear_search">శోధనను తొలగించు</string>
     <string name="yt_empty_title">YouTube నుండి సేవ్ చేయండి</string>
     <string name="yt_empty_body">YouTubeలో వెతకండి లేదా లింక్ అతికించండి, క్వాలిటీ ఎంచుకోండి, అది మీ పరికరానికి డౌన్‌లోడ్ అవుతుంది.</string>
+    <string name="yt_trending">ట్రెండింగ్ సంగీతం</string>
+    <string name="yt_open_channel">%1$s ఛానెల్‌ను తెరవండి</string>
     <string name="yt_no_results_title">ఫలితాలు లేవు</string>
     <string name="yt_no_results_body">\"%1$s\" కోసం ఏమీ దొరకలేదు. వేరే పదాలు ప్రయత్నించండి.</string>
     <string name="yt_loading">వీడియో లోడ్ అవుతోంది</string>

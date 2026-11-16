@@ -98,6 +98,7 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.Role
@@ -136,6 +137,7 @@ fun YouTubeScreen(
     // Back steps out of a preview (to its search results, if any) or a search before it leaves the tab.
     androidx.activity.compose.BackHandler(ui !is YouTubeUi.Empty, viewModel::reset)
     val input by viewModel.input.collectAsStateWithLifecycle()
+    val trending by viewModel.trending.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
     val context = LocalContext.current
     // Android only lets the focused window read the clipboard, so read when focus arrives, and again on tapping Paste.
@@ -219,6 +221,9 @@ fun YouTubeScreen(
                     onDownloadPlaylist = viewModel::downloadPlaylist,
                     onLoadMore = viewModel::loadMore,
                     resultsList = viewModel.resultsList,
+                    trending = trending,
+                    onChannel = viewModel::openChannel,
+                    onLoadTrending = viewModel::loadTrending,
                 )
             }
         }
@@ -253,6 +258,9 @@ internal fun YouTubeContent(
     onDownloadPlaylist: () -> Unit,
     onLoadMore: () -> Unit,
     resultsList: LazyListState = rememberLazyListState(),
+    trending: List<YouTubeSearchResult> = emptyList(),
+    onChannel: (name: String, url: String) -> Unit = { _, _ -> },
+    onLoadTrending: () -> Unit = {},
 ) {
     AnimatedContent(
         ui,
@@ -262,9 +270,9 @@ internal fun YouTubeContent(
         modifier = Modifier.widthIn(max = 640.dp),
     ) { state ->
         when (state) {
-            YouTubeUi.Empty -> EmptyState(input, clipLink, onInput, onSubmit, onPaste)
+            YouTubeUi.Empty -> EmptyState(input, clipLink, onInput, onSubmit, onPaste, trending, onPick, onChannel, onLoadTrending)
             YouTubeUi.Resolving -> Skeleton()
-            is YouTubeUi.Results -> ResultsState(state, input, onInput, onSubmit, onPaste, onPick, onLoadMore, resultsList)
+            is YouTubeUi.Results -> ResultsState(state, input, onInput, onSubmit, onPaste, onPick, onChannel, onLoadMore, resultsList)
             is YouTubeUi.Preview -> PreviewState(state, onReset, onMode, onSelect, onSubtitle, onDownload)
             is YouTubeUi.Playlist -> PlaylistState(state, onReset, onToggle, onSelectAll, onQuality, onDownloadPlaylist)
             is YouTubeUi.Error -> MessageState(
@@ -350,6 +358,7 @@ private fun ResultsState(
     onSubmit: (String) -> Unit,
     onPaste: () -> Unit,
     onPick: (YouTubeSearchResult) -> Unit,
+    onChannel: (String, String) -> Unit,
     onLoadMore: () -> Unit,
     listState: LazyListState,
 ) {
@@ -367,6 +376,9 @@ private fun ResultsState(
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         item { LinkOrSearchField(input, onInput, onSubmit, onPaste, focus) }
+        if (r.channelUrl != null) {
+            item { Text(r.query, style = MaterialTheme.typography.titleMedium, maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.semantics { heading() }) }
+        }
         if (r.items.isEmpty()) {
             item {
                 MessageState(
@@ -377,26 +389,41 @@ private fun ResultsState(
                 )
             }
         }
-        items(r.items, key = { it.url }) { ResultRow(it, onClick = { onPick(it) }) }
+        items(r.items, key = { it.url }) { ResultRow(it, onClick = { onPick(it) }, onChannel = if (r.channelUrl == null) onChannel else null) }
         if (r.loadingMore) item { LinearProgressIndicator(Modifier.fillMaxWidth().padding(vertical = 8.dp)) }
     }
 }
 
 @Composable
-private fun ResultRow(r: YouTubeSearchResult, onClick: () -> Unit) {
+private fun ResultRow(r: YouTubeSearchResult, onClick: () -> Unit, onChannel: ((String, String) -> Unit)? = null) {
     val source = remember { MutableInteractionSource() }
-    Row(
-        Modifier.fillMaxWidth().heightIn(min = 56.dp).clip(RowShape).focusRing(source, RowShape)
-            .clickable(interactionSource = source, indication = androidx.compose.foundation.LocalIndication.current, role = Role.Button, onClick = onClick)
-            .padding(8.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        ResultThumb(r)
-        Column(Modifier.weight(1f)) {
-            Text(r.title, style = MaterialTheme.typography.titleSmall, maxLines = 2, overflow = TextOverflow.Ellipsis)
-            if (!r.channel.isNullOrBlank()) {
-                Text(r.channel, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
+    val channelUrl = r.channelUrl?.takeIf { onChannel != null && !r.channel.isNullOrBlank() }
+    // The row and the channel name are siblings, not nested clickables, so TalkBack and TV focus see both.
+    Box(Modifier.fillMaxWidth().heightIn(min = 56.dp).clip(RowShape).focusRing(source, RowShape)) {
+        Spacer(
+            Modifier.matchParentSize().semantics { contentDescription = r.title }
+                .clickable(interactionSource = source, indication = androidx.compose.foundation.LocalIndication.current, role = Role.Button, onClick = onClick),
+        )
+        Row(
+            Modifier.fillMaxWidth().padding(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            ResultThumb(r)
+            Column(Modifier.weight(1f)) {
+                Text(r.title, style = MaterialTheme.typography.titleSmall, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                if (!r.channel.isNullOrBlank()) {
+                    val style = MaterialTheme.typography.bodyMedium
+                    val color = MaterialTheme.colorScheme.onSurfaceVariant
+                    if (channelUrl != null) {
+                        val label = stringResource(R.string.yt_open_channel, r.channel)
+                        Text(
+                            r.channel, style = style, color = color, maxLines = 1, overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.clip(RoundedCornerShape(8.dp)).clickable(role = Role.Button) { onChannel?.invoke(r.channel, channelUrl) }
+                                .semantics { contentDescription = label }.padding(vertical = 6.dp),
+                        )
+                    } else Text(r.channel, style = style, color = color, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                }
             }
         }
     }
@@ -531,7 +558,12 @@ private fun EmptyState(
     onInput: (String) -> Unit,
     onSubmit: (String) -> Unit,
     onPaste: () -> Unit,
+    trending: List<YouTubeSearchResult>,
+    onPick: (YouTubeSearchResult) -> Unit,
+    onChannel: (String, String) -> Unit,
+    onLoadTrending: () -> Unit,
 ) {
+    LaunchedEffect(Unit) { onLoadTrending() }
     val keyboard = LocalSoftwareKeyboardController.current
     val focus = remember { FocusRequester() }
     LaunchedEffect(Unit) { runCatching { focus.requestFocus() } } // TV: land on the field
@@ -552,8 +584,14 @@ private fun EmptyState(
             icon = Icons.Rounded.PlayCircle,
             title = stringResource(R.string.yt_empty_title),
             body = stringResource(R.string.yt_empty_body),
-            modifier = Modifier.heightIn(min = 280.dp),
+            modifier = Modifier.heightIn(min = if (trending.isEmpty()) 280.dp else 160.dp),
         )
+        if (trending.isNotEmpty()) {
+            Text(stringResource(R.string.yt_trending), style = MaterialTheme.typography.titleMedium, modifier = Modifier.semantics { heading() })
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                trending.forEach { ResultRow(it, onClick = { onPick(it) }, onChannel = onChannel) }
+            }
+        }
     }
 }
 

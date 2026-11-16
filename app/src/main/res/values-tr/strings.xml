@@ -814,6 +814,8 @@
     <string name="yt_clear_search">Aramayı temizle</string>
     <string name="yt_empty_title">YouTube\'dan kaydet</string>
     <string name="yt_empty_body">YouTube\'da arayın veya bağlantı yapıştırın, kaliteyi seçin, cihazınıza insin.</string>
+    <string name="yt_trending">Trend müzikler</string>
+    <string name="yt_open_channel">%1$s kanalını aç</string>
     <string name="yt_no_results_title">Sonuç yok</string>
     <string name="yt_no_results_body">\"%1$s\" için sonuç bulunamadı. Başka sözcükler deneyin.</string>
     <string name="yt_loading">Video yükleniyor</string>

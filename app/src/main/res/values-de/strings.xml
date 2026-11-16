@@ -814,6 +814,8 @@
     <string name="yt_clear_search">Suche löschen</string>
     <string name="yt_empty_title">Von YouTube speichern</string>
     <string name="yt_empty_body">YouTube durchsuchen oder Link einfügen, Qualität wählen – und der Download landet auf deinem Gerät.</string>
+    <string name="yt_trending">Musiktrends</string>
+    <string name="yt_open_channel">Kanal %1$s öffnen</string>
     <string name="yt_no_results_title">Keine Ergebnisse</string>
     <string name="yt_no_results_body">Nichts gefunden für \"%1$s\". Versuche andere Suchbegriffe.</string>
     <string name="yt_loading">Video wird geladen</string>

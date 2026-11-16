@@ -853,6 +853,8 @@
     <string name="yt_clear_search">Effacer la recherche</string>
     <string name="yt_empty_title">Enregistrer depuis YouTube</string>
     <string name="yt_empty_body">Cherchez sur YouTube ou collez un lien, choisissez la qualité, et le téléchargement arrive sur votre appareil.</string>
+    <string name="yt_trending">Musique tendance</string>
+    <string name="yt_open_channel">Ouvrir la chaîne %1$s</string>
     <string name="yt_no_results_title">Aucun résultat</string>
     <string name="yt_no_results_body">Rien trouvé pour \"%1$s\". Essayez d\'autres mots.</string>
     <string name="yt_loading">Chargement de la vidéo</string>

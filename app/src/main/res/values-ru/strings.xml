@@ -892,6 +892,8 @@
     <string name="yt_clear_search">Очистить поиск</string>
     <string name="yt_empty_title">Сохранение с YouTube</string>
     <string name="yt_empty_body">Найдите видео на YouTube или вставьте ссылку, выберите качество, и оно скачается на устройство.</string>
+    <string name="yt_trending">Музыка в тренде</string>
+    <string name="yt_open_channel">Открыть канал %1$s</string>
     <string name="yt_no_results_title">Ничего не найдено</string>
     <string name="yt_no_results_body">По запросу \"%1$s\" ничего нет. Попробуйте другие слова.</string>
     <string name="yt_loading">Загрузка видео</string>

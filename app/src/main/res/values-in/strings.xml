@@ -775,6 +775,8 @@
     <string name="yt_clear_search">Hapus pencarian</string>
     <string name="yt_empty_title">Simpan dari YouTube</string>
     <string name="yt_empty_body">Cari di YouTube atau tempel tautan, pilih kualitas, lalu video diunduh ke perangkat Anda.</string>
+    <string name="yt_trending">Musik yang sedang tren</string>
+    <string name="yt_open_channel">Buka saluran %1$s</string>
     <string name="yt_no_results_title">Tidak ada hasil</string>
     <string name="yt_no_results_body">Tidak ada hasil untuk \"%1$s\". Coba kata lain.</string>
     <string name="yt_loading">Memuat video</string>

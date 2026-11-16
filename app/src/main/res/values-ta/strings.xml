@@ -814,6 +814,8 @@
     <string name="yt_clear_search">தேடலை அழி</string>
     <string name="yt_empty_title">YouTube-இலிருந்து சேமி</string>
     <string name="yt_empty_body">YouTube-இல் தேடுங்கள் அல்லது இணைப்பை ஒட்டுங்கள், தரத்தைத் தேர்ந்தெடுங்கள், அது உங்கள் சாதனத்தில் பதிவிறங்கும்.</string>
+    <string name="yt_trending">டிரெண்டிங் இசை</string>
+    <string name="yt_open_channel">%1$s சேனலைத் திற</string>
     <string name="yt_no_results_title">முடிவுகள் இல்லை</string>
     <string name="yt_no_results_body">\"%1$s\" க்கு எதுவும் கிடைக்கவில்லை. வேறு சொற்களை முயற்சிக்கவும்.</string>
     <string name="yt_loading">வீடியோ ஏற்றப்படுகிறது</string>

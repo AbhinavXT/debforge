@@ -853,6 +853,8 @@
     <string name="yt_clear_search">Limpar pesquisa</string>
     <string name="yt_empty_title">Salvar do YouTube</string>
     <string name="yt_empty_body">Pesquise no YouTube ou cole um link, escolha a qualidade e o download vai para o seu dispositivo.</string>
+    <string name="yt_trending">Músicas em alta</string>
+    <string name="yt_open_channel">Abrir o canal %1$s</string>
     <string name="yt_no_results_title">Nenhum resultado</string>
     <string name="yt_no_results_body">Nada encontrado para \"%1$s\". Tente outras palavras.</string>
     <string name="yt_loading">Carregando vídeo</string>

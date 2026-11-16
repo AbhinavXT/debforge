@@ -50,7 +50,8 @@ sealed interface YouTubeUi {
     data object Empty : YouTubeUi
     data object Resolving : YouTubeUi
     data class Preview(val video: YouTubeVideo, val choices: List<FormatChoice>, val selected: FormatChoice, val subtitle: YouTubeSubtitle? = null) : YouTubeUi
-    data class Results(val query: String, val items: List<YouTubeSearchResult>, val loadingMore: Boolean = false) : YouTubeUi
+    /** A search ([query] is the text) or, when [channelUrl] is set, a channel's videos ([query] is the channel name). */
+    data class Results(val query: String, val items: List<YouTubeSearchResult>, val loadingMore: Boolean = false, val channelUrl: String? = null) : YouTubeUi
     /** [progress] is (current, total) while the selected videos are being added one by one. */
     data class Playlist(
         val title: String,
@@ -97,6 +98,20 @@ class YouTubeViewModel @Inject constructor(
     /** Extractor cursor for the shown search results; null when there are no more. */
     private var nextPage: Page? = null
 
+    private val _trending = MutableStateFlow<List<YouTubeSearchResult>>(emptyList())
+    /** Videos for the empty screen; stays empty when loading failed. */
+    val trending: StateFlow<List<YouTubeSearchResult>> = _trending.asStateFlow()
+    private var trendingStarted = false
+
+    /** Called when the empty screen is first shown (the ViewModel itself exists from app start); only the first call fetches. */
+    fun loadTrending() {
+        if (trendingStarted) return
+        trendingStarted = true
+        viewModelScope.launch {
+            try { _trending.value = resolver.trending() } catch (e: CancellationException) { throw e } catch (e: Exception) { }
+        }
+    }
+
     init {
         // Process death: bring the preview back for the last link the user submitted.
         saved.get<String>(LINK_KEY)?.let(::submit)
@@ -110,8 +125,14 @@ class YouTubeViewModel @Inject constructor(
     /** The results a tapped result came from, so Back returns there; cleared by any new submit. */
     private var fromResults: YouTubeUi.Results? = null
 
+    /** An open channel list: [back] is the search it was opened from (null: the empty screen). */
+    private class ChannelNav(val name: String, val url: String, val back: Back?)
+    private class Back(val results: YouTubeUi.Results, val next: Page?, val list: LazyListState)
+    private var channel: ChannelNav? = null
+
     fun submit(text: String) {
         fromResults = null
+        channel = null
         _input.value = text
         saved[LINK_KEY] = text
         job?.cancel()
@@ -153,13 +174,14 @@ class YouTubeViewModel @Inject constructor(
         val r = _ui.value as? YouTubeUi.Results ?: return
         val page = nextPage ?: return
         if (r.loadingMore) return
+        val channelUrl = r.channelUrl
         _ui.value = r.copy(loadingMore = true)
         moreJob = viewModelScope.launch {
             try {
-                val more = resolver.searchMore(r.query, page)
+                val more = if (channelUrl != null) resolver.channelMore(channelUrl, page) else resolver.searchMore(r.query, page)
                 nextPage = more.next
                 _ui.update { cur ->
-                    if (cur !is YouTubeUi.Results || cur.query != r.query) cur
+                    if (cur !is YouTubeUi.Results || cur.query != r.query || cur.channelUrl != channelUrl) cur
                     else { val seen = cur.items.mapTo(HashSet()) { it.url }; cur.copy(items = cur.items + more.items.filter { it.url !in seen }, loadingMore = false) }
                 }
             } catch (e: CancellationException) {
@@ -196,15 +218,46 @@ class YouTubeViewModel @Inject constructor(
     private fun updatePlaylist(f: (YouTubeUi.Playlist) -> YouTubeUi.Playlist) =
         _ui.update { if (it is YouTubeUi.Playlist && it.progress == null) f(it) else it }
 
+    /** Opens a channel's videos from a result row or the empty screen; Back returns to where it was opened. */
+    fun openChannel(name: String, url: String) {
+        val cur = _ui.value
+        if (cur !is YouTubeUi.Empty && !(cur is YouTubeUi.Results && cur.channelUrl == null)) return
+        job?.cancel()
+        moreJob?.cancel()
+        val back = (cur as? YouTubeUi.Results)?.let { Back(it.copy(loadingMore = false), nextPage, resultsList) }
+        loadChannel(ChannelNav(name, url, back))
+    }
+
+    private fun loadChannel(nav: ChannelNav) {
+        channel = nav
+        nextPage = null
+        resultsList = LazyListState()
+        _input.value = ""
+        _ui.value = YouTubeUi.Resolving
+        job = viewModelScope.launch {
+            _ui.value = try {
+                val page = resolver.channelVideos(nav.url)
+                nextPage = page.next
+                YouTubeUi.Results(nav.name, page.items, channelUrl = nav.url)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                ensureActive() // a cancelled job must not overwrite the state Back just set
+                YouTubeUi.Error(errorKind(e), search = true)
+            }
+        }
+    }
+
     /** A tapped search result: same path as a pasted link, but Back returns to the results. */
     fun pick(result: YouTubeSearchResult) {
-        val results = _ui.value as? YouTubeUi.Results ?: return
+        val results = _ui.value as? YouTubeUi.Results
+        if (results == null && _ui.value !is YouTubeUi.Empty) return
         job?.cancel()
         moreJob?.cancel()
         _input.value = result.url
         saved[LINK_KEY] = result.url
         resolve(result.url)
-        fromResults = results.copy(loadingMore = false) // a cancelled page load must not leave the spinner on
+        fromResults = results?.copy(loadingMore = false) // a cancelled page load must not leave the spinner on
     }
 
     private fun resolve(text: String) {
@@ -226,7 +279,10 @@ class YouTubeViewModel @Inject constructor(
 
     // A failed tapped result retries in place: submit() would drop fromResults and lose Back-to-results.
     fun retry() {
-        if (fromResults != null) { job?.cancel(); resolve(_input.value) } else submit(_input.value)
+        val nav = channel
+        if (fromResults != null) { job?.cancel(); resolve(_input.value) }
+        else if (nav != null) { job?.cancel(); loadChannel(nav) }
+        else submit(_input.value)
     }
 
     fun reset() {
@@ -236,10 +292,22 @@ class YouTubeViewModel @Inject constructor(
         pending = null // a download waiting on the folder prompt belongs to the screen being left
         fromResults?.let {
             fromResults = null
-            _input.value = it.query
+            _input.value = if (it.channelUrl == null) it.query else ""
             saved[LINK_KEY] = it.query
             _ui.value = it
             return
+        }
+        channel?.let { nav ->
+            channel = null
+            val back = nav.back
+            nextPage = back?.next
+            if (back != null) {
+                resultsList = back.list
+                _input.value = back.results.query
+                saved[LINK_KEY] = back.results.query
+                _ui.value = back.results
+                return
+            }
         }
         saved.remove<String>(LINK_KEY)
         _input.value = ""

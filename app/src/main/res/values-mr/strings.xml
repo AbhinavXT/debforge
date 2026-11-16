@@ -814,6 +814,8 @@
     <string name="yt_clear_search">शोध काढा</string>
     <string name="yt_empty_title">YouTube वरून सेव्ह करा</string>
     <string name="yt_empty_body">YouTube वर शोधा किंवा लिंक पेस्ट करा, क्वालिटी निवडा, आणि ते तुमच्या डिव्हाइसवर डाउनलोड होईल.</string>
+    <string name="yt_trending">ट्रेंडिंग संगीत</string>
+    <string name="yt_open_channel">चॅनेल %1$s उघडा</string>
     <string name="yt_no_results_title">निकाल नाहीत</string>
     <string name="yt_no_results_body">\"%1$s\" साठी काहीही सापडले नाही. वेगळे शब्द वापरून पहा.</string>
     <string name="yt_loading">व्हिडिओ लोड होत आहे</string>

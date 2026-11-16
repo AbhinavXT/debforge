@@ -47,6 +47,8 @@ data class YouTubeSearchResult(
     val channel: String?,
     val durationSec: Long,
     val thumbnailUrl: String?,
+    /** The uploader's channel page; null when the extractor gave none. */
+    val channelUrl: String? = null,
 )
 
 /** A playlist's videos (first 200); each [YouTubeSearchResult.url] goes through the normal link path. */

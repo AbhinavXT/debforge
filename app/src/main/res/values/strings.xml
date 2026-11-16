@@ -816,6 +816,8 @@
     <string name="yt_clear_search">Clear search</string>
     <string name="yt_empty_title">Save from YouTube</string>
     <string name="yt_empty_body">Search YouTube or paste a link, pick a quality, and it downloads to your device.</string>
+    <string name="yt_trending">Trending music</string>
+    <string name="yt_open_channel">Open channel %1$s</string>
     <string name="yt_no_results_title">No results</string>
     <string name="yt_no_results_body">Nothing found for \"%1$s\". Try different words.</string>
     <string name="yt_loading">Loading video</string>

@@ -18,6 +18,12 @@ import org.schabi.newpipe.extractor.MediaFormat
 import org.schabi.newpipe.extractor.NewPipe
 import org.schabi.newpipe.extractor.Page
 import org.schabi.newpipe.extractor.ServiceList
+import org.schabi.newpipe.extractor.channel.ChannelInfo
+import org.schabi.newpipe.extractor.channel.tabs.ChannelTabInfo
+import org.schabi.newpipe.extractor.channel.tabs.ChannelTabs
+import org.schabi.newpipe.extractor.kiosk.KioskInfo
+import org.schabi.newpipe.extractor.linkhandler.ListLinkHandler
+import java.util.concurrent.ConcurrentHashMap
 import org.schabi.newpipe.extractor.exceptions.AgeRestrictedContentException
 import org.schabi.newpipe.extractor.exceptions.ContentNotAvailableException
 import org.schabi.newpipe.extractor.exceptions.ReCaptchaException
@@ -99,8 +105,45 @@ class YouTubeResolver @Inject constructor(@ApiHttpClient private val client: OkH
         ServiceList.YouTube.searchQHFactory.fromQuery(query, listOf(YoutubeSearchQueryHandlerFactory.VIDEOS), "")
 
     private fun searchResults(items: List<InfoItem>) = items.filterIsInstance<StreamInfoItem>().map {
-        YouTubeSearchResult(it.url, it.name.orEmpty(), it.uploaderName, it.duration, it.thumbnails.maxByOrNull { t -> t.height }?.url)
+        YouTubeSearchResult(it.url, it.name.orEmpty(), it.uploaderName, it.duration, it.thumbnails.maxByOrNull { t -> t.height }?.url, it.uploaderUrl)
     }.distinctBy { it.url } // rows are keyed by url; a repeat would crash the list
+
+    /** The trending-music kiosk's first page (at most 30); callers treat any failure as "no trending". */
+    suspend fun trending(): List<YouTubeSearchResult> = withContext(Dispatchers.IO) {
+        init
+        // The default kiosk is live streams, which cannot be saved; YouTube dropped its general Trending page.
+        val kiosk = ServiceList.YouTube.kioskList.getExtractorById("trending_music", null)
+        kiosk.fetchPage()
+        searchResults(KioskInfo.getInfo(kiosk).relatedItems).take(30)
+    }
+
+    // shortcut: handlers are kept for the process lifetime, one per visited channel; evict if that ever matters
+    private val channelTabs = ConcurrentHashMap<String, ListLinkHandler>()
+
+    private fun videosTab(channelUrl: String) = channelTabs.getOrPut(channelUrl) {
+        ChannelInfo.getInfo(ServiceList.YouTube, channelUrl).tabs.firstOrNull { ChannelTabs.VIDEOS in it.contentFilters }
+            ?: throw YouTubeException.Unavailable("Channel has no videos")
+    }
+
+    suspend fun channelVideos(channelUrl: String): SearchPage = withContext(Dispatchers.IO) {
+        try {
+            init
+            val info = ChannelTabInfo.getInfo(ServiceList.YouTube, videosTab(channelUrl))
+            SearchPage(searchResults(info.relatedItems), info.nextPage)
+        } catch (e: Exception) {
+            throw map(e)
+        }
+    }
+
+    suspend fun channelMore(channelUrl: String, page: Page): SearchPage = withContext(Dispatchers.IO) {
+        try {
+            init
+            val more = ChannelTabInfo.getMoreItems(ServiceList.YouTube, videosTab(channelUrl), page)
+            SearchPage(searchResults(more.items), more.nextPage)
+        } catch (e: Exception) {
+            throw map(e)
+        }
+    }
 
     suspend fun playlist(url: String): YouTubePlaylist = withContext(Dispatchers.IO) {
         try {
@@ -120,7 +163,7 @@ class YouTubeResolver @Inject constructor(@ApiHttpClient private val client: OkH
             YouTubePlaylist(
                 info.name.orEmpty(),
                 items.take(200).map {
-                    YouTubeSearchResult(it.url, it.name.orEmpty(), it.uploaderName, it.duration, it.thumbnails.maxByOrNull { t -> t.height }?.url)
+                    YouTubeSearchResult(it.url, it.name.orEmpty(), it.uploaderName, it.duration, it.thumbnails.maxByOrNull { t -> t.height }?.url, it.uploaderUrl)
                 }.distinctBy { it.url }, // rows are keyed by url; a repeat would crash the list
             )
         } catch (e: Exception) {
