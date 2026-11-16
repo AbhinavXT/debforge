@@ -805,6 +805,7 @@
     <string name="yt_paste_chip">%1$s-Link einfügen</string>
     <string name="yt_paste_none">Kein YouTube-Link in der Zwischenablage</string>
     <string name="yt_clear">Link löschen</string>
+    <string name="yt_clear_search">Suche löschen</string>
     <string name="yt_empty_title">Von YouTube speichern</string>
     <string name="yt_empty_body">YouTube durchsuchen oder Link einfügen, Qualität wählen – und der Download landet auf deinem Gerät.</string>
     <string name="yt_no_results_title">Keine Ergebnisse</string>
@@ -821,6 +822,7 @@
     <string name="yt_view_downloads">Downloads ansehen</string>
     <string name="yt_retry">Erneut versuchen</string>
     <string name="yt_err_title">Video konnte nicht geladen werden</string>
+    <string name="yt_err_search_title">YouTube-Suche fehlgeschlagen</string>
     <string name="yt_err_not_link">Das sieht nicht nach einem YouTube-Link aus.</string>
     <string name="yt_err_playlist">Playlists werden noch nicht unterstützt; öffne ein einzelnes Video.</string>
     <string name="yt_err_not_link_title">Link prüfen</string>

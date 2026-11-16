@@ -805,6 +805,7 @@
     <string name="yt_paste_chip">%1$s bağlantısını yapıştır</string>
     <string name="yt_paste_none">Panoda YouTube bağlantısı yok</string>
     <string name="yt_clear">Bağlantıyı temizle</string>
+    <string name="yt_clear_search">Aramayı temizle</string>
     <string name="yt_empty_title">YouTube\'dan kaydet</string>
     <string name="yt_empty_body">YouTube\'da arayın veya bağlantı yapıştırın, kaliteyi seçin, cihazınıza insin.</string>
     <string name="yt_no_results_title">Sonuç yok</string>
@@ -821,6 +822,7 @@
     <string name="yt_view_downloads">İndirilenleri göster</string>
     <string name="yt_retry">Tekrar dene</string>
     <string name="yt_err_title">Bu video yüklenemedi</string>
+    <string name="yt_err_search_title">YouTube\'da arama yapılamadı</string>
     <string name="yt_err_not_link">Bu bir YouTube bağlantısına benzemiyor.</string>
     <string name="yt_err_playlist">Oynatma listeleri henüz desteklenmiyor; tek bir video açın.</string>
     <string name="yt_err_not_link_title">Bağlantıyı kontrol edin</string>

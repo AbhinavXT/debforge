@@ -807,6 +807,7 @@
     <string name="yt_paste_chip">Paste %1$s link</string>
     <string name="yt_paste_none">No YouTube link on the clipboard</string>
     <string name="yt_clear">Clear link</string>
+    <string name="yt_clear_search">Clear search</string>
     <string name="yt_empty_title">Save from YouTube</string>
     <string name="yt_empty_body">Search YouTube or paste a link, pick a quality, and it downloads to your device.</string>
     <string name="yt_no_results_title">No results</string>
@@ -823,6 +824,7 @@
     <string name="yt_view_downloads">View downloads</string>
     <string name="yt_retry">Try again</string>
     <string name="yt_err_title">Couldn\'t load this video</string>
+    <string name="yt_err_search_title">Couldn\'t search YouTube</string>
     <string name="yt_err_not_link">That doesn\'t look like a YouTube link.</string>
     <string name="yt_err_playlist">Playlists aren\'t supported yet; open a single video.</string>
     <string name="yt_err_not_link_title">Check the link</string>

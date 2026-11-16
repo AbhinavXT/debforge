@@ -805,6 +805,7 @@
     <string name="yt_paste_chip">%1$s লিংক পেস্ট করুন</string>
     <string name="yt_paste_none">ক্লিপবোর্ডে কোনো YouTube লিংক নেই</string>
     <string name="yt_clear">লিংক মুছুন</string>
+    <string name="yt_clear_search">সার্চ মুছুন</string>
     <string name="yt_empty_title">YouTube থেকে সেভ করুন</string>
     <string name="yt_empty_body">YouTube-এ খুঁজুন বা লিংক পেস্ট করুন, কোয়ালিটি বেছে নিন, আর এটি আপনার ডিভাইসে ডাউনলোড হবে।</string>
     <string name="yt_no_results_title">কোনো ফল নেই</string>
@@ -821,6 +822,7 @@
     <string name="yt_view_downloads">ডাউনলোড দেখুন</string>
     <string name="yt_retry">আবার চেষ্টা করুন</string>
     <string name="yt_err_title">এই ভিডিও লোড করা যায়নি</string>
+    <string name="yt_err_search_title">YouTube-এ সার্চ করা যায়নি</string>
     <string name="yt_err_not_link">এটি YouTube লিংক বলে মনে হচ্ছে না।</string>
     <string name="yt_err_playlist">প্লেলিস্ট এখনও সমর্থিত নয়; একটি ভিডিও খুলুন।</string>
     <string name="yt_err_not_link_title">লিংকটি দেখুন</string>

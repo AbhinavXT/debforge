@@ -883,6 +883,7 @@
     <string name="yt_paste_chip">Вставить ссылку %1$s</string>
     <string name="yt_paste_none">В буфере обмена нет ссылки на YouTube</string>
     <string name="yt_clear">Очистить ссылку</string>
+    <string name="yt_clear_search">Очистить поиск</string>
     <string name="yt_empty_title">Сохранение с YouTube</string>
     <string name="yt_empty_body">Найдите видео на YouTube или вставьте ссылку, выберите качество, и оно скачается на устройство.</string>
     <string name="yt_no_results_title">Ничего не найдено</string>
@@ -899,6 +900,7 @@
     <string name="yt_view_downloads">Открыть загрузки</string>
     <string name="yt_retry">Повторить</string>
     <string name="yt_err_title">Не удалось загрузить видео</string>
+    <string name="yt_err_search_title">Не удалось выполнить поиск на YouTube</string>
     <string name="yt_err_not_link">Это не похоже на ссылку на YouTube.</string>
     <string name="yt_err_playlist">Плейлисты пока не поддерживаются; откройте отдельное видео.</string>
     <string name="yt_err_not_link_title">Проверьте ссылку</string>

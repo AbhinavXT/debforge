@@ -43,7 +43,7 @@ sealed interface YouTubeUi {
     data object Resolving : YouTubeUi
     data class Preview(val video: YouTubeVideo, val choices: List<FormatChoice>, val selected: FormatChoice) : YouTubeUi
     data class Results(val query: String, val items: List<YouTubeSearchResult>) : YouTubeUi
-    data class Error(val kind: YouTubeErrorKind) : YouTubeUi
+    data class Error(val kind: YouTubeErrorKind, val search: Boolean = false) : YouTubeUi
 }
 
 enum class YouTubeEvent { QUEUED, ALREADY_QUEUED, QUEUE_FAILED }
@@ -104,7 +104,7 @@ class YouTubeViewModel @Inject constructor(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                YouTubeUi.Error(errorKind(e))
+                YouTubeUi.Error(errorKind(e), search = true)
             }
         }
     }
@@ -135,7 +135,10 @@ class YouTubeViewModel @Inject constructor(
         }
     }
 
-    fun retry() = submit(_input.value)
+    // A failed tapped result retries in place: submit() would drop fromResults and lose Back-to-results.
+    fun retry() {
+        if (fromResults != null) { job?.cancel(); resolve(_input.value) } else submit(_input.value)
+    }
 
     fun reset() {
         job?.cancel()

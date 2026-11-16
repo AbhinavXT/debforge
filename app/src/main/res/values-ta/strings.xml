@@ -805,6 +805,7 @@
     <string name="yt_paste_chip">%1$s இணைப்பை ஒட்டு</string>
     <string name="yt_paste_none">கிளிப்போர்டில் YouTube இணைப்பு இல்லை</string>
     <string name="yt_clear">இணைப்பை அழி</string>
+    <string name="yt_clear_search">தேடலை அழி</string>
     <string name="yt_empty_title">YouTube-இலிருந்து சேமி</string>
     <string name="yt_empty_body">YouTube-இல் தேடுங்கள் அல்லது இணைப்பை ஒட்டுங்கள், தரத்தைத் தேர்ந்தெடுங்கள், அது உங்கள் சாதனத்தில் பதிவிறங்கும்.</string>
     <string name="yt_no_results_title">முடிவுகள் இல்லை</string>
@@ -821,6 +822,7 @@
     <string name="yt_view_downloads">பதிவிறக்கங்களைக் காட்டு</string>
     <string name="yt_retry">மீண்டும் முயல்</string>
     <string name="yt_err_title">இந்த வீடியோவை ஏற்ற முடியவில்லை</string>
+    <string name="yt_err_search_title">YouTube-இல் தேட முடியவில்லை</string>
     <string name="yt_err_not_link">இது YouTube இணைப்பாகத் தெரியவில்லை.</string>
     <string name="yt_err_playlist">பிளேலிஸ்ட்கள் இன்னும் ஆதரிக்கப்படவில்லை; ஒரு வீடியோவைத் திறக்கவும்.</string>
     <string name="yt_err_not_link_title">இணைப்பைச் சரிபாருங்கள்</string>

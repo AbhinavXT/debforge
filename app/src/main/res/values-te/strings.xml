@@ -805,6 +805,7 @@
     <string name="yt_paste_chip">%1$s లింక్‌ను పేస్ట్ చేయి</string>
     <string name="yt_paste_none">క్లిప్‌బోర్డ్‌లో YouTube లింక్ లేదు</string>
     <string name="yt_clear">లింక్‌ను తొలగించు</string>
+    <string name="yt_clear_search">శోధనను తొలగించు</string>
     <string name="yt_empty_title">YouTube నుండి సేవ్ చేయండి</string>
     <string name="yt_empty_body">YouTubeలో వెతకండి లేదా లింక్ అతికించండి, క్వాలిటీ ఎంచుకోండి, అది మీ పరికరానికి డౌన్‌లోడ్ అవుతుంది.</string>
     <string name="yt_no_results_title">ఫలితాలు లేవు</string>
@@ -821,6 +822,7 @@
     <string name="yt_view_downloads">డౌన్‌లోడ్‌లను చూడండి</string>
     <string name="yt_retry">మళ్లీ ప్రయత్నించు</string>
     <string name="yt_err_title">ఈ వీడియో లోడ్ కాలేదు</string>
+    <string name="yt_err_search_title">YouTubeలో శోధించలేకపోయాం</string>
     <string name="yt_err_not_link">ఇది YouTube లింక్‌లా కనిపించడం లేదు.</string>
     <string name="yt_err_playlist">ప్లేలిస్ట్‌లకు ఇంకా మద్దతు లేదు; ఒక్క వీడియోను తెరవండి.</string>
     <string name="yt_err_not_link_title">లింక్‌ను తనిఖీ చేయండి</string>

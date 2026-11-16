@@ -102,6 +102,7 @@ import kotlinx.coroutines.launch
 import com.abhinavxt.debforge.R
 import com.abhinavxt.debforge.domain.Container
 import com.abhinavxt.debforge.domain.FormatChoice
+import com.abhinavxt.debforge.domain.YouTubeLinks
 import com.abhinavxt.debforge.domain.YouTubeSearchResult
 import com.abhinavxt.debforge.domain.YouTubeVideo
 import com.abhinavxt.debforge.ui.player.focusRing
@@ -233,7 +234,7 @@ internal fun YouTubeContent(
             is YouTubeUi.Preview -> PreviewState(state, onReset, onMode, onSelect, onDownload)
             is YouTubeUi.Error -> MessageState(
                 icon = Icons.Rounded.ErrorOutline,
-                title = stringResource(errorTitle(state.kind)),
+                title = stringResource(errorTitle(state.kind, state.search)),
                 body = stringResource(errorText(state.kind)),
                 tone = MaterialTheme.colorScheme.error,
                 action = {
@@ -245,9 +246,10 @@ internal fun YouTubeContent(
     }
 }
 
-private fun errorTitle(k: YouTubeErrorKind) = when (k) {
-    YouTubeErrorKind.NOT_LINK -> R.string.yt_err_not_link_title
-    YouTubeErrorKind.PLAYLIST -> R.string.yt_err_playlist_title
+internal fun errorTitle(k: YouTubeErrorKind, search: Boolean = false) = when {
+    k == YouTubeErrorKind.NOT_LINK -> R.string.yt_err_not_link_title
+    k == YouTubeErrorKind.PLAYLIST -> R.string.yt_err_playlist_title
+    search -> R.string.yt_err_search_title
     else -> R.string.yt_err_title
 }
 
@@ -288,7 +290,7 @@ private fun LinkOrSearchField(
                 }
             } else {
                 IconButton(onClick = { onInput("") }) {
-                    Icon(Icons.Rounded.Close, contentDescription = stringResource(R.string.yt_clear))
+                    Icon(Icons.Rounded.Close, contentDescription = stringResource(if (YouTubeLinks.isSearchQuery(input)) R.string.yt_clear_search else R.string.yt_clear))
                 }
             }
         },

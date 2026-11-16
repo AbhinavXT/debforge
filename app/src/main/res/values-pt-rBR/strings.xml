@@ -844,6 +844,7 @@
     <string name="yt_paste_chip">Colar link do %1$s</string>
     <string name="yt_paste_none">Nenhum link do YouTube na área de transferência</string>
     <string name="yt_clear">Limpar link</string>
+    <string name="yt_clear_search">Limpar pesquisa</string>
     <string name="yt_empty_title">Salvar do YouTube</string>
     <string name="yt_empty_body">Pesquise no YouTube ou cole um link, escolha a qualidade e o download vai para o seu dispositivo.</string>
     <string name="yt_no_results_title">Nenhum resultado</string>
@@ -860,6 +861,7 @@
     <string name="yt_view_downloads">Ver downloads</string>
     <string name="yt_retry">Tentar de novo</string>
     <string name="yt_err_title">Não foi possível carregar este vídeo</string>
+    <string name="yt_err_search_title">Não foi possível pesquisar no YouTube</string>
     <string name="yt_err_not_link">Isso não parece um link do YouTube.</string>
     <string name="yt_err_playlist">Playlists ainda não são compatíveis; abra um único vídeo.</string>
     <string name="yt_err_not_link_title">Confira o link</string>

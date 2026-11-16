@@ -766,6 +766,7 @@
     <string name="yt_paste_chip">Tempel tautan %1$s</string>
     <string name="yt_paste_none">Tidak ada tautan YouTube di papan klip</string>
     <string name="yt_clear">Hapus tautan</string>
+    <string name="yt_clear_search">Hapus pencarian</string>
     <string name="yt_empty_title">Simpan dari YouTube</string>
     <string name="yt_empty_body">Cari di YouTube atau tempel tautan, pilih kualitas, lalu video diunduh ke perangkat Anda.</string>
     <string name="yt_no_results_title">Tidak ada hasil</string>
@@ -782,6 +783,7 @@
     <string name="yt_view_downloads">Lihat unduhan</string>
     <string name="yt_retry">Coba lagi</string>
     <string name="yt_err_title">Video ini tidak bisa dimuat</string>
+    <string name="yt_err_search_title">Tidak bisa mencari di YouTube</string>
     <string name="yt_err_not_link">Itu sepertinya bukan tautan YouTube.</string>
     <string name="yt_err_playlist">Playlist belum didukung; buka satu video saja.</string>
     <string name="yt_err_not_link_title">Periksa tautan</string>

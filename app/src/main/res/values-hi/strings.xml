@@ -805,6 +805,7 @@
     <string name="yt_paste_chip">%1$s लिंक पेस्ट करें</string>
     <string name="yt_paste_none">क्लिपबोर्ड में कोई YouTube लिंक नहीं है</string>
     <string name="yt_clear">लिंक साफ़ करें</string>
+    <string name="yt_clear_search">खोज साफ़ करें</string>
     <string name="yt_empty_title">YouTube से सेव करें</string>
     <string name="yt_empty_body">YouTube पर खोजें या लिंक पेस्ट करें, क्वालिटी चुनें, और यह आपके डिवाइस पर डाउनलोड हो जाएगा।</string>
     <string name="yt_no_results_title">कोई नतीजा नहीं</string>
@@ -821,6 +822,7 @@
     <string name="yt_view_downloads">डाउनलोड देखें</string>
     <string name="yt_retry">फिर से कोशिश करें</string>
     <string name="yt_err_title">यह वीडियो लोड नहीं हो सका</string>
+    <string name="yt_err_search_title">YouTube पर खोज नहीं हो सकी</string>
     <string name="yt_err_not_link">यह YouTube लिंक जैसा नहीं लगता।</string>
     <string name="yt_err_playlist">प्लेलिस्ट अभी समर्थित नहीं हैं; कोई एक वीडियो खोलें।</string>
     <string name="yt_err_not_link_title">लिंक जाँचें</string>

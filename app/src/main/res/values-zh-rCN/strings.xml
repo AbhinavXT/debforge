@@ -766,6 +766,7 @@
     <string name="yt_paste_chip">粘贴 %1$s 链接</string>
     <string name="yt_paste_none">剪贴板中没有 YouTube 链接</string>
     <string name="yt_clear">清除链接</string>
+    <string name="yt_clear_search">清除搜索</string>
     <string name="yt_empty_title">从 YouTube 保存</string>
     <string name="yt_empty_body">搜索 YouTube 或粘贴链接，选择画质，即可下载到你的设备。</string>
     <string name="yt_no_results_title">没有结果</string>
@@ -782,6 +783,7 @@
     <string name="yt_view_downloads">查看下载</string>
     <string name="yt_retry">重试</string>
     <string name="yt_err_title">无法加载此视频</string>
+    <string name="yt_err_search_title">无法搜索 YouTube</string>
     <string name="yt_err_not_link">这看起来不是 YouTube 链接。</string>
     <string name="yt_err_playlist">暂不支持播放列表，请打开单个视频。</string>
     <string name="yt_err_not_link_title">请检查链接</string>
