@@ -155,6 +155,9 @@ fun HomeScreen(signedIn: Boolean) {
     else current?.route
 
     fun go(tab: HomeTab) {
+        // Drop a pushed Downloads/Settings first so it isn't saved with its tab and restored on top of it later.
+        val route = navController.currentDestination?.route
+        if ((route == HomeTab.Active.route || route == HomeTab.Settings.route) && route != tab.route) navController.popBackStack()
         // Already on the back stack (selected, or a screen was pushed on top of it): pop back to its root.
         if (navController.popBackStack(tab.route, inclusive = false)) return
         navController.navigate(tab.route) {
