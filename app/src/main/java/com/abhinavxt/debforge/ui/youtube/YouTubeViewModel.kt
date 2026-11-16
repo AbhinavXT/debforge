@@ -30,6 +30,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
@@ -104,6 +105,7 @@ class YouTubeViewModel @Inject constructor(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
+                ensureActive() // a cancelled job must not overwrite the state Back just set
                 YouTubeUi.Error(errorKind(e), search = true)
             }
         }
@@ -130,6 +132,7 @@ class YouTubeViewModel @Inject constructor(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
+                ensureActive() // a cancelled job must not overwrite the state Back just set
                 YouTubeUi.Error(errorKind(e))
             }
         }

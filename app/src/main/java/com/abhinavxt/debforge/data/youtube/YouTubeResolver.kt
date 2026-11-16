@@ -69,7 +69,7 @@ class YouTubeResolver @Inject constructor(@ApiHttpClient private val client: OkH
             SearchInfo.getInfo(yt, yt.searchQHFactory.fromQuery(query, listOf(YoutubeSearchQueryHandlerFactory.VIDEOS), ""))
                 .relatedItems.filterIsInstance<StreamInfoItem>().map {
                     YouTubeSearchResult(it.url, it.name.orEmpty(), it.uploaderName, it.duration, it.thumbnails.maxByOrNull { t -> t.height }?.url)
-                }
+                }.distinctBy { it.url } // rows are keyed by url; a repeat would crash the list
         } catch (e: Exception) {
             throw map(e)
         }
