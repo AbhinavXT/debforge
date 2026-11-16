@@ -829,11 +829,14 @@
     <string name="yt_download_format">İndir · %1$s · %2$s</string>
     <string name="yt_another_link">Başka bağlantı kullan</string>
     <string name="yt_queued">İndirilenlere eklendi</string>
+    <string name="yt_queued_no_subtitle">İndirilenlere eklendi, ancak altyazı eklenemedi</string>
+    <string name="yt_subtitle_added">Altyazı indirilenlere eklendi</string>
     <string name="yt_already_queued">Zaten indirilenlerde</string>
     <string name="yt_view_downloads">İndirilenleri göster</string>
     <string name="yt_retry">Tekrar dene</string>
     <string name="yt_err_title">Bu video yüklenemedi</string>
     <string name="yt_err_search_title">YouTube\'da arama yapılamadı</string>
+    <string name="yt_err_channel_title">Bu kanal yüklenemedi</string>
     <string name="yt_err_not_link">Bu bir YouTube bağlantısına benzemiyor.</string>
     <string name="yt_err_playlist">Oynatma listeleri henüz desteklenmiyor; tek bir video açın.</string>
     <string name="yt_err_not_link_title">Bağlantıyı kontrol edin</string>

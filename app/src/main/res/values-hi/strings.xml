@@ -829,11 +829,14 @@
     <string name="yt_download_format">डाउनलोड · %1$s · %2$s</string>
     <string name="yt_another_link">दूसरा लिंक इस्तेमाल करें</string>
     <string name="yt_queued">डाउनलोड में जोड़ा गया</string>
+    <string name="yt_queued_no_subtitle">डाउनलोड में जोड़ा गया, लेकिन सबटाइटल नहीं जोड़ा जा सका</string>
+    <string name="yt_subtitle_added">सबटाइटल आपके डाउनलोड में जोड़ा गया</string>
     <string name="yt_already_queued">पहले से आपके डाउनलोड में है</string>
     <string name="yt_view_downloads">डाउनलोड देखें</string>
     <string name="yt_retry">फिर से कोशिश करें</string>
     <string name="yt_err_title">यह वीडियो लोड नहीं हो सका</string>
     <string name="yt_err_search_title">YouTube पर खोज नहीं हो सकी</string>
+    <string name="yt_err_channel_title">यह चैनल लोड नहीं हो सका</string>
     <string name="yt_err_not_link">यह YouTube लिंक जैसा नहीं लगता।</string>
     <string name="yt_err_playlist">प्लेलिस्ट अभी समर्थित नहीं हैं; कोई एक वीडियो खोलें।</string>
     <string name="yt_err_not_link_title">लिंक जाँचें</string>

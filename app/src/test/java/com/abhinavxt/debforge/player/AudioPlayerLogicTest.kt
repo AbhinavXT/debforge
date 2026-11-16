@@ -104,4 +104,11 @@ class AudioPlayerLogicTest {
         assertEquals(false, sleepEndStillApplies("a", null))
         assertEquals(false, sleepEndStillApplies(null, null))
     }
+
+    @Test fun aDeliberateSeekNearTheStartForgetsTheSavedSpot() {
+        assertEquals(true, seekForgetsSpot(0))
+        assertEquals(true, seekForgetsSpot(AUDIO_RESUME_EDGE_MS - 1))
+        assertEquals(false, seekForgetsSpot(AUDIO_RESUME_EDGE_MS))
+        assertEquals(false, seekForgetsSpot(30 * 60_000L))
+    }
 }

@@ -868,11 +868,14 @@
     <string name="yt_download_format">Télécharger · %1$s · %2$s</string>
     <string name="yt_another_link">Utiliser un autre lien</string>
     <string name="yt_queued">Ajouté aux téléchargements</string>
+    <string name="yt_queued_no_subtitle">Ajouté aux téléchargements, mais le sous-titre n\'a pas pu être ajouté</string>
+    <string name="yt_subtitle_added">Sous-titre ajouté à vos téléchargements</string>
     <string name="yt_already_queued">Déjà dans vos téléchargements</string>
     <string name="yt_view_downloads">Voir les téléchargements</string>
     <string name="yt_retry">Réessayer</string>
     <string name="yt_err_title">Impossible de charger cette vidéo</string>
     <string name="yt_err_search_title">Impossible de rechercher sur YouTube</string>
+    <string name="yt_err_channel_title">Impossible de charger cette chaîne</string>
     <string name="yt_err_not_link">Ceci ne ressemble pas à un lien YouTube.</string>
     <string name="yt_err_playlist">Les playlists ne sont pas encore prises en charge ; ouvrez une seule vidéo.</string>
     <string name="yt_err_not_link_title">Vérifiez le lien</string>

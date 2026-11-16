@@ -829,11 +829,14 @@
     <string name="yt_download_format">డౌన్‌లోడ్ · %1$s · %2$s</string>
     <string name="yt_another_link">మరొక లింక్‌ను ఉపయోగించండి</string>
     <string name="yt_queued">డౌన్‌లోడ్‌లకు జోడించబడింది</string>
+    <string name="yt_queued_no_subtitle">డౌన్‌లోడ్‌లకు జోడించబడింది, కానీ సబ్‌టైటిల్‌ను జోడించలేకపోయాం</string>
+    <string name="yt_subtitle_added">సబ్‌టైటిల్ మీ డౌన్‌లోడ్‌లకు జోడించబడింది</string>
     <string name="yt_already_queued">ఇప్పటికే మీ డౌన్‌లోడ్‌లలో ఉంది</string>
     <string name="yt_view_downloads">డౌన్‌లోడ్‌లను చూడండి</string>
     <string name="yt_retry">మళ్లీ ప్రయత్నించు</string>
     <string name="yt_err_title">ఈ వీడియో లోడ్ కాలేదు</string>
     <string name="yt_err_search_title">YouTubeలో శోధించలేకపోయాం</string>
+    <string name="yt_err_channel_title">ఈ ఛానెల్‌ను లోడ్ చేయలేకపోయాం</string>
     <string name="yt_err_not_link">ఇది YouTube లింక్‌లా కనిపించడం లేదు.</string>
     <string name="yt_err_playlist">ప్లేలిస్ట్‌లకు ఇంకా మద్దతు లేదు; ఒక్క వీడియోను తెరవండి.</string>
     <string name="yt_err_not_link_title">లింక్‌ను తనిఖీ చేయండి</string>

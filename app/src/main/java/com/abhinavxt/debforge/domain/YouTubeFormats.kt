@@ -40,6 +40,32 @@ fun List<YouTubeSubtitle>.onePerLanguage(): List<YouTubeSubtitle> =
 fun subtitleFileName(videoFilename: String, s: YouTubeSubtitle) =
     "${videoFilename.substringBeforeLast('.')}.${s.languageCode.substringBefore('-')}.vtt"
 
+/** [url] with its `fmt` query parameter set to `vtt` (replaced whatever it was, or appended). */
+fun withVttFormat(url: String): String {
+    val hash = url.indexOf('#').let { if (it < 0) url.length else it }
+    val base = url.substring(0, hash)
+    val frag = url.substring(hash)
+    val q = base.indexOf('?')
+    if (q < 0) return "$base?fmt=vtt$frag"
+    val params = base.substring(q + 1).split('&').filter { it.isNotEmpty() }
+    val out = if (params.any { it.substringBefore('=') == "fmt" }) params.map { if (it.substringBefore('=') == "fmt") "fmt=vtt" else it } else params + "fmt=vtt"
+    return base.substring(0, q + 1) + out.joinToString("&") + frag
+}
+
+/** Row id of a YouTube video's subtitle download: the video's own id plus the language. */
+fun youTubeSubtitleId(videoId: String, languageCode: String) = "$videoId:sub:$languageCode"
+
+fun isYouTubeSubtitleId(id: String) = YouTubeLinks.isSourceRef(id) && ":sub:" in id
+
+private val SUBTITLE_SUFFIX = Regex("""(\.[A-Za-z]{2,3})?\.(srt|ass|ssa|vtt)$""", RegexOption.IGNORE_CASE)
+
+/**
+ * The name the library filing parses. A YouTube subtitle ("Name.en.vtt") is filed where its video ("Name.mp4")
+ * goes, or the player cannot pair them; every other file is parsed as it is.
+ */
+fun filingNameFor(filename: String, youTubeSubtitle: Boolean) =
+    if (youTubeSubtitle) filename.replace(SUBTITLE_SUFFIX, ".mp4") else filename
+
 /** One row of a YouTube search; [url] goes through the normal link path. */
 data class YouTubeSearchResult(
     val url: String,

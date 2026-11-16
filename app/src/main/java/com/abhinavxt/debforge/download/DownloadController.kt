@@ -16,6 +16,8 @@ import java.io.File
 import java.util.Locale
 import com.abhinavxt.debforge.domain.MediaKind
 import com.abhinavxt.debforge.domain.ReleaseNameParser
+import com.abhinavxt.debforge.domain.filingNameFor
+import com.abhinavxt.debforge.domain.isYouTubeSubtitleId
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -55,7 +57,7 @@ class DownloadController @Inject constructor(
             val root = settingsStore.downloadDirFlow.first()
             val name = sanitizeFilename(item.filename)
             // Optional Plex/Jellyfin layout, decided from the release name.
-            val sub = if (settingsStore.organizeLibraryFlow.first()) libraryFolderFor(item.filename) else ""
+            val sub = if (settingsStore.organizeLibraryFlow.first()) libraryFolderFor(item.filename, isYouTubeSubtitleId(item.id)) else ""
             val finalPath = uniquePath(root, sub, name)
             val partPath = DownloadFiles.partPathFor(finalPath)
 
@@ -146,9 +148,8 @@ class DownloadController @Inject constructor(
      * "Shows/The Bear/Season 02", "Movies/Oppenheimer (2023)", or "" for
      * anything unrecognised (stays in the root folder).
      */
-    private fun libraryFolderFor(filename: String): String {
-        // A subtitle is filed where its video goes ("Name.en.vtt" as "Name.mp4"), or the player cannot pair them.
-        val info = ReleaseNameParser.parse(filename.replace(SUBTITLE_SUFFIX, ".mp4"))
+    private fun libraryFolderFor(filename: String, youTubeSubtitle: Boolean): String {
+        val info = ReleaseNameParser.parse(filingNameFor(filename, youTubeSubtitle))
         if (!info.isVideo) return ""
         return when (info.kind) {
             MediaKind.SHOW -> {
@@ -160,8 +161,6 @@ class DownloadController @Inject constructor(
             MediaKind.OTHER -> ""
         }
     }
-
-    private val SUBTITLE_SUFFIX = Regex("""(\.[A-Za-z]{2,3})?\.(srt|ass|ssa|vtt)$""", RegexOption.IGNORE_CASE)
 
     /** Strip path separators and characters illegal on common filesystems. */
     private fun sanitizeFilename(raw: String): String {

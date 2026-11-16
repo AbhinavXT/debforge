@@ -132,6 +132,9 @@ fun resumeActionFor(positionMs: Long, durationMs: Long): ResumeAction = when {
     else -> ResumeAction.FORGET
 }
 
+/** A deliberate seek (or restart) to the start of a long track drops its saved spot; a save at ~0 after a track change is not one. */
+fun seekForgetsSpot(targetMs: Long): Boolean = targetMs < AUDIO_RESUME_EDGE_MS
+
 /** "End of track" belongs to the item it was set on: it only holds while that item is still the current one. */
 fun sleepEndStillApplies(setForId: String?, currentId: String?): Boolean = setForId != null && setForId == currentId
 
@@ -311,8 +314,21 @@ class AudioPlayer @Inject constructor(
     fun toggle() { player?.let { if (wantsToPlay(it.playWhenReady, it.playbackState)) it.pause() else it.play() } }
     fun next() { player?.seekToNextMediaItem() }
     /** Past 3 seconds restarts the track, like every music player. */
-    fun previous() { player?.seekToPrevious() }
-    fun seekTo(ms: Long) { player?.seekTo(ms); publish() }
+    fun previous() {
+        val p = player ?: return
+        if (p.currentPosition > p.maxSeekToPreviousPosition) forgetCurrentSpot() // restarts this track
+        p.seekToPrevious()
+    }
+    fun seekTo(ms: Long) {
+        if (seekForgetsSpot(ms)) forgetCurrentSpot()
+        player?.seekTo(ms); publish()
+    }
+
+    /** The user went back to the start of this track on purpose, so a pause within the first seconds must not bring the old spot back. */
+    private fun forgetCurrentSpot() {
+        val id = player?.let { tracks.getOrNull(it.currentMediaItemIndex)?.id } ?: return
+        scope.launch { resume.forget(id) }
+    }
     fun setShuffle(on: Boolean) { player?.shuffleModeEnabled = on }
     fun cycleRepeat() { player?.let { it.repeatMode = repeatFromPlayerMode(it.repeatMode).next().toPlayerMode() } }
 

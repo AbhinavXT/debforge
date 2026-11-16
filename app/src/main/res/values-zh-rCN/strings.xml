@@ -790,11 +790,14 @@
     <string name="yt_download_format">下载 · %1$s · %2$s</string>
     <string name="yt_another_link">换一个链接</string>
     <string name="yt_queued">已添加到下载</string>
+    <string name="yt_queued_no_subtitle">已添加到下载，但无法添加字幕</string>
+    <string name="yt_subtitle_added">字幕已添加到下载</string>
     <string name="yt_already_queued">已在下载中</string>
     <string name="yt_view_downloads">查看下载</string>
     <string name="yt_retry">重试</string>
     <string name="yt_err_title">无法加载此视频</string>
     <string name="yt_err_search_title">无法搜索 YouTube</string>
+    <string name="yt_err_channel_title">无法加载此频道</string>
     <string name="yt_err_not_link">这看起来不是 YouTube 链接。</string>
     <string name="yt_err_playlist">暂不支持播放列表，请打开单个视频。</string>
     <string name="yt_err_not_link_title">请检查链接</string>

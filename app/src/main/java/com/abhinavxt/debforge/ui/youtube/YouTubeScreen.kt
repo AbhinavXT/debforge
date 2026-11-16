@@ -166,11 +166,13 @@ fun YouTubeScreen(
     val msgQueued = stringResource(R.string.yt_queued)
     val msgAlready = stringResource(R.string.yt_already_queued)
     val msgFailed = stringResource(R.string.yt_err_queue)
+    val msgNoSubtitle = stringResource(R.string.yt_queued_no_subtitle)
+    val msgSubtitleAdded = stringResource(R.string.yt_subtitle_added)
     val viewDownloads = stringResource(R.string.yt_view_downloads)
 
     LaunchedEffect(Unit) {
         viewModel.events.collect { e ->
-            val queuedOk = e == YouTubeEvent.QUEUED || (e is YouTubeEvent.BatchDone && e.added > 0)
+            val queuedOk = e == YouTubeEvent.QUEUED || e == YouTubeEvent.SUBTITLE_ADDED || (e is YouTubeEvent.BatchDone && e.added > 0)
             snackbar.currentSnackbarData?.dismiss()
             val res = context.resources
             val r = snackbar.showSnackbar(
@@ -178,6 +180,8 @@ fun YouTubeScreen(
                     YouTubeEvent.QUEUED -> msgQueued
                     YouTubeEvent.ALREADY_QUEUED -> msgAlready
                     YouTubeEvent.QUEUE_FAILED -> msgFailed
+                    YouTubeEvent.QUEUED_NO_SUBTITLE -> msgNoSubtitle
+                    YouTubeEvent.SUBTITLE_ADDED -> msgSubtitleAdded
                     is YouTubeEvent.BatchDone -> listOfNotNull(
                         e.added.takeIf { it > 0 }?.let { res.getQuantityString(R.plurals.yt_batch_added, it, it) },
                         e.already.takeIf { it > 0 }?.let { res.getQuantityString(R.plurals.yt_batch_already, it, it) },
@@ -277,7 +281,7 @@ internal fun YouTubeContent(
             is YouTubeUi.Playlist -> PlaylistState(state, onReset, onToggle, onSelectAll, onQuality, onDownloadPlaylist)
             is YouTubeUi.Error -> MessageState(
                 icon = Icons.Rounded.ErrorOutline,
-                title = stringResource(errorTitle(state.kind, state.search)),
+                title = stringResource(errorTitle(state.kind, state.search, state.channel)),
                 body = stringResource(errorText(state.kind)),
                 tone = MaterialTheme.colorScheme.error,
                 action = {
@@ -289,9 +293,10 @@ internal fun YouTubeContent(
     }
 }
 
-internal fun errorTitle(k: YouTubeErrorKind, search: Boolean = false) = when {
+internal fun errorTitle(k: YouTubeErrorKind, search: Boolean = false, channel: Boolean = false) = when {
     k == YouTubeErrorKind.NOT_LINK -> R.string.yt_err_not_link_title
     k == YouTubeErrorKind.PLAYLIST -> R.string.yt_err_playlist_title
+    channel -> R.string.yt_err_channel_title
     search -> R.string.yt_err_search_title
     else -> R.string.yt_err_title
 }
@@ -364,10 +369,18 @@ private fun ResultsState(
 ) {
     val focus = remember { FocusRequester() }
     val loadMore by rememberUpdatedState(onLoadMore)
-    // Each scroll step near the end asks again, which is also the retry after a failed page.
-    LaunchedEffect(listState) {
+    // Asks while the last rows are on screen. The effect restarts when the item count or the loading flag changes, so
+    // it also fires again at the bottom after an empty or all-duplicate page. After a failed page the restart stays quiet
+    // (no tight retry loop): the next scroll step near the end is the retry.
+    val failed = r.moreFailed
+    LaunchedEffect(listState, r.items.size, r.loadingMore, failed) {
+        var first = true
         snapshotFlow { listState.layoutInfo.let { it.visibleItemsInfo.lastOrNull()?.index?.minus(it.totalItemsCount) } }
-            .collect { if (it != null && it >= -5) loadMore() }
+            .collect {
+                val restart = first
+                first = false
+                if (it != null && it >= -5 && !(restart && failed)) loadMore()
+            }
     }
     LazyColumn(
         Modifier.fillMaxSize(),

@@ -829,11 +829,14 @@
     <string name="yt_download_format">ডাউনলোড · %1$s · %2$s</string>
     <string name="yt_another_link">অন্য লিংক ব্যবহার করুন</string>
     <string name="yt_queued">ডাউনলোডে যোগ করা হয়েছে</string>
+    <string name="yt_queued_no_subtitle">ডাউনলোডে যোগ করা হয়েছে, কিন্তু সাবটাইটেল যোগ করা যায়নি</string>
+    <string name="yt_subtitle_added">সাবটাইটেল ডাউনলোডে যোগ করা হয়েছে</string>
     <string name="yt_already_queued">আপনার ডাউনলোডে আগে থেকেই আছে</string>
     <string name="yt_view_downloads">ডাউনলোড দেখুন</string>
     <string name="yt_retry">আবার চেষ্টা করুন</string>
     <string name="yt_err_title">এই ভিডিও লোড করা যায়নি</string>
     <string name="yt_err_search_title">YouTube-এ সার্চ করা যায়নি</string>
+    <string name="yt_err_channel_title">এই চ্যানেলটি লোড করা যায়নি</string>
     <string name="yt_err_not_link">এটি YouTube লিংক বলে মনে হচ্ছে না।</string>
     <string name="yt_err_playlist">প্লেলিস্ট এখনও সমর্থিত নয়; একটি ভিডিও খুলুন।</string>
     <string name="yt_err_not_link_title">লিংকটি দেখুন</string>

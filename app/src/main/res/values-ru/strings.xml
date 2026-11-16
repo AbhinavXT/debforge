@@ -907,11 +907,14 @@
     <string name="yt_download_format">Скачать · %1$s · %2$s</string>
     <string name="yt_another_link">Другая ссылка</string>
     <string name="yt_queued">Добавлено в загрузки</string>
+    <string name="yt_queued_no_subtitle">Добавлено в загрузки, но субтитры добавить не удалось</string>
+    <string name="yt_subtitle_added">Субтитры добавлены в загрузки</string>
     <string name="yt_already_queued">Уже в загрузках</string>
     <string name="yt_view_downloads">Открыть загрузки</string>
     <string name="yt_retry">Повторить</string>
     <string name="yt_err_title">Не удалось загрузить видео</string>
     <string name="yt_err_search_title">Не удалось выполнить поиск на YouTube</string>
+    <string name="yt_err_channel_title">Не удалось загрузить этот канал</string>
     <string name="yt_err_not_link">Это не похоже на ссылку на YouTube.</string>
     <string name="yt_err_playlist">Плейлисты пока не поддерживаются; откройте отдельное видео.</string>
     <string name="yt_err_not_link_title">Проверьте ссылку</string>

@@ -68,7 +68,7 @@ internal fun encodePlaylists(s: AudioListsState): String = JSONArray().also { a 
 /** Corrupt or missing JSON gives an empty state, never throws; one bad playlist or id is skipped, the rest kept. */
 internal fun decodeAudioLists(fav: String?, lists: String?): AudioListsState = AudioListsState(
     favourites = runCatching {
-        JSONArray(fav).let { a -> (0 until a.length()).map { a.getString(it) }.toSet() }
+        JSONArray(fav).let { a -> (0 until a.length()).mapNotNull { runCatching { a.get(it) as? String }.getOrNull() }.toSet() }
     }.getOrDefault(emptySet()),
     playlists = runCatching {
         JSONArray(lists).let { a ->

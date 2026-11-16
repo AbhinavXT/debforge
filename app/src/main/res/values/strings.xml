@@ -831,11 +831,14 @@
     <string name="yt_download_format">Download · %1$s · %2$s</string>
     <string name="yt_another_link">Use another link</string>
     <string name="yt_queued">Added to downloads</string>
+    <string name="yt_queued_no_subtitle">Added to downloads, but the subtitle couldn\'t be added</string>
+    <string name="yt_subtitle_added">Subtitle added to your downloads</string>
     <string name="yt_already_queued">Already in your downloads</string>
     <string name="yt_view_downloads">View downloads</string>
     <string name="yt_retry">Try again</string>
     <string name="yt_err_title">Couldn\'t load this video</string>
     <string name="yt_err_search_title">Couldn\'t search YouTube</string>
+    <string name="yt_err_channel_title">Couldn\'t load this channel</string>
     <string name="yt_err_not_link">That doesn\'t look like a YouTube link.</string>
     <string name="yt_err_playlist">Playlists aren\'t supported yet; open a single video.</string>
     <string name="yt_err_not_link_title">Check the link</string>

@@ -868,11 +868,14 @@
     <string name="yt_download_format">Baixar · %1$s · %2$s</string>
     <string name="yt_another_link">Usar outro link</string>
     <string name="yt_queued">Adicionado aos downloads</string>
+    <string name="yt_queued_no_subtitle">Adicionado aos downloads, mas não foi possível adicionar a legenda</string>
+    <string name="yt_subtitle_added">Legenda adicionada aos seus downloads</string>
     <string name="yt_already_queued">Já está nos seus downloads</string>
     <string name="yt_view_downloads">Ver downloads</string>
     <string name="yt_retry">Tentar de novo</string>
     <string name="yt_err_title">Não foi possível carregar este vídeo</string>
     <string name="yt_err_search_title">Não foi possível pesquisar no YouTube</string>
+    <string name="yt_err_channel_title">Não foi possível carregar este canal</string>
     <string name="yt_err_not_link">Isso não parece um link do YouTube.</string>
     <string name="yt_err_playlist">Playlists ainda não são compatíveis; abra um único vídeo.</string>
     <string name="yt_err_not_link_title">Confira o link</string>

@@ -829,11 +829,14 @@
     <string name="yt_download_format">பதிவிறக்கு · %1$s · %2$s</string>
     <string name="yt_another_link">வேறு இணைப்பைப் பயன்படுத்து</string>
     <string name="yt_queued">பதிவிறக்கங்களில் சேர்க்கப்பட்டது</string>
+    <string name="yt_queued_no_subtitle">பதிவிறக்கங்களில் சேர்க்கப்பட்டது, ஆனால் வசனத்தைச் சேர்க்க முடியவில்லை</string>
+    <string name="yt_subtitle_added">வசனம் உங்கள் பதிவிறக்கங்களில் சேர்க்கப்பட்டது</string>
     <string name="yt_already_queued">ஏற்கெனவே உங்கள் பதிவிறக்கங்களில் உள்ளது</string>
     <string name="yt_view_downloads">பதிவிறக்கங்களைக் காட்டு</string>
     <string name="yt_retry">மீண்டும் முயல்</string>
     <string name="yt_err_title">இந்த வீடியோவை ஏற்ற முடியவில்லை</string>
     <string name="yt_err_search_title">YouTube-இல் தேட முடியவில்லை</string>
+    <string name="yt_err_channel_title">இந்த சேனலை ஏற்ற முடியவில்லை</string>
     <string name="yt_err_not_link">இது YouTube இணைப்பாகத் தெரியவில்லை.</string>
     <string name="yt_err_playlist">பிளேலிஸ்ட்கள் இன்னும் ஆதரிக்கப்படவில்லை; ஒரு வீடியோவைத் திறக்கவும்.</string>
     <string name="yt_err_not_link_title">இணைப்பைச் சரிபாருங்கள்</string>

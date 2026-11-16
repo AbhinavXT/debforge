@@ -790,11 +790,14 @@
     <string name="yt_download_format">Unduh · %1$s · %2$s</string>
     <string name="yt_another_link">Gunakan tautan lain</string>
     <string name="yt_queued">Ditambahkan ke unduhan</string>
+    <string name="yt_queued_no_subtitle">Ditambahkan ke unduhan, tetapi subtitel tidak bisa ditambahkan</string>
+    <string name="yt_subtitle_added">Subtitel ditambahkan ke unduhan Anda</string>
     <string name="yt_already_queued">Sudah ada di unduhan Anda</string>
     <string name="yt_view_downloads">Lihat unduhan</string>
     <string name="yt_retry">Coba lagi</string>
     <string name="yt_err_title">Video ini tidak bisa dimuat</string>
     <string name="yt_err_search_title">Tidak bisa mencari di YouTube</string>
+    <string name="yt_err_channel_title">Tidak bisa memuat saluran ini</string>
     <string name="yt_err_not_link">Itu sepertinya bukan tautan YouTube.</string>
     <string name="yt_err_playlist">Playlist belum didukung; buka satu video saja.</string>
     <string name="yt_err_not_link_title">Periksa tautan</string>

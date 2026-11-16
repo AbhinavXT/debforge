@@ -70,4 +70,9 @@ class AudioListsTest {
         assertEquals(listOf("Good", "Also"), s.playlists.map { it.name })
         assertEquals(listOf("a"), s.playlists[0].trackIds)
     }
+
+    @Test fun oneBadFavouriteDoesNotWipeTheOthers() {
+        val s = decodeAudioLists("""["a",{"x":1},"b"]""", "[]")
+        assertEquals(setOf("a", "b"), s.favourites)
+    }
 }

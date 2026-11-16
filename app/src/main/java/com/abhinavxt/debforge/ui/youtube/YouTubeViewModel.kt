@@ -20,6 +20,7 @@ import com.abhinavxt.debforge.domain.YouTubeSearchResult
 import com.abhinavxt.debforge.domain.YouTubeSubtitle
 import com.abhinavxt.debforge.domain.YouTubeVideo
 import com.abhinavxt.debforge.domain.subtitleFileName
+import com.abhinavxt.debforge.domain.youTubeSubtitleId
 import com.abhinavxt.debforge.download.DownloadController
 import com.abhinavxt.debforge.download.StorageAccess
 import com.abhinavxt.debforge.download.artworkFile
@@ -51,7 +52,10 @@ sealed interface YouTubeUi {
     data object Resolving : YouTubeUi
     data class Preview(val video: YouTubeVideo, val choices: List<FormatChoice>, val selected: FormatChoice, val subtitle: YouTubeSubtitle? = null) : YouTubeUi
     /** A search ([query] is the text) or, when [channelUrl] is set, a channel's videos ([query] is the channel name). */
-    data class Results(val query: String, val items: List<YouTubeSearchResult>, val loadingMore: Boolean = false, val channelUrl: String? = null) : YouTubeUi
+    data class Results(val query: String, val items: List<YouTubeSearchResult>, val loadingMore: Boolean = false, val channelUrl: String? = null,
+        /** The last page load failed: the list stops asking until the user scrolls again. */
+        val moreFailed: Boolean = false,
+    ) : YouTubeUi
     /** [progress] is (current, total) while the selected videos are being added one by one. */
     data class Playlist(
         val title: String,
@@ -60,15 +64,30 @@ sealed interface YouTubeUi {
         val quality: DefaultQuality,
         val progress: Pair<Int, Int>? = null,
     ) : YouTubeUi
-    data class Error(val kind: YouTubeErrorKind, val search: Boolean = false) : YouTubeUi
+    data class Error(val kind: YouTubeErrorKind, val search: Boolean = false, val channel: Boolean = false) : YouTubeUi
 }
 
 sealed interface YouTubeEvent {
     data object QUEUED : YouTubeEvent
     data object ALREADY_QUEUED : YouTubeEvent
     data object QUEUE_FAILED : YouTubeEvent
+    /** The video was added but its chosen subtitle could not be. */
+    data object QUEUED_NO_SUBTITLE : YouTubeEvent
+    /** The video was already in downloads; the chosen subtitle was added. */
+    data object SUBTITLE_ADDED : YouTubeEvent
     /** A playlist batch finished (not cancelled). */
     data class BatchDone(val added: Int, val already: Int, val failed: Int) : YouTubeEvent
+}
+
+/** What to tell the user after the video's own enqueue [video] and the chosen subtitle's [sub] (null: none chosen). */
+internal fun downloadOutcome(video: YouTubeEvent, sub: YouTubeEvent?): YouTubeEvent = when (video) {
+    YouTubeEvent.QUEUED -> if (sub == YouTubeEvent.QUEUE_FAILED) YouTubeEvent.QUEUED_NO_SUBTITLE else YouTubeEvent.QUEUED
+    YouTubeEvent.ALREADY_QUEUED -> when (sub) {
+        YouTubeEvent.QUEUED -> YouTubeEvent.SUBTITLE_ADDED
+        YouTubeEvent.QUEUE_FAILED -> YouTubeEvent.QUEUE_FAILED // nothing was added and the subtitle was the reason to ask
+        else -> YouTubeEvent.ALREADY_QUEUED
+    }
+    else -> video
 }
 
 @HiltViewModel
@@ -103,12 +122,19 @@ class YouTubeViewModel @Inject constructor(
     val trending: StateFlow<List<YouTubeSearchResult>> = _trending.asStateFlow()
     private var trendingStarted = false
 
-    /** Called when the empty screen is first shown (the ViewModel itself exists from app start); only the first call fetches. */
+    /** Called whenever the empty screen is shown (the ViewModel itself exists from app start); fetches until one fetch succeeds, one at a time. */
     fun loadTrending() {
         if (trendingStarted) return
         trendingStarted = true
         viewModelScope.launch {
-            try { _trending.value = resolver.trending() } catch (e: CancellationException) { throw e } catch (e: Exception) { }
+            try {
+                _trending.value = resolver.trending()
+            } catch (e: CancellationException) {
+                trendingStarted = false
+                throw e
+            } catch (e: Exception) {
+                trendingStarted = false // offline at launch: the next time the empty screen shows, try again
+            }
         }
     }
 
@@ -175,7 +201,7 @@ class YouTubeViewModel @Inject constructor(
         val page = nextPage ?: return
         if (r.loadingMore) return
         val channelUrl = r.channelUrl
-        _ui.value = r.copy(loadingMore = true)
+        _ui.value = r.copy(loadingMore = true, moreFailed = false)
         moreJob = viewModelScope.launch {
             try {
                 val more = if (channelUrl != null) resolver.channelMore(channelUrl, page) else resolver.searchMore(r.query, page)
@@ -188,7 +214,7 @@ class YouTubeViewModel @Inject constructor(
                 throw e
             } catch (e: Exception) {
                 ensureActive()
-                _ui.update { if (it is YouTubeUi.Results) it.copy(loadingMore = false) else it }
+                _ui.update { if (it is YouTubeUi.Results) it.copy(loadingMore = false, moreFailed = true) else it }
             }
         }
     }
@@ -243,7 +269,7 @@ class YouTubeViewModel @Inject constructor(
                 throw e
             } catch (e: Exception) {
                 ensureActive() // a cancelled job must not overwrite the state Back just set
-                YouTubeUi.Error(errorKind(e), search = true)
+                YouTubeUi.Error(errorKind(e), search = true, channel = true)
             }
         }
     }
@@ -349,7 +375,7 @@ class YouTubeViewModel @Inject constructor(
 
     /** A plain download of the track next to the video; the player finds it by the shared base name. */
     private fun subtitleItemFor(video: DownloadItem, s: YouTubeSubtitle) = DownloadItem(
-        id = "${video.id}:sub:${s.languageCode}", provider = ProviderId.DIRECT, filename = subtitleFileName(video.filename, s),
+        id = youTubeSubtitleId(video.id, s.languageCode), provider = ProviderId.DIRECT, filename = subtitleFileName(video.filename, s),
         sourceRef = s.url, downloadUrl = s.url, host = "YouTube", filesize = 0, maxConnections = 1,
         addedAt = Instant.now().toString(),
     )
@@ -366,12 +392,11 @@ class YouTubeViewModel @Inject constructor(
     }
 
     private suspend fun enqueue(item: DownloadItem, thumbnailUrl: String?, subtitle: DownloadItem? = null) {
-        val result = tryEnqueue(item, thumbnailUrl)
-        // A failed subtitle never fails the video that is already queued.
-        if (result == YouTubeEvent.QUEUED && subtitle != null) {
-            try { downloads.enqueue(subtitle) } catch (e: CancellationException) { throw e } catch (e: Exception) { }
-        }
-        _events.send(result)
+        val video = tryEnqueue(item, thumbnailUrl)
+        // The subtitle is its own row: it is added (once) whether or not the video was new,
+        // but never on its own when the video could not be queued.
+        val sub = if (subtitle != null && video != YouTubeEvent.QUEUE_FAILED) tryEnqueue(subtitle, null) else null
+        _events.send(downloadOutcome(video, sub))
     }
 
     /** Queues [item] and says what happened: QUEUED, ALREADY_QUEUED or QUEUE_FAILED. */
