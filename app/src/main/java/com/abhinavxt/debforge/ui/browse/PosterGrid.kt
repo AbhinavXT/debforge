@@ -524,6 +524,11 @@ fun TitleSheet(
             }
             item(key = "fixed:divider") { Spacer(Modifier.height(4.dp)) }
 
+            // Several files for one episode (different releases): number them so they can be told apart.
+            val versionsByEpisode = files
+                .filter { it.info.episodeLabel != null }
+                .groupBy { it.info.season to it.info.episodeLabel }
+                .filterValues { it.size > 1 }
             var lastSeason: Int? = null
             files.forEach { f ->
                 val season = f.info.season
@@ -551,8 +556,10 @@ fun TitleSheet(
                     }
                 }
                 item(key = "file:" + f.item.id) {
+                    val versions = versionsByEpisode[f.info.season to f.info.episodeLabel]
                     FileRow(
                         file = f,
+                        version = versions?.let { it.indexOf(f) + 1 to it.size },
                         state = downloadStates[f.item.id],
                         onDownload = { onDownload(listOf(f.item)) },
                         onPlay = { onPlay(f) },
@@ -604,6 +611,8 @@ private fun Overview(text: String) {
 @Composable
 private fun FileRow(
     file: ParsedItem,
+    /** (n, of) when this episode has several files. */
+    version: Pair<Int, Int>? = null,
     state: DownloadState?,
     onDownload: () -> Unit,
     onPlay: () -> Unit,
@@ -625,16 +634,19 @@ private fun FileRow(
                 Text(label, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium)
             }
             Text(
-                listOfNotNull(file.info.qualityLabel.ifEmpty { null }, formatSize(file.item.filesize))
-                    .joinToString(" · "),
+                listOfNotNull(
+                    version?.let { stringResource(R.string.sheet_version_of, it.first, it.second) },
+                    file.info.qualityLabel.ifEmpty { null },
+                    formatSize(file.item.filesize)
+                ).joinToString(" · "),
                 style = if (label != null) MaterialTheme.typography.bodyMedium else MaterialTheme.typography.bodyLarge,
                 color = if (label != null) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface
             )
             Text(
                 file.item.filename,
                 style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.75f),
-                maxLines = 1,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = if (version != null) 1f else 0.75f),
+                maxLines = if (version != null) 2 else 1,
                 overflow = TextOverflow.Ellipsis
             )
             // Watched (in DebForge's player or on Trakt), or how far along.

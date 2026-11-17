@@ -101,6 +101,7 @@
     <string name="sheet_download_all">Baixar tudo (%1$d)</string>
     <string name="sheet_zip_download">Baixar .zip</string>
     <string name="sheet_season">Temporada %1$d</string>
+    <string name="sheet_version_of">Versão %1$d de %2$d</string>
     <string name="sheet_download_season">Baixar temporada (%1$d)</string>
     <string name="sheet_play_cd">Reproduzir %1$s</string>
     <string name="sheet_download_cd">Baixar %1$s</string>

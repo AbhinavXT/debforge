@@ -99,6 +99,7 @@
     <string name="sheet_download_all">সব ডাউনলোড করুন (%1$d)</string>
     <string name="sheet_zip_download">.zip ডাউনলোড করুন</string>
     <string name="sheet_season">সিজন %1$d</string>
+    <string name="sheet_version_of">সংস্করণ %1$d / %2$d</string>
     <string name="sheet_download_season">সিজন ডাউনলোড করুন (%1$d)</string>
     <string name="sheet_play_cd">%1$s চালান</string>
     <string name="sheet_download_cd">%1$s ডাউনলোড করুন</string>

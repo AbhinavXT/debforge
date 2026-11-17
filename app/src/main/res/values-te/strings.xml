@@ -99,6 +99,7 @@
     <string name="sheet_download_all">అన్నీ డౌన్‌లోడ్ చేయి (%1$d)</string>
     <string name="sheet_zip_download">.zip డౌన్‌లోడ్ చేయి</string>
     <string name="sheet_season">సీజన్ %1$d</string>
+    <string name="sheet_version_of">వెర్షన్ %1$d / %2$d</string>
     <string name="sheet_download_season">సీజన్ డౌన్‌లోడ్ చేయి (%1$d)</string>
     <string name="sheet_play_cd">%1$s ను ప్లే చేయి</string>
     <string name="sheet_download_cd">%1$s ను డౌన్‌లోడ్ చేయి</string>

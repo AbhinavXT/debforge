@@ -99,6 +99,7 @@
     <string name="sheet_download_all">அனைத்தையும் பதிவிறக்கு (%1$d)</string>
     <string name="sheet_zip_download">.zip பதிவிறக்கு</string>
     <string name="sheet_season">சீசன் %1$d</string>
+    <string name="sheet_version_of">பதிப்பு %1$d / %2$d</string>
     <string name="sheet_download_season">சீசனைப் பதிவிறக்கு (%1$d)</string>
     <string name="sheet_play_cd">%1$s-ஐ இயக்கு</string>
     <string name="sheet_download_cd">%1$s-ஐப் பதிவிறக்கு</string>
