@@ -1009,4 +1009,10 @@
     <string name="media_favourite">Favorita</string>
     <string name="media_unplayed">Ainda não assistido</string>
     <string name="media_watched_percent">%1$d%% assistido</string>
+    <string name="yt_play_quality">Reproduzir %1$s</string>
+    <string name="yt_listen">Ouvir</string>
+    <string name="yt_play_cd">Reproduzir</string>
+    <string name="yt_streaming">Transmitindo…</string>
+    <string name="yt_stream_failed">O YouTube interrompeu esta transmissão. Baixar em vez disso?</string>
+    <string name="yt_stream_download">Baixar</string>
 </resources>

@@ -961,4 +961,10 @@
     <string name="media_favourite">ఇష్టమైనది</string>
     <string name="media_unplayed">ఇంకా చూడలేదు</string>
     <string name="media_watched_percent">%1$d%% చూశారు</string>
+    <string name="yt_play_quality">%1$s ప్లే చేయి</string>
+    <string name="yt_listen">వినండి</string>
+    <string name="yt_play_cd">ప్లే చేయి</string>
+    <string name="yt_streaming">స్ట్రీమ్ అవుతోంది…</string>
+    <string name="yt_stream_failed">YouTube ఈ స్ట్రీమ్‌ను ఆపేసింది. బదులుగా డౌన్‌లోడ్ చేయాలా?</string>
+    <string name="yt_stream_download">డౌన్‌లోడ్</string>
 </resources>

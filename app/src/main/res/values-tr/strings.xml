@@ -961,4 +961,10 @@
     <string name="media_favourite">Favori</string>
     <string name="media_unplayed">Henüz izlenmedi</string>
     <string name="media_watched_percent">%%%1$d izlendi</string>
+    <string name="yt_play_quality">%1$s oynat</string>
+    <string name="yt_listen">Dinle</string>
+    <string name="yt_play_cd">Oynat</string>
+    <string name="yt_streaming">Akış yapılıyor…</string>
+    <string name="yt_stream_failed">YouTube bu akışı durdurdu. Bunun yerine indirilsin mi?</string>
+    <string name="yt_stream_download">İndir</string>
 </resources>

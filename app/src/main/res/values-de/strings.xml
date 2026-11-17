@@ -961,4 +961,10 @@
     <string name="media_favourite">Favorit</string>
     <string name="media_unplayed">Noch nicht angesehen</string>
     <string name="media_watched_percent">%1$d%% angesehen</string>
+    <string name="yt_play_quality">%1$s abspielen</string>
+    <string name="yt_listen">Anhören</string>
+    <string name="yt_play_cd">Abspielen</string>
+    <string name="yt_streaming">Wird gestreamt…</string>
+    <string name="yt_stream_failed">YouTube hat diesen Stream beendet. Stattdessen herunterladen?</string>
+    <string name="yt_stream_download">Herunterladen</string>
 </resources>

@@ -1057,4 +1057,10 @@
     <string name="media_favourite">В избранном</string>
     <string name="media_unplayed">Ещё не просмотрено</string>
     <string name="media_watched_percent">Просмотрено: %1$d%%</string>
+    <string name="yt_play_quality">Смотреть %1$s</string>
+    <string name="yt_listen">Слушать</string>
+    <string name="yt_play_cd">Воспроизвести</string>
+    <string name="yt_streaming">Потоковая передача…</string>
+    <string name="yt_stream_failed">YouTube прервал эту трансляцию. Скачать вместо этого?</string>
+    <string name="yt_stream_download">Скачать</string>
 </resources>
