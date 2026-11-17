@@ -63,4 +63,16 @@ class YouTubeStreamingTest {
         assertEquals(1080, YouTubeStreaming.quickPlayChoice(DefaultQuality.P1080, choices)?.height)
         assertEquals(null, YouTubeStreaming.quickPlayChoice(DefaultQuality.AUDIO, choices)?.videoItag)
     }
+
+    @Test fun mp4FallbackPicksTallestMp4BelowAndNotTheFailedOne() {
+        val mixed = listOf(
+            FormatChoice(248, 251, "webm", 0, false, 1080, 30, Container.WEBM, 0),
+            c(137, 140, 1080), c(135, 140, 480), c(299, 140, 2160),
+        )
+        assertEquals(135, YouTubeStreaming.mp4Fallback(YouTubeLinks.Ref("x", 137, 140), 1080, mixed)?.videoItag)
+        assertEquals(137, YouTubeStreaming.mp4Fallback(YouTubeLinks.Ref("x", 248, 251), 1080, mixed)?.videoItag)
+    }
+
+    @Test fun mp4FallbackIsNullWhenNothingFits() =
+        assertNull(YouTubeStreaming.mp4Fallback(YouTubeLinks.Ref("x", 135, 140), 480, choices))
 }

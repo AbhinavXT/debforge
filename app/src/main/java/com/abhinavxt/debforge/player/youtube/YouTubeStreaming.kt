@@ -4,7 +4,13 @@ import android.content.Context
 import android.net.Uri
 import androidx.annotation.OptIn
 import androidx.media3.common.C
+import androidx.media3.common.Format
 import androidx.media3.common.MediaItem
+import androidx.media3.datasource.DefaultDataSource
+import androidx.media3.extractor.Extractor
+import androidx.media3.extractor.ExtractorsFactory
+import androidx.media3.extractor.text.DefaultSubtitleParserFactory
+import androidx.media3.extractor.text.SubtitleExtractor
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.DataSpec
@@ -16,9 +22,9 @@ import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.exoplayer.source.MediaSource
 import androidx.media3.exoplayer.source.MergingMediaSource
 import androidx.media3.exoplayer.source.ProgressiveMediaSource
-import androidx.media3.exoplayer.source.SingleSampleMediaSource
 import androidx.media3.exoplayer.upstream.LoadErrorHandlingPolicy
 import com.abhinavxt.debforge.data.youtube.NewPipeDownloader
+import com.abhinavxt.debforge.domain.Container
 import com.abhinavxt.debforge.domain.DefaultQuality
 import com.abhinavxt.debforge.domain.FormatChoice
 import com.abhinavxt.debforge.domain.YouTubeLinks
@@ -62,6 +68,14 @@ object YouTubeStreaming {
         }
         return choices.filter { it.videoItag != null && it.height <= oldHeight }.maxByOrNull { it.height }
     }
+
+    /**
+     * After the device failed to decode the chosen video (usually VP9 or AV1): the tallest MP4 choice at or below
+     * [oldHeight] that is not the one that failed, or null when there is none.
+     */
+    fun mp4Fallback(ref: YouTubeLinks.Ref, oldHeight: Int, choices: List<FormatChoice>): FormatChoice? =
+        choices.filter { it.videoItag != null && it.videoItag != ref.videoItag && it.container == Container.MP4 && it.height <= oldHeight }
+            .maxByOrNull { it.height }
 }
 
 /**
@@ -80,6 +94,7 @@ class WindowedDataSource(
     private var windowLeft = 0L
     private var upstreamOpen = false
     private var finished = false
+    private var whole = false // the server ignored ranges: one open request carries the whole remaining body
 
     override fun addTransferListener(transferListener: TransferListener) = upstream.addTransferListener(transferListener)
 
@@ -89,6 +104,7 @@ class WindowedDataSource(
         remaining = dataSpec.length
         total = C.LENGTH_UNSET.toLong()
         finished = false
+        whole = false
         if (!openWindow()) throw java.io.IOException("YouTube returned nothing")
         return when {
             dataSpec.length != C.LENGTH_UNSET.toLong() -> dataSpec.length
@@ -101,7 +117,7 @@ class WindowedDataSource(
     private fun openWindow(): Boolean {
         if (remaining == 0L || (total != C.LENGTH_UNSET.toLong() && position >= total)) return false
         val w = YouTubeStreaming.rangeWindow(position, remaining, chunk)
-        val opened = try {
+        var opened = try {
             upstream.open(spec!!.buildUpon().setPosition(w.start).setLength(w.length).build())
         } catch (e: HttpDataSource.InvalidResponseCodeException) {
             // Asking for a window past the end of the file.
@@ -109,13 +125,30 @@ class WindowedDataSource(
             throw e
         }
         upstreamOpen = true
+        val fromHeaders = totalFromHeaders()
+        if (fromHeaders == C.LENGTH_UNSET.toLong() && !hasContentRange()) {
+            // A 200 without Content-Range: the range was ignored and the window above was cut short. Read the
+            // rest of the body from one request instead of treating the cut as the end of the file.
+            upstream.close(); upstreamOpen = false
+            opened = upstream.open(spec!!.buildUpon().setPosition(position).setLength(remaining).build())
+            upstreamOpen = true
+            whole = true
+            windowLeft = if (opened != C.LENGTH_UNSET.toLong()) opened else Long.MAX_VALUE
+            if (total == C.LENGTH_UNSET.toLong() && opened != C.LENGTH_UNSET.toLong()) total = position + opened
+            return true
+        }
         windowLeft = if (opened != C.LENGTH_UNSET.toLong()) opened else w.length
-        if (total == C.LENGTH_UNSET.toLong()) total = totalFromHeaders()
+        if (total == C.LENGTH_UNSET.toLong()) total = fromHeaders
         return true
     }
 
+    private fun contentRange(): String? =
+        upstream.responseHeaders.entries.firstOrNull { it.key.equals("Content-Range", true) }?.value?.firstOrNull()
+
+    private fun hasContentRange() = contentRange() != null
+
     private fun totalFromHeaders(): Long {
-        val range = upstream.responseHeaders.entries.firstOrNull { it.key.equals("Content-Range", true) }?.value?.firstOrNull()
+        val range = contentRange()
         return range?.substringAfterLast('/')?.toLongOrNull() ?: C.LENGTH_UNSET.toLong()
     }
 
@@ -129,6 +162,7 @@ class WindowedDataSource(
             val n = upstream.read(buffer, offset, length)
             if (n == C.RESULT_END_OF_INPUT || windowLeft <= 0L) {
                 upstream.close(); upstreamOpen = false
+                if (whole) { finished = true; return C.RESULT_END_OF_INPUT }
                 // A short window with the file's end reached means we are done.
                 if (n == C.RESULT_END_OF_INPUT && windowLeft > 0L && total == C.LENGTH_UNSET.toLong()) { finished = true; return C.RESULT_END_OF_INPUT }
                 continue
@@ -136,7 +170,10 @@ class WindowedDataSource(
             position += n
             windowLeft -= n
             if (remaining != C.LENGTH_UNSET.toLong()) remaining -= n
-            if (windowLeft <= 0L) { upstream.close(); upstreamOpen = false }
+            if (windowLeft <= 0L) {
+                upstream.close(); upstreamOpen = false
+                if (whole) finished = true
+            }
             return n
         }
     }
@@ -172,6 +209,24 @@ class YouTubeMediaSourceFactory(context: Context, chunk: Long = YouTubeStreaming
     private val dataSources = WindowedDataSource.Factory(chunk)
     private val progressive = ProgressiveMediaSource.Factory(dataSources)
     private val default = DefaultMediaSourceFactory(context)
+    // Subtitles can be http links or local files, so they do not go through the windowed reader.
+    private val subtitleData = DefaultDataSource.Factory(context)
+    private val subtitleParsers = DefaultSubtitleParserFactory()
+
+    /** A subtitle file parsed into cues while it is read, as the default factory does (raw text samples are refused). Null when the format can't be parsed. */
+    private fun subtitleSource(config: MediaItem.SubtitleConfiguration): MediaSource? {
+        val format = Format.Builder()
+            .setId(config.id)
+            .setSampleMimeType(config.mimeType)
+            .setLanguage(config.language)
+            .setSelectionFlags(config.selectionFlags)
+            .setRoleFlags(config.roleFlags)
+            .setLabel(config.label)
+            .build()
+        if (!subtitleParsers.supportsFormat(format)) return null
+        val extractors = ExtractorsFactory { arrayOf<Extractor>(SubtitleExtractor(subtitleParsers.create(format), format)) }
+        return ProgressiveMediaSource.Factory(subtitleData, extractors).createMediaSource(MediaItem.fromUri(config.uri))
+    }
 
     override fun setDrmSessionManagerProvider(p: DrmSessionManagerProvider): MediaSource.Factory {
         progressive.setDrmSessionManagerProvider(p); default.setDrmSessionManagerProvider(p); return this
@@ -189,9 +244,7 @@ class YouTubeMediaSourceFactory(context: Context, chunk: Long = YouTubeStreaming
         val sources = ArrayList<MediaSource>()
         sources += main
         if (tag.hasVideo) sources += progressive.createMediaSource(MediaItem.fromUri(tag.audioUrl))
-        mediaItem.localConfiguration!!.subtitleConfigurations.forEach {
-            sources += SingleSampleMediaSource.Factory(dataSources).createMediaSource(it, C.TIME_UNSET)
-        }
+        mediaItem.localConfiguration!!.subtitleConfigurations.forEach { subtitleSource(it)?.let { s -> sources += s } }
         return if (sources.size == 1) main else MergingMediaSource(*sources.toTypedArray())
     }
 }

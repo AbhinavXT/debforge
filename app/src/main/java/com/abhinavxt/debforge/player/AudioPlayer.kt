@@ -253,10 +253,10 @@ class AudioPlayer @Inject constructor(
             if (yt?.youtube != null && mayRecoverLink(recoverAttempts[yt.id], SystemClock.uptimeMillis())) {
                 recoverAttempts[yt.id] = SystemClock.uptimeMillis()
                 recoverJob?.cancel()
-                recoverJob = scope.launch { if (!recover(yt, bad, p.currentPosition)) dropTrack(bad) }
+                recoverJob = scope.launch { if (!recover(yt, bad, p.currentPosition)) dropTrack(bad, yt.id) }
                 return
             }
-            dropTrack(bad)
+            dropTrack(bad, yt?.id)
         }
     }
 
@@ -266,9 +266,13 @@ class AudioPlayer @Inject constructor(
     /** Swaps in a fresh URL for [track] at [index] and resumes at [positionMs]; false when it could not be refreshed. */
     private suspend fun recover(track: AudioTrack, index: Int, positionMs: Long): Boolean {
         val yt = track.youtube ?: return false
-        val stream = runCatching {
+        val stream = try {
             freshAudioStream(youtubeResolver.resolve("https://www.youtube.com/watch?v=${yt.videoId}"), yt.audioItag, android.os.Build.VERSION.SDK_INT)
-        }.getOrNull() ?: return false
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e // play()/clear() replaced the queue: not a failure
+        } catch (e: Exception) {
+            null
+        } ?: return false
         val p = player ?: return true // cleared meanwhile: nothing to drop
         if (tracks.getOrNull(index)?.id != track.id) return true // the queue changed under us
         val fresh = track.copy(uri = Uri.parse(stream.url), youtube = yt.copy(audioItag = stream.itag))
@@ -281,8 +285,9 @@ class AudioPlayer @Inject constructor(
     }
 
     /** A file deleted while queued or playing: drop it and carry on with the next one. */
-    private fun dropTrack(bad: Int) {
+    private fun dropTrack(bad: Int, id: String?) {
         val p = player ?: return
+        if (id != null && tracks.getOrNull(bad)?.id != id) return // the queue changed since the error
         if (p.mediaItemCount <= 1) { clear(); return }
         tracks = tracks.filterIndexed { i, _ -> i != bad }
         p.removeMediaItem(bad)

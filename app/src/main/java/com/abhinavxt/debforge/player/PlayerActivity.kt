@@ -123,6 +123,8 @@ class PlayerActivity : ComponentActivity() {
     @Inject lateinit var chapterReader: ChapterReader
     @Inject lateinit var youTubeResolver: com.abhinavxt.debforge.data.youtube.YouTubeResolver
     @Inject lateinit var downloads: com.abhinavxt.debforge.download.DownloadController
+    @Inject lateinit var downloadDao: com.abhinavxt.debforge.data.local.DownloadDao
+    @Inject lateinit var networkMonitor: com.abhinavxt.debforge.download.NetworkMonitor
 
     /** Settings → "Autoplay next episode". Off: the card still offers Play now, without a countdown. */
     private var autoplay = true
@@ -261,6 +263,9 @@ class PlayerActivity : ComponentActivity() {
     /** Quiet link refreshes after network errors (expired debrid links). */
     private var refreshState = LinkRefresh.State()
     private var refreshing = false
+    private var triedMp4Fallback = false // a YouTube stream that the device could not decode is switched to MP4 once
+    private var networkDialog: AlertDialog? = null
+    private var networkWatch: kotlinx.coroutines.Job? = null
 
     /** Android TV: move focus to overlays when they appear (no touch screen). */
     private val isTv by lazy {
@@ -1610,11 +1615,12 @@ class PlayerActivity : ComponentActivity() {
      * Capped by [LinkRefresh]; after that, or for plain links, the Retry
      * dialog.
      */
-    private fun refreshLinkOrAsk() {
+    private fun refreshLinkOrAsk(refused: Boolean = false) {
         val id = identity
         val next = LinkRefresh.next(refreshState, android.os.SystemClock.elapsedRealtime())
         if (id == null || next == null || refreshing) {
-            if (!refreshing) if (youtube != null) showStreamFailed() else showNetworkError()
+            // "YouTube stopped this stream" is only for a link YouTube kept refusing; anything else is the connection.
+            if (!refreshing) if (youtube != null && refused) showStreamFailed() else showNetworkError()
             return
         }
         refreshState = next
@@ -1623,7 +1629,12 @@ class PlayerActivity : ComponentActivity() {
         lifecycleScope.launch {
             try {
                 if (youtube != null) {
-                    if (!refreshYouTube(position) && id == identity) showStreamFailed()
+                    val result = refreshYouTube(position)
+                    if (id == identity) when {
+                        result == YtRefresh.OK -> Unit
+                        result == YtRefresh.GONE && refused -> showStreamFailed()
+                        else -> showNetworkError()
+                    }
                     return@launch
                 }
                 val fresh = (repository.resolveLink(id.provider, id.sourceRef) as? DataResult.Success)?.data?.url
@@ -1648,20 +1659,28 @@ class PlayerActivity : ComponentActivity() {
      * The YouTube stream's URLs expired (or the connection broke): resolve the video again, pick the same
      * itags (or the best at or below the old height) and carry on from [position]. False when that failed.
      */
-    private suspend fun refreshYouTube(position: Long): Boolean {
-        val yt = youtube ?: return false
-        val ref = com.abhinavxt.debforge.domain.YouTubeLinks.parseSourceRef(yt.ref) ?: return false
+    private enum class YtRefresh { OK, GONE, OFFLINE }
+
+    private suspend fun refreshYouTube(
+        position: Long,
+        pick: (com.abhinavxt.debforge.domain.YouTubeLinks.Ref, Int, List<com.abhinavxt.debforge.domain.FormatChoice>) -> com.abhinavxt.debforge.domain.FormatChoice? =
+            com.abhinavxt.debforge.player.youtube.YouTubeStreaming::reselect
+    ): YtRefresh {
+        val yt = youtube ?: return YtRefresh.GONE
+        val ref = com.abhinavxt.debforge.domain.YouTubeLinks.parseSourceRef(yt.ref) ?: return YtRefresh.GONE
         val request = try {
             val video = youTubeResolver.resolve("https://www.youtube.com/watch?v=${yt.videoId}")
             val choices = com.abhinavxt.debforge.domain.YouTubeFormats.choices(video.streams, android.os.Build.VERSION.SDK_INT, video.durationSec)
-            val choice = com.abhinavxt.debforge.player.youtube.YouTubeStreaming.reselect(ref, yt.height, choices) ?: return false
-            com.abhinavxt.debforge.ui.browse.youTubePlayRequest(video, choice) ?: return false
+            val choice = pick(ref, yt.height, choices) ?: return YtRefresh.GONE
+            com.abhinavxt.debforge.ui.browse.youTubePlayRequest(video, choice) ?: return YtRefresh.GONE
         } catch (e: kotlinx.coroutines.CancellationException) {
             throw e
+        } catch (e: com.abhinavxt.debforge.data.youtube.YouTubeException.Network) {
+            return YtRefresh.OFFLINE
         } catch (e: Exception) {
-            return false
+            return YtRefresh.GONE
         }
-        val fresh = request.youtube ?: return false
+        val fresh = request.youtube ?: return YtRefresh.GONE
         uri = request.uri
         youtube = fresh
         // Same languages as before (new links), plus subtitles added from OpenSubtitles.
@@ -1672,7 +1691,53 @@ class PlayerActivity : ComponentActivity() {
             prepare()
             play()
         }
-        return true
+        return YtRefresh.OK
+    }
+
+    /** A YouTube stream broke: refused link, lost connection, undecodable format or something else. */
+    private fun onYouTubeError(error: PlaybackException) {
+        when (PlayerErrors.youTubeFailure(error.errorCode, PlayerErrors.httpStatusOf(error))) {
+            PlayerErrors.YouTubeFailure.LINK_REFUSED -> refreshLinkOrAsk(refused = true)
+            PlayerErrors.YouTubeFailure.NETWORK ->
+                // Offline: wait for the connection instead of looking the video up again.
+                if (networkMonitor.online.value) refreshLinkOrAsk() else showNetworkError()
+            PlayerErrors.YouTubeFailure.DECODER -> youTubeDecoderFallback()
+            PlayerErrors.YouTubeFailure.OTHER -> showYouTubeProblem(getString(R.string.player_error_body, error.errorCodeName))
+        }
+    }
+
+    /** The device could not decode this format: carry on in an MP4 choice at the same position, once. */
+    private fun youTubeDecoderFallback() {
+        if (refreshing || isFinishing) return
+        if (triedMp4Fallback) { showYouTubeProblem(getString(R.string.player_unsupported_body)); return }
+        triedMp4Fallback = true
+        refreshing = true
+        val id = identity
+        val position = player?.currentPosition ?: resumePosition
+        lifecycleScope.launch {
+            try {
+                val result = refreshYouTube(position, com.abhinavxt.debforge.player.youtube.YouTubeStreaming::mp4Fallback)
+                if (id != identity) return@launch
+                when (result) {
+                    YtRefresh.OK -> Unit
+                    YtRefresh.OFFLINE -> showNetworkError()
+                    YtRefresh.GONE -> showYouTubeProblem(getString(R.string.player_unsupported_body))
+                }
+            } finally {
+                refreshing = false
+            }
+        }
+    }
+
+    /** A message for a stream that can't continue and that downloading would not fix. */
+    private fun showYouTubeProblem(message: String) {
+        if (isFinishing) return
+        player?.pause()
+        AlertDialog.Builder(this)
+            .setMessage(message)
+            .setPositiveButton(R.string.action_close) { _, _ -> finish() }
+            .setOnCancelListener { finish() }
+            .show()
     }
 
     /** The stream can't be kept going: offer to download the video instead, or close. */
@@ -1682,22 +1747,41 @@ class PlayerActivity : ComponentActivity() {
         player?.pause()
         AlertDialog.Builder(this)
             .setMessage(R.string.yt_stream_failed)
-            .setPositiveButton(R.string.yt_stream_download) { _, _ ->
-                val name = "$title [${yt.height}p].${yt.extension}"
-                val item = com.abhinavxt.debforge.domain.DownloadItem(
-                    id = yt.ref, provider = ProviderId.DIRECT, filename = name, sourceRef = yt.ref,
-                    downloadUrl = uri.toString(), host = "YouTube", filesize = 0, maxConnections = 1,
-                    addedAt = java.time.Instant.now().toString(), title = title
-                )
-                // The download engine re-resolves from the ref, so the URL above is only a hint.
-                lifecycleScope.launch {
-                    runCatching { downloads.enqueue(item) }
-                    finish()
-                }
-            }
+            .setPositiveButton(R.string.yt_stream_download) { _, _ -> downloadFailedStream(yt) }
             .setNegativeButton(R.string.action_close) { _, _ -> finish() }
             .setOnCancelListener { finish() }
             .show()
+    }
+
+    /** Queues the stream's video like the YouTube preview does, tells the user what happened, then closes. */
+    private fun downloadFailedStream(yt: com.abhinavxt.debforge.ui.browse.YtStream) {
+        val ref = com.abhinavxt.debforge.domain.YouTubeLinks.parseSourceRef(yt.ref)
+        lifecycleScope.launch {
+            // Same rule as the YouTube tab: no writable download folder yet means ask, never queue to the filesystem root.
+            if (ref == null || !com.abhinavxt.debforge.download.StorageAccess.canWrite(this@PlayerActivity, settings.downloadDirFlow.first())) {
+                android.widget.Toast.makeText(this@PlayerActivity, R.string.add_needs_storage, android.widget.Toast.LENGTH_LONG).show()
+                finish()
+                return@launch
+            }
+            val item = com.abhinavxt.debforge.ui.youtube.youTubeDownloadItem(
+                videoId = yt.videoId, title = title, uploader = yt.uploader.ifBlank { null }, videoItag = ref.videoItag,
+                audioItag = ref.audioItag, extension = yt.extension, height = yt.height, estimatedBytes = 0, url = uri.toString(),
+            )
+            val sub = subtitles.firstOrNull { !it.url.startsWith("file:") && it.language != null }?.let {
+                com.abhinavxt.debforge.ui.youtube.youTubeSubtitleItem(item, com.abhinavxt.debforge.domain.YouTubeSubtitle(it.language!!, it.label, it.url, false))
+            }
+            val message = try {
+                if (downloadDao.getById(item.id) != null) R.string.yt_already_queued
+                else { downloads.enqueue(item); R.string.yt_queued }
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                R.string.yt_err_queue
+            }
+            if (message == R.string.yt_queued && sub != null) runCatching { if (downloadDao.getById(sub.id) == null) downloads.enqueue(sub) }
+            android.widget.Toast.makeText(this@PlayerActivity, message, android.widget.Toast.LENGTH_LONG).show()
+            finish()
+        }
     }
 
     /** Fetches the next episode's link and subtitles once, ahead of time. */
@@ -2105,7 +2189,8 @@ class PlayerActivity : ComponentActivity() {
                     .setLanguage(sub.language)
                     .setLabel(sub.label)
                     // Forced subs (signs, foreign dialogue) show without being picked.
-                    .setSelectionFlags(if (sub.forced) C.SELECTION_FLAG_FORCED else 0)
+                    // Subtitles chosen in the YouTube preview are shown from the start.
+                    .setSelectionFlags(if (sub.forced) C.SELECTION_FLAG_FORCED else if (youtube != null) C.SELECTION_FLAG_DEFAULT else 0)
                     .build()
             })
             .build()
@@ -2170,6 +2255,7 @@ class PlayerActivity : ComponentActivity() {
         }
 
         override fun onPlayerError(error: PlaybackException) {
+            if (youtube != null) { onYouTubeError(error); return }
             when (PlayerErrors.kindOf(error.errorCode)) {
                 PlayerErrors.Kind.UNSUPPORTED -> offerExternal(getString(R.string.player_unsupported_body))
                 // Most likely an expired link or a dropped connection.
@@ -2205,7 +2291,7 @@ class PlayerActivity : ComponentActivity() {
         if (offeredFallback || isFinishing) return
         if (youtube != null) { // another player would only get the picture, without the audio stream
             offeredFallback = true
-            showStreamFailed()
+            showYouTubeProblem(message)
             return
         }
         offeredFallback = true
@@ -2354,7 +2440,8 @@ class PlayerActivity : ComponentActivity() {
 
     private fun showNetworkError() {
         if (isFinishing) return
-        AlertDialog.Builder(this)
+        networkDialog?.dismiss()
+        networkDialog = AlertDialog.Builder(this)
             .setTitle(R.string.player_network_title)
             .setMessage(R.string.player_network_body)
             .setPositiveButton(R.string.action_retry) { _, _ ->
@@ -2372,7 +2459,17 @@ class PlayerActivity : ComponentActivity() {
             }
             .setNegativeButton(R.string.action_close) { _, _ -> finish() }
             .setOnCancelListener { finish() }
+            .setOnDismissListener { networkWatch?.cancel(); networkWatch = null }
             .show()
+        if (youtube != null && !networkMonitor.online.value) {
+            // Offline: carry on by itself when the connection is back.
+            networkWatch = lifecycleScope.launch {
+                networkMonitor.online.first { it }
+                networkDialog?.dismiss()
+                refreshState = LinkRefresh.State()
+                refreshLinkOrAsk()
+            }
+        }
     }
 
     private fun hideSystemBars() {
@@ -2454,6 +2551,7 @@ class PlayerActivity : ComponentActivity() {
         private const val EXTRA_YT_AUDIO = "ytAudio"
         private const val EXTRA_YT_HEIGHT = "ytHeight"
         private const val EXTRA_YT_EXT = "ytExt"
+        private const val EXTRA_YT_UPLOADER = "ytUploader"
 
         private fun ytStreamFrom(intent: Intent): com.abhinavxt.debforge.ui.browse.YtStream? {
             val ref = intent.getStringExtra(EXTRA_YT_REF) ?: return null
@@ -2462,7 +2560,8 @@ class PlayerActivity : ComponentActivity() {
                 videoId = intent.getStringExtra(EXTRA_YT_ID) ?: return null,
                 audioUrl = intent.getStringExtra(EXTRA_YT_AUDIO) ?: return null,
                 height = intent.getIntExtra(EXTRA_YT_HEIGHT, 0),
-                extension = intent.getStringExtra(EXTRA_YT_EXT) ?: "mp4"
+                extension = intent.getStringExtra(EXTRA_YT_EXT) ?: "mp4",
+                uploader = intent.getStringExtra(EXTRA_YT_UPLOADER).orEmpty()
             )
         }
 
@@ -2510,6 +2609,7 @@ class PlayerActivity : ComponentActivity() {
                         putExtra(EXTRA_YT_AUDIO, it.audioUrl)
                         putExtra(EXTRA_YT_HEIGHT, it.height)
                         putExtra(EXTRA_YT_EXT, it.extension)
+                        putExtra(EXTRA_YT_UPLOADER, it.uploader)
                     }
                     if (request.subtitles.isNotEmpty()) {
                         val subs = request.subtitles

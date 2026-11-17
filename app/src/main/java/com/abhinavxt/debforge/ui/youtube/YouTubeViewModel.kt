@@ -46,6 +46,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -394,8 +395,13 @@ class YouTubeViewModel @Inject constructor(
     /** Plays the preview's selected choice: audio in the mini player, video in the player screen. */
     fun play() {
         val p = _ui.value as? YouTubeUi.Preview ?: return
+        if (streamJob?.isActive == true) return // double tap
         val subs = listOfNotNull(p.subtitle)
-        if (!startStream(p.video, p.selected, subs)) _events.trySend(YouTubeEvent.StreamFailed(YouTubeErrorKind.GENERIC))
+        // Held for a moment so a second tap can't open a second player; a failed start frees it at once.
+        streamJob = viewModelScope.launch {
+            if (!startStream(p.video, p.selected, subs)) _events.send(YouTubeEvent.StreamFailed(YouTubeErrorKind.GENERIC))
+            else delay(1_500)
+        }
     }
 
     private fun startStream(video: YouTubeVideo, choice: FormatChoice, subtitles: List<YouTubeSubtitle>): Boolean {
@@ -450,23 +456,13 @@ class YouTubeViewModel @Inject constructor(
         }
     }
 
-    /** A plain download of the track next to the video; the player finds it by the shared base name. */
-    private fun subtitleItemFor(video: DownloadItem, s: YouTubeSubtitle) = DownloadItem(
-        id = youTubeSubtitleId(video.id, s.languageCode), provider = ProviderId.DIRECT, filename = subtitleFileName(video.filename, s),
-        sourceRef = s.url, downloadUrl = s.url, host = "YouTube", filesize = 0, maxConnections = 1,
-        addedAt = Instant.now().toString(),
-    )
+    private fun subtitleItemFor(video: DownloadItem, s: YouTubeSubtitle) = youTubeSubtitleItem(video, s)
 
-    private fun itemFor(video: YouTubeVideo, c: FormatChoice): DownloadItem {
-        val ref = YouTubeLinks.sourceRef(video.id, c.videoItag, c.audioItag)
-        // The engine re-resolves from sourceRef (URLs expire); the URL here is only the stream's current one.
-        val url = video.streams.firstOrNull { it.itag == (c.videoItag ?: c.audioItag) }?.url
-        return DownloadItem(
-            id = ref, provider = ProviderId.DIRECT, filename = fileNameFor(video.title, c, video.id), sourceRef = ref,
-            downloadUrl = url, host = "YouTube", filesize = c.estimatedBytes, maxConnections = 1,
-            addedAt = Instant.now().toString(), title = video.title, artist = video.uploader,
-        )
-    }
+    private fun itemFor(video: YouTubeVideo, c: FormatChoice): DownloadItem = youTubeDownloadItem(
+        videoId = video.id, title = video.title, uploader = video.uploader, videoItag = c.videoItag, audioItag = c.audioItag,
+        extension = c.extension, height = c.height, estimatedBytes = c.estimatedBytes,
+        url = video.streams.firstOrNull { it.itag == (c.videoItag ?: c.audioItag) }?.url,
+    )
 
     private suspend fun enqueue(item: DownloadItem, thumbnailUrl: String?, subtitle: DownloadItem? = null) {
         val video = tryEnqueue(item, thumbnailUrl)

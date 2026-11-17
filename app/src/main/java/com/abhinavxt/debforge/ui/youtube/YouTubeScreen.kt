@@ -774,9 +774,11 @@ private fun PreviewState(
                 )
             }
             OutlinedButton(onClick = onDownload, modifier = Modifier.weight(1f).heightIn(min = 56.dp)) {
-                Icon(Icons.Rounded.Download, contentDescription = null, modifier = Modifier.size(20.dp))
-                Spacer(Modifier.size(8.dp))
-                Text(stringResource(R.string.yt_download_format, choiceLabel(p.selected), sizeText(p.selected)), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                // Two lines when it does not fit beside Play, so quality and size stay readable.
+                Text(
+                    stringResource(R.string.yt_download_format, choiceLabel(p.selected), sizeText(p.selected)),
+                    maxLines = 2, overflow = TextOverflow.Ellipsis, textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                )
             }
         }
     }

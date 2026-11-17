@@ -32,7 +32,8 @@ data class YtStream(
     val videoId: String,
     val audioUrl: String,
     val height: Int,
-    val extension: String = "mp4"
+    val extension: String = "mp4",
+    val uploader: String = ""
 )
 
 /**
@@ -58,7 +59,8 @@ fun youTubePlayRequest(
             videoId = video.id,
             audioUrl = a.url,
             height = choice.height,
-            extension = choice.extension
+            extension = choice.extension,
+            uploader = video.uploader
         )
     )
 }

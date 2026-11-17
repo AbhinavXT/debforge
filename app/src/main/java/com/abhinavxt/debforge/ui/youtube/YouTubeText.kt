@@ -61,8 +61,38 @@ internal fun truncateUtf8(s: String, maxBytes: Int): String {
 }
 
 /** `<title> [1080p].mp4` or `<title>.m4a`, with characters illegal in file names removed; [fallback] names an empty title. */
-fun fileNameFor(title: String, c: FormatChoice, fallback: String = "YouTube video"): String {
+fun fileNameFor(title: String, c: FormatChoice, fallback: String = "YouTube video"): String =
+    fileNameFor(title, c.isAudio, c.height, c.extension, fallback)
+
+fun fileNameFor(title: String, isAudio: Boolean, height: Int, extension: String, fallback: String = "YouTube video"): String {
     val clean = truncateUtf8(title.replace(Regex("[/\\\\:*?\"<>|\\p{Cntrl}]"), "").replace(Regex("\\s+"), " ").trim(), MAX_TITLE_BYTES)
         .trim().trimEnd('.').ifBlank { fallback }
-    return if (c.isAudio) "$clean.${c.extension}" else "$clean [${c.height}p].${c.extension}"
+    return if (isAudio) "$clean.$extension" else "$clean [${height}p].$extension"
 }
+
+/**
+ * The download row for a YouTube video: the engine re-resolves from the `yt:` source ref (URLs expire), so
+ * [url] is only a hint. Shared by the preview's Download button and the player's "Download instead".
+ */
+fun youTubeDownloadItem(
+    videoId: String, title: String, uploader: String?, videoItag: Int?, audioItag: Int,
+    extension: String, height: Int, estimatedBytes: Long, url: String?,
+): com.abhinavxt.debforge.domain.DownloadItem {
+    val ref = YouTubeLinks.sourceRef(videoId, videoItag, audioItag)
+    return com.abhinavxt.debforge.domain.DownloadItem(
+        id = ref, provider = com.abhinavxt.debforge.domain.ProviderId.DIRECT,
+        filename = fileNameFor(title, videoItag == null, height, extension, videoId), sourceRef = ref,
+        downloadUrl = url, host = "YouTube", filesize = estimatedBytes, maxConnections = 1,
+        addedAt = java.time.Instant.now().toString(), title = title, artist = uploader,
+    )
+}
+
+/** A plain download of the track next to the video; the player finds it by the shared base name. */
+fun youTubeSubtitleItem(video: com.abhinavxt.debforge.domain.DownloadItem, s: com.abhinavxt.debforge.domain.YouTubeSubtitle) =
+    com.abhinavxt.debforge.domain.DownloadItem(
+        id = com.abhinavxt.debforge.domain.youTubeSubtitleId(video.id, s.languageCode),
+        provider = com.abhinavxt.debforge.domain.ProviderId.DIRECT,
+        filename = com.abhinavxt.debforge.domain.subtitleFileName(video.filename, s),
+        sourceRef = s.url, downloadUrl = s.url, host = "YouTube", filesize = 0, maxConnections = 1,
+        addedAt = java.time.Instant.now().toString(),
+    )
