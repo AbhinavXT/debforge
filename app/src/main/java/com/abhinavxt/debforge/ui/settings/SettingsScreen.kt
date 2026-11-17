@@ -99,7 +99,6 @@ import com.abhinavxt.debforge.download.SafPaths
 import com.abhinavxt.debforge.download.ScheduleAlarm
 import com.abhinavxt.debforge.download.StorageAccess
 import com.abhinavxt.debforge.ui.components.RowDivider
-import com.abhinavxt.debforge.ui.components.ScreenHeader
 import com.abhinavxt.debforge.domain.DefaultQuality
 import com.abhinavxt.debforge.ui.components.SectionCard
 import com.abhinavxt.debforge.ui.components.SettingRow

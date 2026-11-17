@@ -60,7 +60,7 @@ import com.abhinavxt.debforge.ui.theme.swatch
  * Theme picker (DebForge palettes + wallpaper colours), light/dark mode and
  * pure black. Lives in a SectionCard on the Settings screen.
  */
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
 internal fun AppearanceContent(
     appTheme: AppTheme,
@@ -87,26 +87,26 @@ internal fun AppearanceContent(
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 12.dp)
     )
-    LazyRow(
-        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 12.dp),
-        horizontalArrangement = Arrangement.spacedBy(4.dp)
+    // Wraps into rows of four so every theme is visible without sideways scrolling.
+    androidx.compose.foundation.layout.FlowRow(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 12.dp),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        maxItemsInEachRow = 4
     ) {
         if (wallpaperAvailable) {
-            item(key = "wallpaper") {
-                val colors = remember(dark) {
-                    val scheme = if (dark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-                    Triple(scheme.primary, scheme.secondaryContainer, scheme.tertiary)
-                }
-                Swatch(
-                    label = stringResource(R.string.theme_wallpaper),
-                    colors = colors,
-                    selected = wallpaperOn,
-                    badge = true,
-                    onClick = onSelectWallpaper
-                )
+            val colors = remember(dark) {
+                val scheme = if (dark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+                Triple(scheme.primary, scheme.secondaryContainer, scheme.tertiary)
             }
+            Swatch(
+                label = stringResource(R.string.theme_wallpaper),
+                colors = colors,
+                selected = wallpaperOn,
+                badge = true,
+                onClick = onSelectWallpaper
+            )
         }
-        items(AppTheme.entries, key = { it.name }) { theme ->
+        AppTheme.entries.forEach { theme ->
             Swatch(
                 label = theme.label(),
                 colors = remember(theme, dark) { theme.swatch(dark) },
