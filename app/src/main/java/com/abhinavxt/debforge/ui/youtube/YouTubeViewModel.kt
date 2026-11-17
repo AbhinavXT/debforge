@@ -25,6 +25,12 @@ import com.abhinavxt.debforge.domain.youTubeSubtitleId
 import com.abhinavxt.debforge.download.DownloadController
 import com.abhinavxt.debforge.download.StorageAccess
 import com.abhinavxt.debforge.download.artworkFile
+import com.abhinavxt.debforge.player.AudioPlayer
+import com.abhinavxt.debforge.player.youtubeAudioTrack
+import com.abhinavxt.debforge.player.youtube.YouTubeStreaming
+import com.abhinavxt.debforge.ui.browse.PlayRequest
+import com.abhinavxt.debforge.ui.browse.youTubePlayRequest
+import com.abhinavxt.debforge.domain.StreamKind
 import com.abhinavxt.debforge.data.prefs.SettingsStore
 import kotlinx.coroutines.flow.first
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -80,6 +86,8 @@ sealed interface YouTubeEvent {
     data object SUBTITLE_ADDED : YouTubeEvent
     /** A playlist batch finished (not cancelled). */
     data class BatchDone(val added: Int, val already: Int, val failed: Int) : YouTubeEvent
+    /** Playing without downloading failed before it started. */
+    data class StreamFailed(val kind: YouTubeErrorKind) : YouTubeEvent
 }
 
 /** What to tell the user after the video's own enqueue [video] and the chosen subtitle's [sub] (null: none chosen). */
@@ -103,6 +111,7 @@ class YouTubeViewModel @Inject constructor(
     private val history: YouTubeSearchHistoryStore,
     private val saved: SavedStateHandle,
     @ApiHttpClient private val http: OkHttpClient,
+    private val audioPlayer: AudioPlayer,
 ) : ViewModel() {
     private val _ui = MutableStateFlow<YouTubeUi>(YouTubeUi.Empty)
     val ui: StateFlow<YouTubeUi> = _ui.asStateFlow()
@@ -120,6 +129,15 @@ class YouTubeViewModel @Inject constructor(
 
     private val _events = Channel<YouTubeEvent>(Channel.BUFFERED)
     val events = _events.receiveAsFlow()
+
+    private val _playRequests = Channel<PlayRequest>(Channel.BUFFERED)
+    /** Video streams for the screen to open in the player. */
+    val playRequests = _playRequests.receiveAsFlow()
+
+    private val _streamingUrl = MutableStateFlow<String?>(null)
+    /** The result row (by url) whose play icon is waiting for the video to resolve. */
+    val streamingUrl: StateFlow<String?> = _streamingUrl.asStateFlow()
+    private var streamJob: Job? = null
 
     private var job: Job? = null
     private var enqueueJob: Job? = null
@@ -371,6 +389,48 @@ class YouTubeViewModel @Inject constructor(
         if (p.selected.isAudio == audio) return
         val inMode = p.choices.filter { it.isAudio == audio }
         (inMode.firstOrNull { it.isDefault } ?: inMode.firstOrNull())?.let { select(it) }
+    }
+
+    /** Plays the preview's selected choice: audio in the mini player, video in the player screen. */
+    fun play() {
+        val p = _ui.value as? YouTubeUi.Preview ?: return
+        val subs = listOfNotNull(p.subtitle)
+        if (!startStream(p.video, p.selected, subs)) _events.trySend(YouTubeEvent.StreamFailed(YouTubeErrorKind.GENERIC))
+    }
+
+    private fun startStream(video: YouTubeVideo, choice: FormatChoice, subtitles: List<YouTubeSubtitle>): Boolean {
+        if (choice.isAudio) {
+            val a = video.streams.firstOrNull { it.itag == choice.audioItag && it.kind == StreamKind.AUDIO } ?: return false
+            audioPlayer.play(listOf(youtubeAudioTrack(video, a)), 0)
+            return true
+        }
+        val req = youTubePlayRequest(video, choice, subtitles) ?: return false
+        return _playRequests.trySend(req).isSuccess
+    }
+
+    /** A results row's Play icon: resolves, then plays at the default quality; "ask every time" opens the preview. */
+    fun playResult(result: YouTubeSearchResult) {
+        if (streamJob?.isActive == true) return
+        _streamingUrl.value = result.url
+        streamJob = viewModelScope.launch {
+            try {
+                val video = resolver.resolve(result.url)
+                val choices = YouTubeFormats.choices(video.streams, Build.VERSION.SDK_INT, video.durationSec)
+                val choice = YouTubeStreaming.quickPlayChoice(settings.youTubeQualityFlow.first(), choices)
+                if (choice == null) {
+                    _streamingUrl.value = null
+                    pick(result)
+                } else if (!startStream(video, choice, emptyList())) {
+                    _events.send(YouTubeEvent.StreamFailed(YouTubeErrorKind.UNAVAILABLE))
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                _events.send(YouTubeEvent.StreamFailed(errorKind(e)))
+            } finally {
+                _streamingUrl.value = null
+            }
+        }
     }
 
     fun download() {

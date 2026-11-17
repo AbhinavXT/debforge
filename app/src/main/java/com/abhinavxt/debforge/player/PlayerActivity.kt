@@ -376,6 +376,7 @@ class PlayerActivity : ComponentActivity() {
         }
         controls.title = title
         controls.castAvailable = !isTv && !isLocalFile() && youtube == null
+        controls.externalAvailable = youtube == null
         if (!isTv) titleView.visibility = View.GONE // the controls have their own title bar
         // TV: the title shows and hides together with Media3's controls.
         playerView.setControllerVisibilityListener(PlayerView.ControllerVisibilityListener { visibility ->
@@ -1781,6 +1782,7 @@ class PlayerActivity : ComponentActivity() {
         titleView.text = title
         controls.title = title
         controls.castAvailable = !isTv && !isLocalFile() && youtube == null
+        controls.externalAvailable = youtube == null
         startFile()
         offeredFallback = false
         nextCancelled = false

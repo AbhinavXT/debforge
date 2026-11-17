@@ -69,6 +69,8 @@ class ControlsState {
     var pipAvailable by mutableStateOf(false)
     /** A stream (not a file on the phone), on a phone or tablet: can go to a TV. */
     var castAvailable by mutableStateOf(false)
+    /** Not for a YouTube stream: its picture and sound are two links no other player can take. */
+    var externalAvailable by mutableStateOf(true)
     /** Right-hand time shows "−12:34" (left) instead of the length. */
     var showRemaining by mutableStateOf(false)
     var fill by mutableStateOf(Fill.FIT)

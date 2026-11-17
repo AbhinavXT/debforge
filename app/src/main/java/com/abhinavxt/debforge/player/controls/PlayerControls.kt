@@ -324,8 +324,10 @@ private fun TopBar(state: ControlsState, actions: ControlsActions, modifier: Mod
         if (state.castAvailable) {
             ControlIcon(state, "cast", Icons.Rounded.Cast, stringResource(R.string.cast_title)) { actions.cast() }
         }
-        ControlIcon(state, "external", Icons.AutoMirrored.Rounded.OpenInNew, stringResource(R.string.action_open_other_player)) {
-            actions.openExternal()
+        if (state.externalAvailable) {
+            ControlIcon(state, "external", Icons.AutoMirrored.Rounded.OpenInNew, stringResource(R.string.action_open_other_player)) {
+                actions.openExternal()
+            }
         }
         ControlIcon(state, "more", Icons.Rounded.MoreVert, stringResource(R.string.player_more)) {
             state.panel = Panel.MORE

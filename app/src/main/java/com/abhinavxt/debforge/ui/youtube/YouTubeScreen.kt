@@ -63,6 +63,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
@@ -176,6 +177,11 @@ fun YouTubeScreen(
     val viewDownloads = stringResource(R.string.yt_view_downloads)
 
     LaunchedEffect(Unit) {
+        viewModel.playRequests.collect { context.startActivity(com.abhinavxt.debforge.player.PlayerActivity.intent(context, it)) }
+    }
+    val streamingUrl by viewModel.streamingUrl.collectAsStateWithLifecycle()
+
+    LaunchedEffect(Unit) {
         viewModel.events.collect { e ->
             val queuedOk = e == YouTubeEvent.QUEUED || e == YouTubeEvent.SUBTITLE_ADDED || (e is YouTubeEvent.BatchDone && e.added > 0)
             snackbar.currentSnackbarData?.dismiss()
@@ -187,13 +193,14 @@ fun YouTubeScreen(
                     YouTubeEvent.QUEUE_FAILED -> msgFailed
                     YouTubeEvent.QUEUED_NO_SUBTITLE -> msgNoSubtitle
                     YouTubeEvent.SUBTITLE_ADDED -> msgSubtitleAdded
+                    is YouTubeEvent.StreamFailed -> res.getString(errorText(e.kind))
                     is YouTubeEvent.BatchDone -> listOfNotNull(
                         e.added.takeIf { it > 0 }?.let { res.getQuantityString(R.plurals.yt_batch_added, it, it) },
                         e.already.takeIf { it > 0 }?.let { res.getQuantityString(R.plurals.yt_batch_already, it, it) },
                         e.failed.takeIf { it > 0 }?.let { res.getQuantityString(R.plurals.yt_batch_failed, it, it) },
                     ).joinToString(" · ")
                 },
-                actionLabel = if (e == YouTubeEvent.QUEUE_FAILED) null else viewDownloads,
+                actionLabel = if (e == YouTubeEvent.QUEUE_FAILED || e is YouTubeEvent.StreamFailed) null else viewDownloads,
                 duration = if (queuedOk) SnackbarDuration.Long else SnackbarDuration.Short,
             )
             if (r == SnackbarResult.ActionPerformed) onOpenDownloads()
@@ -225,6 +232,9 @@ fun YouTubeScreen(
                     onMode = viewModel::selectMode,
                     onSelect = viewModel::select,
                     onDownload = viewModel::download,
+                    onPlay = viewModel::play,
+                    onPlayResult = viewModel::playResult,
+                    streamingUrl = streamingUrl,
                     onSubtitle = viewModel::selectSubtitle,
                     onToggle = viewModel::togglePlaylistItem,
                     onSelectAll = viewModel::selectAllPlaylist,
@@ -278,6 +288,9 @@ internal fun YouTubeContent(
     onClearRecent: () -> Unit = {},
     onChannel: (name: String, url: String) -> Unit = { _, _ -> },
     onLoadTrending: () -> Unit = {},
+    onPlay: () -> Unit = {},
+    onPlayResult: (YouTubeSearchResult) -> Unit = {},
+    streamingUrl: String? = null,
 ) {
     AnimatedContent(
         ui,
@@ -287,10 +300,10 @@ internal fun YouTubeContent(
         modifier = Modifier.widthIn(max = 640.dp),
     ) { state ->
         when (state) {
-            YouTubeUi.Empty -> EmptyState(input, clipLink, onInput, onSubmit, onPaste, trending, recent, onRemoveRecent, onClearRecent, onPick, onChannel, onLoadTrending)
+            YouTubeUi.Empty -> EmptyState(input, clipLink, onInput, onSubmit, onPaste, trending, recent, onRemoveRecent, onClearRecent, onPick, onChannel, onLoadTrending, onPlayResult, streamingUrl)
             YouTubeUi.Resolving -> Skeleton()
-            is YouTubeUi.Results -> ResultsState(state, input, onInput, onSubmit, onPaste, onPick, onChannel, onLoadMore, resultsList)
-            is YouTubeUi.Preview -> PreviewState(state, onReset, onMode, onSelect, onSubtitle, onDownload)
+            is YouTubeUi.Results -> ResultsState(state, input, onInput, onSubmit, onPaste, onPick, onChannel, onLoadMore, resultsList, onPlayResult, streamingUrl)
+            is YouTubeUi.Preview -> PreviewState(state, onReset, onMode, onSelect, onSubtitle, onDownload, onPlay)
             is YouTubeUi.Playlist -> PlaylistState(state, onReset, onToggle, onSelectAll, onQuality, onDownloadPlaylist)
             is YouTubeUi.Error -> MessageState(
                 icon = Icons.Rounded.ErrorOutline,
@@ -379,6 +392,8 @@ private fun ResultsState(
     onChannel: (String, String) -> Unit,
     onLoadMore: () -> Unit,
     listState: LazyListState,
+    onPlay: (YouTubeSearchResult) -> Unit,
+    streamingUrl: String?,
 ) {
     val focus = remember { FocusRequester() }
     val loadMore by rememberUpdatedState(onLoadMore)
@@ -415,13 +430,19 @@ private fun ResultsState(
                 )
             }
         }
-        items(r.items, key = { it.url }) { ResultRow(it, onClick = { onPick(it) }, onChannel = if (r.channelUrl == null) onChannel else null) }
+        items(r.items, key = { it.url }) { ResultRow(it, onClick = { onPick(it) }, onChannel = if (r.channelUrl == null) onChannel else null, onPlay = { x -> onPlay(x) }, streaming = streamingUrl == it.url) }
         if (r.loadingMore) item { LinearProgressIndicator(Modifier.fillMaxWidth().padding(vertical = 8.dp)) }
     }
 }
 
 @Composable
-private fun ResultRow(r: YouTubeSearchResult, onClick: () -> Unit, onChannel: ((String, String) -> Unit)? = null) {
+private fun ResultRow(
+    r: YouTubeSearchResult,
+    onClick: () -> Unit,
+    onChannel: ((String, String) -> Unit)? = null,
+    onPlay: (YouTubeSearchResult) -> Unit,
+    streaming: Boolean = false,
+) {
     val source = remember { MutableInteractionSource() }
     val channelUrl = r.channelUrl?.takeIf { onChannel != null && !r.channel.isNullOrBlank() }
     // The row and the channel name are siblings, not nested clickables, so TalkBack and TV focus see both.
@@ -450,6 +471,13 @@ private fun ResultRow(r: YouTubeSearchResult, onClick: () -> Unit, onChannel: ((
                         )
                     } else Text(r.channel, style = style, color = color, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
+                if (streaming) {
+                    Text(stringResource(R.string.yt_streaming), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
+                    LinearProgressIndicator(Modifier.fillMaxWidth().padding(top = 2.dp))
+                }
+            }
+            IconButton(onClick = { onPlay(r) }, enabled = !streaming) {
+                Icon(Icons.Rounded.PlayCircle, contentDescription = stringResource(R.string.yt_play_cd))
             }
         }
     }
@@ -591,6 +619,8 @@ private fun EmptyState(
     onPick: (YouTubeSearchResult) -> Unit,
     onChannel: (String, String) -> Unit,
     onLoadTrending: () -> Unit,
+    onPlayResult: (YouTubeSearchResult) -> Unit,
+    streamingUrl: String?,
 ) {
     LaunchedEffect(Unit) { onLoadTrending() }
     val keyboard = LocalSoftwareKeyboardController.current
@@ -630,7 +660,7 @@ private fun EmptyState(
         if (trending.isNotEmpty()) {
             Text(stringResource(R.string.yt_trending), style = MaterialTheme.typography.titleMedium, modifier = Modifier.semantics { heading() })
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                trending.forEach { ResultRow(it, onClick = { onPick(it) }, onChannel = onChannel) }
+                trending.forEach { ResultRow(it, onClick = { onPick(it) }, onChannel = onChannel, onPlay = { x -> onPlayResult(x) }, streaming = streamingUrl == it.url) }
             }
         }
     }
@@ -685,6 +715,7 @@ private fun PreviewState(
     onSelect: (FormatChoice) -> Unit,
     onSubtitle: (YouTubeSubtitle?) -> Unit,
     onDownload: () -> Unit,
+    onPlay: () -> Unit,
 ) {
     val audio = p.selected.isAudio
     val rows = p.choices.filter { it.isAudio == audio }
@@ -733,10 +764,20 @@ private fun PreviewState(
     }
     // Pinned: the list scrolls, the primary action does not.
     Surface(color = MaterialTheme.colorScheme.surfaceContainer, tonalElevation = 3.dp, shadowElevation = 6.dp, modifier = Modifier.fillMaxWidth()) {
-        Button(onClick = onDownload, modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp).heightIn(min = 56.dp)) {
-            Icon(Icons.Rounded.Download, contentDescription = null, modifier = Modifier.size(20.dp))
-            Spacer(Modifier.size(8.dp))
-            Text(stringResource(R.string.yt_download_format, choiceLabel(p.selected), sizeText(p.selected)), maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Button(onClick = onPlay, modifier = Modifier.weight(1f).heightIn(min = 56.dp)) {
+                Icon(Icons.Rounded.PlayCircle, contentDescription = null, modifier = Modifier.size(20.dp))
+                Spacer(Modifier.size(8.dp))
+                Text(
+                    if (audio) stringResource(R.string.yt_listen) else stringResource(R.string.yt_play_quality, choiceLabel(p.selected)),
+                    maxLines = 1, overflow = TextOverflow.Ellipsis,
+                )
+            }
+            OutlinedButton(onClick = onDownload, modifier = Modifier.weight(1f).heightIn(min = 56.dp)) {
+                Icon(Icons.Rounded.Download, contentDescription = null, modifier = Modifier.size(20.dp))
+                Spacer(Modifier.size(8.dp))
+                Text(stringResource(R.string.yt_download_format, choiceLabel(p.selected), sizeText(p.selected)), maxLines = 1, overflow = TextOverflow.Ellipsis)
+            }
         }
     }
     }
