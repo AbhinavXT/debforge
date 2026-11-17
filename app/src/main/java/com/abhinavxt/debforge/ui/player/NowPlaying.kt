@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -127,10 +128,10 @@ fun NowPlaying(
                 }
                 if (wide) {
                     Row(Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(32.dp)) {
-                        Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+                        Column(Modifier.weight(1f).fillMaxHeight(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
                             Artwork(state, share, Modifier.fillMaxWidth(0.7f).widthIn(max = 360.dp))
                         }
-                        Column(Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
+                        Column(Modifier.weight(1f).fillMaxHeight(), verticalArrangement = Arrangement.Center) {
                             Controls(state, onToggle, onNext, onPrevious, onSeek, onShuffle, onRepeat, onSpeed, onSleep, playFocus = playFocus)
                             Queue(state, onSkipTo, Modifier.weight(1f, fill = false).heightIn(max = 220.dp))
                         }
@@ -146,7 +147,8 @@ fun NowPlaying(
                                 verticalArrangement = Arrangement.Center,
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
-                                Artwork(state, share, Modifier.fillMaxWidth(0.85f))
+                                // Capped by the screen height so tall tablets keep the controls and Up next on screen.
+                                Artwork(state, share, Modifier.widthIn(max = this@BoxWithConstraints.maxHeight * 0.4f / 0.85f).fillMaxWidth(0.85f))
                                 Controls(state, onToggle, onNext, onPrevious, onSeek, onShuffle, onRepeat, onSpeed, onSleep, Modifier.padding(top = 24.dp), playFocus)
                             }
                         }
