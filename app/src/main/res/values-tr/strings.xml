@@ -970,4 +970,6 @@
     <string name="yt_stream_download">İndir</string>
     <string name="set_pure_black_light_only">Yalnızca koyu tema için. Uygulama koyuyken geçerlidir.</string>
     <string name="set_folder_app_storage">Uygulama depolaması</string>
+    <string name="usage_direct">Doğrudan bağlantılar</string>
+    <string name="usage_tap_bar">O günü görmek için bir çubuğa dokunun</string>
 </resources>

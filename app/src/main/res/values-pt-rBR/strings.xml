@@ -1018,4 +1018,6 @@
     <string name="yt_stream_download">Baixar</string>
     <string name="set_pure_black_light_only">Somente no tema escuro. Vale quando o app está escuro.</string>
     <string name="set_folder_app_storage">Armazenamento do app</string>
+    <string name="usage_direct">Links diretos</string>
+    <string name="usage_tap_bar">Toque em uma barra para ver o dia</string>
 </resources>

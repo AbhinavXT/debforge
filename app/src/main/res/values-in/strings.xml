@@ -922,4 +922,6 @@
     <string name="yt_stream_download">Unduh</string>
     <string name="set_pure_black_light_only">Hanya tema gelap. Berlaku saat aplikasi dalam mode gelap.</string>
     <string name="set_folder_app_storage">Penyimpanan aplikasi</string>
+    <string name="usage_direct">Tautan langsung</string>
+    <string name="usage_tap_bar">Ketuk batang untuk melihat hari itu</string>
 </resources>

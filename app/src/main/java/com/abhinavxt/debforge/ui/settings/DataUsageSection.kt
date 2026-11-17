@@ -7,6 +7,17 @@ import androidx.compose.material3.Icon
 import com.abhinavxt.debforge.ui.components.SectionCard
 import com.abhinavxt.debforge.ui.components.SettingRow
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.border
+import androidx.compose.foundation.focusable
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.offset
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.type
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -141,7 +152,16 @@ private fun UsageSheet(s: UsageSummary, vm: DataUsageViewModel, onDismiss: () ->
             Spacer(Modifier.height(16.dp))
             Text(stringResource(R.string.usage_last_days, UsageSummary.DAYS), style = MaterialTheme.typography.titleSmall)
             Spacer(Modifier.height(8.dp))
-            DayBars(s.lastDays, wifiColor, mobileColor)
+            var picked by remember { mutableStateOf<Int?>(null) }
+            val day = picked?.let { s.lastDays.getOrNull(it) }
+            Text(
+                if (day == null) stringResource(R.string.usage_tap_bar)
+                else "${shortDate(day.day)} · ${stringResource(R.string.usage_wifi)} ${fmt(day.wifi)} · ${stringResource(R.string.usage_mobile)} ${fmt(day.mobile)}",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+            DayBars(s.lastDays, wifiColor, mobileColor, picked) { picked = it }
             Row(Modifier.fillMaxWidth()) {
                 Text(shortDate(s.lastDays.first().day), style = MaterialTheme.typography.labelSmall, modifier = Modifier.weight(1f))
                 Text(stringResource(R.string.usage_today), style = MaterialTheme.typography.labelSmall)
@@ -151,13 +171,16 @@ private fun UsageSheet(s: UsageSummary, vm: DataUsageViewModel, onDismiss: () ->
                 Text(stringResource(R.string.usage_by_service), style = MaterialTheme.typography.titleSmall)
                 s.monthByProvider.forEach { (p, bytes) ->
                     Row(Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
-                        Text(vm.serviceName(p), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+                        Text(
+                            if (p == com.abhinavxt.debforge.domain.ProviderId.DIRECT) stringResource(R.string.usage_direct) else vm.serviceName(p),
+                            style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
                         Text(fmt(bytes), style = MaterialTheme.typography.bodyMedium)
                     }
                 }
             }
             Spacer(Modifier.height(12.dp))
-            TextButton(onClick = { confirmReset = true }) {
+            // Pulled back by the button's own padding so the text lines up with the rest of the sheet.
+            TextButton(onClick = { confirmReset = true }, modifier = Modifier.offset(x = (-12).dp)) {
                 Text(stringResource(R.string.usage_reset), color = MaterialTheme.colorScheme.error)
             }
         }
@@ -187,7 +210,8 @@ private fun Legend(color: Color, label: String, value: String) {
 
 /** Stacked bars (Wi-Fi below, mobile on top), one per day, scaled to the busiest day. */
 @Composable
-private fun DayBars(days: List<DayUsage>, wifi: Color, mobile: Color) {
+private fun DayBars(days: List<DayUsage>, wifi: Color, mobile: Color, picked: Int?, onPick: (Int?) -> Unit) {
+    var focused by remember { mutableStateOf(false) }
     val max = (days.maxOfOrNull { it.total } ?: 0L).coerceAtLeast(1L)
     val track = MaterialTheme.colorScheme.surfaceVariant
     val summaryText = stringResource(R.string.usage_chart_desc, days.size, fmt(days.maxOf { it.total }))
@@ -196,6 +220,24 @@ private fun DayBars(days: List<DayUsage>, wifi: Color, mobile: Color) {
             .fillMaxWidth()
             .height(120.dp)
             .semantics { contentDescription = summaryText }
+            // Tap (or D-pad left/right) reads one day's amounts.
+            .pointerInput(days.size) {
+                detectTapGestures { pos ->
+                    val i = (pos.x / size.width * days.size).toInt().coerceIn(0, days.size - 1)
+                    onPick(if (picked == i) null else i)
+                }
+            }
+            .onFocusChanged { focused = it.isFocused }
+            .then(if (focused) Modifier.border(2.dp, MaterialTheme.colorScheme.primary, MaterialTheme.shapes.small) else Modifier)
+            .onKeyEvent { e ->
+                if (e.type != KeyEventType.KeyDown) return@onKeyEvent false
+                when (e.key) {
+                    Key.DirectionLeft -> { onPick(((picked ?: days.size) - 1).coerceAtLeast(0)); true }
+                    Key.DirectionRight -> { onPick(((picked ?: -1) + 1).coerceAtMost(days.size - 1)); true }
+                    else -> false
+                }
+            }
+            .focusable()
     ) {
         val gap = 2.dp.toPx()
         val barW = (size.width - gap * (days.size - 1)) / days.size
@@ -207,6 +249,8 @@ private fun DayBars(days: List<DayUsage>, wifi: Color, mobile: Color) {
             drawRect(track, Offset(x, size.height - 2f), Size(barW, 2f))
             if (wifiH > 0) drawRoundRect(wifi, Offset(x, size.height - wifiH), Size(barW, wifiH), CornerRadius(2f, 2f))
             if (mobileH > 0) drawRoundRect(mobile, Offset(x, size.height - wifiH - mobileH), Size(barW, mobileH), CornerRadius(2f, 2f))
+            // Marks the day being read.
+            if (picked == i) drawRect(wifi.copy(alpha = 0.18f), Offset(x - gap / 2, 0f), Size(barW + gap, size.height))
         }
     }
 }

@@ -970,4 +970,6 @@
     <string name="yt_stream_download">డౌన్‌లోడ్</string>
     <string name="set_pure_black_light_only">డార్క్ థీమ్‌కు మాత్రమే. యాప్ డార్క్‌లో ఉన్నప్పుడు వర్తిస్తుంది.</string>
     <string name="set_folder_app_storage">యాప్ నిల్వ</string>
+    <string name="usage_direct">డైరెక్ట్ లింకులు</string>
+    <string name="usage_tap_bar">ఆ రోజును చూడటానికి బార్‌ను తాకండి</string>
 </resources>

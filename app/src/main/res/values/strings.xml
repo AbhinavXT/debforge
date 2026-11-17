@@ -972,4 +972,6 @@
     <string name="yt_stream_download">Download</string>
     <string name="set_pure_black_light_only">Dark theme only. It applies when the app is dark.</string>
     <string name="set_folder_app_storage">App storage</string>
+    <string name="usage_direct">Direct links</string>
+    <string name="usage_tap_bar">Tap a bar to see that day</string>
 </resources>

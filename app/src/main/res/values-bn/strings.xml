@@ -970,4 +970,6 @@
     <string name="yt_stream_download">ডাউনলোড</string>
     <string name="set_pure_black_light_only">শুধু ডার্ক থিমের জন্য। অ্যাপ ডার্ক থাকলে এটি কাজ করে।</string>
     <string name="set_folder_app_storage">অ্যাপ স্টোরেজ</string>
+    <string name="usage_direct">সরাসরি লিংক</string>
+    <string name="usage_tap_bar">কোনো দিনের বিবরণ দেখতে বারে ট্যাপ করুন</string>
 </resources>

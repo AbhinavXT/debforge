@@ -970,4 +970,6 @@
     <string name="yt_stream_download">डाउनलोड</string>
     <string name="set_pure_black_light_only">फक्त डार्क थीमसाठी. अ‍ॅप डार्क असताना लागू होते.</string>
     <string name="set_folder_app_storage">अ‍ॅप स्टोरेज</string>
+    <string name="usage_direct">थेट लिंक</string>
+    <string name="usage_tap_bar">त्या दिवसासाठी बारवर टॅप करा</string>
 </resources>
