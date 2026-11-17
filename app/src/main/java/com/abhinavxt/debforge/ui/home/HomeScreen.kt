@@ -118,8 +118,8 @@ private enum class HomeTab(
     Browse("browse", R.string.tab_library, Icons.Outlined.VideoLibrary, Icons.Filled.VideoLibrary),
     Search("search", R.string.tab_search, Icons.Outlined.Search, Icons.Filled.Search),
     YouTube("youtube", R.string.tab_youtube, Icons.Outlined.PlayCircle, Icons.Filled.PlayCircle),
-    Media("media", R.string.tab_media, Icons.Outlined.PermMedia, Icons.Filled.PermMedia),
     Browser("browser", R.string.tab_browser, Icons.Outlined.Public, Icons.Filled.Public),
+    Media("media", R.string.tab_media, Icons.Outlined.PermMedia, Icons.Filled.PermMedia),
     Active("active", R.string.tab_downloads, Icons.Outlined.Download, Icons.Filled.Download, inBar = false),
     Settings("settings", R.string.tab_settings, Icons.Outlined.Settings, Icons.Filled.Settings, inBar = false)
 }
