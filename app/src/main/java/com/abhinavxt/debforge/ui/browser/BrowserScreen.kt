@@ -197,10 +197,8 @@ fun BrowserScreen(onMagnet: (String) -> Unit, onOpenDownloads: () -> Unit, onOpe
                 IconButton(onClick = { webView?.reload() }) {
                     Icon(Icons.Filled.Refresh, contentDescription = stringResource(R.string.action_refresh))
                 }
-                // Smaller than the page buttons so the address pill keeps its room.
                 HeaderNavActions(
                     onOpenSettings,
-                    modifier = Modifier.size(40.dp),
                     onOpenDownloads = onOpenDownloads,
                     activeCount = activeDownloads
                 )
