@@ -120,6 +120,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.focusGroup
+import androidx.compose.ui.focus.focusProperties
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
@@ -135,7 +138,7 @@ import com.abhinavxt.debforge.domain.ReleaseNameParser
 import com.abhinavxt.debforge.domain.SortOrder
 import com.abhinavxt.debforge.download.StorageAccess
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, androidx.compose.ui.ExperimentalComposeUiApi::class)
 @Composable
 fun BrowseScreen(
     onAdd: () -> Unit = {},
@@ -279,6 +282,8 @@ fun BrowseScreen(
     // Owned here so the exact scroll position drives the header; each view mode starts at its top.
     val gridState = key(state.posterView) { rememberLazyGridState() }
 
+    // D-pad: DOWN from the last row of posters or files reaches the Add button, which sits over the list's end.
+    val fabFocus = remember { androidx.compose.ui.focus.FocusRequester() }
     Scaffold(
         snackbarHost = { SnackbarHost(snackbar) },
         floatingActionButton = {
@@ -288,7 +293,7 @@ fun BrowseScreen(
                     onClick = onAdd,
                     icon = { Icon(Icons.Rounded.Add, contentDescription = null) },
                     text = { Text(stringResource(R.string.action_add)) },
-                    modifier = Modifier.semantics { contentDescription = addDescription }
+                    modifier = Modifier.focusRequester(fabFocus).semantics { contentDescription = addDescription }
                 )
             }
         },
@@ -507,6 +512,13 @@ fun BrowseScreen(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth()
+                    .focusProperties {
+                        exit = { dir ->
+                            if (dir == androidx.compose.ui.focus.FocusDirection.Down && selected.isEmpty()) fabFocus
+                            else androidx.compose.ui.focus.FocusRequester.Default
+                        }
+                    }
+                    .focusGroup()
                     // Only watches whether a finger is down; never consumes.
                     .pointerInput(Unit) {
                         awaitPointerEventScope {
