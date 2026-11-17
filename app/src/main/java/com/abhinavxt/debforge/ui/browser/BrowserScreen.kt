@@ -19,6 +19,8 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.clickable
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.shape.CircleShape
@@ -472,10 +474,15 @@ private fun AddressPill(committed: String, onReload: () -> Unit, modifier: Modif
     }
     LaunchedEffect(committed) { if (!focused) field = TextFieldValue(committed) }
     val parts = remember(committed) { addressParts(committed) }
+    // The reload button sits beside the field, inside the pill, so the D-pad can reach it.
+    Row(
+        modifier.fillMaxWidth().clip(CircleShape).background(cs.surfaceContainerHigh),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
     TextField(
         value = if (focused) field else TextFieldValue(""),
         onValueChange = { field = it },
-        modifier = modifier.fillMaxWidth().dpadEscape(field),
+        modifier = Modifier.weight(1f).dpadEscape(field),
         interactionSource = source,
         singleLine = true,
         shape = CircleShape,
@@ -490,19 +497,18 @@ private fun AddressPill(committed: String, onReload: () -> Unit, modifier: Modif
         leadingIcon = if (parts.warn) {
             { Icon(Icons.Filled.Warning, stringResource(R.string.browser_connection_not_secure), Modifier.size(20.dp), tint = cs.error) }
         } else null,
-        trailingIcon = {
-            IconButton(onClick = onReload) { Icon(Icons.Filled.Refresh, stringResource(R.string.action_refresh)) }
-        },
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri, imeAction = ImeAction.Go),
         keyboardActions = KeyboardActions(onGo = { onGo(field.text) }),
         colors = TextFieldDefaults.colors(
-            focusedContainerColor = cs.surfaceContainerHigh,
-            unfocusedContainerColor = cs.surfaceContainerHigh,
+            focusedContainerColor = Color.Transparent,
+            unfocusedContainerColor = Color.Transparent,
             focusedIndicatorColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent,
             disabledIndicatorColor = Color.Transparent
         )
     )
+    IconButton(onClick = onReload) { Icon(Icons.Filled.Refresh, stringResource(R.string.action_refresh)) }
+    }
 }
 
 /** The host always shows its end: if it does not fit, its start is cut; the path goes first. */
