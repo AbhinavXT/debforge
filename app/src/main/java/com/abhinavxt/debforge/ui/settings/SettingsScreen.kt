@@ -161,18 +161,20 @@ fun SettingsScreen(onConnect: () -> Unit, onBack: (() -> Unit)? = null, viewMode
     }
     var showSignOutDialog by remember { mutableStateOf(false) }
 
+    // Large title that shrinks into the bar as the list scrolls, with the back arrow beside it.
+    val scrollBehavior = androidx.compose.material3.TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val listState = androidx.compose.foundation.lazy.rememberLazyListState()
     val target by SettingsTarget.section.collectAsStateWithLifecycle()
     LaunchedEffect(target) {
         val index = SECTION_ORDER.indexOf(target)
         if (index >= 0) {
             listState.scrollToItem(index)
+            // Jumped down: show the small bar, not the large title.
+            if (index > 0) scrollBehavior.state.heightOffset = scrollBehavior.state.heightOffsetLimit
             SettingsTarget.section.value = null
         }
     }
 
-    // Large title that shrinks into the bar as the list scrolls, with the back arrow beside it.
-    val scrollBehavior = androidx.compose.material3.TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
