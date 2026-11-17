@@ -490,7 +490,8 @@ private fun ResultRow(
         Spacer(
             Modifier.matchParentSize().semantics { contentDescription = r.title }
                 .focusRequester(rowFocus)
-                .focusProperties { right = if (channelUrl != null) channelFocus else playFocus }
+                // Play is disabled while streaming and cannot take focus; leave RIGHT to the default search then.
+                .focusProperties { right = if (channelUrl != null) channelFocus else if (!streaming) playFocus else FocusRequester.Default }
                 .clickable(interactionSource = source, indication = androidx.compose.foundation.LocalIndication.current, role = Role.Button, onClick = onClick),
         )
         Row(
@@ -510,7 +511,7 @@ private fun ResultRow(
                             r.channel, style = style, color = color, maxLines = 1, overflow = TextOverflow.Ellipsis,
                             modifier = Modifier.clip(RoundedCornerShape(8.dp))
                                 .focusRequester(channelFocus)
-                                .focusProperties { left = rowFocus; right = playFocus }
+                                .focusProperties { left = rowFocus; right = if (!streaming) playFocus else FocusRequester.Default }
                                 .focusRing(channelSource, RoundedCornerShape(8.dp))
                                 .clickable(interactionSource = channelSource, indication = androidx.compose.foundation.LocalIndication.current, role = Role.Button) { onChannel?.invoke(r.channel, channelUrl) }
                                 .semantics { contentDescription = label }.padding(vertical = 6.dp),

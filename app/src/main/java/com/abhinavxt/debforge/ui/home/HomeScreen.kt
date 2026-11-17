@@ -315,17 +315,20 @@ fun HomeScreen(signedIn: Boolean) {
     val miniFocus = remember { FocusRequester() }
     val playerOpen = nowPlaying && audio.track != null
     var wasOpen by remember { mutableStateOf(false) }
+    // Only for D-pad/keyboard use: on touch a programmatic focus would leave a focus ring showing.
+    val inputMode = androidx.compose.ui.platform.LocalInputModeManager.current
     LaunchedEffect(playerOpen) {
+        val keys = inputMode.inputMode == androidx.compose.ui.input.InputMode.Keyboard
         if (playerOpen) {
             wasOpen = true
             androidx.compose.runtime.withFrameNanos { }
-            runCatching { playFocus.requestFocus() }
+            if (keys) runCatching { playFocus.requestFocus() }
         } else if (wasOpen) {
             wasOpen = false
             // Wait for the screen underneath to become focusable again.
             androidx.compose.runtime.withFrameNanos { }
             androidx.compose.runtime.withFrameNanos { }
-            runCatching { miniFocus.requestFocus() }
+            if (keys) runCatching { miniFocus.requestFocus() }
         }
     }
 
