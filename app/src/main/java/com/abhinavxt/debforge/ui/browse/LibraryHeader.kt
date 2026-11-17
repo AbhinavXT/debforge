@@ -20,13 +20,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.background
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.Sort
@@ -236,17 +234,15 @@ internal fun ControlBar(
             modifier = Modifier.padding(horizontal = 16.dp)
         )
         Row(verticalAlignment = Alignment.CenterVertically) {
-            // Filters scroll sideways so long translations never squash them; a fade at a
-            // clipped edge shows there is more, and the view toggle stays put at the end.
-            val chipScroll = rememberScrollState()
-            Row(
+            // Filters wrap onto a second line rather than scroll, so "Group as series" and
+            // any long translation are always visible; the view toggle stays put at the end.
+            @OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+            androidx.compose.foundation.layout.FlowRow(
                 modifier = Modifier
                     .weight(1f)
-                    .scrollEdgeFade(chipScroll, 24.dp)
-                    .horizontalScroll(chipScroll)
-                    .padding(start = 16.dp, top = 8.dp, bottom = 8.dp, end = 16.dp),
+                    .padding(start = 16.dp, top = 8.dp, bottom = 8.dp, end = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
+                verticalArrangement = Arrangement.spacedBy(0.dp)
             ) {
                 SortPicker(sort = sort, onSort = onSort)
                 if (downloadsView != null) {
@@ -282,34 +278,6 @@ internal fun ControlBar(
         }
     }
 }
-
-/** Fades the leading/trailing edge while the scroller can still move that way. */
-private fun Modifier.scrollEdgeFade(state: androidx.compose.foundation.ScrollState, width: androidx.compose.ui.unit.Dp): Modifier =
-    this
-        .graphicsLayer { compositingStrategy = androidx.compose.ui.graphics.CompositingStrategy.Offscreen }
-        .drawWithContent {
-            drawContent()
-            val w = width.toPx().coerceAtMost(size.width / 2)
-            if (state.canScrollForward) {
-                drawRect(
-                    brush = androidx.compose.ui.graphics.Brush.horizontalGradient(
-                        listOf(Color.Black, Color.Transparent), startX = size.width - w, endX = size.width
-                    ),
-                    topLeft = Offset(size.width - w, 0f),
-                    size = androidx.compose.ui.geometry.Size(w, size.height),
-                    blendMode = androidx.compose.ui.graphics.BlendMode.DstIn
-                )
-            }
-            if (state.canScrollBackward) {
-                drawRect(
-                    brush = androidx.compose.ui.graphics.Brush.horizontalGradient(
-                        listOf(Color.Transparent, Color.Black), startX = 0f, endX = w
-                    ),
-                    size = androidx.compose.ui.geometry.Size(w, size.height),
-                    blendMode = androidx.compose.ui.graphics.BlendMode.DstIn
-                )
-            }
-        }
 
 @Composable
 private fun SortPicker(sort: SortOrder, onSort: (SortOrder) -> Unit) {
