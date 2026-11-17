@@ -56,7 +56,8 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material.icons.filled.Shield
-import androidx.compose.material.icons.outlined.RemoveModerator
+import androidx.compose.material.icons.outlined.Shield
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.CircularProgressIndicator
@@ -193,8 +194,10 @@ fun BrowserScreen(onMagnet: (String) -> Unit, onOpenDownloads: () -> Unit, onOpe
                 }) {
                     IconButton(onClick = { showAdBlock = true }) {
                         Icon(
-                            if (adBlockOn) Icons.Filled.Shield else Icons.Outlined.RemoveModerator,
-                            contentDescription = stringResource(R.string.browser_adblock)
+                            // Off is a quiet outline, not a slashed shield: a working site is not an error.
+                            if (adBlockOn) Icons.Filled.Shield else Icons.Outlined.Shield,
+                            contentDescription = stringResource(R.string.browser_adblock),
+                            tint = if (adBlockOn) LocalContentColor.current else MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
