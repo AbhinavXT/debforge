@@ -10,6 +10,9 @@ import android.os.LocaleList
 import android.provider.Settings
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material3.IconButton
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.ui.semantics.Role
@@ -108,7 +111,7 @@ import com.abhinavxt.debforge.domain.Housekeeping
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(onConnect: () -> Unit, viewModel: SettingsViewModel = hiltViewModel()) {
+fun SettingsScreen(onConnect: () -> Unit, onBack: (() -> Unit)? = null, viewModel: SettingsViewModel = hiltViewModel()) {
     val dir by viewModel.downloadDir.collectAsStateWithLifecycle()
     val sort by viewModel.sortDefault.collectAsStateWithLifecycle()
     val theme by viewModel.themeMode.collectAsStateWithLifecycle()
@@ -168,7 +171,24 @@ fun SettingsScreen(onConnect: () -> Unit, viewModel: SettingsViewModel = hiltVie
         }
     }
 
-    Scaffold(topBar = { ScreenHeader(title = stringResource(R.string.tab_settings)) }) { padding ->
+    // Large title that shrinks into the bar as the list scrolls, with the back arrow beside it.
+    val scrollBehavior = androidx.compose.material3.TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+    Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        topBar = {
+            androidx.compose.material3.LargeTopAppBar(
+                title = { Text(stringResource(R.string.tab_settings), maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis) },
+                navigationIcon = {
+                    if (onBack != null) {
+                        IconButton(onClick = onBack) {
+                            Icon(Icons.AutoMirrored.Rounded.ArrowBack, stringResource(R.string.shell_cd_back))
+                        }
+                    }
+                },
+                scrollBehavior = scrollBehavior
+            )
+        }
+    ) { padding ->
         // On wide screens the list keeps a readable width, centred, so a switch stays near its label.
         androidx.compose.foundation.layout.BoxWithConstraints(Modifier.padding(padding).fillMaxSize()) {
         val side = ((maxWidth - 640.dp) / 2).coerceAtLeast(0.dp)

@@ -296,7 +296,8 @@ fun HomeScreen(signedIn: Boolean) {
                     activeDownloads = activeCount
                 ) }
                 composable(HomeTab.Settings.route) {
-                    Pushed(wide, onBack = { navController.popBackStack() }) { SettingsScreen(onConnect = ::connect) }
+                    // Settings draws its own collapsing bar with the back arrow in it on a phone.
+                    SettingsScreen(onConnect = ::connect, onBack = if (wide) null else ({ navController.popBackStack() }))
                 }
             }
         }
