@@ -81,6 +81,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
+import androidx.compose.material3.SheetValue
+import kotlinx.coroutines.launch
 import com.abhinavxt.debforge.ui.player.focusRing
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -332,6 +339,8 @@ fun Poster(group: TitleGroup, meta: MediaMeta?, modifier: Modifier = Modifier, d
 
 // --- detail sheet ------------------------------------------------------------
 
+private val ARROW_KEYS = setOf(Key.DirectionUp, Key.DirectionDown, Key.DirectionLeft, Key.DirectionRight)
+
 /**
  * Bottom sheet for one title: artwork, overview, "Download all", and every
  * file (grouped by season for shows) with its own Download button.
@@ -370,11 +379,23 @@ fun TitleSheet(
     }
     val pending = files.filter { downloadStates[it.item.id] == null }.map { it.item }
 
+    val sheetState = androidx.compose.material3.rememberModalBottomSheetState()
+    val sheetScope = androidx.compose.runtime.rememberCoroutineScope()
     ModalBottomSheet(
         onDismissRequest = onDismiss,
+        sheetState = sheetState,
         containerColor = MaterialTheme.colorScheme.surfaceContainerLow
     ) {
-        LazyColumn(contentPadding = PaddingValues(bottom = 32.dp)) {
+        LazyColumn(
+            contentPadding = PaddingValues(bottom = 32.dp),
+            // D-pad: at half height the rows below the fold are laid out but off screen, so focus would vanish. Open the sheet fully on the first arrow key.
+            modifier = Modifier.onPreviewKeyEvent { e ->
+                if (e.type == KeyEventType.KeyDown && e.key in ARROW_KEYS && sheetState.currentValue == SheetValue.PartiallyExpanded) {
+                    sheetScope.launch { sheetState.expand() }
+                }
+                false
+            }
+        ) {
             item(key = "fixed:header") {
                 // Large font on a narrow phone: details go under the poster, so the buttons keep their width.
                 val stacked = LocalConfiguration.current.screenWidthDp / LocalDensity.current.fontScale < 320
