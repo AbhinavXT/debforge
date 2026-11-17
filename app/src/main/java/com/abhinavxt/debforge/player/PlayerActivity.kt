@@ -123,6 +123,7 @@ class PlayerActivity : ComponentActivity() {
     @Inject lateinit var chapterReader: ChapterReader
     @Inject lateinit var youTubeResolver: com.abhinavxt.debforge.data.youtube.YouTubeResolver
     @Inject lateinit var downloads: com.abhinavxt.debforge.download.DownloadController
+    @Inject @com.abhinavxt.debforge.di.ApiHttpClient lateinit var apiHttp: okhttp3.OkHttpClient
     @Inject lateinit var downloadDao: com.abhinavxt.debforge.data.local.DownloadDao
     @Inject lateinit var networkMonitor: com.abhinavxt.debforge.download.NetworkMonitor
 
@@ -1708,6 +1709,8 @@ class PlayerActivity : ComponentActivity() {
 
     /** The device could not decode this format: carry on in an MP4 choice at the same position, once. */
     private fun youTubeDecoderFallback() {
+        // A refresh already in flight replaces the source and reports its own failure with a dialog,
+        // so a decoder error from the old source needs no second message here.
         if (refreshing || isFinishing) return
         if (triedMp4Fallback) { showYouTubeProblem(getString(R.string.player_unsupported_body)); return }
         triedMp4Fallback = true
@@ -1778,8 +1781,22 @@ class PlayerActivity : ComponentActivity() {
             } catch (e: Exception) {
                 R.string.yt_err_queue
             }
-            if (message == R.string.yt_queued && sub != null) runCatching { if (downloadDao.getById(sub.id) == null) downloads.enqueue(sub) }
-            android.widget.Toast.makeText(this@PlayerActivity, message, android.widget.Toast.LENGTH_LONG).show()
+            var toast = message
+            if (message == R.string.yt_queued) {
+                com.abhinavxt.debforge.ui.youtube.saveYouTubeThumbnail(
+                    this@PlayerActivity, apiHttp, com.abhinavxt.debforge.ui.youtube.youTubeThumbnailUrl(yt.videoId), item.id,
+                )
+                if (sub != null) {
+                    try {
+                        if (downloadDao.getById(sub.id) == null) downloads.enqueue(sub)
+                    } catch (e: kotlinx.coroutines.CancellationException) {
+                        throw e
+                    } catch (e: Exception) {
+                        toast = R.string.yt_queued_no_subtitle
+                    }
+                }
+            }
+            android.widget.Toast.makeText(this@PlayerActivity, toast, android.widget.Toast.LENGTH_LONG).show()
             finish()
         }
     }
@@ -2459,7 +2476,10 @@ class PlayerActivity : ComponentActivity() {
             }
             .setNegativeButton(R.string.action_close) { _, _ -> finish() }
             .setOnCancelListener { finish() }
-            .setOnDismissListener { networkWatch?.cancel(); networkWatch = null }
+            .setOnDismissListener { dismissed ->
+                // A newer dialog's watch must survive this one's late dismiss callback.
+                if (networkDialog === dismissed) { networkWatch?.cancel(); networkWatch = null }
+            }
             .show()
         if (youtube != null && !networkMonitor.online.value) {
             // Offline: carry on by itself when the connection is back.

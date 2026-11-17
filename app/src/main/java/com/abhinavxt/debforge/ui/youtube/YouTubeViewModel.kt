@@ -543,24 +543,7 @@ class YouTubeViewModel @Inject constructor(
         }
     }
 
-    private suspend fun saveThumbnail(url: String?, id: String) {
-        if (url == null) return
-        withContext(Dispatchers.IO) {
-            runCatching {
-                http.newCall(Request.Builder().url(url).build()).execute().use { r ->
-                    if (!r.isSuccessful) return@use
-                    val file = artworkFile(context, id).also { it.parentFile?.mkdirs() }
-                    val tmp = File(file.path + ".tmp")
-                    try {
-                        r.body?.byteStream()?.use { input -> tmp.outputStream().use { input.copyTo(it) } } ?: return@use
-                        if (!tmp.renameTo(file)) tmp.delete()
-                    } finally {
-                        tmp.delete() // no-op after a successful rename
-                    }
-                }
-            }
-        }
-    }
+    private suspend fun saveThumbnail(url: String?, id: String) = saveYouTubeThumbnail(context, http, url, id)
 
     private companion object {
         const val LINK_KEY = "link"

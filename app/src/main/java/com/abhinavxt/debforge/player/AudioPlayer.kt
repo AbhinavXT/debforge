@@ -287,10 +287,12 @@ class AudioPlayer @Inject constructor(
     /** A file deleted while queued or playing: drop it and carry on with the next one. */
     private fun dropTrack(bad: Int, id: String?) {
         val p = player ?: return
-        if (id != null && tracks.getOrNull(bad)?.id != id) return // the queue changed since the error
+        // The queue may have changed since the error: find the track again by id.
+        val at = if (id == null) bad else tracks.indexOfFirst { it.id == id }
+        if (at < 0) return
         if (p.mediaItemCount <= 1) { clear(); return }
-        tracks = tracks.filterIndexed { i, _ -> i != bad }
-        p.removeMediaItem(bad)
+        tracks = tracks.filterIndexed { i, _ -> i != at }
+        p.removeMediaItem(at)
         p.prepare()
         p.play()
     }
