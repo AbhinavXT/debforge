@@ -347,7 +347,9 @@ fun HomeScreen(signedIn: Boolean) {
 
     Box(Modifier.fillMaxSize()) {
         // While the full player is open nothing underneath may take focus or key presses.
-        Box(Modifier.fillMaxSize().focusProperties { canFocus = !playerOpen }) {
+        // Only ever set canFocus to false: assigning true here would also override the non-focusable focus
+        // groups of lazy lists and scroll containers below, and 2D (arrow key) search would skip their items.
+        Box(Modifier.fillMaxSize().focusProperties { if (playerOpen) canFocus = false }) {
         if (wide) {
             Row(Modifier.fillMaxSize()) {
                 NavigationRail(
