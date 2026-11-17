@@ -250,7 +250,11 @@ fun SettingsScreen(onConnect: () -> Unit, onBack: (() -> Unit)? = null, viewMode
                 SectionCard(title = stringResource(R.string.set_download_folder)) {
                     SettingRow(
                         icon = Icons.Rounded.Folder,
-                        title = StorageAccess.label(context, dir),
+                        // A friendly name; the full path (which wraps) sits underneath for plain paths.
+                        title = if (dir.isNotBlank() && !SafPaths.isTreeUri(dir) && StorageAccess.isAppStorage(context, dir))
+                            stringResource(R.string.set_folder_app_storage)
+                        else StorageAccess.label(context, dir),
+                        subtitle = dir.takeIf { it.isNotBlank() && !SafPaths.isTreeUri(it) },
                         onClick = { showFolderDialog = true },
                         trailing = {
                             TextButton(onClick = { showFolderDialog = true }) { Text(stringResource(R.string.set_change)) }

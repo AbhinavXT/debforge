@@ -1017,4 +1017,5 @@
     <string name="yt_stream_failed">YouTube a interrompu cette diffusion. La télécharger à la place ?</string>
     <string name="yt_stream_download">Télécharger</string>
     <string name="set_pure_black_light_only">Thème sombre uniquement. S\'applique quand l\'app est sombre.</string>
+    <string name="set_folder_app_storage">Stockage de l\'app</string>
 </resources>

@@ -969,4 +969,5 @@
     <string name="yt_stream_failed">YouTube ने यह स्ट्रीम रोक दी। इसके बजाय डाउनलोड करें?</string>
     <string name="yt_stream_download">डाउनलोड</string>
     <string name="set_pure_black_light_only">केवल डार्क थीम के लिए। ऐप डार्क होने पर लागू होता है।</string>
+    <string name="set_folder_app_storage">ऐप स्टोरेज</string>
 </resources>
