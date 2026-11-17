@@ -81,6 +81,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import com.abhinavxt.debforge.ui.player.focusRing
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -206,6 +207,7 @@ private fun PosterCard(
         modifier = modifier
             .graphicsLayer { scaleX = scale; scaleY = scale }
             .clip(RoundedCornerShape(16.dp))
+            .focusRing(interaction, RoundedCornerShape(16.dp))
             .background(if (selected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent)
             .combinedClickable(
                 interactionSource = interaction,

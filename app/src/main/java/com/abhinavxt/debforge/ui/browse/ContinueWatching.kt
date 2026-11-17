@@ -37,6 +37,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import com.abhinavxt.debforge.ui.player.focusRing
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
@@ -123,11 +124,18 @@ private fun ContinueCard(
     var menu by remember { mutableStateOf(false) }
     // Wider cards on tablets so the row fills more of the width.
     val cardWidth = if (LocalConfiguration.current.screenWidthDp >= 600) 280.dp else 220.dp
+    val interaction = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
     Column(
         Modifier
             .width(cardWidth)
             .clip(MaterialTheme.shapes.medium)
-            .combinedClickable(onClick = onPlay, onLongClick = { menu = true })
+            .focusRing(interaction, MaterialTheme.shapes.medium)
+            .combinedClickable(
+                interactionSource = interaction,
+                indication = androidx.compose.foundation.LocalIndication.current,
+                onClick = onPlay,
+                onLongClick = { menu = true }
+            )
     ) {
         Box(
             Modifier
