@@ -18,6 +18,8 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.width
@@ -295,12 +297,14 @@ internal fun YouTubeContent(
     onPlayResult: (YouTubeSearchResult) -> Unit = {},
     streamingUrl: String? = null,
 ) {
+    val cfg = androidx.compose.ui.platform.LocalConfiguration.current
+    val landscapeWide = cfg.screenWidthDp > cfg.screenHeightDp && cfg.screenWidthDp >= 600
     AnimatedContent(
         ui,
         contentKey = { it::class },
         transitionSpec = { fadeIn() togetherWith fadeOut() },
         label = "youtube-state",
-        modifier = Modifier.widthIn(max = 640.dp),
+        modifier = Modifier.widthIn(max = if (ui is YouTubeUi.Preview && landscapeWide) 1100.dp else 640.dp), // the preview splits into two panes when wide
     ) { state ->
         when (state) {
             YouTubeUi.Empty -> EmptyState(input, clipLink, onInput, onSubmit, onPaste, trending, recent, onRemoveRecent, onClearRecent, onPick, onChannel, onLoadTrending, onPlayResult, streamingUrl)
@@ -742,13 +746,8 @@ private fun PreviewState(
     val rows = p.choices.filter { it.isAudio == audio }
     val firstFocus = remember { FocusRequester() }
     LaunchedEffect(p.video.id) { runCatching { firstFocus.requestFocus() } } // TV: land on the default row
-    Column(Modifier.fillMaxSize()) {
-    Column(
-        Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()).animateContentSize()
-            .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        Box(Modifier.fillMaxWidth().aspectRatio(16f / 9f).clip(MaterialTheme.shapes.large).background(MaterialTheme.colorScheme.surfaceContainerHigh)) {
+    val thumb: @Composable (Modifier) -> Unit = { mod ->
+        Box(mod.aspectRatio(16f / 9f).clip(MaterialTheme.shapes.large).background(MaterialTheme.colorScheme.surfaceContainerHigh)) {
             AsyncImage(
                 model = p.video.thumbnailUrl,
                 contentDescription = stringResource(R.string.yt_thumbnail),
@@ -766,6 +765,8 @@ private fun PreviewState(
                 }
             }
         }
+    }
+    val header: @Composable () -> Unit = {
         Row(verticalAlignment = Alignment.Top) {
             Column(Modifier.weight(1f)) {
                 Text(p.video.title, style = MaterialTheme.typography.titleMedium, maxLines = 2, overflow = TextOverflow.Ellipsis)
@@ -773,6 +774,8 @@ private fun PreviewState(
             }
             IconButton(onClick = onReset) { Icon(Icons.Rounded.Close, contentDescription = stringResource(R.string.yt_another_link)) }
         }
+    }
+    val choices: @Composable () -> Unit = {
         // A video with only audio (or only video) choices has nothing to switch between.
         if (p.choices.any { it.isAudio } && p.choices.any { !it.isAudio }) ModeToggle(audio, onMode)
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -784,25 +787,62 @@ private fun PreviewState(
         if (!audio && p.video.subtitles.isNotEmpty()) SubtitleRow(p.video.subtitles, p.subtitle, onSubtitle)
     }
     // Pinned: the list scrolls, the primary action does not.
-    Surface(color = MaterialTheme.colorScheme.surfaceContainer, tonalElevation = 3.dp, shadowElevation = 6.dp, modifier = Modifier.fillMaxWidth()) {
-        Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Button(onClick = onPlay, modifier = Modifier.weight(1f).heightIn(min = 56.dp)) {
-                Icon(Icons.Rounded.PlayCircle, contentDescription = null, modifier = Modifier.size(20.dp))
-                Spacer(Modifier.size(8.dp))
-                Text(
-                    if (audio) stringResource(R.string.yt_listen) else stringResource(R.string.yt_play_quality, choiceLabel(p.selected)),
-                    maxLines = 1, overflow = TextOverflow.Ellipsis,
-                )
-            }
-            OutlinedButton(onClick = onDownload, modifier = Modifier.weight(1f).heightIn(min = 56.dp)) {
-                // Two lines when it does not fit beside Play, so quality and size stay readable.
-                Text(
-                    stringResource(R.string.yt_download_format, choiceLabel(p.selected), sizeText(p.selected)),
-                    maxLines = 2, overflow = TextOverflow.Ellipsis, textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                )
+    val bar: @Composable (Modifier) -> Unit = { mod ->
+        Surface(color = MaterialTheme.colorScheme.surfaceContainer, tonalElevation = 3.dp, shadowElevation = 6.dp, modifier = mod.fillMaxWidth()) {
+            Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(onClick = onPlay, modifier = Modifier.weight(1f).heightIn(min = 56.dp)) {
+                    Icon(Icons.Rounded.PlayCircle, contentDescription = null, modifier = Modifier.size(20.dp))
+                    Spacer(Modifier.size(8.dp))
+                    Text(
+                        if (audio) stringResource(R.string.yt_listen) else stringResource(R.string.yt_play_quality, choiceLabel(p.selected)),
+                        maxLines = 1, overflow = TextOverflow.Ellipsis,
+                    )
+                }
+                OutlinedButton(onClick = onDownload, modifier = Modifier.weight(1f).heightIn(min = 56.dp)) {
+                    // Two lines when it does not fit beside Play, so quality and size stay readable.
+                    Text(
+                        stringResource(R.string.yt_download_format, choiceLabel(p.selected), sizeText(p.selected)),
+                        maxLines = 2, overflow = TextOverflow.Ellipsis, textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                    )
+                }
             }
         }
     }
+    BoxWithConstraints(Modifier.fillMaxSize()) {
+        if (maxWidth > maxHeight && maxWidth >= 600.dp) {
+            // Wide: picture and title on the left, choices and the action bar on the right.
+            Row(Modifier.fillMaxSize()) {
+                Column(
+                    Modifier.weight(1f).fillMaxHeight().verticalScroll(rememberScrollState())
+                        .padding(start = 16.dp, end = 8.dp, top = 8.dp, bottom = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                ) {
+                    thumb(Modifier.fillMaxWidth())
+                    header()
+                }
+                Column(Modifier.weight(1f).fillMaxHeight()) {
+                    Column(
+                        Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()).animateContentSize()
+                            .padding(start = 8.dp, end = 16.dp, top = 8.dp, bottom = 16.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                    ) { choices() }
+                    bar(Modifier.padding(start = 8.dp, end = 16.dp).clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)))
+                }
+            }
+        } else {
+            Column(Modifier.fillMaxSize()) {
+                Column(
+                    Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()).animateContentSize()
+                        .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                ) {
+                    thumb(Modifier.fillMaxWidth())
+                    header()
+                    choices()
+                }
+                bar(Modifier)
+            }
+        }
     }
 }
 
