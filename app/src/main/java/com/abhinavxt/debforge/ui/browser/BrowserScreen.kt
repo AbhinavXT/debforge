@@ -463,11 +463,10 @@ private fun AddressPill(committed: String, modifier: Modifier, onGo: (String) ->
                 RestingAddress(parts, cs.onSurface, cs.onSurfaceVariant)
             }
         },
-        leadingIcon = {
-            if (parts.warn) {
-                Icon(Icons.Filled.Warning, stringResource(R.string.browser_connection_not_secure), Modifier.size(20.dp), tint = cs.error)
-            }
-        },
+        // No slot at all without a warning: an empty lambda still reserves 48dp.
+        leadingIcon = if (parts.warn) {
+            { Icon(Icons.Filled.Warning, stringResource(R.string.browser_connection_not_secure), Modifier.size(20.dp), tint = cs.error) }
+        } else null,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri, imeAction = ImeAction.Go),
         keyboardActions = KeyboardActions(onGo = { onGo(field.text) }),
         colors = TextFieldDefaults.colors(
