@@ -17,6 +17,14 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import com.abhinavxt.debforge.MainActivity
 import com.abhinavxt.debforge.data.playback.AudioResume
+import com.abhinavxt.debforge.data.youtube.YouTubeResolver
+import com.abhinavxt.debforge.domain.YouTubeFormats
+import com.abhinavxt.debforge.domain.YouTubeLinks
+import com.abhinavxt.debforge.domain.YouTubeStream
+import com.abhinavxt.debforge.domain.YouTubeVideo
+import com.abhinavxt.debforge.player.youtube.YouTubeMediaSourceFactory
+import com.abhinavxt.debforge.player.youtube.YouTubeStreamTag
+import com.abhinavxt.debforge.player.youtube.YouTubeStreaming
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -41,8 +49,37 @@ data class AudioTrack(
     val uri: Uri,
     val title: String,
     val artist: String?,
-    val artworkFile: File?
+    val artworkFile: File?,
+    /** Remote artwork (a YouTube thumbnail); [artworkFile] wins when both are set. */
+    val artworkUrl: String? = null,
+    /** Set for a streamed YouTube track: [uri] is then the audio stream URL, which expires. */
+    val youtube: YouTubeAudio? = null
 )
+
+/** Which YouTube audio stream a track plays, enough to re-resolve it when the link expires. */
+data class YouTubeAudio(val videoId: String, val audioItag: Int)
+
+/** A track that streams [audio] of [video]; its id is the resume key `ytaudio:<id>`, so it never collides with a download id. */
+fun youtubeAudioTrack(video: YouTubeVideo, audio: YouTubeStream) = AudioTrack(
+    id = YouTubeStreaming.streamPositionKey(video.id, audioOnly = true),
+    uri = Uri.parse(audio.url),
+    title = video.title,
+    artist = video.uploader.ifBlank { null },
+    artworkFile = null,
+    artworkUrl = video.thumbnailUrl,
+    youtube = YouTubeAudio(video.id, audio.itag)
+)
+
+/** The fresh stream for [itag] (or the nearest audio choice when it is gone) after re-resolving [video]; null if it has no audio. */
+fun freshAudioStream(video: YouTubeVideo, itag: Int, sdkInt: Int): YouTubeStream? {
+    val choices = YouTubeFormats.choices(video.streams, sdkInt, video.durationSec)
+    val pick = YouTubeStreaming.reselect(YouTubeLinks.Ref(video.id, null, itag), 0, choices) ?: return null
+    return video.streams.firstOrNull { it.itag == pick.audioItag }
+}
+
+/** A stream error is worth one re-resolve unless one already ran in the last [YT_RECOVER_GAP_MS] (a link that fails at once stays failed). */
+const val YT_RECOVER_GAP_MS = 60_000L
+fun mayRecoverLink(lastAttemptAtMs: Long?, nowMs: Long): Boolean = lastAttemptAtMs == null || nowMs - lastAttemptAtMs >= YT_RECOVER_GAP_MS
 
 enum class AudioRepeat { OFF, ALL, ONE }
 
@@ -161,7 +198,8 @@ fun formatClock(ms: Long): String {
 @Singleton
 class AudioPlayer @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val resume: AudioResume
+    private val resume: AudioResume,
+    private val youtubeResolver: YouTubeResolver
 ) {
 
     private val _state = MutableStateFlow(AudioState())
@@ -210,12 +248,46 @@ class AudioPlayer @Inject constructor(
             // A file deleted while queued or playing: drop it and carry on with the next one.
             val p = player ?: return
             val bad = p.currentMediaItemIndex
-            if (p.mediaItemCount <= 1) { clear(); return }
-            tracks = tracks.filterIndexed { i, _ -> i != bad }
-            p.removeMediaItem(bad)
-            p.prepare()
-            p.play()
+            val yt = tracks.getOrNull(bad)
+            // A streamed link that expired: look it up again once and carry on at the same second.
+            if (yt?.youtube != null && mayRecoverLink(recoverAttempts[yt.id], SystemClock.uptimeMillis())) {
+                recoverAttempts[yt.id] = SystemClock.uptimeMillis()
+                recoverJob?.cancel()
+                recoverJob = scope.launch { if (!recover(yt, bad, p.currentPosition)) dropTrack(bad) }
+                return
+            }
+            dropTrack(bad)
         }
+    }
+
+    private val recoverAttempts = HashMap<String, Long>()
+    private var recoverJob: Job? = null
+
+    /** Swaps in a fresh URL for [track] at [index] and resumes at [positionMs]; false when it could not be refreshed. */
+    private suspend fun recover(track: AudioTrack, index: Int, positionMs: Long): Boolean {
+        val yt = track.youtube ?: return false
+        val stream = runCatching {
+            freshAudioStream(youtubeResolver.resolve("https://www.youtube.com/watch?v=${yt.videoId}"), yt.audioItag, android.os.Build.VERSION.SDK_INT)
+        }.getOrNull() ?: return false
+        val p = player ?: return true // cleared meanwhile: nothing to drop
+        if (tracks.getOrNull(index)?.id != track.id) return true // the queue changed under us
+        val fresh = track.copy(uri = Uri.parse(stream.url), youtube = yt.copy(audioItag = stream.itag))
+        tracks = tracks.toMutableList().also { it[index] = fresh }
+        p.replaceMediaItem(index, fresh.toMediaItem())
+        p.seekTo(index, positionMs)
+        p.prepare()
+        p.play()
+        return true
+    }
+
+    /** A file deleted while queued or playing: drop it and carry on with the next one. */
+    private fun dropTrack(bad: Int) {
+        val p = player ?: return
+        if (p.mediaItemCount <= 1) { clear(); return }
+        tracks = tracks.filterIndexed { i, _ -> i != bad }
+        p.removeMediaItem(bad)
+        p.prepare()
+        p.play()
     }
 
     init {
@@ -230,6 +302,7 @@ class AudioPlayer @Inject constructor(
     }
 
     private fun exo(): ExoPlayer = player ?: ExoPlayer.Builder(context)
+        .setMediaSourceFactory(YouTubeMediaSourceFactory(context))
         .setAudioAttributes(
             AudioAttributes.Builder().setUsage(C.USAGE_MEDIA).setContentType(C.AUDIO_CONTENT_TYPE_MUSIC).build(),
             true
@@ -241,7 +314,10 @@ class AudioPlayer @Inject constructor(
 
     private var playJob: Job? = null
 
-    /** Replaces the queue and starts at [startIndex], where it was left if it is a remembered long track. */
+    /**
+     * Replaces the queue and starts at [startIndex], where it was left if it is a remembered long track.
+     * To stream a YouTube video's audio: `play(listOf(youtubeAudioTrack(video, audioStream)), 0)`.
+     */
     fun play(queue: List<AudioTrack>, startIndex: Int) {
         if (queue.isEmpty()) return
         playJob?.cancel()
@@ -264,6 +340,8 @@ class AudioPlayer @Inject constructor(
         saveCurrent() // the queue being replaced
         val p = exo()
         cancelSleep() // "End of track" was for a track of the old queue
+        recoverJob?.cancel()
+        recoverAttempts.clear()
         pauseBackgroundedVideo()
         tracks = queue
         p.setMediaItems(queue.map { it.toMediaItem() }, startIndex.coerceIn(queue.indices), startMs)
@@ -372,6 +450,7 @@ class AudioPlayer @Inject constructor(
     /** Stops, releases the player and the notification. */
     fun clear() {
         saveCurrent()
+        recoverJob?.cancel()
         playing.value = false
         BackgroundPlayback.openIntent = null // only audio sets it; a later video must open itself
         val p = player ?: return
@@ -425,11 +504,12 @@ class AudioPlayer @Inject constructor(
     private fun AudioTrack.toMediaItem() = MediaItem.Builder()
         .setMediaId(id)
         .setUri(uri)
+        .apply { if (youtube != null) setTag(YouTubeStreamTag(uri.toString(), hasVideo = false)) }
         .setMediaMetadata(
             MediaMetadata.Builder()
                 .setTitle(title)
                 .setArtist(artist)
-                .setArtworkUri(artworkFile?.takeIf { it.exists() }?.toUri())
+                .setArtworkUri(artworkFile?.takeIf { it.exists() }?.toUri() ?: artworkUrl?.let { Uri.parse(it) })
                 .build()
         )
         .build()

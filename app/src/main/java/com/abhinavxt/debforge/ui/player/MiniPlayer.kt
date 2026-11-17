@@ -76,14 +76,17 @@ internal fun TrackArt(track: AudioTrack, modifier: Modifier = Modifier) {
         val artFile = track.artworkFile
         val context = LocalContext.current
         // Disk and cache lookups happen once per artwork file, not on every recomposition.
-        val art = remember(artFile) {
-            artFile?.takeIf { it.exists() }?.let { f ->
+        val artUrl = track.artworkUrl
+        val art = remember(artFile, artUrl) {
+            // A local file wins; a streamed YouTube track uses its thumbnail URL.
+            val source: Pair<Any, String>? = artFile?.takeIf { it.exists() }?.let { it to "art:${it.path}:${it.lastModified()}" }
+                ?: artUrl?.let { it to "art:$it" }
+            source?.let { (data, key) ->
                 // One cache key at every size. The bitmap the mini player already decoded is read straight from
                 // the memory cache and drawn underneath, so the big artwork has pixels on its very first frame.
-                val key = "art:${f.path}:${f.lastModified()}"
                 val bitmap = context.imageLoader.memoryCache?.get(MemoryCache.Key(key))?.bitmap
                 Triple(
-                    ImageRequest.Builder(context).data(f).memoryCacheKey(key).build(),
+                    ImageRequest.Builder(context).data(data).memoryCacheKey(key).build(),
                     bitmap,
                     bitmap?.asImageBitmap()?.let { BitmapPainter(it) }
                 )
