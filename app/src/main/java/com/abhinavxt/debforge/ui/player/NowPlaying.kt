@@ -60,6 +60,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
@@ -99,7 +106,9 @@ fun NowPlaying(
     onSkipTo: (Int) -> Unit,
     onClose: () -> Unit,
     modifier: Modifier = Modifier,
-    share: ArtworkShare? = null
+    share: ArtworkShare? = null,
+    /** Takes focus when the player opens (D-pad). */
+    playFocus: FocusRequester? = null
 ) {
     val track = state.track ?: return
     Surface(modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
@@ -116,7 +125,7 @@ fun NowPlaying(
                             Artwork(state, share, Modifier.fillMaxWidth(0.7f).widthIn(max = 360.dp))
                         }
                         Column(Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
-                            Controls(state, onToggle, onNext, onPrevious, onSeek, onShuffle, onRepeat, onSpeed, onSleep)
+                            Controls(state, onToggle, onNext, onPrevious, onSeek, onShuffle, onRepeat, onSpeed, onSleep, playFocus = playFocus)
                             Queue(state, onSkipTo, Modifier.weight(1f, fill = false).heightIn(max = 220.dp))
                         }
                     }
@@ -132,7 +141,7 @@ fun NowPlaying(
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
                                 Artwork(state, share, Modifier.fillMaxWidth(0.85f))
-                                Controls(state, onToggle, onNext, onPrevious, onSeek, onShuffle, onRepeat, onSpeed, onSleep, Modifier.padding(top = 24.dp))
+                                Controls(state, onToggle, onNext, onPrevious, onSeek, onShuffle, onRepeat, onSpeed, onSleep, Modifier.padding(top = 24.dp), playFocus)
                             }
                         }
                     )
@@ -178,7 +187,8 @@ private fun Controls(
     onRepeat: () -> Unit,
     onSpeed: (Float) -> Unit,
     onSleep: (Int) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    playFocus: FocusRequester? = null
 ) {
     val track = state.track ?: return
     Column(modifier.fillMaxWidth()) {
@@ -216,7 +226,7 @@ private fun Controls(
             }
             val s2 = remember { MutableInteractionSource() }
             FilledIconButton(
-                onToggle, Modifier.size(72.dp).focusRing(s2, CircleShape), interactionSource = s2,
+                onToggle, Modifier.size(72.dp).then(if (playFocus != null) Modifier.focusRequester(playFocus) else Modifier).focusRing(s2, CircleShape), interactionSource = s2,
                 colors = IconButtonDefaults.filledIconButtonColors(containerColor = cs.primary, contentColor = cs.onPrimary)
             ) { PlayPauseIcon(state.isPlaying, Modifier.size(36.dp)) }
             val s3 = remember { MutableInteractionSource() }
@@ -324,6 +334,12 @@ private fun SeekBar(positionMs: Long, durationMs: Long, onSeek: (Long) -> Unit) 
             interactionSource = s,
             modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
                 .focusRing(s, RoundedCornerShape(24.dp))
+                // D-pad: LEFT/RIGHT step the position while the bar is focused.
+                .onPreviewKeyEvent { e ->
+                    val step = when (e.key) { Key.DirectionLeft -> -SEEK_STEP_MS; Key.DirectionRight -> SEEK_STEP_MS; else -> return@onPreviewKeyEvent false }
+                    if (e.type == KeyEventType.KeyDown) onSeek((positionMs + step).coerceIn(0, duration))
+                    true
+                }
                 .semantics { stateDescription = desc },
             thumb = {
                 // The slot keeps one size so the track does not shift when the thumb grows on drag.
@@ -347,6 +363,8 @@ private fun SeekBar(positionMs: Long, durationMs: Long, onSeek: (Long) -> Unit) 
         }
     }
 }
+
+private const val SEEK_STEP_MS = 10_000L
 
 /** The title scrolls only when the system animations are on; with them off it stays one line with an ellipsis. */
 internal fun titleMarqueeEnabled(animatorDurationScale: Float): Boolean = animatorDurationScale > 0f

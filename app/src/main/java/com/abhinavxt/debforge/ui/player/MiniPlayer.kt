@@ -45,6 +45,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -191,7 +192,9 @@ fun MiniPlayer(
     /** The shared transition scope; null when no shared transition runs. */
     sharedScope: SharedTransitionScope? = null,
     /** True while the full player is open: the artwork then lives there and this slot stays empty. */
-    expanded: Boolean = false
+    expanded: Boolean = false,
+    /** Receives focus when the full player closes, so D-pad users land back here. */
+    expandFocus: androidx.compose.ui.focus.FocusRequester? = null
 ) {
     val track = state.track ?: return
     val shape = RoundedCornerShape(16.dp)
@@ -205,6 +208,7 @@ fun MiniPlayer(
         Column(Modifier.focusRing(barSource, shape)) {
             Row(
                 Modifier.fillMaxWidth().height(60.dp)
+                    .then(if (expandFocus != null) Modifier.focusRequester(expandFocus) else Modifier)
                     .clickable(interactionSource = barSource, indication = androidx.compose.material3.ripple(), onClickLabel = expandLabel, onClick = onExpand)
                     .padding(start = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,

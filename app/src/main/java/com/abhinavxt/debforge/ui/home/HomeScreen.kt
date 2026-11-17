@@ -40,6 +40,8 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.activity.compose.BackHandler
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.runtime.Composable
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.ui.input.pointer.PointerEventPass
@@ -305,6 +307,25 @@ fun HomeScreen(signedIn: Boolean) {
     }
     val sharedMotion = motionScale > 0f
 
+    // D-pad: focus moves into the full player when it opens and back to the mini player when it closes.
+    val playFocus = remember { FocusRequester() }
+    val miniFocus = remember { FocusRequester() }
+    val playerOpen = nowPlaying && audio.track != null
+    var wasOpen by remember { mutableStateOf(false) }
+    LaunchedEffect(playerOpen) {
+        if (playerOpen) {
+            wasOpen = true
+            androidx.compose.runtime.withFrameNanos { }
+            runCatching { playFocus.requestFocus() }
+        } else if (wasOpen) {
+            wasOpen = false
+            // Wait for the screen underneath to become focusable again.
+            androidx.compose.runtime.withFrameNanos { }
+            androidx.compose.runtime.withFrameNanos { }
+            runCatching { miniFocus.requestFocus() }
+        }
+    }
+
     val shellBody: @Composable (SharedTransitionScope?) -> Unit = { sharedScope ->
     val miniPlayer: @Composable () -> Unit = {
         AnimatedVisibility(
@@ -318,12 +339,15 @@ fun HomeScreen(signedIn: Boolean) {
                 onNext = shell.audio::next,
                 onExpand = { nowPlaying = true },
                 sharedScope = if (sharedMotion) sharedScope else null,
-                expanded = nowPlaying
+                expanded = nowPlaying,
+                expandFocus = miniFocus
             )
         }
     }
 
     Box(Modifier.fillMaxSize()) {
+        // While the full player is open nothing underneath may take focus or key presses.
+        Box(Modifier.fillMaxSize().focusProperties { canFocus = !playerOpen }) {
         if (wide) {
             Row(Modifier.fillMaxSize()) {
                 NavigationRail(
@@ -368,6 +392,7 @@ fun HomeScreen(signedIn: Boolean) {
                 content(Modifier.padding(padding).consumeWindowInsets(padding).fillMaxSize())
             }
         }
+        }
 
         // Without a track there is nothing to draw, so leave at once instead of fading out an empty sheet.
         if (audio.track != null) AnimatedVisibility(
@@ -398,6 +423,7 @@ fun HomeScreen(signedIn: Boolean) {
                     onSleep = shell.audio::setSleepTimer,
                     onSkipTo = shell.audio::skipTo,
                     onClose = { nowPlaying = false },
+                    playFocus = playFocus,
                     share = if (sharedMotion && sharedScope != null) ArtworkShare(sharedScope, this@AnimatedVisibility) else null
                 )
             }
