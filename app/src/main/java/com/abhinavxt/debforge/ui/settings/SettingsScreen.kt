@@ -10,6 +10,7 @@ import android.os.LocaleList
 import android.provider.Settings
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material3.IconButton
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -695,27 +696,32 @@ private fun LanguageRow() {
     val currentName = options.firstOrNull { current.startsWith(it.first) && it.first.isNotEmpty() }?.second
         ?: options.first().second
     var open by remember { mutableStateOf(false) }
-    Box {
-        SettingRow(
-            icon = Icons.Rounded.Language,
-            title = stringResource(R.string.set_language),
-            subtitle = currentName,
-            onClick = { open = true }
-        )
-        DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
-            options.forEach { (tag, name) ->
-                DropdownMenuItem(
-                    text = { Text(name) },
-                    leadingIcon = { if (name == currentName) Icon(Icons.Rounded.Check, contentDescription = null) },
-                    onClick = {
-                        open = false
-                        // The system recreates the activity in the new language.
-                        lm.applicationLocales =
-                            if (tag.isEmpty()) LocaleList.getEmptyLocaleList() else LocaleList.forLanguageTags(tag)
+    SettingRow(
+        icon = Icons.Rounded.Language,
+        title = stringResource(R.string.set_language),
+        subtitle = currentName,
+        onClick = { open = true }
+    )
+    if (open) {
+        AlertDialog(
+            onDismissRequest = { open = false },
+            title = { Text(stringResource(R.string.set_language)) },
+            text = {
+                // 15 choices: scrolls inside the dialog.
+                Column(Modifier.verticalScroll(androidx.compose.foundation.rememberScrollState())) {
+                    options.forEach { (tag, name) ->
+                        ChoiceRow(label = name, selected = name == currentName, onClick = {
+                            open = false
+                            // The system recreates the activity in the new language.
+                            lm.applicationLocales =
+                                if (tag.isEmpty()) LocaleList.getEmptyLocaleList() else LocaleList.forLanguageTags(tag)
+                        })
                     }
-                )
-            }
-        }
+                }
+            },
+            confirmButton = {},
+            dismissButton = { TextButton(onClick = { open = false }) { Text(stringResource(R.string.action_cancel)) } }
+        )
     }
 }
 
