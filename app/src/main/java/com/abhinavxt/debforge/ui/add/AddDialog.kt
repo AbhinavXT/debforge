@@ -40,7 +40,21 @@ import androidx.compose.material.icons.rounded.UploadFile
 import androidx.compose.material3.Button
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.ui.draw.clip
-import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ModalBottomSheet
+import com.abhinavxt.debforge.ui.components.dpadEscape
+import com.abhinavxt.debforge.ui.components.rememberCursorField
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.InputMode
+import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.CircularProgressIndicator
@@ -48,7 +62,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -63,6 +76,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
  * "Add to <service>" dialog: paste magnets/links and/or pick a .torrent file.
  * Rendered by HomeScreen whenever [AddViewModel] says it's visible.
  */
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 fun AddDialog(viewModel: AddViewModel) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -75,30 +89,53 @@ fun AddDialog(viewModel: AddViewModel) {
         ActivityResultContracts.OpenDocumentTree()
     ) { uri -> if (uri != null) viewModel.useFolder(uri) }
 
-    AlertDialog(
+    ModalBottomSheet(
         onDismissRequest = viewModel::dismiss,
-        icon = { Icon(Icons.Rounded.AddLink, contentDescription = null) },
-        title = {
-            Text(if (state.isDirect || state.pageVideos != null) stringResource(R.string.direct_title) else stringResource(R.string.add_title, state.providerName))
-        },
-        text = {
+        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    ) {
+        Column(
+            Modifier.fillMaxWidth().imePadding().padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Icon(Icons.Rounded.AddLink, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                Text(
+                    if (state.isDirect || state.pageVideos != null) stringResource(R.string.direct_title) else stringResource(R.string.add_title, state.providerName),
+                    style = MaterialTheme.typography.titleLarge
+                )
+            }
             val videos = state.pageVideos
             if (videos != null) {
-                PageVideoList(state, videos, onToggle = viewModel::togglePageVideo)
-                return@AlertDialog
-            }
+                Column(Modifier.weight(1f, fill = false)) {
+                    PageVideoList(state, videos, onToggle = viewModel::togglePageVideo)
+                }
+            } else {
             Column(
-                modifier = Modifier.verticalScroll(rememberScrollState()),
+                modifier = Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 if (state.acceptsText) {
-                    OutlinedTextField(
-                        value = state.text,
-                        onValueChange = viewModel::onTextChange,
-                        modifier = Modifier.fillMaxWidth().heightIn(min = 96.dp, max = 220.dp),
-                        label = { Text(stringResource(state.textHintRes)) },
-                        shape = MaterialTheme.shapes.medium,
-                        enabled = !state.submitting
+                    val keys = LocalInputModeManager.current.inputMode == InputMode.Keyboard
+                    val focus = remember { FocusRequester() }
+                    LaunchedEffect(keys) { if (keys) runCatching { focus.requestFocus() } }
+                    val (field, setField) = rememberCursorField(state.text)
+                    TextField(
+                        value = field,
+                        onValueChange = { setField(it); if (it.text != state.text) viewModel.onTextChange(it.text) },
+                        modifier = Modifier.fillMaxWidth().focusRequester(focus).dpadEscape(field, multiline = true),
+                        placeholder = { Text(stringResource(state.textHintRes)) },
+                        minLines = 3,
+                        maxLines = 6,
+                        shape = RoundedCornerShape(28.dp),
+                        enabled = !state.submitting,
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                            disabledContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent,
+                            disabledIndicatorColor = Color.Transparent
+                        )
                     )
                 }
 
@@ -205,26 +242,25 @@ fun AddDialog(viewModel: AddViewModel) {
                     Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
                 }
             }
-        },
-        confirmButton = {
-            Button(onClick = viewModel::submit, enabled = state.canSubmit) {
-                if (state.submitting) {
-                    CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp, color = LocalContentColor.current)
-                } else if (state.pageVideos != null) {
-                    Text(stringResource(R.string.page_download_n, state.pickedVideos.size))
+            }
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End), verticalAlignment = Alignment.CenterVertically) {
+                if (state.pageVideos != null) {
+                    TextButton(onClick = viewModel::closePageVideos, enabled = !state.submitting) { Text(stringResource(R.string.page_back)) }
                 } else {
-                    Text(stringResource(R.string.action_add))
+                    TextButton(onClick = viewModel::dismiss, enabled = !state.submitting) { Text(stringResource(R.string.action_cancel)) }
+                }
+                Button(onClick = viewModel::submit, enabled = state.canSubmit) {
+                    if (state.submitting) {
+                        CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp, color = LocalContentColor.current)
+                    } else if (state.pageVideos != null) {
+                        Text(stringResource(R.string.page_download_n, state.pickedVideos.size))
+                    } else {
+                        Text(stringResource(R.string.action_add))
+                    }
                 }
             }
-        },
-        dismissButton = {
-            if (state.pageVideos != null) {
-                TextButton(onClick = viewModel::closePageVideos, enabled = !state.submitting) { Text(stringResource(R.string.page_back)) }
-            } else {
-                TextButton(onClick = viewModel::dismiss, enabled = !state.submitting) { Text(stringResource(R.string.action_cancel)) }
-            }
         }
-    )
+    }
 }
 
 /**

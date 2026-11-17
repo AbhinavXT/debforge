@@ -318,9 +318,10 @@ fun rememberCursorField(text: String): Pair<TextFieldValue, (TextFieldValue) -> 
 /**
  * Lets a D-pad leave a single-line text field: UP/DOWN always move focus, LEFT/RIGHT only when
  * the cursor is already at the start/end (or the field is empty), so cursor movement still works.
+ * With [multiline], UP/DOWN also only leave from the start/end of the text.
  */
 @Composable
-fun Modifier.dpadEscape(field: TextFieldValue): Modifier {
+fun Modifier.dpadEscape(field: TextFieldValue, multiline: Boolean = false): Modifier {
     val focus = LocalFocusManager.current
     val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
     return onPreviewKeyEvent { e ->
@@ -330,8 +331,9 @@ fun Modifier.dpadEscape(field: TextFieldValue): Modifier {
         val atEnd = sel.collapsed && sel.end == field.text.length
         // The start of the text is on the right in RTL, so the physical keys swap.
         val dir = when (e.key) {
-            Key.DirectionUp -> FocusDirection.Up
-            Key.DirectionDown -> FocusDirection.Down
+            // Multi-line: up/down move the cursor between lines, and leave only from the first/last line's edge.
+            Key.DirectionUp -> if (!multiline || atStart) FocusDirection.Up else null
+            Key.DirectionDown -> if (!multiline || atEnd) FocusDirection.Down else null
             Key.DirectionLeft -> if (if (rtl) atEnd else atStart) FocusDirection.Left else null
             Key.DirectionRight -> if (if (rtl) atStart else atEnd) FocusDirection.Right else null
             else -> null
