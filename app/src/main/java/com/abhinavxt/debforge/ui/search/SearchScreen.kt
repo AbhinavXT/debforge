@@ -57,6 +57,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.abhinavxt.debforge.R
+import com.abhinavxt.debforge.ui.settings.SettingsTarget
 import com.abhinavxt.debforge.domain.SearchQuality
 import com.abhinavxt.debforge.domain.SearchResult
 import com.abhinavxt.debforge.ui.browse.formatSize
@@ -97,7 +98,12 @@ fun SearchScreen(
                     icon = Icons.Rounded.Search,
                     title = stringResource(R.string.search_needs_source_title),
                     body = stringResource(R.string.search_needs_source_body),
-                    action = { Button(onClick = onOpenSettings) { Text(stringResource(R.string.search_open_settings)) } }
+                    action = {
+                        Button(onClick = {
+                            SettingsTarget.section.value = SettingsTarget.SEARCH_SOURCES
+                            onOpenSettings()
+                        }) { Text(stringResource(R.string.search_open_settings)) }
+                    }
                 )
                 return@Column
             }

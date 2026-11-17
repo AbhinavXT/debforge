@@ -72,6 +72,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -157,8 +158,19 @@ fun SettingsScreen(onConnect: () -> Unit, viewModel: SettingsViewModel = hiltVie
     }
     var showSignOutDialog by remember { mutableStateOf(false) }
 
+    val listState = androidx.compose.foundation.lazy.rememberLazyListState()
+    val target by SettingsTarget.section.collectAsStateWithLifecycle()
+    LaunchedEffect(target) {
+        val index = SECTION_ORDER.indexOf(target)
+        if (index >= 0) {
+            listState.scrollToItem(index)
+            SettingsTarget.section.value = null
+        }
+    }
+
     Scaffold(topBar = { ScreenHeader(title = stringResource(R.string.tab_settings)) }) { padding ->
         LazyColumn(
+            state = listState,
             modifier = Modifier.padding(padding).fillMaxSize(),
             contentPadding = PaddingValues(bottom = 32.dp)
         ) {
@@ -515,6 +527,12 @@ fun SettingsScreen(onConnect: () -> Unit, viewModel: SettingsViewModel = hiltVie
         )
     }
 }
+
+/** The Settings sections top to bottom; must match the item keys in [SettingsScreen]. */
+private val SECTION_ORDER = listOf(
+    "service", "appearance", "folder", "when", "library",
+    "trakt", "opensubtitles", SettingsTarget.SEARCH_SOURCES, "usage", "backup", "about"
+)
 
 // --- rows --------------------------------------------------------------------
 
