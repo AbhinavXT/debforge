@@ -57,6 +57,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.type
+import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.drawWithContent
@@ -224,7 +227,9 @@ internal fun ControlBar(
     onToggleGroup: () -> Unit,
     /** Null: no service signed in, so the list is the downloads already and there's no chip. */
     downloadsView: Boolean?,
-    onToggleDownloads: () -> Unit
+    onToggleDownloads: () -> Unit,
+    /** D-pad UP from the search field; return true when handled (the title block was collapsed and is being reopened). */
+    onSearchUp: () -> Boolean = { false }
 ) {
     Column(modifier = Modifier.padding(top = 4.dp, bottom = 4.dp)) {
         SearchPill(
@@ -234,6 +239,7 @@ internal fun ControlBar(
             clearDescription = stringResource(R.string.action_clear),
             // Capped like the YouTube field so it doesn't stretch across a tablet.
             modifier = Modifier.padding(horizontal = 16.dp).widthIn(max = 560.dp)
+                .onPreviewKeyEvent { it.key == androidx.compose.ui.input.key.Key.DirectionUp && it.type == androidx.compose.ui.input.key.KeyEventType.KeyDown && onSearchUp() }
         )
         Row(verticalAlignment = Alignment.Top) {
             // Filters wrap onto a second line rather than scroll, so "Group as series" and

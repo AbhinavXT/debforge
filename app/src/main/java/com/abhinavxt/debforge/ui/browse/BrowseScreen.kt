@@ -182,6 +182,7 @@ fun BrowseScreen(
 
     // A magnet or .torrent link was just copied: offer to add it.
     val clipScope = rememberCoroutineScope()
+    val focusManager = androidx.compose.ui.platform.LocalFocusManager.current
     val clipMessage = stringResource(R.string.clipboard_offer)
     val clipAction = stringResource(R.string.action_add)
     ClipboardOfferEffect(onOffer = { links ->
@@ -441,7 +442,19 @@ fun BrowseScreen(
                 grouped = state.grouped,
                 onToggleGroup = viewModel::onToggleGroup,
                 downloadsView = state.downloadsView.takeIf { state.hasService },
-                onToggleDownloads = viewModel::onToggleDownloads
+                onToggleDownloads = viewModel::onToggleDownloads,
+                onSearchUp = {
+                    // The title block (downloads, settings) collapses away while scrolling: bring it back so UP can reach it.
+                    if (selected.isEmpty() && scroll.collapsed > 0f) {
+                        clipScope.launch {
+                            scroll.expand()
+                            androidx.compose.runtime.withFrameNanos { }
+                            androidx.compose.runtime.withFrameNanos { }
+                            focusManager.moveFocus(androidx.compose.ui.focus.FocusDirection.Up)
+                        }
+                        true
+                    } else false
+                }
             )
             if (state.searchingAll) {
                 // Search covers the whole account: show that more is loading.
