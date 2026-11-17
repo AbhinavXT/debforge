@@ -121,6 +121,8 @@ class PlayerActivity : ComponentActivity() {
     @Inject lateinit var movieHasher: MovieHasher
     @Inject lateinit var caster: com.abhinavxt.debforge.player.cast.DlnaCaster
     @Inject lateinit var chapterReader: ChapterReader
+    @Inject lateinit var youTubeResolver: com.abhinavxt.debforge.data.youtube.YouTubeResolver
+    @Inject lateinit var downloads: com.abhinavxt.debforge.download.DownloadController
 
     /** Settings → "Autoplay next episode". Off: the card still offers Play now, without a countdown. */
     private var autoplay = true
@@ -147,6 +149,8 @@ class PlayerActivity : ComponentActivity() {
 
     /** Which file this is (null for plain links): positions are saved only when known. */
     private var identity: Identity? = null
+    /** Set when streaming a YouTube video (video-only URL in [uri], audio merged in); null for everything else. */
+    private var youtube: com.abhinavxt.debforge.ui.browse.YtStream? = null
     private var tickJob: Job? = null
 
     // --- next episode ---
@@ -294,7 +298,14 @@ class PlayerActivity : ComponentActivity() {
         audioPlayer.stopForVideo()
         uri = intent.data ?: run { finish(); return }
         title = intent.getStringExtra(EXTRA_TITLE).orEmpty()
-        identity = Identity.from(intent)
+        youtube = ytStreamFrom(intent)
+        // A stream is saved under DIRECT with no filename: Trakt (which needs a name) skips it.
+        identity = Identity.from(intent) ?: youtube?.let {
+            Identity(
+                com.abhinavxt.debforge.player.youtube.YouTubeStreaming.streamPositionKey(it.videoId, false),
+                ProviderId.DIRECT, it.ref, "", null
+            )
+        }
         subtitles = subtitlesFrom(intent)
         identity?.let { id ->
             val q = upNext.take(id.itemId)
@@ -364,7 +375,7 @@ class PlayerActivity : ComponentActivity() {
             )
         }
         controls.title = title
-        controls.castAvailable = !isTv && !isLocalFile()
+        controls.castAvailable = !isTv && !isLocalFile() && youtube == null
         if (!isTv) titleView.visibility = View.GONE // the controls have their own title bar
         // TV: the title shows and hides together with Media3's controls.
         playerView.setControllerVisibilityListener(PlayerView.ControllerVisibilityListener { visibility ->
@@ -807,7 +818,7 @@ class PlayerActivity : ComponentActivity() {
     private fun isLocalFile() = uri.scheme == "content" || uri.scheme == "file"
 
     /** Previews for this file: downloaded ones always, streams if Settings allow, and only while they work. */
-    private fun previewsOn() = (isLocalFile() || streamPreviews) && !thumbnails.failed
+    private fun previewsOn() = youtube == null && (isLocalFile() || streamPreviews) && !thumbnails.failed
 
     /** The frame at [target] for the scrub bubble; a newer request replaces an older one. */
     private fun requestPreview(target: Long) {
@@ -1134,7 +1145,7 @@ class PlayerActivity : ComponentActivity() {
         controls.chapters = emptyList()
         if (isTv && ::playerView.isInitialized) playerView.setExtraAdGroupMarkers(null, null)
         lifecycleScope.launch {
-            val found = runCatching { chapterReader.chapters(source, file) }.getOrDefault(emptyList())
+            val found = if (youtube != null) emptyList() else runCatching { chapterReader.chapters(source, file) }.getOrDefault(emptyList())
             if (generation != fileGeneration) return@launch // another file by now
             chapters = found
             controls.chapters = found
@@ -1230,7 +1241,7 @@ class PlayerActivity : ComponentActivity() {
             )
             controls.onlineSubs = try {
                 // Not a child of this search: switching language mid-search mustn't cancel the shared hash.
-                val hash = (movieHash ?: lifecycleScope.async { movieHasher.hashOf(source) }.also { movieHash = it }).await()
+                val hash = if (youtube != null) null else (movieHash ?: lifecycleScope.async { movieHasher.hashOf(source) }.also { movieHash = it }).await()
                 com.abhinavxt.debforge.player.controls.OnlineSubs.Results(openSubtitles.search(info, hash, languages), anyLanguage)
             } catch (e: kotlinx.coroutines.CancellationException) {
                 throw e
@@ -1602,7 +1613,7 @@ class PlayerActivity : ComponentActivity() {
         val id = identity
         val next = LinkRefresh.next(refreshState, android.os.SystemClock.elapsedRealtime())
         if (id == null || next == null || refreshing) {
-            if (!refreshing) showNetworkError()
+            if (!refreshing) if (youtube != null) showStreamFailed() else showNetworkError()
             return
         }
         refreshState = next
@@ -1610,6 +1621,10 @@ class PlayerActivity : ComponentActivity() {
         val position = player?.currentPosition ?: resumePosition
         lifecycleScope.launch {
             try {
+                if (youtube != null) {
+                    if (!refreshYouTube(position) && id == identity) showStreamFailed()
+                    return@launch
+                }
                 val fresh = (repository.resolveLink(id.provider, id.sourceRef) as? DataResult.Success)?.data?.url
                 if (fresh == null || id != identity) {
                     if (id == identity) showNetworkError()
@@ -1626,6 +1641,62 @@ class PlayerActivity : ComponentActivity() {
                 refreshing = false
             }
         }
+    }
+
+    /**
+     * The YouTube stream's URLs expired (or the connection broke): resolve the video again, pick the same
+     * itags (or the best at or below the old height) and carry on from [position]. False when that failed.
+     */
+    private suspend fun refreshYouTube(position: Long): Boolean {
+        val yt = youtube ?: return false
+        val ref = com.abhinavxt.debforge.domain.YouTubeLinks.parseSourceRef(yt.ref) ?: return false
+        val request = try {
+            val video = youTubeResolver.resolve("https://www.youtube.com/watch?v=${yt.videoId}")
+            val choices = com.abhinavxt.debforge.domain.YouTubeFormats.choices(video.streams, android.os.Build.VERSION.SDK_INT, video.durationSec)
+            val choice = com.abhinavxt.debforge.player.youtube.YouTubeStreaming.reselect(ref, yt.height, choices) ?: return false
+            com.abhinavxt.debforge.ui.browse.youTubePlayRequest(video, choice) ?: return false
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            return false
+        }
+        val fresh = request.youtube ?: return false
+        uri = request.uri
+        youtube = fresh
+        // Same languages as before (new links), plus subtitles added from OpenSubtitles.
+        val had = subtitles.mapNotNull { it.language }.toSet()
+        subtitles = subtitles.filter { it.url.startsWith("file:") } + request.subtitles.filter { it.language in had }
+        player?.apply {
+            setMediaItem(buildMediaItem(), position)
+            prepare()
+            play()
+        }
+        return true
+    }
+
+    /** The stream can't be kept going: offer to download the video instead, or close. */
+    private fun showStreamFailed() {
+        val yt = youtube ?: return
+        if (isFinishing) return
+        player?.pause()
+        AlertDialog.Builder(this)
+            .setMessage(R.string.yt_stream_failed)
+            .setPositiveButton(R.string.yt_stream_download) { _, _ ->
+                val name = "$title [${yt.height}p].${yt.extension}"
+                val item = com.abhinavxt.debforge.domain.DownloadItem(
+                    id = yt.ref, provider = ProviderId.DIRECT, filename = name, sourceRef = yt.ref,
+                    downloadUrl = uri.toString(), host = "YouTube", filesize = 0, maxConnections = 1,
+                    addedAt = java.time.Instant.now().toString(), title = title
+                )
+                // The download engine re-resolves from the ref, so the URL above is only a hint.
+                lifecycleScope.launch {
+                    runCatching { downloads.enqueue(item) }
+                    finish()
+                }
+            }
+            .setNegativeButton(R.string.action_close) { _, _ -> finish() }
+            .setOnCancelListener { finish() }
+            .show()
     }
 
     /** Fetches the next episode's link and subtitles once, ahead of time. */
@@ -1709,7 +1780,7 @@ class PlayerActivity : ComponentActivity() {
         subtitles = ready.subtitles
         titleView.text = title
         controls.title = title
-        controls.castAvailable = !isTv && !isLocalFile()
+        controls.castAvailable = !isTv && !isLocalFile() && youtube == null
         startFile()
         offeredFallback = false
         nextCancelled = false
@@ -1982,6 +2053,10 @@ class PlayerActivity : ComponentActivity() {
             .setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON)
             .setEnableDecoderFallback(true)
         val exo = ExoPlayer.Builder(this, renderers)
+            .apply {
+                // Video-only + audio merged, read in byte windows; other items go to the default factory.
+                if (youtube != null) setMediaSourceFactory(com.abhinavxt.debforge.player.youtube.YouTubeMediaSourceFactory(this@PlayerActivity))
+            }
             // Pause for calls / other apps' audio, and when headphones come out.
             .setAudioAttributes(
                 androidx.media3.common.AudioAttributes.Builder()
@@ -2020,6 +2095,7 @@ class PlayerActivity : ComponentActivity() {
     private fun buildMediaItem(): MediaItem =
         MediaItem.Builder()
             .setUri(uri)
+            .apply { youtube?.let { setTag(com.abhinavxt.debforge.player.youtube.YouTubeStreamTag(it.audioUrl)) } }
             .setMediaMetadata(MediaMetadata.Builder().setTitle(title).build())
             .setSubtitleConfigurations(subtitles.map { sub ->
                 MediaItem.SubtitleConfiguration.Builder(Uri.parse(sub.url))
@@ -2125,6 +2201,11 @@ class PlayerActivity : ComponentActivity() {
     /** [videoProblem]: the picture may be the trouble, so software decoding is worth a try first. */
     private fun offerExternal(message: String, videoProblem: Boolean = true) {
         if (offeredFallback || isFinishing) return
+        if (youtube != null) { // another player would only get the picture, without the audio stream
+            offeredFallback = true
+            showStreamFailed()
+            return
+        }
         offeredFallback = true
         player?.pause()
         AlertDialog.Builder(this)
@@ -2258,6 +2339,7 @@ class PlayerActivity : ComponentActivity() {
     }
 
     private fun openExternally() {
+        if (youtube != null) return // the audio is a separate URL: another player could not play it
         // Subtitles saved in DebForge's cache (OpenSubtitles) aren't readable by other apps.
         if (!playExternally(PlayRequest(uri, title, subtitles = subtitles.filterNot { it.url.startsWith("file:") }))) {
             Toast.makeText(this, R.string.msg_no_player, Toast.LENGTH_LONG).show()
@@ -2365,6 +2447,23 @@ class PlayerActivity : ComponentActivity() {
         private const val EXTRA_SUB_PROVIDERS = "subProviders"
         private const val EXTRA_SUB_REFS = "subRefs"
 
+        private const val EXTRA_YT_REF = "ytRef"
+        private const val EXTRA_YT_ID = "ytId"
+        private const val EXTRA_YT_AUDIO = "ytAudio"
+        private const val EXTRA_YT_HEIGHT = "ytHeight"
+        private const val EXTRA_YT_EXT = "ytExt"
+
+        private fun ytStreamFrom(intent: Intent): com.abhinavxt.debforge.ui.browse.YtStream? {
+            val ref = intent.getStringExtra(EXTRA_YT_REF) ?: return null
+            return com.abhinavxt.debforge.ui.browse.YtStream(
+                ref = ref,
+                videoId = intent.getStringExtra(EXTRA_YT_ID) ?: return null,
+                audioUrl = intent.getStringExtra(EXTRA_YT_AUDIO) ?: return null,
+                height = intent.getIntExtra(EXTRA_YT_HEIGHT, 0),
+                extension = intent.getStringExtra(EXTRA_YT_EXT) ?: "mp4"
+            )
+        }
+
         /** Parallel arrays: no Parcelable class needed for a handful of strings. */
         private fun subtitlesFrom(intent: Intent): List<SubtitleLink> {
             val urls = intent.getStringArrayExtra(EXTRA_SUB_URLS) ?: return emptyList()
@@ -2402,6 +2501,13 @@ class PlayerActivity : ComponentActivity() {
                         putExtra(EXTRA_FILENAME, item.filename)
                         putExtra(EXTRA_SHOW_KEY, request.showKey)
                         putExtra(EXTRA_PARENT_REF, item.parentRef)
+                    }
+                    request.youtube?.let {
+                        putExtra(EXTRA_YT_REF, it.ref)
+                        putExtra(EXTRA_YT_ID, it.videoId)
+                        putExtra(EXTRA_YT_AUDIO, it.audioUrl)
+                        putExtra(EXTRA_YT_HEIGHT, it.height)
+                        putExtra(EXTRA_YT_EXT, it.extension)
                     }
                     if (request.subtitles.isNotEmpty()) {
                         val subs = request.subtitles

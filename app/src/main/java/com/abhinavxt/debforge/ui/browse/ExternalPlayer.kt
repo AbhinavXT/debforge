@@ -17,8 +17,51 @@ data class PlayRequest(
     val item: com.abhinavxt.debforge.domain.DownloadItem? = null,
     val showKey: String? = null,
     /** Subtitle files from the same torrent, with fresh links. */
-    val subtitles: List<com.abhinavxt.debforge.domain.SubtitleLink> = emptyList()
+    val subtitles: List<com.abhinavxt.debforge.domain.SubtitleLink> = emptyList(),
+    /** Set for a YouTube stream: [uri] is then the video-only URL and this holds the rest. */
+    val youtube: YtStream? = null
 )
+
+/**
+ * What the player needs beyond [PlayRequest.uri] to stream a YouTube video: the `yt:` source ref (itags),
+ * the audio URL to merge, and the chosen height and file extension (for re-resolving and for "Download instead").
+ * Handed over in intent extras like the rest of the request, so it survives process death.
+ */
+data class YtStream(
+    val ref: String,
+    val videoId: String,
+    val audioUrl: String,
+    val height: Int,
+    val extension: String = "mp4"
+)
+
+/**
+ * A request to stream [choice] of [video] (video-only URL + audio URL merged by the player), with its
+ * subtitles as WebVTT links. Null for an audio-only choice or when the choice's streams are missing.
+ */
+fun youTubePlayRequest(
+    video: com.abhinavxt.debforge.domain.YouTubeVideo,
+    choice: com.abhinavxt.debforge.domain.FormatChoice,
+    subtitles: List<com.abhinavxt.debforge.domain.YouTubeSubtitle> = video.subtitles
+): PlayRequest? {
+    val videoItag = choice.videoItag ?: return null
+    val v = video.streams.firstOrNull { it.itag == videoItag && it.kind == com.abhinavxt.debforge.domain.StreamKind.VIDEO } ?: return null
+    val a = video.streams.firstOrNull { it.itag == choice.audioItag && it.kind == com.abhinavxt.debforge.domain.StreamKind.AUDIO } ?: return null
+    return PlayRequest(
+        uri = Uri.parse(v.url),
+        title = video.title,
+        subtitles = subtitles.map {
+            com.abhinavxt.debforge.domain.SubtitleLink(it.url, "text/vtt", it.languageCode, it.label, forced = false)
+        },
+        youtube = YtStream(
+            ref = com.abhinavxt.debforge.domain.YouTubeLinks.sourceRef(video.id, videoItag, choice.audioItag),
+            videoId = video.id,
+            audioUrl = a.url,
+            height = choice.height,
+            extension = choice.extension
+        )
+    )
+}
 
 /**
  * Opens [request] in an installed video player (VLC, mpv, MX Player, Just

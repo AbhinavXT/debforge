@@ -671,7 +671,7 @@ class BrowseViewModel @Inject constructor(
 
     /** Started but not finished, most recent first. */
     val continueWatching: StateFlow<List<com.abhinavxt.debforge.data.playback.PlaybackEntity>> = playbackPositions.all
-        .map { list -> com.abhinavxt.debforge.domain.Resume.continueWatching(list, { it.resumeEntry }) }
+        .map { list -> com.abhinavxt.debforge.domain.Resume.continueWatching(list.filterNot { isYouTubeStreamPosition(it.itemId) }, { it.resumeEntry }) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     /** Followed shows with an episode on the way (TMDB key needed), soonest first. */
@@ -1041,3 +1041,6 @@ class BrowseViewModel @Inject constructor(
         private const val SEARCH_CAP = 5_000
     }
 }
+
+/** Positions saved by YouTube streams (`ytstream:`/`ytaudio:`): they cannot be replayed from a saved link, so they stay out of Continue watching. */
+internal fun isYouTubeStreamPosition(itemId: String) = itemId.startsWith("ytstream:") || itemId.startsWith("ytaudio:")
