@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -357,12 +358,16 @@ internal fun MediaContent(
                     modifier = Modifier.holdFocus(held)
                 )
             } else {
-                val min = if (state.kind == FileKind.Video) 168.dp else 340.dp
+                BoxWithConstraints(Modifier.fillMaxSize()) {
+                // Audio rows: at most two columns of at least 420dp, and a single column is capped (centred) so the menu stays near the title.
+                val audio = state.kind != FileKind.Video
+                val audioCols = ((maxWidth - 32.dp) / 420.dp).toInt().coerceIn(1, 2)
+                val sidePad = if (audio && audioCols == 1) maxOf(16.dp, (maxWidth - 600.dp) / 2) else 16.dp
                 LazyVerticalGrid(
-                    columns = GridCells.Adaptive(min),
+                    columns = if (audio) GridCells.Fixed(audioCols) else GridCells.Adaptive(168.dp),
                     modifier = Modifier.fillMaxSize(),
                     // Bottom space keeps the last row clear of the 64dp mini player.
-                    contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 16.dp),
+                    contentPadding = PaddingValues(start = sidePad, end = sidePad, top = 4.dp, bottom = 16.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     verticalArrangement = Arrangement.spacedBy(if (state.kind == FileKind.Video) 16.dp else 4.dp)
                 ) {
@@ -391,6 +396,7 @@ internal fun MediaContent(
                             )
                         }
                     }
+                }
                 }
             }
         }
