@@ -108,7 +108,15 @@ fun AboutSection(viewModel: UpdateViewModel = hiltViewModel()) {
                     OutlinedButton(
                         onClick = { viewModel.checkNow() },
                         enabled = status != UpdateStatus.Checking
-                    ) { Text(stringResource(R.string.about_check_now)) }
+                    ) {
+                        if (status == UpdateStatus.Checking) {
+                            androidx.compose.material3.CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp)
+                            androidx.compose.foundation.layout.Spacer(Modifier.size(8.dp))
+                            Text(stringResource(R.string.about_checking))
+                        } else {
+                            Text(stringResource(R.string.about_check_now))
+                        }
+                    }
                 }
             }
         }
