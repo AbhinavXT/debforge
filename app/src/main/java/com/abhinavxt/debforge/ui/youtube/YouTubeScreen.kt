@@ -304,7 +304,11 @@ internal fun YouTubeContent(
         contentKey = { it::class },
         transitionSpec = { fadeIn() togetherWith fadeOut() },
         label = "youtube-state",
-        modifier = Modifier.widthIn(max = if (ui is YouTubeUi.Preview && landscapeWide) 1100.dp else 640.dp), // the preview splits into two panes when wide
+        modifier = Modifier.widthIn(max = when {
+            ui is YouTubeUi.Preview && landscapeWide -> 1100.dp // the preview splits into two panes when wide
+            (ui is YouTubeUi.Results || ui is YouTubeUi.Empty) && cfg.smallestScreenWidthDp >= 600 -> 1280.dp // tablets: result lists use the width in columns
+            else -> 640.dp
+        }),
     ) { state ->
         when (state) {
             YouTubeUi.Empty -> EmptyState(input, clipLink, onInput, onSubmit, onPaste, trending, recent, onRemoveRecent, onClearRecent, onPick, onChannel, onLoadTrending, onPlayResult, streamingUrl)
@@ -418,6 +422,8 @@ private fun ResultsState(
                 if (it != null && it >= -5 && !(restart && failed)) loadMore()
             }
     }
+    BoxWithConstraints(Modifier.fillMaxSize()) {
+    val cols = resultColumns(maxWidth - 32.dp)
     LazyColumn(
         Modifier.fillMaxSize(),
         state = listState,
@@ -438,8 +444,24 @@ private fun ResultsState(
                 )
             }
         }
-        items(r.items, key = { it.url }) { ResultRow(it, onClick = { onPick(it) }, onChannel = if (r.channelUrl == null) onChannel else null, onPlay = { x -> onPlay(x) }, streaming = streamingUrl == it.url) }
+        // Rows of `cols` results: one column on a phone, more on a tablet. Plain rows keep the list state, paging and focus order as they were.
+        items(r.items.chunked(cols), key = { it.first().url }) { chunk ->
+            ResultCells(chunk, cols) { ResultRow(it, onClick = { onPick(it) }, onChannel = if (r.channelUrl == null) onChannel else null, onPlay = { x -> onPlay(x) }, streaming = streamingUrl == it.url) }
+        }
         if (r.loadingMore) item { LinearProgressIndicator(Modifier.fillMaxWidth().padding(vertical = 8.dp)) }
+    }
+    }
+}
+
+/** How many result cards fit side by side in [width]: at least one, each at least 320dp wide. */
+private fun resultColumns(width: androidx.compose.ui.unit.Dp): Int = ((width.value + 8f) / (320f + 8f)).toInt().coerceAtLeast(1)
+
+@Composable
+private fun ResultCells(chunk: List<YouTubeSearchResult>, cols: Int, cell: @Composable (YouTubeSearchResult) -> Unit) {
+    if (cols == 1) { chunk.forEach { cell(it) }; return }
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        chunk.forEach { Box(Modifier.weight(1f)) { cell(it) } }
+        repeat(cols - chunk.size) { Spacer(Modifier.weight(1f)) }
     }
 }
 
@@ -684,8 +706,13 @@ private fun EmptyState(
         }
         if (trending.isNotEmpty()) {
             Text(stringResource(R.string.yt_trending), style = MaterialTheme.typography.titleMedium, modifier = Modifier.semantics { heading() })
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                trending.forEach { ResultRow(it, onClick = { onPick(it) }, onChannel = onChannel, onPlay = { x -> onPlayResult(x) }, streaming = streamingUrl == it.url) }
+            BoxWithConstraints(Modifier.fillMaxWidth()) {
+                val cols = resultColumns(maxWidth)
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    trending.chunked(cols).forEach { chunk ->
+                        ResultCells(chunk, cols) { ResultRow(it, onClick = { onPick(it) }, onChannel = onChannel, onPlay = { x -> onPlayResult(x) }, streaming = streamingUrl == it.url) }
+                    }
+                }
             }
         }
     }
