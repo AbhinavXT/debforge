@@ -178,7 +178,8 @@ private val LIBRARIES = listOf(
     "Coil" to "Apache-2.0",
     "Media3 (ExoPlayer)" to "Apache-2.0",
     "Jellyfin FFmpeg decoder for Media3" to "GPL-3.0 (bundles FFmpeg)",
-    "NewPipeExtractor" to "GPL-3.0"
+    "NewPipeExtractor" to "GPL-3.0",
+    "Inter (headline font)" to "SIL OFL 1.1"
 )
 
 @Composable
