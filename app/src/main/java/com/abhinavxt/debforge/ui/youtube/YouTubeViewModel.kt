@@ -505,6 +505,12 @@ class YouTubeViewModel @Inject constructor(
         }
     }
 
+    /** Stops a running playlist batch and keeps the list (videos already added stay queued). */
+    fun cancelBatch() {
+        batchJob?.cancel()
+        _ui.update { (it as? YouTubeUi.Playlist)?.copy(progress = null) ?: it }
+    }
+
     private fun startBatch(chosen: List<YouTubeSearchResult>, quality: DefaultQuality) {
         batchJob = viewModelScope.launch {
             var added = 0; var already = 0; var failed = 0

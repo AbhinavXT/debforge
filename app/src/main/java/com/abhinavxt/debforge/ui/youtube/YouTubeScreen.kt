@@ -108,7 +108,9 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.Role
@@ -248,6 +250,7 @@ fun YouTubeScreen(
                     onSelectAll = viewModel::selectAllPlaylist,
                     onQuality = viewModel::setPlaylistQuality,
                     onDownloadPlaylist = viewModel::downloadPlaylist,
+                    onCancelBatch = viewModel::cancelBatch,
                     onLoadMore = viewModel::loadMore,
                     resultsList = viewModel.resultsList,
                     trending = trending,
@@ -288,6 +291,7 @@ internal fun YouTubeContent(
     onSelectAll: (Boolean) -> Unit,
     onQuality: (DefaultQuality) -> Unit,
     onDownloadPlaylist: () -> Unit,
+    onCancelBatch: () -> Unit,
     onLoadMore: () -> Unit,
     resultsList: LazyListState = rememberLazyListState(),
     trending: List<YouTubeSearchResult> = emptyList(),
@@ -318,7 +322,7 @@ internal fun YouTubeContent(
             YouTubeUi.Resolving -> Skeleton()
             is YouTubeUi.Results -> ResultsState(state, input, onInput, onSubmit, onPaste, onPick, onChannel, onLoadMore, resultsList, onPlayResult, streamingUrl)
             is YouTubeUi.Preview -> PreviewState(state, onReset, onMode, onSelect, onSubtitle, onDownload, onPlay)
-            is YouTubeUi.Playlist -> PlaylistState(state, onReset, onToggle, onSelectAll, onQuality, onDownloadPlaylist)
+            is YouTubeUi.Playlist -> PlaylistState(state, onReset, onToggle, onSelectAll, onQuality, onDownloadPlaylist, onCancelBatch)
             is YouTubeUi.Error -> MessageState(
                 icon = Icons.Rounded.ErrorOutline,
                 title = stringResource(errorTitle(state.kind, state.search, state.channel)),
@@ -584,10 +588,19 @@ private fun PlaylistState(
     onSelectAll: (Boolean) -> Unit,
     onQuality: (DefaultQuality) -> Unit,
     onDownload: () -> Unit,
+    onCancel: () -> Unit,
 ) {
     val busy = p.progress != null
     val firstFocus = remember { FocusRequester() }
+    val cancelFocus = remember { FocusRequester() }
     LaunchedEffect(Unit) { runCatching { firstFocus.requestFocus() } } // TV: land on the first control
+    // TV: the Download button turns into Cancel while the batch runs, so focus follows it, and returns to the list when the batch ends.
+    var wasBusy by remember { mutableStateOf(false) }
+    LaunchedEffect(busy) {
+        if (busy) runCatching { cancelFocus.requestFocus() }
+        else if (wasBusy) runCatching { firstFocus.requestFocus() }
+        wasBusy = busy
+    }
     Column(Modifier.fillMaxSize()) {
         LazyColumn(
             Modifier.weight(1f).fillMaxWidth(),
@@ -638,15 +651,28 @@ private fun PlaylistState(
         // Pinned like the single-video preview: the list scrolls, the primary action does not.
         Surface(color = MaterialTheme.colorScheme.surfaceContainer, tonalElevation = 3.dp, shadowElevation = 6.dp, modifier = Modifier.fillMaxWidth()) {
             Column(Modifier.padding(horizontal = 16.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                p.progress?.let { (n, total) -> LinearProgressIndicator(progress = { n.toFloat() / total }, modifier = Modifier.fillMaxWidth()) }
-                Button(onClick = onDownload, enabled = !busy && p.selected.isNotEmpty(), modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp)) {
-                    Icon(Icons.Rounded.Download, contentDescription = null, modifier = Modifier.size(20.dp))
-                    Spacer(Modifier.size(8.dp))
+                val progress = p.progress
+                if (progress != null) {
+                    val (n, total) = progress
+                    // Announced by screen readers as it changes.
                     Text(
-                        p.progress?.let { (n, total) -> stringResource(R.string.yt_adding, n, total) }
-                            ?: pluralStringResource(R.plurals.yt_download_n, p.selected.size, p.selected.size),
-                        maxLines = 1, overflow = TextOverflow.Ellipsis,
+                        stringResource(R.string.yt_adding, n, total),
+                        style = MaterialTheme.typography.titleSmall,
+                        modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
                     )
+                    LinearProgressIndicator(progress = { n.toFloat() / total }, modifier = Modifier.fillMaxWidth())
+                    OutlinedButton(onClick = onCancel, modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp).focusRequester(cancelFocus)) {
+                        Text(stringResource(R.string.action_cancel))
+                    }
+                } else {
+                    Button(onClick = onDownload, enabled = p.selected.isNotEmpty(), modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp)) {
+                        Icon(Icons.Rounded.Download, contentDescription = null, modifier = Modifier.size(20.dp))
+                        Spacer(Modifier.size(8.dp))
+                        Text(
+                            pluralStringResource(R.plurals.yt_download_n, p.selected.size, p.selected.size),
+                            maxLines = 1, overflow = TextOverflow.Ellipsis,
+                        )
+                    }
                 }
             }
         }
@@ -1004,7 +1030,7 @@ private val fakeChoices = listOf(
 private fun PreviewHost(ui: YouTubeUi, clip: String? = null, input: String = "") {
     MaterialTheme {
         Surface {
-            YouTubeContent(ui, input, clip, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})
+            YouTubeContent(ui, input, clip, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})
         }
     }
 }
