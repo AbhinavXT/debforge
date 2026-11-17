@@ -45,6 +45,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
@@ -200,6 +202,9 @@ fun MiniPlayer(
     val shape = RoundedCornerShape(16.dp)
     val expandLabel = stringResource(R.string.audio_expand)
     val barSource = remember { MutableInteractionSource() }
+    // The row is a focus target around the buttons; arrows do not enter it on their own, so route them.
+    val rowFocus = expandFocus ?: remember { FocusRequester() }
+    val toggleFocus = remember { FocusRequester() }
     Surface(
         modifier = modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp).animateContentSize(),
         shape = shape,
@@ -208,7 +213,8 @@ fun MiniPlayer(
         Column(Modifier.focusRing(barSource, shape)) {
             Row(
                 Modifier.fillMaxWidth().height(60.dp)
-                    .then(if (expandFocus != null) Modifier.focusRequester(expandFocus) else Modifier)
+                    .focusRequester(rowFocus)
+                    .focusProperties { right = toggleFocus }
                     .clickable(interactionSource = barSource, indication = androidx.compose.material3.ripple(), onClickLabel = expandLabel, onClick = onExpand)
                     .padding(start = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
@@ -231,7 +237,7 @@ fun MiniPlayer(
                     }
                 }
                 val s1 = remember { MutableInteractionSource() }
-                IconButton(onToggle, Modifier.size(48.dp).focusRing(s1, RoundedCornerShape(24.dp)), interactionSource = s1) {
+                IconButton(onToggle, Modifier.size(48.dp).focusRequester(toggleFocus).focusProperties { left = rowFocus }.focusRing(s1, RoundedCornerShape(24.dp)), interactionSource = s1) {
                     PlayPauseIcon(state.isPlaying)
                 }
                 val s2 = remember { MutableInteractionSource() }

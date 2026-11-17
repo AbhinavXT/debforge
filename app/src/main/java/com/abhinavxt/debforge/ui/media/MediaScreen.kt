@@ -8,6 +8,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
+import androidx.compose.ui.focus.focusRequester
+import com.abhinavxt.debforge.ui.player.focusRing
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -539,6 +544,8 @@ private fun MediaRow(
     val cs = MaterialTheme.colorScheme
     val shape = RoundedCornerShape(16.dp)
     var menu by remember { mutableStateOf(false) }
+    val rowFocus = remember { FocusRequester() }
+    val menuFocus = remember { FocusRequester() }
     val sub = listOfNotNull(
         e.artist?.takeIf { kind == FileKind.Audio && it.isNotBlank() },
         e.formatLabel().takeIf { kind == FileKind.Audio && it.isNotEmpty() },
@@ -547,6 +554,8 @@ private fun MediaRow(
     Row(
         modifier.fillMaxWidth()
             .background(if (selected || playing) cs.primaryContainer.copy(alpha = if (selected) 0.6f else 0.3f) else Color.Transparent, shape)
+            .focusRequester(rowFocus)
+            .focusProperties { right = menuFocus }
             .mediaClickable(shape, selected, onClick, onLong)
             .padding(start = 8.dp, top = 6.dp, bottom = 6.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -581,7 +590,12 @@ private fun MediaRow(
             if (sub.isNotEmpty()) Text(sub, style = MaterialTheme.typography.bodyMedium, color = cs.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
         Box {
-            IconButton(onClick = { menu = true }) { Icon(Icons.Rounded.MoreVert, stringResource(R.string.media_more)) }
+            val menuSource = remember { MutableInteractionSource() }
+            IconButton(
+                onClick = { menu = true },
+                modifier = Modifier.focusRequester(menuFocus).focusProperties { left = rowFocus }.focusRing(menuSource, CircleShape),
+                interactionSource = menuSource
+            ) { Icon(Icons.Rounded.MoreVert, stringResource(R.string.media_more)) }
             DropdownMenu(menu, { menu = false }) {
                 if (onPlay != null) DropdownMenuItem(
                     text = { Text(stringResource(R.string.action_play)) },

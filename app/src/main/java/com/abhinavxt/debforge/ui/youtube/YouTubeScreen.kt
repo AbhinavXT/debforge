@@ -93,6 +93,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import com.abhinavxt.debforge.ui.components.dpadEscape
 import com.abhinavxt.debforge.ui.components.rememberCursorField
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
@@ -448,10 +449,18 @@ private fun ResultRow(
 ) {
     val source = remember { MutableInteractionSource() }
     val channelUrl = r.channelUrl?.takeIf { onChannel != null && !r.channel.isNullOrBlank() }
+    // Arrows do not find a small target lying inside the row's bounds, so the row, channel and play button are linked by hand.
+    val rowFocus = remember { FocusRequester() }
+    val channelFocus = remember { FocusRequester() }
+    val playFocus = remember { FocusRequester() }
+    val channelSource = remember { MutableInteractionSource() }
+    val playSource = remember { MutableInteractionSource() }
     // The row and the channel name are siblings, not nested clickables, so TalkBack and TV focus see both.
     Box(Modifier.fillMaxWidth().heightIn(min = 56.dp).clip(RowShape).focusRing(source, RowShape)) {
         Spacer(
             Modifier.matchParentSize().semantics { contentDescription = r.title }
+                .focusRequester(rowFocus)
+                .focusProperties { right = if (channelUrl != null) channelFocus else playFocus }
                 .clickable(interactionSource = source, indication = androidx.compose.foundation.LocalIndication.current, role = Role.Button, onClick = onClick),
         )
         Row(
@@ -469,7 +478,11 @@ private fun ResultRow(
                         val label = stringResource(R.string.yt_open_channel, r.channel)
                         Text(
                             r.channel, style = style, color = color, maxLines = 1, overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.clip(RoundedCornerShape(8.dp)).clickable(role = Role.Button) { onChannel?.invoke(r.channel, channelUrl) }
+                            modifier = Modifier.clip(RoundedCornerShape(8.dp))
+                                .focusRequester(channelFocus)
+                                .focusProperties { left = rowFocus; right = playFocus }
+                                .focusRing(channelSource, RoundedCornerShape(8.dp))
+                                .clickable(interactionSource = channelSource, indication = androidx.compose.foundation.LocalIndication.current, role = Role.Button) { onChannel?.invoke(r.channel, channelUrl) }
                                 .semantics { contentDescription = label }.padding(vertical = 6.dp),
                         )
                     } else Text(r.channel, style = style, color = color, maxLines = 1, overflow = TextOverflow.Ellipsis)
@@ -479,7 +492,12 @@ private fun ResultRow(
                     LinearProgressIndicator(Modifier.fillMaxWidth().padding(top = 2.dp))
                 }
             }
-            IconButton(onClick = { onPlay(r) }, enabled = !streaming) {
+            IconButton(
+                onClick = { onPlay(r) }, enabled = !streaming,
+                modifier = Modifier.focusRequester(playFocus).focusProperties { left = if (channelUrl != null) channelFocus else rowFocus }
+                    .focusRing(playSource, CircleShape),
+                interactionSource = playSource
+            ) {
                 Icon(Icons.Rounded.PlayCircle, contentDescription = stringResource(R.string.yt_play_cd))
             }
         }
