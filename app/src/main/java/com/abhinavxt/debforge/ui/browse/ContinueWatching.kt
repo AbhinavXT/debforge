@@ -14,6 +14,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.DeleteOutline
 import androidx.compose.material3.DropdownMenu
@@ -65,9 +72,28 @@ fun ContinueWatchingRow(
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(bottom = 8.dp)
         )
+        val listState = rememberLazyListState()
         LazyRow(
+            state = listState,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
-            contentPadding = PaddingValues(end = 16.dp)
+            contentPadding = PaddingValues(end = 16.dp),
+            // Fade the cut-off card at the right edge instead of slicing its text mid-letter.
+            modifier = Modifier
+                .graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
+                .drawWithContent {
+                    drawContent()
+                    if (listState.canScrollForward) {
+                        drawRect(
+                            brush = Brush.horizontalGradient(
+                                0f to Color.Black,
+                                1f to Color.Transparent,
+                                startX = size.width - 32.dp.toPx(),
+                                endX = size.width
+                            ),
+                            blendMode = BlendMode.DstIn
+                        )
+                    }
+                }
         ) {
             items(entries, key = { it.itemId }) { entry ->
                 val info = remember(entry.filename) { ReleaseNameParser.parse(entry.filename) }
@@ -115,7 +141,13 @@ private fun ContinueCard(
                     modifier = Modifier.fillMaxSize()
                 )
             } else {
-                GeneratedArt(title = info.title, tag = info.episodeLabel.orEmpty(), modifier = Modifier.fillMaxSize())
+                GeneratedArt(
+                    title = info.title,
+                    tag = info.episodeLabel.orEmpty(),
+                    // The caption below already says it.
+                    showTitle = !info.title.equals(entry.title, ignoreCase = true),
+                    modifier = Modifier.fillMaxSize()
+                )
             }
             LinearProgressIndicator(
                 progress = { entry.progress ?: 0f },
