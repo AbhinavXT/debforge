@@ -99,6 +99,7 @@ import androidx.compose.ui.focus.FocusRequester
 import com.abhinavxt.debforge.ui.components.dpadEscape
 import com.abhinavxt.debforge.ui.components.rememberCursorField
 import androidx.compose.ui.focus.focusProperties
+import androidx.compose.foundation.focusGroup
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
@@ -707,6 +708,7 @@ private fun PlaylistRow(r: YouTubeSearchResult, checked: Boolean, enabled: Boole
     }
 }
 
+@OptIn(androidx.compose.ui.ExperimentalComposeUiApi::class)
 @Composable
 private fun EmptyState(
     input: String,
@@ -729,7 +731,11 @@ private fun EmptyState(
     val focus = remember { FocusRequester() }
     LaunchedEffect(Unit) { runCatching { focus.requestFocus() } } // TV: land on the field
     Column(
-        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 16.dp),
+        Modifier.fillMaxSize()
+            // D-pad: RIGHT at the end of a row (the last remove button) stays put instead of jumping to the header buttons.
+            .focusProperties { exit = { dir -> if (dir == androidx.compose.ui.focus.FocusDirection.Right) FocusRequester.Cancel else FocusRequester.Default } }
+            .focusGroup()
+            .verticalScroll(rememberScrollState()).padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         LinkOrSearchField(input, onInput, onSubmit, onPaste, focus)
