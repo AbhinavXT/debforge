@@ -162,7 +162,13 @@ fun SettingsScreen(onConnect: () -> Unit, onBack: (() -> Unit)? = null, viewMode
     var showSignOutDialog by remember { mutableStateOf(false) }
 
     // Large title that shrinks into the bar as the list scrolls, with the back arrow beside it.
-    val scrollBehavior = androidx.compose.material3.TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+    // Fresh bar state when the window changes size or density: a collapse offset measured for the old
+    // size can exceed the new bar height and crash the layout.
+    val cfg = androidx.compose.ui.platform.LocalConfiguration.current
+    val barState = remember(cfg.densityDpi, cfg.screenWidthDp, cfg.screenHeightDp, cfg.fontScale) {
+        androidx.compose.material3.TopAppBarState(-Float.MAX_VALUE, 0f, 0f)
+    }
+    val scrollBehavior = androidx.compose.material3.TopAppBarDefaults.exitUntilCollapsedScrollBehavior(barState)
     val listState = androidx.compose.foundation.lazy.rememberLazyListState()
     val target by SettingsTarget.section.collectAsStateWithLifecycle()
     LaunchedEffect(target) {
