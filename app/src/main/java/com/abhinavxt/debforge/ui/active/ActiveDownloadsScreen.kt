@@ -87,7 +87,7 @@ fun ActiveDownloadsScreen(onOpenMedia: () -> Unit, onOpenSettings: () -> Unit, v
     val grouped = state.grouped
     // Combined speed of everything running, shown under the title.
     val running = grouped[DownloadState.DOWNLOADING].orEmpty()
-    val totalSpeed = running.filterNot { it.waitingForNetwork }.sumOf { it.bytesPerSecond.coerceAtLeast(0) }
+    val totalSpeed = running.filterNot { it.waitingForNetwork || it.finishing }.sumOf { it.bytesPerSecond.coerceAtLeast(0) }
 
     Scaffold(
         topBar = {
