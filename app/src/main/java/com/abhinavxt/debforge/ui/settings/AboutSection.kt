@@ -140,7 +140,7 @@ fun AboutSection(viewModel: UpdateViewModel = hiltViewModel()) {
             title = stringResource(R.string.about_whats_new),
             subtitle = stringResource(R.string.about_whats_new_detail),
             // Release notes live on the version's GitHub release; the app ships no changelog of its own.
-            onClick = { uriHandler.openUri("${viewModel.repoUrl}/releases/tag/v${viewModel.currentVersion.substringBefore('-')}") },
+            onClick = { uriHandler.openUri(releaseNotesUrl(viewModel.repoUrl, viewModel.currentVersion)) },
             trailing = {
                 Icon(
                     Icons.AutoMirrored.Rounded.OpenInNew,
@@ -169,6 +169,10 @@ fun AboutSection(viewModel: UpdateViewModel = hiltViewModel()) {
 }
 
 /** Main libraries and their licences, shown as a dialog. Keep in step with app/build.gradle.kts. */
+/** A plain x.y.z version has a release tag; a debug or pre-release build (any suffix) may not, so it opens the list. */
+internal fun releaseNotesUrl(repoUrl: String, version: String): String =
+    if (Regex("""\d+\.\d+\.\d+""").matches(version)) "$repoUrl/releases/tag/v$version" else "$repoUrl/releases"
+
 private val LIBRARIES = listOf(
     "AndroidX (Core, Lifecycle, Activity, Navigation, Room, DataStore, WebKit)" to "Apache-2.0",
     "Jetpack Compose and Material 3" to "Apache-2.0",
@@ -178,7 +182,12 @@ private val LIBRARIES = listOf(
     "Coil" to "Apache-2.0",
     "Media3 (ExoPlayer)" to "Apache-2.0",
     "Jellyfin FFmpeg decoder for Media3" to "GPL-3.0 (bundles FFmpeg)",
-    "NewPipeExtractor" to "GPL-3.0",
+    "NewPipeExtractor" to "GPL-3.0 or later",
+    "Rhino (JavaScript engine for NewPipeExtractor)" to "MPL-2.0",
+    "jsoup" to "MIT",
+    "nanojson, Guava, Accompanist, JSpecify, javax.inject" to "Apache-2.0",
+    "Protocol Buffers (lite)" to "BSD-3-Clause",
+    "desugar_jdk_libs (Java 8+ APIs on older Android)" to "GPL-2.0 with Classpath Exception",
     "Inter (headline font)" to "SIL OFL 1.1"
 )
 
