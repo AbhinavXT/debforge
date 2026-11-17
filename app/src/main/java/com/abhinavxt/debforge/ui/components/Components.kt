@@ -45,6 +45,19 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -283,6 +296,44 @@ fun StatusPill(
     }
 }
 
+/**
+ * Holds a single-line field's text with its cursor, kept in step with [text] owned by the caller.
+ * Pair with [dpadEscape] so a D-pad can leave the field.
+ */
+@Composable
+fun rememberCursorField(text: String): Pair<TextFieldValue, (TextFieldValue) -> Unit> {
+    var field by remember { mutableStateOf(TextFieldValue(text, TextRange(text.length))) }
+    // Follow only real changes from the caller (e.g. Clear): the caller's copy may lag a frame
+    // behind typing, and resetting to that stale text would drop keystrokes and jump the cursor.
+    var seen by remember { mutableStateOf(text) }
+    if (text != seen) {
+        seen = text
+        if (field.text != text) field = TextFieldValue(text, TextRange(text.length))
+    }
+    return field to { field = it }
+}
+
+/**
+ * Lets a D-pad leave a single-line text field: UP/DOWN always move focus, LEFT/RIGHT only when
+ * the cursor is already at the start/end (or the field is empty), so cursor movement still works.
+ */
+@Composable
+fun Modifier.dpadEscape(field: TextFieldValue): Modifier {
+    val focus = LocalFocusManager.current
+    return onPreviewKeyEvent { e ->
+        if (e.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
+        val sel = field.selection
+        val dir = when (e.key) {
+            Key.DirectionUp -> FocusDirection.Up
+            Key.DirectionDown -> FocusDirection.Down
+            Key.DirectionLeft -> if (sel.collapsed && sel.start == 0) FocusDirection.Left else null
+            Key.DirectionRight -> if (sel.collapsed && sel.end == field.text.length) FocusDirection.Right else null
+            else -> null
+        }
+        if (dir == null) false else { focus.moveFocus(dir); true }
+    }
+}
+
 /** Search field shaped as a pill on a tonal surface. */
 @Composable
 fun SearchPill(
@@ -294,10 +345,11 @@ fun SearchPill(
     /** The keyboard's search key; null = filters as you type, nothing to submit. */
     onSearch: (() -> Unit)? = null
 ) {
+    val (field, setField) = rememberCursorField(query)
     TextField(
-        value = query,
-        onValueChange = onQuery,
-        modifier = modifier.fillMaxWidth(),
+        value = field,
+        onValueChange = { setField(it); if (it.text != query) onQuery(it.text) },
+        modifier = modifier.fillMaxWidth().dpadEscape(field),
         placeholder = { Text(placeholder, maxLines = 1) },
         leadingIcon = { Icon(Icons.Rounded.Search, contentDescription = null) },
         trailingIcon = {

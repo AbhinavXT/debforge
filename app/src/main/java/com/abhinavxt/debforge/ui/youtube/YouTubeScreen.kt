@@ -91,6 +91,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
+import com.abhinavxt.debforge.ui.components.dpadEscape
+import com.abhinavxt.debforge.ui.components.rememberCursorField
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
@@ -347,10 +349,11 @@ private fun LinkOrSearchField(
     val keyboard = LocalSoftwareKeyboardController.current
     val source = remember { MutableInteractionSource() }
     val focused by source.collectIsFocusedAsState()
+    val (field, setField) = rememberCursorField(input)
     TextField(
-        value = input,
-        onValueChange = onInput,
-        modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp).focusRequester(focus)
+        value = field,
+        onValueChange = { setField(it); if (it.text != input) onInput(it.text) },
+        modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp).focusRequester(focus).dpadEscape(field)
             .then(if (focused) Modifier.border(2.dp, MaterialTheme.colorScheme.primary, FieldShape) else Modifier),
         interactionSource = source,
         placeholder = { Text(stringResource(R.string.yt_field_hint), maxLines = 1) },
