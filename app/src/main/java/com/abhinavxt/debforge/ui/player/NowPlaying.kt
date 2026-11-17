@@ -143,7 +143,7 @@ fun NowPlaying(
                             // With nothing up next the player fills the screen, centred, instead of leaving the lower half blank.
                             val alone = upNextOrder(state.order, state.index, state.repeat).none { it in state.queue.indices }
                             Column(
-                                if (alone) Modifier.heightIn(min = this@BoxWithConstraints.maxHeight - 48.dp) else Modifier,
+                                if (alone) Modifier.heightIn(min = (this@BoxWithConstraints.maxHeight - 48.dp).coerceAtLeast(0.dp)) else Modifier,
                                 verticalArrangement = Arrangement.Center,
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {

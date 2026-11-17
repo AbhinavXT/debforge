@@ -78,6 +78,9 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.snapshotFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withTimeoutOrNull
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -171,12 +174,31 @@ fun SettingsScreen(onConnect: () -> Unit, onBack: (() -> Unit)? = null, viewMode
     val scrollBehavior = androidx.compose.material3.TopAppBarDefaults.exitUntilCollapsedScrollBehavior(barState)
     val listState = androidx.compose.foundation.lazy.rememberLazyListState()
     val target by SettingsTarget.section.collectAsStateWithLifecycle()
+    // The bar publishes its collapse limit when it is first measured; until then it is -Float.MAX_VALUE.
+    // Keep the offset inside [limit, 0] whenever the limit changes so the bar never measures below its collapsed height.
+    LaunchedEffect(scrollBehavior) {
+        snapshotFlow { scrollBehavior.state.heightOffsetLimit }.collect { limit ->
+            if (limit > -Float.MAX_VALUE / 2 && limit <= 0f) {
+                scrollBehavior.state.heightOffset = scrollBehavior.state.heightOffset.coerceIn(limit, 0f)
+            }
+        }
+    }
     LaunchedEffect(target) {
-        val index = SECTION_ORDER.indexOf(target)
-        if (index >= 0) {
-            listState.scrollToItem(index)
-            // Jumped down: show the small bar, not the large title.
-            if (index > 0) scrollBehavior.state.heightOffset = scrollBehavior.state.heightOffsetLimit
+        if (target == null) return@LaunchedEffect
+        try {
+            val index = SECTION_ORDER.indexOf(target)
+            if (index >= 0) {
+                listState.scrollToItem(index)
+                // Jumped down: show the small bar, not the large title (once the bar has been measured).
+                if (index > 0) {
+                    val limit = withTimeoutOrNull(1000) {
+                        snapshotFlow { scrollBehavior.state.heightOffsetLimit }.first { it > -Float.MAX_VALUE / 2 && it <= 0f }
+                    }
+                    if (limit != null) scrollBehavior.state.heightOffset = limit
+                }
+            }
+        } finally {
+            // Always consumed, so a stale target cannot fire again.
             SettingsTarget.section.value = null
         }
     }
