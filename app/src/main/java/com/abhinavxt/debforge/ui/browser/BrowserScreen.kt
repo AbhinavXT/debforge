@@ -5,6 +5,8 @@ import android.app.Activity
 import android.content.pm.ActivityInfo
 import android.graphics.Bitmap
 import android.text.format.DateUtils
+import android.view.KeyEvent
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.CookieManager
@@ -92,6 +94,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.type
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -173,7 +181,20 @@ fun BrowserScreen(onMagnet: (String) -> Unit, onOpenDownloads: () -> Unit, onOpe
         }
     ) { padding ->
         Column(Modifier.padding(padding).fillMaxSize()) {
-            Row(Modifier.fillMaxWidth().padding(horizontal = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                Modifier.fillMaxWidth().padding(horizontal = 4.dp).onKeyEvent { e ->
+                    // D-pad down from the bar enters the page; the page is not a focus target until then.
+                    if (e.key == Key.DirectionDown) {
+                        if (e.type == KeyEventType.KeyDown) webView?.let { w ->
+                            w.isFocusable = true
+                            w.isFocusableInTouchMode = true
+                            w.requestFocus()
+                        }
+                        webView != null
+                    } else false
+                },
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 IconButton(onClick = { webView?.goBack() }, enabled = canGoBack) {
                     Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.page_back))
                 }
@@ -221,6 +242,26 @@ fun BrowserScreen(onMagnet: (String) -> Unit, onOpenDownloads: () -> Unit, onOpe
                             // Logins that go through another site (Google, a CDN) need these.
                             CookieManager.getInstance().setAcceptThirdPartyCookies(this, true)
                             adHiding.install(this)
+                            // Not a D-pad focus target until the user steps in from the address bar or touches the page,
+                            // so selecting the tab never drops focus into the page.
+                            isFocusable = false
+                            isFocusableInTouchMode = false
+                            setOnTouchListener { v, ev ->
+                                if (ev.action == MotionEvent.ACTION_DOWN) { v.isFocusable = true; v.isFocusableInTouchMode = true }
+                                false
+                            }
+                            // At the end of the page the arrows leave it instead of being swallowed.
+                            setOnKeyListener { v, keyCode, ev ->
+                                val dir = when (keyCode) {
+                                    KeyEvent.KEYCODE_DPAD_DOWN -> if (!v.canScrollVertically(1)) FocusDirection.Down else null
+                                    KeyEvent.KEYCODE_DPAD_UP -> if (!v.canScrollVertically(-1)) FocusDirection.Up else null
+                                    else -> null
+                                }
+                                if (dir == null) false else {
+                                    if (ev.action == KeyEvent.ACTION_DOWN) focus.moveFocus(dir)
+                                    true
+                                }
+                            }
                             webViewClient = object : WebViewClient() {
                                 override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
                                     val url = request.url.toString()
