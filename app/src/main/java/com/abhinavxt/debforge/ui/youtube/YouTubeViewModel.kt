@@ -122,8 +122,9 @@ class YouTubeViewModel @Inject constructor(
     val input: StateFlow<String> = _input.asStateFlow()
 
     /** Recent word searches, newest first, for the empty screen. */
+    // Eagerly: the ViewModel exists from app start, so the list is already read when the tab is first shown (no one-frame pop-in).
     val recent: StateFlow<List<String>> = history.recent
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     fun removeRecent(query: String) { viewModelScope.launch { history.remove(query) } }
     fun clearRecent() { viewModelScope.launch { history.clear() } }
