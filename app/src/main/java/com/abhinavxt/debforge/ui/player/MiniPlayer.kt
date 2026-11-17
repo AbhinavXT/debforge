@@ -1,11 +1,8 @@
 package com.abhinavxt.debforge.ui.player
 
 import android.net.Uri
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.Crossfade
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -63,6 +60,7 @@ import coil.imageLoader
 import coil.memory.MemoryCache
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.foundation.Image
+import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.layout.ContentScale
 import com.abhinavxt.debforge.R
 import com.abhinavxt.debforge.player.AudioState
@@ -75,16 +73,26 @@ import com.abhinavxt.debforge.ui.theme.DebforgeTheme
 internal fun TrackArt(track: AudioTrack, modifier: Modifier = Modifier) {
     val fallback = @Composable { GeneratedArt(title = track.title, tag = "", showTitle = false, modifier = Modifier.fillMaxSize()) }
     Box(modifier.clearAndSetSemantics { }) {
-        val file = track.artworkFile?.takeIf { it.exists() }
-        if (file == null) fallback() else {
-            // One cache key at every size. The bitmap the mini player already decoded is read straight from
-            // the memory cache and drawn underneath, so the big artwork has pixels on its very first frame.
-            val key = "art:${file.path}:${file.lastModified()}"
-            val context = LocalContext.current
-            val cached = remember(key) { context.imageLoader.memoryCache?.get(MemoryCache.Key(key))?.bitmap }
-            val request = remember(key) { ImageRequest.Builder(context).data(file).memoryCacheKey(key).build() }
+        val artFile = track.artworkFile
+        val context = LocalContext.current
+        // Disk and cache lookups happen once per artwork file, not on every recomposition.
+        val art = remember(artFile) {
+            artFile?.takeIf { it.exists() }?.let { f ->
+                // One cache key at every size. The bitmap the mini player already decoded is read straight from
+                // the memory cache and drawn underneath, so the big artwork has pixels on its very first frame.
+                val key = "art:${f.path}:${f.lastModified()}"
+                val bitmap = context.imageLoader.memoryCache?.get(MemoryCache.Key(key))?.bitmap
+                Triple(
+                    ImageRequest.Builder(context).data(f).memoryCacheKey(key).build(),
+                    bitmap,
+                    bitmap?.asImageBitmap()?.let { BitmapPainter(it) }
+                )
+            }
+        }
+        if (art == null) fallback() else {
+            val (request, cached, painter) = art
             Box(Modifier.fillMaxSize()) {
-                if (cached != null) Image(cached.asImageBitmap(), null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
+                if (painter != null) Image(painter, null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
                 SubcomposeAsyncImage(
                     model = request,
                     contentDescription = null,
@@ -133,7 +141,7 @@ internal object ArtShape : Shape {
 
 /**
  * Marks this artwork as the shared element for [trackId]. [visible] is managed by the caller so both
- * sides stay composed for the whole flight. Put it after the clip so the clip only applies in place.
+ * sides stay composed for the whole flight. Put it before the clip, so the clip applies in place and not in the overlay.
  */
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable

@@ -41,6 +41,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
+import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -279,10 +282,19 @@ fun HomeScreen(signedIn: Boolean) {
     }
 
     // Reduced motion (animator scale 0): no shared transition, the full player just switches.
-    val sharedMotion = animatorDurationScale(LocalContext.current) > 0f
+    val appContext = LocalContext.current
+    var motionScale by remember { mutableStateOf(animatorDurationScale(appContext)) }
+    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
+            if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) motionScale = animatorDurationScale(appContext)
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+    val sharedMotion = motionScale > 0f
 
-    SharedTransitionLayout(Modifier.fillMaxSize()) {
-    val sharedScope = this
+    val shellBody: @Composable (SharedTransitionScope?) -> Unit = { sharedScope ->
     val miniPlayer: @Composable () -> Unit = {
         AnimatedVisibility(
             visible = audio.track != null,
@@ -346,13 +358,23 @@ fun HomeScreen(signedIn: Boolean) {
             }
         }
 
-        AnimatedVisibility(
-            visible = nowPlaying && audio.track != null,
+        // Without a track there is nothing to draw, so leave at once instead of fading out an empty sheet.
+        if (audio.track != null) AnimatedVisibility(
+            visible = nowPlaying,
             enter = if (sharedMotion) fadeIn(tween(350)) else EnterTransition.None,
             exit = if (sharedMotion) fadeOut(tween(350)) else ExitTransition.None
         ) {
-            BackHandler { nowPlaying = false }
-            Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface).windowInsetsPadding(WindowInsets.systemBars)) {
+            BackHandler(enabled = nowPlaying) { nowPlaying = false }
+            // While fading out the controls are inert.
+            val leaving = transition.targetState == androidx.compose.animation.EnterExitState.PostExit
+            Box(
+                Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface).windowInsetsPadding(WindowInsets.systemBars)
+                    .pointerInput(leaving) {
+                        if (leaving) awaitPointerEventScope {
+                            while (true) awaitPointerEvent(PointerEventPass.Initial).changes.forEach { it.consume() }
+                        }
+                    }
+            ) {
                 NowPlaying(
                     state = audio,
                     onToggle = shell.audio::toggle,
@@ -365,12 +387,13 @@ fun HomeScreen(signedIn: Boolean) {
                     onSleep = shell.audio::setSleepTimer,
                     onSkipTo = shell.audio::skipTo,
                     onClose = { nowPlaying = false },
-                    share = if (sharedMotion) ArtworkShare(sharedScope, this@AnimatedVisibility) else null
+                    share = if (sharedMotion && sharedScope != null) ArtworkShare(sharedScope, this@AnimatedVisibility) else null
                 )
             }
         }
     }
     }
+    if (sharedMotion) SharedTransitionLayout(Modifier.fillMaxSize()) { shellBody(this) } else shellBody(null)
 }
 
 /** Downloads and Settings on a phone: reached from a header icon, so they get a back arrow. */

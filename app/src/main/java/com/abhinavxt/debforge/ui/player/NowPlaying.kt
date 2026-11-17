@@ -146,7 +146,7 @@ fun NowPlaying(
 @Composable
 private fun Artwork(state: AudioState, share: ArtworkShare?, modifier: Modifier) {
     val cs = MaterialTheme.colorScheme
-    val shape = RoundedCornerShape(24.dp)
+    val shape = ArtShape
     // The shadow waits for the flight to land so it never frames an empty slot.
     val enter = share?.visibility?.transition
     val settled = share == null || (enter!!.currentState == EnterExitState.Visible && enter.targetState == EnterExitState.Visible &&
