@@ -191,9 +191,25 @@ fun HomeScreen(signedIn: Boolean) {
     }
 
     // Downloads and Settings are pushed (no tab state to keep), so Back returns to where the user was.
+    // The tab a pushed screen was opened from, so Back always returns there.
+    var pushedFrom by remember { mutableStateOf<String?>(null) }
     fun push(tab: HomeTab) {
+        val from = navController.currentDestination?.route
+        // Settings opened from Downloads goes back to Downloads, which already remembers its own origin.
+        if (from != HomeTab.Active.route && from != HomeTab.Settings.route) pushedFrom = from
         navController.navigate(tab.route) { launchSingleTop = true }
     }
+    fun backFromPushed() {
+        val origin = pushedFrom
+        navController.popBackStack()
+        val now = navController.currentDestination?.route
+        val isPushed = now == HomeTab.Active.route || now == HomeTab.Settings.route
+        if (origin != null && !isPushed && now != origin) {
+            HomeTab.entries.firstOrNull { it.route == origin }?.let { go(it) }
+        }
+    }
+
+    BackHandler(enabled = current?.route == HomeTab.Active.route || current?.route == HomeTab.Settings.route) { backFromPushed() }
 
     // A YouTube link shared into the app (cold start or already open).
     val pendingYouTube by shell.pending.youtube.collectAsStateWithLifecycle()
@@ -286,7 +302,7 @@ fun HomeScreen(signedIn: Boolean) {
                     )
                 }
                 composable(HomeTab.Active.route) {
-                    Pushed(wide, onBack = { navController.popBackStack() }) {
+                    Pushed(wide, onBack = ::backFromPushed) {
                         ActiveDownloadsScreen(onOpenMedia = { go(HomeTab.Media) }, onOpenSettings = { push(HomeTab.Settings) })
                     }
                 }
@@ -298,7 +314,7 @@ fun HomeScreen(signedIn: Boolean) {
                 ) }
                 composable(HomeTab.Settings.route) {
                     // Settings draws its own collapsing bar with the back arrow in it on a phone.
-                    SettingsScreen(onConnect = ::connect, onBack = if (wide) null else ({ navController.popBackStack() }))
+                    SettingsScreen(onConnect = ::connect, onBack = if (wide) null else ::backFromPushed)
                 }
             }
         }
