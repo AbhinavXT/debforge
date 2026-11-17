@@ -71,6 +71,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import com.abhinavxt.debforge.ui.components.dpadEscape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -451,7 +452,7 @@ private fun AddressPill(committed: String, modifier: Modifier, onGo: (String) ->
     TextField(
         value = if (focused) field else TextFieldValue(""),
         onValueChange = { field = it },
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth().dpadEscape(field),
         interactionSource = source,
         singleLine = true,
         shape = CircleShape,

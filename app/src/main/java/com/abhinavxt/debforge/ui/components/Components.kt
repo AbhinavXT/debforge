@@ -60,6 +60,8 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -320,14 +322,18 @@ fun rememberCursorField(text: String): Pair<TextFieldValue, (TextFieldValue) -> 
 @Composable
 fun Modifier.dpadEscape(field: TextFieldValue): Modifier {
     val focus = LocalFocusManager.current
+    val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
     return onPreviewKeyEvent { e ->
         if (e.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
         val sel = field.selection
+        val atStart = sel.collapsed && sel.start == 0
+        val atEnd = sel.collapsed && sel.end == field.text.length
+        // The start of the text is on the right in RTL, so the physical keys swap.
         val dir = when (e.key) {
             Key.DirectionUp -> FocusDirection.Up
             Key.DirectionDown -> FocusDirection.Down
-            Key.DirectionLeft -> if (sel.collapsed && sel.start == 0) FocusDirection.Left else null
-            Key.DirectionRight -> if (sel.collapsed && sel.end == field.text.length) FocusDirection.Right else null
+            Key.DirectionLeft -> if (if (rtl) atEnd else atStart) FocusDirection.Left else null
+            Key.DirectionRight -> if (if (rtl) atStart else atEnd) FocusDirection.Right else null
             else -> null
         }
         if (dir == null) false else { focus.moveFocus(dir); true }

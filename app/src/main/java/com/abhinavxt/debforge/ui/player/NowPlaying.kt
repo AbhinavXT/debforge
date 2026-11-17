@@ -62,6 +62,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.focusProperties
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.foundation.focusGroup
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
@@ -92,6 +95,7 @@ import com.abhinavxt.debforge.player.upNextOrder
 import com.abhinavxt.debforge.ui.theme.DebforgeTheme
 
 /** Full-screen "now playing": artwork, title, seek bar, transport, shuffle/repeat and the queue. */
+@OptIn(androidx.compose.ui.ExperimentalComposeUiApi::class)
 @Composable
 fun NowPlaying(
     state: AudioState,
@@ -111,7 +115,9 @@ fun NowPlaying(
     playFocus: FocusRequester? = null
 ) {
     val track = state.track ?: return
-    Surface(modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
+    // Trap D-pad focus inside the player: focusProperties on a wrapper does not reach focusables nested in
+    // another focusable behind it, so the player itself refuses to let focus leave.
+    Surface(modifier.fillMaxSize().focusProperties { exit = { FocusRequester.Cancel } }.focusGroup(), color = MaterialTheme.colorScheme.surface) {
         BoxWithConstraints(Modifier.fillMaxSize()) {
             val wide = maxWidth > maxHeight && maxWidth >= 600.dp
             Column(Modifier.fillMaxSize().padding(horizontal = 24.dp)) {
@@ -319,6 +325,7 @@ private fun ToggleButton(icon: androidx.compose.ui.graphics.vector.ImageVector, 
 private fun SeekBar(positionMs: Long, durationMs: Long, onSeek: (Long) -> Unit) {
     // While dragging, show the thumb's value; seek once on release.
     var dragging by remember { mutableStateOf<Float?>(null) }
+    var pendingSeek by remember { mutableStateOf<Long?>(null) }
     val duration = durationMs.coerceAtLeast(1)
     val shown = dragging ?: positionMs.coerceIn(0, duration).toFloat()
     val tnum = MaterialTheme.typography.labelMedium.copy(fontFeatureSettings = "tnum")
@@ -337,9 +344,15 @@ private fun SeekBar(positionMs: Long, durationMs: Long, onSeek: (Long) -> Unit) 
                 // D-pad: LEFT/RIGHT step the position while the bar is focused.
                 .onPreviewKeyEvent { e ->
                     val step = when (e.key) { Key.DirectionLeft -> -SEEK_STEP_MS; Key.DirectionRight -> SEEK_STEP_MS; else -> return@onPreviewKeyEvent false }
-                    if (e.type == KeyEventType.KeyDown) onSeek((positionMs + step).coerceIn(0, duration))
+                    when (e.type) {
+                        // Held keys repeat before positionMs catches up, so step from the last target, not the stale position.
+                        KeyEventType.KeyDown -> { val t = nextSeekTarget(pendingSeek, positionMs, step, duration); pendingSeek = t; onSeek(t) }
+                        KeyEventType.KeyUp -> pendingSeek = null
+                        else -> Unit
+                    }
                     true
                 }
+                .onFocusChanged { if (!it.hasFocus) pendingSeek = null }
                 .semantics { stateDescription = desc },
             thumb = {
                 // The slot keeps one size so the track does not shift when the thumb grows on drag.
@@ -365,6 +378,10 @@ private fun SeekBar(positionMs: Long, durationMs: Long, onSeek: (Long) -> Unit) 
 }
 
 private const val SEEK_STEP_MS = 10_000L
+
+/** Next position for a D-pad step: continues from [pending] while a key is held, else from [positionMs]. */
+internal fun nextSeekTarget(pending: Long?, positionMs: Long, step: Long, durationMs: Long): Long =
+    ((pending ?: positionMs) + step).coerceIn(0, durationMs)
 
 /** The title scrolls only when the system animations are on; with them off it stays one line with an ellipsis. */
 internal fun titleMarqueeEnabled(animatorDurationScale: Float): Boolean = animatorDurationScale > 0f
