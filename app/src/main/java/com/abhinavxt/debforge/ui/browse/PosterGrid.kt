@@ -290,10 +290,10 @@ fun Poster(group: TitleGroup, meta: MediaMeta?, modifier: Modifier = Modifier, d
         val badge = if (group.kind == MediaKind.SHOW) null else group.files.first().info.resolution
         if (badge != null) {
             Surface(
-                color = Color.Black.copy(alpha = 0.55f),
+                color = Color.Black.copy(alpha = 0.72f),
                 contentColor = Color.White,
                 shape = CircleShape,
-                modifier = Modifier.align(Alignment.TopEnd).padding(8.dp)
+                modifier = Modifier.align(Alignment.TopEnd).padding(6.dp)
             ) {
                 Text(
                     badge,
