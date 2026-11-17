@@ -34,4 +34,22 @@ class WatchProgressTest {
         assertEquals(1, WatchProgress.InProgress(0.001f).percent)
         assertEquals(99, WatchProgress.InProgress(0.999f).percent)
     }
+
+    @Test fun negativePositionShowsNothing() = assertEquals(WatchProgress.Finished, watchProgress(saved(-5_000, 1_200_000)))
+
+    @Test fun positionBeyondDurationIsFinished() = assertEquals(WatchProgress.Finished, watchProgress(saved(2_000_000, 1_200_000)))
+
+    @Test fun nothingShownBeforeLoad() {
+        assertEquals(WatchProgress.Finished, tileProgress(false, true, null))
+        assertEquals(WatchProgress.Finished, tileProgress(false, true, saved(600_000, 1_200_000)))
+    }
+
+    @Test fun unplayedOnlyWithInternalPlayer() {
+        assertEquals(WatchProgress.Unplayed, tileProgress(true, true, null))
+        assertEquals(WatchProgress.Finished, tileProgress(true, false, null))
+    }
+
+    @Test fun barStaysWithExternalPlayer() {
+        assertTrue(tileProgress(true, false, saved(600_000, 1_200_000)) is WatchProgress.InProgress)
+    }
 }

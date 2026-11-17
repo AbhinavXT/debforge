@@ -82,6 +82,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
@@ -121,6 +122,7 @@ fun MediaScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val watch by viewModel.watch.collectAsStateWithLifecycle()
+    val internalPlayer by viewModel.useInternalPlayer.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val snackbar = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -148,6 +150,7 @@ fun MediaScreen(
     MediaContent(
         state = state,
         watch = watch,
+        internalPlayer = internalPlayer,
         playingId = playingId,
         onKind = viewModel::setKind,
         onQuery = viewModel::setQuery,
@@ -199,7 +202,8 @@ internal fun MediaContent(
     onOpenSettings: () -> Unit,
     onOpenYouTube: () -> Unit,
     lists: AudioListActions = AudioListActions(),
-    watch: Map<String, com.abhinavxt.debforge.data.playback.PlaybackEntity> = emptyMap()
+    watch: Map<String, com.abhinavxt.debforge.data.playback.PlaybackEntity>? = null,
+    internalPlayer: Boolean = true
 ) {
     val cs = MaterialTheme.colorScheme
     val selecting = state.selected.isNotEmpty()
@@ -351,7 +355,7 @@ internal fun MediaContent(
                         val selected = e.id in state.selected
                         val m = Modifier.animateItem()
                         when (state.kind) {
-                            FileKind.Video -> VideoTile(e, watchProgress(watch[e.id]), selected, m, onClick = { if (selecting) onToggle(e.id) else onOpenVideo(e) }, onLong = { onToggle(e.id) })
+                            FileKind.Video -> VideoTile(e, tileProgress(watch != null, internalPlayer, watch?.get(e.id)), selected, m, onClick = { if (selecting) onToggle(e.id) else onOpenVideo(e) }, onLong = { onToggle(e.id) })
                             FileKind.Audio -> MediaRow(
                                 e, FileKind.Audio, selected, e.id == playingId, m,
                                 onClick = { if (selecting) onToggle(e.id) else onPlayAudio(items, items.indexOf(e)) },
@@ -499,8 +503,10 @@ private fun VideoTile(e: DownloadEntity, progress: WatchProgress, selected: Bool
             when (progress) {
                 is WatchProgress.InProgress -> androidx.compose.material3.LinearProgressIndicator(
                     progress = { progress.fraction },
-                    modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth().height(3.dp).clip(RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp)),
-                    trackColor = cs.surface.copy(alpha = 0.6f)
+                    modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth().height(3.dp).clip(RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp)).clearAndSetSemantics {},
+                    trackColor = cs.surface.copy(alpha = 0.6f),
+                    gapSize = 0.dp,
+                    drawStopIndicator = {}
                 )
                 WatchProgress.Unplayed -> Box(
                     Modifier.align(Alignment.TopEnd).padding(8.dp).size(12.dp)

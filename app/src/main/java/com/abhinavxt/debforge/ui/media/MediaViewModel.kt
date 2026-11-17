@@ -94,9 +94,10 @@ class MediaViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.Eagerly, true)
 
     /** Saved watch position per download id: local playback saves under the DownloadEntity id (LocalPlayback.toLocalItem). */
-    val watch: StateFlow<Map<String, com.abhinavxt.debforge.data.playback.PlaybackEntity>> = playbackPositions.all
+    /** Null until Room has emitted the first time. */
+    val watch: StateFlow<Map<String, com.abhinavxt.debforge.data.playback.PlaybackEntity>?> = playbackPositions.all
         .map { list -> list.associateBy { it.itemId } }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyMap())
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     private val _playRequests = Channel<PlayRequest>(Channel.BUFFERED)
     val playRequests = _playRequests.receiveAsFlow()
