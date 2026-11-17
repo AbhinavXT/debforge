@@ -162,6 +162,36 @@ fun SettingsScreen(onConnect: () -> Unit, viewModel: SettingsViewModel = hiltVie
             modifier = Modifier.padding(padding).fillMaxSize(),
             contentPadding = PaddingValues(bottom = 32.dp)
         ) {
+            item(key = "service") {
+                SectionCard(title = stringResource(R.string.set_service)) {
+                    AccountHeader(
+                        account = account,
+                        serviceName = activeInfo?.displayName,
+                        onManage = { activeInfo?.let { uriHandler.openUri(it.websiteUrl) } }
+                    )
+                    providers.forEach { row ->
+                        ProviderChoiceRow(
+                            name = row.info.displayName,
+                            signedIn = row.signedIn,
+                            selected = row.active,
+                            onClick = {
+                                viewModel.selectProvider(row.info.id)
+                                // Its sign-in is on the Library tab.
+                                if (!row.signedIn) onConnect()
+                            }
+                        )
+                    }
+                    if (providers.any { it.active && it.signedIn }) {
+                        RowDivider()
+                        SettingRow(
+                            icon = Icons.AutoMirrored.Rounded.Logout,
+                            title = stringResource(R.string.set_sign_out_of, activeName),
+                            onClick = { showSignOutDialog = true }
+                        )
+                    }
+                }
+            }
+
             item(key = "appearance") {
                 SectionCard(title = stringResource(R.string.set_appearance)) {
                     AppearanceContent(
@@ -386,35 +416,6 @@ fun SettingsScreen(onConnect: () -> Unit, viewModel: SettingsViewModel = hiltVie
                 }
             }
 
-            item(key = "service") {
-                SectionCard(title = stringResource(R.string.set_service)) {
-                    AccountHeader(
-                        account = account,
-                        serviceName = activeInfo?.displayName,
-                        onManage = { activeInfo?.let { uriHandler.openUri(it.websiteUrl) } }
-                    )
-                    providers.forEach { row ->
-                        ProviderChoiceRow(
-                            name = row.info.displayName,
-                            signedIn = row.signedIn,
-                            selected = row.active,
-                            onClick = {
-                                viewModel.selectProvider(row.info.id)
-                                // Its sign-in is on the Library tab.
-                                if (!row.signedIn) onConnect()
-                            }
-                        )
-                    }
-                    if (providers.any { it.active && it.signedIn }) {
-                        RowDivider()
-                        SettingRow(
-                            icon = Icons.AutoMirrored.Rounded.Logout,
-                            title = stringResource(R.string.set_sign_out_of, activeName),
-                            onClick = { showSignOutDialog = true }
-                        )
-                    }
-                }
-            }
             item(key = "trakt") { TraktSection() }
             item(key = "opensubtitles") { OpenSubtitlesSection() }
             item(key = "search_sources") { SearchSourcesSection() }
