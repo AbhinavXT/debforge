@@ -84,9 +84,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.setValue
@@ -355,6 +357,7 @@ private fun LinkOrSearchField(
     onSubmit: (String) -> Unit,
     onPaste: () -> Unit,
     focus: FocusRequester,
+    down: FocusRequester = FocusRequester.Default,
 ) {
     val keyboard = LocalSoftwareKeyboardController.current
     val source = remember { MutableInteractionSource() }
@@ -363,7 +366,7 @@ private fun LinkOrSearchField(
     TextField(
         value = field,
         onValueChange = { setField(it); if (it.text != input) onInput(it.text) },
-        modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp).focusRequester(focus).dpadEscape(field)
+        modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp).focusRequester(focus).focusProperties { this.down = down }.dpadEscape(field)
             .then(if (focused) Modifier.border(2.dp, MaterialTheme.colorScheme.primary, FieldShape) else Modifier),
         interactionSource = source,
         placeholder = { Text(stringResource(R.string.yt_field_hint), maxLines = 1) },
@@ -428,13 +431,29 @@ private fun ResultsState(
     }
     BoxWithConstraints(Modifier.fillMaxSize()) {
     val cols = resultColumns(maxWidth - 32.dp)
+    // Rows hold `cols` results, so a new column count moves every result to another row: keep the first visible result in view.
+    val headers = 1 + (if (r.channelUrl != null) 1 else 0) + (if (r.items.isEmpty()) 1 else 0)
+    val firstRow = remember { FocusRequester() }
+    var lastCols by rememberSaveable { mutableIntStateOf(cols) }
+    val anchor = remember { intArrayOf(-1) }
+    if (cols != lastCols) {
+        anchor[0] = (listState.firstVisibleItemIndex - headers).coerceAtLeast(0) * lastCols
+        lastCols = cols
+    }
+    LaunchedEffect(cols) {
+        if (anchor[0] >= 0) {
+            val row = (anchor[0] / cols + headers).coerceAtMost((listState.layoutInfo.totalItemsCount - 1).coerceAtLeast(0))
+            anchor[0] = -1
+            listState.scrollToItem(row)
+        }
+    }
     LazyColumn(
         Modifier.fillMaxSize(),
         state = listState,
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        item { LinkOrSearchField(input, onInput, onSubmit, onPaste, focus) }
+        item { LinkOrSearchField(input, onInput, onSubmit, onPaste, focus, down = if (r.items.isEmpty()) FocusRequester.Default else firstRow) }
         if (r.channelUrl != null) {
             item { Text(r.query, style = MaterialTheme.typography.titleMedium, maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.semantics { heading() }) }
         }
@@ -450,7 +469,7 @@ private fun ResultsState(
         }
         // Rows of `cols` results: one column on a phone, more on a tablet. Plain rows keep the list state, paging and focus order as they were.
         items(r.items.chunked(cols), key = { it.first().url }) { chunk ->
-            ResultCells(chunk, cols) { ResultRow(it, onClick = { onPick(it) }, onChannel = if (r.channelUrl == null) onChannel else null, onPlay = { x -> onPlay(x) }, streaming = streamingUrl == it.url) }
+            ResultCells(chunk, cols) { it, last -> ResultRow(it, onClick = { onPick(it) }, onChannel = if (r.channelUrl == null) onChannel else null, onPlay = { x -> onPlay(x) }, streaming = streamingUrl == it.url, lastColumn = last, rowFocus = firstRow.takeIf { _ -> it === r.items.first() }) }
         }
         if (r.loadingMore) item { LinearProgressIndicator(Modifier.fillMaxWidth().padding(vertical = 8.dp)) }
     }
@@ -461,14 +480,15 @@ private fun ResultsState(
 private fun resultColumns(width: androidx.compose.ui.unit.Dp): Int = ((width.value + 8f) / (320f + 8f)).toInt().coerceAtLeast(1)
 
 @Composable
-private fun ResultCells(chunk: List<YouTubeSearchResult>, cols: Int, cell: @Composable (YouTubeSearchResult) -> Unit) {
-    if (cols == 1) { chunk.forEach { cell(it) }; return }
+private fun ResultCells(chunk: List<YouTubeSearchResult>, cols: Int, cell: @Composable (YouTubeSearchResult, Boolean) -> Unit) {
+    if (cols == 1) { chunk.forEach { cell(it, true) }; return }
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        chunk.forEach { Box(Modifier.weight(1f)) { cell(it) } }
+        chunk.forEachIndexed { i, x -> Box(Modifier.weight(1f)) { cell(x, i == chunk.lastIndex) } }
         repeat(cols - chunk.size) { Spacer(Modifier.weight(1f)) }
     }
 }
 
+@OptIn(androidx.compose.ui.ExperimentalComposeUiApi::class)
 @Composable
 private fun ResultRow(
     r: YouTubeSearchResult,
@@ -476,11 +496,15 @@ private fun ResultRow(
     onChannel: ((String, String) -> Unit)? = null,
     onPlay: (YouTubeSearchResult) -> Unit,
     streaming: Boolean = false,
+    lastColumn: Boolean = false,
+    rowFocus: FocusRequester? = null,
 ) {
     val source = remember { MutableInteractionSource() }
     val channelUrl = r.channelUrl?.takeIf { onChannel != null && !r.channel.isNullOrBlank() }
     // Arrows do not find a small target lying inside the row's bounds, so the row, channel and play button are linked by hand.
-    val rowFocus = remember { FocusRequester() }
+    // RIGHT from the last column has nowhere to go; without this it jumps up to a header button.
+    val edge = if (lastColumn) FocusRequester.Cancel else FocusRequester.Default
+    val rowFocus = rowFocus ?: remember { FocusRequester() }
     val channelFocus = remember { FocusRequester() }
     val playFocus = remember { FocusRequester() }
     val channelSource = remember { MutableInteractionSource() }
@@ -491,7 +515,7 @@ private fun ResultRow(
             Modifier.matchParentSize().semantics { contentDescription = r.title }
                 .focusRequester(rowFocus)
                 // Play is disabled while streaming and cannot take focus; leave RIGHT to the default search then.
-                .focusProperties { right = if (channelUrl != null) channelFocus else if (!streaming) playFocus else FocusRequester.Default }
+                .focusProperties { right = if (channelUrl != null) channelFocus else if (!streaming) playFocus else edge }
                 .clickable(interactionSource = source, indication = androidx.compose.foundation.LocalIndication.current, role = Role.Button, onClick = onClick),
         )
         Row(
@@ -511,7 +535,7 @@ private fun ResultRow(
                             r.channel, style = style, color = color, maxLines = 1, overflow = TextOverflow.Ellipsis,
                             modifier = Modifier.clip(RoundedCornerShape(8.dp))
                                 .focusRequester(channelFocus)
-                                .focusProperties { left = rowFocus; right = if (!streaming) playFocus else FocusRequester.Default }
+                                .focusProperties { left = rowFocus; right = if (!streaming) playFocus else edge }
                                 .focusRing(channelSource, RoundedCornerShape(8.dp))
                                 .clickable(interactionSource = channelSource, indication = androidx.compose.foundation.LocalIndication.current, role = Role.Button) { onChannel?.invoke(r.channel, channelUrl) }
                                 .semantics { contentDescription = label }.padding(vertical = 6.dp),
@@ -525,7 +549,7 @@ private fun ResultRow(
             }
             IconButton(
                 onClick = { onPlay(r) }, enabled = !streaming,
-                modifier = Modifier.focusRequester(playFocus).focusProperties { left = if (channelUrl != null) channelFocus else rowFocus }
+                modifier = Modifier.focusRequester(playFocus).focusProperties { left = if (channelUrl != null) channelFocus else rowFocus; right = edge }
                     .focusRing(playSource, CircleShape),
                 interactionSource = playSource
             ) {
@@ -715,7 +739,7 @@ private fun EmptyState(
                 val cols = resultColumns(maxWidth)
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     trending.chunked(cols).forEach { chunk ->
-                        ResultCells(chunk, cols) { ResultRow(it, onClick = { onPick(it) }, onChannel = onChannel, onPlay = { x -> onPlayResult(x) }, streaming = streamingUrl == it.url) }
+                        ResultCells(chunk, cols) { it, last -> ResultRow(it, onClick = { onPick(it) }, onChannel = onChannel, onPlay = { x -> onPlayResult(x) }, streaming = streamingUrl == it.url, lastColumn = last) }
                     }
                 }
             }

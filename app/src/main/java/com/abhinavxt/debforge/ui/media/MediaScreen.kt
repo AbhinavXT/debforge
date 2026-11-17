@@ -72,6 +72,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -110,6 +111,7 @@ import com.abhinavxt.debforge.ui.components.BannerCard
 import com.abhinavxt.debforge.ui.components.GeneratedArt
 import com.abhinavxt.debforge.ui.components.HeaderNavActions
 import com.abhinavxt.debforge.ui.components.MessageState
+import com.abhinavxt.debforge.ui.components.holdFocus
 import com.abhinavxt.debforge.ui.components.ScreenHeader
 import com.abhinavxt.debforge.ui.components.SearchPill
 import com.abhinavxt.debforge.ui.theme.DebforgeTheme
@@ -331,17 +333,25 @@ internal fun MediaContent(
             }
 
             val items = state.current
+            // D-pad: deleting the last row removes the focused item; the empty message holds focus rather than letting it fall to the first tab.
+            // Only when the same tab, list and query had rows a moment ago (a chip or field the user is on keeps its focus).
+            val view = Triple(state.kind, state.audioList, state.query)
+            var hadItems by remember { mutableStateOf<Triple<*, *, *>?>(null) }
+            val held = hadItems == view
+            SideEffect { hadItems = if (items.isNotEmpty()) view else null }
             if (items.isEmpty() && state.kind == FileKind.Audio && state.audioList != null && state.query.isBlank()) {
                 MessageState(
                     icon = Icons.Rounded.MusicNote,
                     title = stringResource(R.string.media_list_empty_title),
-                    body = stringResource(R.string.media_list_empty_body)
+                    body = stringResource(R.string.media_list_empty_body),
+                    modifier = Modifier.holdFocus(held)
                 )
             } else if (items.isEmpty()) {
                 MessageState(
                     icon = Icons.Rounded.Download,
                     title = stringResource(R.string.media_no_match_title),
-                    body = stringResource(R.string.media_no_match_body, state.query)
+                    body = stringResource(R.string.media_no_match_body, state.query),
+                    modifier = Modifier.holdFocus(held)
                 )
             } else {
                 val min = if (state.kind == FileKind.Video) 168.dp else 340.dp
