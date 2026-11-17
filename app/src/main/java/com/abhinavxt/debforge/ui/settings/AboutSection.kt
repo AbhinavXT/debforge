@@ -177,7 +177,7 @@ private val LIBRARIES = listOf(
     "Kotlin and kotlinx.coroutines" to "Apache-2.0",
     "Coil" to "Apache-2.0",
     "Media3 (ExoPlayer)" to "Apache-2.0",
-    "Jellyfin FFmpeg decoder for Media3" to "Apache-2.0, bundles FFmpeg (LGPL-2.1+)",
+    "Jellyfin FFmpeg decoder for Media3" to "GPL-3.0 (bundles FFmpeg)",
     "NewPipeExtractor" to "GPL-3.0"
 )
 
