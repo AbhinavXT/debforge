@@ -34,7 +34,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.ui.Alignment
 import androidx.compose.material3.NavigationRail
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.material3.NavigationRailItem
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.material3.Scaffold
@@ -315,6 +320,7 @@ fun HomeScreen(signedIn: Boolean) {
     val miniFocus = remember { FocusRequester() }
     val playerOpen = nowPlaying && audio.track != null
     var wasOpen by remember { mutableStateOf(false) }
+    var miniHasFocus by remember { mutableStateOf(false) }
     // Only for D-pad/keyboard use: on touch a programmatic focus would leave a focus ring showing.
     val inputMode = androidx.compose.ui.platform.LocalInputModeManager.current
     LaunchedEffect(playerOpen) {
@@ -328,7 +334,16 @@ fun HomeScreen(signedIn: Boolean) {
             // Wait for the screen underneath to become focusable again.
             androidx.compose.runtime.withFrameNanos { }
             androidx.compose.runtime.withFrameNanos { }
-            if (keys) runCatching { miniFocus.requestFocus() }
+            // The first requests can land before the screen underneath is focusable again (focus then falls to its first item),
+            // so ask again each frame until the mini player has it.
+            if (keys) {
+                miniHasFocus = false
+                var tries = 0
+                while (!miniHasFocus && tries++ < 12) {
+                    runCatching { miniFocus.requestFocus() }
+                    androidx.compose.runtime.withFrameNanos { }
+                }
+            }
         }
     }
 
@@ -344,6 +359,7 @@ fun HomeScreen(signedIn: Boolean) {
                 onToggle = shell.audio::toggle,
                 onNext = shell.audio::next,
                 onExpand = { nowPlaying = true },
+                modifier = Modifier.onFocusChanged { if (it.hasFocus) miniHasFocus = true },
                 sharedScope = if (sharedMotion) sharedScope else null,
                 expanded = nowPlaying,
                 expandFocus = miniFocus
@@ -362,6 +378,12 @@ fun HomeScreen(signedIn: Boolean) {
                     modifier = Modifier.fillMaxHeight(),
                     containerColor = MaterialTheme.colorScheme.surfaceContainer
                 ) {
+                    // Scrolls so every item stays reachable at short heights (phone landscape).
+                    Column(
+                        Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState()),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
                     HomeTab.entries.sortedBy { it == HomeTab.Settings }.forEach { tab ->
                         val selected = current?.hierarchy?.any { it.route == tab.route } == true
                         val railSource = remember { MutableInteractionSource() }
@@ -373,6 +395,7 @@ fun HomeScreen(signedIn: Boolean) {
                             icon = { Icon(if (selected) tab.selectedIcon else tab.icon, contentDescription = null) },
                             label = { Text(stringResource(tab.labelRes), maxLines = 1, overflow = TextOverflow.Ellipsis) }
                         )
+                    }
                     }
                 }
                 Column(Modifier.weight(1f).fillMaxHeight()) {

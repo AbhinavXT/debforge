@@ -99,6 +99,7 @@ import com.abhinavxt.debforge.domain.MediaKind
 import com.abhinavxt.debforge.ui.components.HeaderNavActions
 import com.abhinavxt.debforge.ui.components.IconBadge
 import com.abhinavxt.debforge.ui.components.MessageState
+import com.abhinavxt.debforge.ui.components.holdFocus
 import com.abhinavxt.debforge.ui.components.ScreenHeader
 import com.abhinavxt.debforge.ui.components.SearchPill
 import androidx.compose.runtime.Composable
@@ -503,20 +504,25 @@ fun BrowseScreen(
                         }
                     }
             ) {
+            // D-pad: when the list empties or fails while a row had focus, the message holds focus instead of it falling to the first tab.
+            var hadItems by remember { mutableStateOf(false) }
+            val held = hadItems
+            SideEffect { hadItems = state.items.isNotEmpty() }
             when {
                 state.isInitialLoad -> {
                     KeepHeaderOpen(scroll)
                     if (state.posterView) PosterSkeleton() else ListSkeleton()
                 }
                 state.error != null && state.items.isEmpty() -> PullableFill(scroll) {
-                    ErrorState(state.error!!) { viewModel.clearError(); viewModel.refresh() }
+                    ErrorState(state.error!!, Modifier.holdFocus(held)) { viewModel.clearError(); viewModel.refresh() }
                 }
                 state.items.isEmpty() -> PullableFill(scroll) {
                     EmptyState(
                         providerName = state.providerName,
                         hint = state.emptyHint,
                         local = state.local,
-                        onAdd = onAdd
+                        onAdd = onAdd,
+                        modifier = Modifier.holdFocus(held)
                     )
                 }
                 state.posterView -> {
@@ -1001,8 +1007,9 @@ private fun NoMatches(query: String) {
 
 /** First-run friendly: says what goes here and offers the obvious next step. */
 @Composable
-private fun EmptyState(providerName: String, hint: String, local: Boolean, onAdd: () -> Unit) {
+private fun EmptyState(providerName: String, hint: String, local: Boolean, onAdd: () -> Unit, modifier: Modifier = Modifier) {
     MessageState(
+        modifier = modifier,
         icon = Icons.Rounded.VideoLibrary,
         title = stringResource(R.string.browse_empty_title),
         body = if (local) hint else stringResource(
@@ -1020,8 +1027,9 @@ private fun EmptyState(providerName: String, hint: String, local: Boolean, onAdd
 }
 
 @Composable
-private fun ErrorState(message: String, onRetry: () -> Unit) {
+private fun ErrorState(message: String, modifier: Modifier = Modifier, onRetry: () -> Unit) {
     MessageState(
+        modifier = modifier,
         icon = Icons.Rounded.CloudOff,
         title = message,
         body = null,
