@@ -10,6 +10,7 @@ import com.abhinavxt.debforge.ui.pluralRes
 import androidx.compose.ui.res.stringResource
 import com.abhinavxt.debforge.R
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -263,6 +264,8 @@ fun Poster(group: TitleGroup, meta: MediaMeta?, modifier: Modifier = Modifier, d
         modifier = modifier
             .aspectRatio(2f / 3f)
             .clip(RoundedCornerShape(16.dp))
+            // Near-black artwork would otherwise melt into a black (AMOLED) background.
+            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(16.dp))
     ) {
         GeneratedArt(
             title = group.title,
