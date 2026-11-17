@@ -395,10 +395,11 @@ fun TitleSheet(
                         )
                 }
                 val headerBottom: @Composable () -> Unit = {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         Button(
                             onClick = { onDownload(pending) },
                             enabled = pending.isNotEmpty(),
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.weight(1f)
                         ) {
                             Icon(
                                 if (pending.isEmpty()) Icons.Rounded.Check else Icons.Rounded.Download,
@@ -417,6 +418,21 @@ fun TitleSheet(
                                 overflow = TextOverflow.Ellipsis
                             )
                         }
+                        if (following != null) {
+                            val followCd = stringResource(if (following) R.string.follow_following else R.string.follow_action)
+                            val followIcon: @Composable () -> Unit = {
+                                Icon(
+                                    if (following) Icons.Rounded.NotificationsActive else Icons.Rounded.NotificationAdd,
+                                    contentDescription = followCd
+                                )
+                            }
+                            if (following) {
+                                FilledTonalIconButton(onClick = onToggleFollow, modifier = Modifier.size(48.dp), content = followIcon)
+                            } else {
+                                androidx.compose.material3.OutlinedIconButton(onClick = onToggleFollow, modifier = Modifier.size(48.dp), content = followIcon)
+                            }
+                        }
+                    }
                 }
                 if (stacked) {
                     Column(Modifier.padding(horizontal = 20.dp).padding(bottom = 12.dp)) {
@@ -436,26 +452,8 @@ fun TitleSheet(
                     }
                 }
                 Column(Modifier.padding(horizontal = 20.dp)) {
-                    if (following != null || zips.size == 1) {
+                    if (zips.size == 1) {
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                            if (following != null) {
-                                val followIcon = if (following) Icons.Rounded.NotificationsActive else Icons.Rounded.NotificationAdd
-                                val followContent: @Composable androidx.compose.foundation.layout.RowScope.() -> Unit = {
-                                    Icon(followIcon, contentDescription = null, modifier = Modifier.size(18.dp))
-                                    Spacer(Modifier.width(8.dp))
-                                    Text(
-                                        stringResource(if (following) R.string.follow_following else R.string.follow_action),
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis
-                                    )
-                                }
-                                if (following) {
-                                    FilledTonalButton(onClick = onToggleFollow, modifier = Modifier.weight(1f), content = followContent)
-                                } else {
-                                    OutlinedButton(onClick = onToggleFollow, modifier = Modifier.weight(1f), content = followContent)
-                                }
-                            }
-                            // A single archive shares the row with Follow.
                             if (zips.size == 1) {
                                 val zip = zips.first()
                                 val zipState = downloadStates[zip.id]
@@ -538,7 +536,7 @@ fun TitleSheet(
                     val seasonPending = seasonFiles.filter { downloadStates[it.item.id] == null }.map { it.item }
                     item(key = "season:$season") {
                         Row(
-                            Modifier.fillMaxWidth().padding(start = 24.dp, end = 12.dp, top = 12.dp, bottom = 4.dp),
+                            Modifier.fillMaxWidth().padding(start = 16.dp, end = 8.dp, top = 12.dp, bottom = 4.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
