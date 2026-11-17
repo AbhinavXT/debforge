@@ -243,7 +243,7 @@ private fun PosterCard(
         )
         Text(
             text = if (allDone) stringResource(R.string.poster_downloaded) else group.subtitleText(withResolution = false),
-            style = MaterialTheme.typography.labelMedium,
+            style = MaterialTheme.typography.bodySmall,
             color = if (allDone) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
