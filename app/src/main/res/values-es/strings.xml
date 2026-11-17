@@ -1020,4 +1020,8 @@
     <string name="set_folder_app_storage">Almacenamiento de la app</string>
     <string name="usage_direct">Enlaces directos</string>
     <string name="usage_tap_bar">Toca una barra para ver ese día</string>
+    <string name="about_licences">Licencias de código abierto</string>
+    <string name="about_licences_intro">DebForge es software libre bajo la GNU GPL v3. Está hecho con estas bibliotecas de código abierto.</string>
+    <string name="about_whats_new">Novedades</string>
+    <string name="about_whats_new_detail">Notas de esta versión en GitHub</string>
 </resources>

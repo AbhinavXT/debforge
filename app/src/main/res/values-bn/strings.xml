@@ -972,4 +972,8 @@
     <string name="set_folder_app_storage">অ্যাপ স্টোরেজ</string>
     <string name="usage_direct">সরাসরি লিংক</string>
     <string name="usage_tap_bar">কোনো দিনের বিবরণ দেখতে বারে ট্যাপ করুন</string>
+    <string name="about_licences">ওপেন-সোর্স লাইসেন্স</string>
+    <string name="about_licences_intro">DebForge হলো GNU GPL v3 এর অধীনে মুক্ত সফটওয়্যার। এটি নিচের ওপেন-সোর্স লাইব্রেরি দিয়ে তৈরি।</string>
+    <string name="about_whats_new">নতুন কী আছে</string>
+    <string name="about_whats_new_detail">GitHub-এ এই সংস্করণের রিলিজ নোট</string>
 </resources>

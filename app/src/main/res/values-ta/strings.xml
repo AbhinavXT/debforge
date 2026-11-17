@@ -972,4 +972,8 @@
     <string name="set_folder_app_storage">ஆப் சேமிப்பகம்</string>
     <string name="usage_direct">நேரடி இணைப்புகள்</string>
     <string name="usage_tap_bar">அந்த நாளைப் பார்க்க பட்டையைத் தட்டவும்</string>
+    <string name="about_licences">திறந்த மூல உரிமங்கள்</string>
+    <string name="about_licences_intro">DebForge GNU GPL v3 கீழ் உள்ள கட்டற்ற மென்பொருள். இது இந்த திறந்த மூல நூலகங்களால் உருவாக்கப்பட்டது.</string>
+    <string name="about_whats_new">புதியவை என்ன</string>
+    <string name="about_whats_new_detail">GitHub இல் இந்தப் பதிப்பின் வெளியீட்டுக் குறிப்புகள்</string>
 </resources>

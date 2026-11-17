@@ -924,4 +924,8 @@
     <string name="set_folder_app_storage">Penyimpanan aplikasi</string>
     <string name="usage_direct">Tautan langsung</string>
     <string name="usage_tap_bar">Ketuk batang untuk melihat hari itu</string>
+    <string name="about_licences">Lisensi sumber terbuka</string>
+    <string name="about_licences_intro">DebForge adalah perangkat lunak bebas di bawah GNU GPL v3. Dibangun dengan pustaka sumber terbuka berikut.</string>
+    <string name="about_whats_new">Yang baru</string>
+    <string name="about_whats_new_detail">Catatan rilis versi ini di GitHub</string>
 </resources>

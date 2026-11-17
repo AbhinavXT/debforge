@@ -1020,4 +1020,8 @@
     <string name="set_folder_app_storage">Armazenamento do app</string>
     <string name="usage_direct">Links diretos</string>
     <string name="usage_tap_bar">Toque em uma barra para ver o dia</string>
+    <string name="about_licences">Licenças de código aberto</string>
+    <string name="about_licences_intro">O DebForge é software livre sob a GNU GPL v3. Ele usa estas bibliotecas de código aberto.</string>
+    <string name="about_whats_new">Novidades</string>
+    <string name="about_whats_new_detail">Notas desta versão no GitHub</string>
 </resources>

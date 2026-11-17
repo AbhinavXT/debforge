@@ -972,4 +972,8 @@
     <string name="set_folder_app_storage">Uygulama depolaması</string>
     <string name="usage_direct">Doğrudan bağlantılar</string>
     <string name="usage_tap_bar">O günü görmek için bir çubuğa dokunun</string>
+    <string name="about_licences">Açık kaynak lisansları</string>
+    <string name="about_licences_intro">DebForge, GNU GPL v3 altında özgür yazılımdır. Şu açık kaynak kitaplıklarla geliştirilmiştir.</string>
+    <string name="about_whats_new">Yenilikler</string>
+    <string name="about_whats_new_detail">Bu sürümün GitHub\'daki sürüm notları</string>
 </resources>

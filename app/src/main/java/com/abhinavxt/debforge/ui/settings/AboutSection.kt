@@ -16,6 +16,11 @@ import com.abhinavxt.debforge.ui.components.SectionCard
 import com.abhinavxt.debforge.ui.components.SettingRow
 import com.abhinavxt.debforge.ui.components.SwitchSettingRow
 import android.content.Context
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material.icons.rounded.Description
+import androidx.compose.material.icons.rounded.NewReleases
 import android.content.Intent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -56,6 +61,7 @@ fun AboutSection(viewModel: UpdateViewModel = hiltViewModel()) {
     val uriHandler = LocalUriHandler.current
     val context = LocalContext.current
     var crashReport by remember { mutableStateOf<String?>(null) }
+    var showLicences by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) { crashReport = withContext(Dispatchers.IO) { CrashReporter.pending(context) } }
 
     SectionCard(title = stringResource(R.string.about_title)) {
@@ -120,6 +126,28 @@ fun AboutSection(viewModel: UpdateViewModel = hiltViewModel()) {
                 )
             }
         )
+        RowDivider()
+        SettingRow(
+            icon = Icons.Rounded.NewReleases,
+            title = stringResource(R.string.about_whats_new),
+            subtitle = stringResource(R.string.about_whats_new_detail),
+            // Release notes live on the version's GitHub release; the app ships no changelog of its own.
+            onClick = { uriHandler.openUri("${viewModel.repoUrl}/releases/tag/v${viewModel.currentVersion.substringBefore('-')}") },
+            trailing = {
+                Icon(
+                    Icons.AutoMirrored.Rounded.OpenInNew,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
+        )
+        RowDivider()
+        SettingRow(
+            icon = Icons.Rounded.Description,
+            title = stringResource(R.string.about_licences),
+            onClick = { showLicences = true }
+        )
         crashReport?.let { report ->
             RowDivider()
             SettingRow(
@@ -129,6 +157,45 @@ fun AboutSection(viewModel: UpdateViewModel = hiltViewModel()) {
             )
         }
     }
+    if (showLicences) LicencesDialog { showLicences = false }
+}
+
+/** Main libraries and their licences, shown as a dialog. Keep in step with app/build.gradle.kts. */
+private val LIBRARIES = listOf(
+    "AndroidX (Core, Lifecycle, Activity, Navigation, Room, DataStore, WebKit)" to "Apache-2.0",
+    "Jetpack Compose and Material 3" to "Apache-2.0",
+    "Hilt / Dagger" to "Apache-2.0",
+    "Retrofit, OkHttp, Moshi" to "Apache-2.0",
+    "Kotlin and kotlinx.coroutines" to "Apache-2.0",
+    "Coil" to "Apache-2.0",
+    "Media3 (ExoPlayer)" to "Apache-2.0",
+    "Jellyfin FFmpeg decoder for Media3" to "Apache-2.0, bundles FFmpeg (LGPL-2.1+)",
+    "NewPipeExtractor" to "GPL-3.0"
+)
+
+@Composable
+private fun LicencesDialog(onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.about_licences)) },
+        text = {
+            Column(Modifier.verticalScroll(rememberScrollState())) {
+                Text(
+                    stringResource(R.string.about_licences_intro),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(bottom = 12.dp)
+                )
+                LIBRARIES.forEach { (name, licence) ->
+                    Column(Modifier.padding(vertical = 6.dp)) {
+                        Text(name, style = MaterialTheme.typography.bodyLarge)
+                        Text(licence, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+            }
+        },
+        confirmButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_done)) } }
+    )
 }
 
 /** Hands the (already redacted) report to whatever app the user picks. */

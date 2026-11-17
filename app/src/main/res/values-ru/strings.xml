@@ -1068,4 +1068,8 @@
     <string name="set_folder_app_storage">Хранилище приложения</string>
     <string name="usage_direct">Прямые ссылки</string>
     <string name="usage_tap_bar">Нажмите на столбец, чтобы увидеть день</string>
+    <string name="about_licences">Лицензии открытого ПО</string>
+    <string name="about_licences_intro">DebForge — свободное ПО под лицензией GNU GPL v3. Приложение использует эти библиотеки с открытым кодом.</string>
+    <string name="about_whats_new">Что нового</string>
+    <string name="about_whats_new_detail">Примечания к этой версии на GitHub</string>
 </resources>

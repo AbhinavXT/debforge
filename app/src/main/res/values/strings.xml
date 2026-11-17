@@ -974,4 +974,8 @@
     <string name="set_folder_app_storage">App storage</string>
     <string name="usage_direct">Direct links</string>
     <string name="usage_tap_bar">Tap a bar to see that day</string>
+    <string name="about_licences">Open-source licences</string>
+    <string name="about_licences_intro">DebForge is free software under the GNU GPL v3. It is built with these open-source libraries.</string>
+    <string name="about_whats_new">What’s new</string>
+    <string name="about_whats_new_detail">Release notes for this version on GitHub</string>
 </resources>

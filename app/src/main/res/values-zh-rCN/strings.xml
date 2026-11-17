@@ -924,4 +924,8 @@
     <string name="set_folder_app_storage">应用存储</string>
     <string name="usage_direct">直接链接</string>
     <string name="usage_tap_bar">点按柱形可查看当天数据</string>
+    <string name="about_licences">开源许可</string>
+    <string name="about_licences_intro">DebForge 是遵循 GNU GPL v3 的自由软件，使用了以下开源库。</string>
+    <string name="about_whats_new">新功能</string>
+    <string name="about_whats_new_detail">GitHub 上此版本的发行说明</string>
 </resources>
