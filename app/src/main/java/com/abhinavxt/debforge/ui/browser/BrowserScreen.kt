@@ -5,7 +5,6 @@ import android.app.Activity
 import android.content.pm.ActivityInfo
 import android.graphics.Bitmap
 import android.text.format.DateUtils
-import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
@@ -95,7 +94,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.focus.FocusDirection
-import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.key.Key
@@ -182,7 +181,7 @@ fun BrowserScreen(onMagnet: (String) -> Unit, onOpenDownloads: () -> Unit, onOpe
     ) { padding ->
         Column(Modifier.padding(padding).fillMaxSize()) {
             Row(
-                Modifier.fillMaxWidth().padding(horizontal = 4.dp).onKeyEvent { e ->
+                Modifier.fillMaxWidth().padding(horizontal = 4.dp).onPreviewKeyEvent { e ->
                     // D-pad down from the bar enters the page; the page is not a focus target until then.
                     if (e.key == Key.DirectionDown) {
                         if (e.type == KeyEventType.KeyDown) webView?.let { w ->
@@ -232,7 +231,19 @@ fun BrowserScreen(onMagnet: (String) -> Unit, onOpenDownloads: () -> Unit, onOpe
             }
             Box(Modifier.weight(1f)) {
                 AndroidView(
-                    modifier = Modifier.fillMaxSize(),
+                    // The page scrolls with the arrows; at its ends they leave it instead of being swallowed.
+                    modifier = Modifier.fillMaxSize().onPreviewKeyEvent { e ->
+                        val w = webView
+                        val dir = when (e.key) {
+                            Key.DirectionDown -> if (w != null && !w.canScrollVertically(1)) FocusDirection.Down else null
+                            Key.DirectionUp -> if (w != null && !w.canScrollVertically(-1)) FocusDirection.Up else null
+                            else -> null
+                        }
+                        if (dir == null) false else {
+                            if (e.type == KeyEventType.KeyDown) focus.moveFocus(dir)
+                            true
+                        }
+                    },
                     factory = { ctx ->
                         WebView(ctx).apply {
                             layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
@@ -249,18 +260,6 @@ fun BrowserScreen(onMagnet: (String) -> Unit, onOpenDownloads: () -> Unit, onOpe
                             setOnTouchListener { v, ev ->
                                 if (ev.action == MotionEvent.ACTION_DOWN) { v.isFocusable = true; v.isFocusableInTouchMode = true }
                                 false
-                            }
-                            // At the end of the page the arrows leave it instead of being swallowed.
-                            setOnKeyListener { v, keyCode, ev ->
-                                val dir = when (keyCode) {
-                                    KeyEvent.KEYCODE_DPAD_DOWN -> if (!v.canScrollVertically(1)) FocusDirection.Down else null
-                                    KeyEvent.KEYCODE_DPAD_UP -> if (!v.canScrollVertically(-1)) FocusDirection.Up else null
-                                    else -> null
-                                }
-                                if (dir == null) false else {
-                                    if (ev.action == KeyEvent.ACTION_DOWN) focus.moveFocus(dir)
-                                    true
-                                }
                             }
                             webViewClient = object : WebViewClient() {
                                 override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
