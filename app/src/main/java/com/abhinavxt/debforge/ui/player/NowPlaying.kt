@@ -2,7 +2,11 @@ package com.abhinavxt.debforge.ui.player
 
 import android.provider.Settings
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.EnterExitState
+import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.snap
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.MarqueeSpacing
 import androidx.compose.foundation.background
@@ -94,7 +98,8 @@ fun NowPlaying(
     onSleep: (Int) -> Unit,
     onSkipTo: (Int) -> Unit,
     onClose: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    share: ArtworkShare? = null
 ) {
     val track = state.track ?: return
     Surface(modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
@@ -108,7 +113,7 @@ fun NowPlaying(
                 if (wide) {
                     Row(Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(32.dp)) {
                         Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-                            Artwork(state, Modifier.fillMaxWidth(0.7f).widthIn(max = 360.dp))
+                            Artwork(state, share, Modifier.fillMaxWidth(0.7f).widthIn(max = 360.dp))
                         }
                         Column(Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
                             Controls(state, onToggle, onNext, onPrevious, onSeek, onShuffle, onRepeat, onSpeed, onSleep)
@@ -126,7 +131,7 @@ fun NowPlaying(
                                 verticalArrangement = Arrangement.Center,
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
-                                Artwork(state, Modifier.fillMaxWidth(0.85f))
+                                Artwork(state, share, Modifier.fillMaxWidth(0.85f))
                                 Controls(state, onToggle, onNext, onPrevious, onSeek, onShuffle, onRepeat, onSpeed, onSleep, Modifier.padding(top = 24.dp))
                             }
                         }
@@ -137,14 +142,26 @@ fun NowPlaying(
     }
 }
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-private fun Artwork(state: AudioState, modifier: Modifier) {
+private fun Artwork(state: AudioState, share: ArtworkShare?, modifier: Modifier) {
     val cs = MaterialTheme.colorScheme
     val shape = RoundedCornerShape(24.dp)
+    // The shadow waits for the flight to land so it never frames an empty slot.
+    val enter = share?.visibility?.transition
+    val settled = share == null || (enter!!.currentState == EnterExitState.Visible && enter.targetState == EnterExitState.Visible &&
+        !share.transition.isTransitionActive)
+    val elevation by animateDpAsState(
+        if (settled) 16.dp else 0.dp,
+        animationSpec = if (settled) tween(200) else snap(),
+        label = "artShadow"
+    )
+    val visible = share?.visibility?.transition?.targetState != EnterExitState.PostExit
     Crossfade(state.track, modifier.aspectRatio(1f), label = "art") { t ->
         if (t != null) TrackArt(
             t,
-            Modifier.fillMaxSize().shadow(16.dp, shape, ambientColor = cs.surfaceTint, spotColor = cs.surfaceTint).clip(shape)
+            Modifier.fillMaxSize().shadow(elevation, shape, ambientColor = cs.surfaceTint, spotColor = cs.surfaceTint)
+                .sharedArtwork(share?.transition, t.id, visible).clip(ArtShape)
         )
     }
 }
@@ -334,7 +351,7 @@ private fun SeekBar(positionMs: Long, durationMs: Long, onSeek: (Long) -> Unit) 
 /** The title scrolls only when the system animations are on; with them off it stays one line with an ellipsis. */
 internal fun titleMarqueeEnabled(animatorDurationScale: Float): Boolean = animatorDurationScale > 0f
 
-private fun animatorDurationScale(context: android.content.Context): Float =
+internal fun animatorDurationScale(context: android.content.Context): Float =
     Settings.Global.getFloat(context.contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f)
 
 @Composable

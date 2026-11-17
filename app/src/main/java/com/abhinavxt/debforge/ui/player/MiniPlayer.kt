@@ -1,7 +1,24 @@
 package com.abhinavxt.debforge.ui.player
 
 import android.net.Uri
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.RoundRect
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Outline
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -41,6 +58,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.SubcomposeAsyncImage
+import coil.request.ImageRequest
+import coil.imageLoader
+import coil.memory.MemoryCache
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.foundation.Image
+import androidx.compose.ui.layout.ContentScale
 import com.abhinavxt.debforge.R
 import com.abhinavxt.debforge.player.AudioState
 import com.abhinavxt.debforge.player.AudioTrack
@@ -53,13 +76,75 @@ internal fun TrackArt(track: AudioTrack, modifier: Modifier = Modifier) {
     val fallback = @Composable { GeneratedArt(title = track.title, tag = "", showTitle = false, modifier = Modifier.fillMaxSize()) }
     Box(modifier.clearAndSetSemantics { }) {
         val file = track.artworkFile?.takeIf { it.exists() }
-        if (file == null) fallback() else SubcomposeAsyncImage(
-            model = file,
-            contentDescription = null,
-            loading = { fallback() },
-            error = { fallback() },
-            contentScale = androidx.compose.ui.layout.ContentScale.Crop,
-            modifier = Modifier.fillMaxSize()
+        if (file == null) fallback() else {
+            // One cache key at every size. The bitmap the mini player already decoded is read straight from
+            // the memory cache and drawn underneath, so the big artwork has pixels on its very first frame.
+            val key = "art:${file.path}:${file.lastModified()}"
+            val context = LocalContext.current
+            val cached = remember(key) { context.imageLoader.memoryCache?.get(MemoryCache.Key(key))?.bitmap }
+            val request = remember(key) { ImageRequest.Builder(context).data(file).memoryCacheKey(key).build() }
+            Box(Modifier.fillMaxSize()) {
+                if (cached != null) Image(cached.asImageBitmap(), null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
+                SubcomposeAsyncImage(
+                    model = request,
+                    contentDescription = null,
+                    loading = { if (cached == null) fallback() },
+                    error = { fallback() },
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+        }
+    }
+}
+
+/** The scopes the mini player and the full player need to share the artwork; null means no shared transition. */
+@OptIn(ExperimentalSharedTransitionApi::class)
+class ArtworkShare(val transition: SharedTransitionScope, val visibility: AnimatedVisibilityScope)
+
+private const val ART_SHARE_MS = 350
+private const val ART_MINI_DP = 44f
+private const val ART_FULL_DP = 300f
+
+/** Corner radius (dp) for artwork of the given width: the mini player's 12 growing to the full player's 24. */
+internal fun artCornerDp(widthDp: Float): Float {
+    val f = ((widthDp - ART_MINI_DP) / (ART_FULL_DP - ART_MINI_DP)).coerceIn(0f, 1f)
+    return 12f + (24f - 12f) * f
+}
+
+/** No clip in the overlay: the artwork clips itself with [ArtShape], which follows the animated size. */
+@OptIn(ExperimentalSharedTransitionApi::class)
+private object NoOverlayClip : SharedTransitionScope.OverlayClip {
+    override fun getClipPath(
+        sharedContentState: SharedTransitionScope.SharedContentState,
+        bounds: Rect,
+        layoutDirection: LayoutDirection,
+        density: Density
+    ): Path? = null
+}
+
+/** Rounded corners that grow with the artwork's own width, so they animate cleanly during the flight. */
+internal object ArtShape : Shape {
+    override fun createOutline(size: Size, layoutDirection: LayoutDirection, density: Density): Outline {
+        val r = artCornerDp(size.width / density.density) * density.density
+        return Outline.Rounded(RoundRect(0f, 0f, size.width, size.height, CornerRadius(r)))
+    }
+}
+
+/**
+ * Marks this artwork as the shared element for [trackId]. [visible] is managed by the caller so both
+ * sides stay composed for the whole flight. Put it after the clip so the clip only applies in place.
+ */
+@OptIn(ExperimentalSharedTransitionApi::class)
+@Composable
+internal fun Modifier.sharedArtwork(scope: SharedTransitionScope?, trackId: String, visible: Boolean): Modifier {
+    if (scope == null) return this
+    return with(scope) {
+        this@sharedArtwork.sharedElementWithCallerManagedVisibility(
+            rememberSharedContentState("art-$trackId"),
+            visible,
+            boundsTransform = { _, _ -> tween(ART_SHARE_MS, easing = FastOutSlowInEasing) },
+            clipInOverlayDuringTransition = NoOverlayClip
         )
     }
 }
@@ -84,13 +169,18 @@ internal fun PlayPauseIcon(playing: Boolean, modifier: Modifier = Modifier) {
 }
 
 /** 64dp bar above the navigation bar: artwork, title, play/pause, next; tap to expand. */
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun MiniPlayer(
     state: AudioState,
     onToggle: () -> Unit,
     onNext: () -> Unit,
     onExpand: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    /** The shared transition scope; null when no shared transition runs. */
+    sharedScope: SharedTransitionScope? = null,
+    /** True while the full player is open: the artwork then lives there and this slot stays empty. */
+    expanded: Boolean = false
 ) {
     val track = state.track ?: return
     val shape = RoundedCornerShape(16.dp)
@@ -109,7 +199,11 @@ fun MiniPlayer(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                TrackArt(track, Modifier.size(44.dp).clip(MaterialTheme.shapes.small))
+                if (sharedScope == null) TrackArt(track, Modifier.size(44.dp).clip(ArtShape))
+                else TrackArt(
+                    track,
+                    Modifier.size(44.dp).sharedArtwork(sharedScope, track.id, visible = !expanded).clip(ArtShape)
+                )
                 Crossfade(track, Modifier.weight(1f), label = "track") { t ->
                     Column {
                         Text(t.title, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
@@ -149,6 +243,7 @@ internal val previewState = AudioState(
     index = 0, isPlaying = true, positionMs = 95_000, durationMs = 243_000
 )
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Preview(showBackground = true)
 @Composable
 private fun MiniPlayerPreview() = DebforgeTheme { MiniPlayer(previewState, {}, {}, {}) }

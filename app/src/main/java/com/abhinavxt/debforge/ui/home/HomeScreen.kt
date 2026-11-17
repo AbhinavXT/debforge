@@ -81,6 +81,15 @@ import com.abhinavxt.debforge.player.AudioTrack
 import com.abhinavxt.debforge.download.LocalFiles
 import com.abhinavxt.debforge.download.artworkFile
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionLayout
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeOut
+import com.abhinavxt.debforge.ui.player.ArtworkShare
+import com.abhinavxt.debforge.ui.player.animatorDurationScale
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
@@ -124,7 +133,7 @@ private enum class HomeTab(
  * means the foreground download notification won't be visible — the engine
  * still runs.
  */
-@OptIn(ExperimentalLayoutApi::class)
+@OptIn(ExperimentalLayoutApi::class, ExperimentalSharedTransitionApi::class)
 @Composable
 fun HomeScreen(signedIn: Boolean) {
     NotificationPermissionRequest()
@@ -269,6 +278,11 @@ fun HomeScreen(signedIn: Boolean) {
         }
     }
 
+    // Reduced motion (animator scale 0): no shared transition, the full player just switches.
+    val sharedMotion = animatorDurationScale(LocalContext.current) > 0f
+
+    SharedTransitionLayout(Modifier.fillMaxSize()) {
+    val sharedScope = this
     val miniPlayer: @Composable () -> Unit = {
         AnimatedVisibility(
             visible = audio.track != null,
@@ -279,7 +293,9 @@ fun HomeScreen(signedIn: Boolean) {
                 state = audio,
                 onToggle = shell.audio::toggle,
                 onNext = shell.audio::next,
-                onExpand = { nowPlaying = true }
+                onExpand = { nowPlaying = true },
+                sharedScope = if (sharedMotion) sharedScope else null,
+                expanded = nowPlaying
             )
         }
     }
@@ -332,8 +348,8 @@ fun HomeScreen(signedIn: Boolean) {
 
         AnimatedVisibility(
             visible = nowPlaying && audio.track != null,
-            enter = slideInVertically { it },
-            exit = slideOutVertically { it }
+            enter = if (sharedMotion) fadeIn(tween(350)) else EnterTransition.None,
+            exit = if (sharedMotion) fadeOut(tween(350)) else ExitTransition.None
         ) {
             BackHandler { nowPlaying = false }
             Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface).windowInsetsPadding(WindowInsets.systemBars)) {
@@ -348,10 +364,12 @@ fun HomeScreen(signedIn: Boolean) {
                     onSpeed = shell.audio::setSpeed,
                     onSleep = shell.audio::setSleepTimer,
                     onSkipTo = shell.audio::skipTo,
-                    onClose = { nowPlaying = false }
+                    onClose = { nowPlaying = false },
+                    share = if (sharedMotion) ArtworkShare(sharedScope, this@AnimatedVisibility) else null
                 )
             }
         }
+    }
     }
 }
 
