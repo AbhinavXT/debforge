@@ -55,6 +55,7 @@ import androidx.compose.material.icons.rounded.ContentPaste
 import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.icons.rounded.ErrorOutline
 import androidx.compose.material.icons.rounded.FolderOpen
+import androidx.compose.material.icons.rounded.History
 import androidx.compose.material.icons.rounded.PlayCircle
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
@@ -138,6 +139,7 @@ fun YouTubeScreen(
     androidx.activity.compose.BackHandler(ui !is YouTubeUi.Empty, viewModel::reset)
     val input by viewModel.input.collectAsStateWithLifecycle()
     val trending by viewModel.trending.collectAsStateWithLifecycle()
+    val recent by viewModel.recent.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
     val context = LocalContext.current
     // Android only lets the focused window read the clipboard, so read when focus arrives, and again on tapping Paste.
@@ -226,6 +228,9 @@ fun YouTubeScreen(
                     onLoadMore = viewModel::loadMore,
                     resultsList = viewModel.resultsList,
                     trending = trending,
+                    recent = recent,
+                    onRemoveRecent = viewModel::removeRecent,
+                    onClearRecent = viewModel::clearRecent,
                     onChannel = viewModel::openChannel,
                     onLoadTrending = viewModel::loadTrending,
                 )
@@ -263,6 +268,9 @@ internal fun YouTubeContent(
     onLoadMore: () -> Unit,
     resultsList: LazyListState = rememberLazyListState(),
     trending: List<YouTubeSearchResult> = emptyList(),
+    recent: List<String> = emptyList(),
+    onRemoveRecent: (String) -> Unit = {},
+    onClearRecent: () -> Unit = {},
     onChannel: (name: String, url: String) -> Unit = { _, _ -> },
     onLoadTrending: () -> Unit = {},
 ) {
@@ -274,7 +282,7 @@ internal fun YouTubeContent(
         modifier = Modifier.widthIn(max = 640.dp),
     ) { state ->
         when (state) {
-            YouTubeUi.Empty -> EmptyState(input, clipLink, onInput, onSubmit, onPaste, trending, onPick, onChannel, onLoadTrending)
+            YouTubeUi.Empty -> EmptyState(input, clipLink, onInput, onSubmit, onPaste, trending, recent, onRemoveRecent, onClearRecent, onPick, onChannel, onLoadTrending)
             YouTubeUi.Resolving -> Skeleton()
             is YouTubeUi.Results -> ResultsState(state, input, onInput, onSubmit, onPaste, onPick, onChannel, onLoadMore, resultsList)
             is YouTubeUi.Preview -> PreviewState(state, onReset, onMode, onSelect, onSubtitle, onDownload)
@@ -572,6 +580,9 @@ private fun EmptyState(
     onSubmit: (String) -> Unit,
     onPaste: () -> Unit,
     trending: List<YouTubeSearchResult>,
+    recent: List<String>,
+    onRemoveRecent: (String) -> Unit,
+    onClearRecent: () -> Unit,
     onPick: (YouTubeSearchResult) -> Unit,
     onChannel: (String, String) -> Unit,
     onLoadTrending: () -> Unit,
@@ -593,16 +604,69 @@ private fun EmptyState(
                 modifier = Modifier.heightIn(min = 48.dp),
             )
         }
-        MessageState(
-            icon = Icons.Rounded.PlayCircle,
-            title = stringResource(R.string.yt_empty_title),
-            body = stringResource(R.string.yt_empty_body),
-            modifier = Modifier.heightIn(min = if (trending.isEmpty()) 280.dp else 160.dp),
-        )
+        val shown = recent.take(RECENT_SHOWN)
+        if (shown.isNotEmpty()) {
+            // The sentence stays above, shorter: the list below is what this screen is for once there is one.
+            MessageState(
+                icon = Icons.Rounded.PlayCircle,
+                title = stringResource(R.string.yt_empty_title),
+                body = stringResource(R.string.yt_empty_body),
+                modifier = Modifier.heightIn(min = 0.dp),
+            )
+            RecentSearches(shown, onRun = { keyboard?.hide(); onSubmit(it) }, onRemove = onRemoveRecent, onClear = onClearRecent)
+        } else {
+            MessageState(
+                icon = Icons.Rounded.PlayCircle,
+                title = stringResource(R.string.yt_empty_title),
+                body = stringResource(R.string.yt_empty_body),
+                modifier = Modifier.heightIn(min = if (trending.isEmpty()) 280.dp else 160.dp),
+            )
+        }
         if (trending.isNotEmpty()) {
             Text(stringResource(R.string.yt_trending), style = MaterialTheme.typography.titleMedium, modifier = Modifier.semantics { heading() })
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 trending.forEach { ResultRow(it, onClick = { onPick(it) }, onChannel = onChannel) }
+            }
+        }
+    }
+}
+
+private const val RECENT_SHOWN = 6
+
+/** The user's last YouTube searches on the empty screen: tap to run one again, remove one, or clear all. */
+@Composable
+private fun RecentSearches(recent: List<String>, onRun: (String) -> Unit, onRemove: (String) -> Unit, onClear: () -> Unit) {
+    Column {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                stringResource(R.string.search_recent),
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.weight(1f).semantics { heading() },
+            )
+            TextButton(onClick = onClear) { Text(stringResource(R.string.search_clear_recent)) }
+        }
+        recent.forEach { q ->
+            val source = remember { MutableInteractionSource() }
+            Box(Modifier.fillMaxWidth().heightIn(min = 48.dp).clip(RowShape).focusRing(source, RowShape)) {
+                Row(
+                    Modifier.fillMaxWidth().heightIn(min = 48.dp).padding(start = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    // The row and the remove button are siblings, not nested clickables, so TalkBack and TV focus see both.
+                    Row(
+                        Modifier.weight(1f).heightIn(min = 48.dp)
+                            .clip(RowShape)
+                            .clickable(interactionSource = source, indication = androidx.compose.foundation.LocalIndication.current, role = Role.Button, onClick = { onRun(q) }),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(Icons.Rounded.History, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Spacer(Modifier.width(16.dp))
+                        Text(q, style = MaterialTheme.typography.bodyLarge, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
+                    }
+                    IconButton(onClick = { onRemove(q) }) {
+                        Icon(Icons.Rounded.Close, contentDescription = stringResource(R.string.search_remove_recent, q))
+                    }
+                }
             }
         }
     }

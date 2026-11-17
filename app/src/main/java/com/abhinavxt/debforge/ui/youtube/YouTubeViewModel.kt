@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.abhinavxt.debforge.data.local.DownloadDao
+import com.abhinavxt.debforge.data.search.YouTubeSearchHistoryStore
 import com.abhinavxt.debforge.data.youtube.YouTubeResolver
 import com.abhinavxt.debforge.di.ApiHttpClient
 import com.abhinavxt.debforge.domain.DownloadItem
@@ -36,6 +37,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
@@ -97,6 +100,7 @@ class YouTubeViewModel @Inject constructor(
     private val downloads: DownloadController,
     private val dao: DownloadDao,
     private val settings: SettingsStore,
+    private val history: YouTubeSearchHistoryStore,
     private val saved: SavedStateHandle,
     @ApiHttpClient private val http: OkHttpClient,
 ) : ViewModel() {
@@ -106,6 +110,13 @@ class YouTubeViewModel @Inject constructor(
     /** What the paste field shows; also set when a shared link is offered. */
     private val _input = MutableStateFlow("")
     val input: StateFlow<String> = _input.asStateFlow()
+
+    /** Recent word searches, newest first, for the empty screen. */
+    val recent: StateFlow<List<String>> = history.recent
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    fun removeRecent(query: String) { viewModelScope.launch { history.remove(query) } }
+    fun clearRecent() { viewModelScope.launch { history.clear() } }
 
     private val _events = Channel<YouTubeEvent>(Channel.BUFFERED)
     val events = _events.receiveAsFlow()
@@ -140,7 +151,7 @@ class YouTubeViewModel @Inject constructor(
 
     init {
         // Process death: bring the preview back for the last link the user submitted.
-        saved.get<String>(LINK_KEY)?.let(::submit)
+        saved.get<String>(LINK_KEY)?.let { run(it, record = false) }
     }
 
     fun setInput(text: String) { _input.value = text }
@@ -156,7 +167,10 @@ class YouTubeViewModel @Inject constructor(
     private class Back(val results: YouTubeUi.Results, val next: Page?, val list: LazyListState)
     private var channel: ChannelNav? = null
 
-    fun submit(text: String) {
+    fun submit(text: String) = run(text, record = true)
+
+    /** [record]: a word search is added to the recent searches (not when restoring after process death). */
+    private fun run(text: String, record: Boolean) {
         fromResults = null
         channel = null
         _input.value = text
@@ -169,7 +183,10 @@ class YouTubeViewModel @Inject constructor(
         when {
             YouTubeLinks.isPlaylistOnly(text) && YouTubeLinks.playlistUrl(text) != null -> loadPlaylist(text)
             looksLikeYouTube(text) -> resolve(text)
-            YouTubeLinks.isSearchQuery(text) -> search(text.trim())
+            YouTubeLinks.isSearchQuery(text) -> {
+                if (record) YouTubeLinks.historyQuery(text)?.let { q -> viewModelScope.launch { history.add(q) } }
+                search(text.trim())
+            }
             else -> _ui.value = YouTubeUi.Error(YouTubeErrorKind.NOT_LINK)
         }
     }

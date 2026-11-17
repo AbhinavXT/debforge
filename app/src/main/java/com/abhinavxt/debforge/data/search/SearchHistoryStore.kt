@@ -14,11 +14,16 @@ import javax.inject.Singleton
 
 private val Context.searchHistoryDataStore by preferencesDataStore(name = "debforge_search_history")
 
-/** The last few searches, newest first, shown under the Search tab's search bar. Not in backups. */
+/**
+ * The last few searches, newest first, shown under the Search tab's search bar. Not in backups.
+ * Other screens keep their own list in the same file under another [keyName] (see [YouTubeSearchHistoryStore]).
+ */
 @Singleton
-class SearchHistoryStore @Inject constructor(@ApplicationContext private val context: Context) {
+open class SearchHistoryStore internal constructor(private val context: Context, keyName: String) {
 
-    private val key = stringPreferencesKey("queries")
+    @Inject constructor(@ApplicationContext context: Context) : this(context, "queries")
+
+    private val key = stringPreferencesKey(keyName)
 
     val recent: Flow<List<String>> = context.searchHistoryDataStore.data
         .map { decode(it[key]) }
@@ -54,3 +59,8 @@ class SearchHistoryStore @Inject constructor(@ApplicationContext private val con
             (listOf(query) + list.filterNot { it.equals(query, ignoreCase = true) }).take(MAX)
     }
 }
+
+/** The YouTube tab's own recent searches: same rules and file as [SearchHistoryStore], kept under "youtube_queries". */
+@Singleton
+class YouTubeSearchHistoryStore @Inject constructor(@ApplicationContext context: Context) :
+    SearchHistoryStore(context, "youtube_queries")

@@ -27,6 +27,9 @@ object YouTubeLinks {
     fun isSearchQuery(text: String): Boolean =
         text.isNotBlank() && videoId(text) == null && !isPlaylistOnly(text) && !anyUrl.containsMatchIn(text)
 
+    /** The trimmed words to remember as a recent search, or null when [text] is blank or a link (those are not searches). */
+    fun historyQuery(text: String): String? = text.trim().takeIf { isSearchQuery(it) }
+
     const val PREFIX = "yt:"
 
     /** `yt:<videoId>:<videoItag|->:<audioItag>` */

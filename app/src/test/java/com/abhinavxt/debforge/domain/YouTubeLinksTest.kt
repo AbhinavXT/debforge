@@ -66,4 +66,13 @@ class YouTubeLinksTest {
         assertFalse(YouTubeLinks.isSearchQuery("https://www.youtube.com/playlist?list=PL123"))
         assertFalse(YouTubeLinks.isSearchQuery("https://example.com/page"))
     }
+
+    @Test fun historyOnlyForWordSearches() {
+        assertEquals("lofi beats", YouTubeLinks.historyQuery("  lofi beats  "))
+        assertNull(YouTubeLinks.historyQuery("   "))
+        assertNull(YouTubeLinks.historyQuery("https://youtu.be/$id"))
+        assertNull(YouTubeLinks.historyQuery("https://www.youtube.com/playlist?list=PL123"))
+        assertNull(YouTubeLinks.historyQuery("https://www.youtube.com/@somechannel"))
+        assertNull(YouTubeLinks.historyQuery("https://example.com/page"))
+    }
 }
