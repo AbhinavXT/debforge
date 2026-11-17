@@ -235,10 +235,10 @@ private fun PosterCard(
         Spacer(Modifier.height(8.dp))
         Text(
             text = meta?.title ?: group.title,
-            style = MaterialTheme.typography.titleSmall,
+            style = MaterialTheme.typography.bodyMedium,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.padding(horizontal = 8.dp)
+            modifier = Modifier.padding(horizontal = 2.dp)
         )
         Text(
             text = if (allDone) stringResource(R.string.poster_downloaded) else group.subtitleText(withResolution = false),
@@ -248,7 +248,7 @@ private fun PosterCard(
             overflow = TextOverflow.Ellipsis,
             // Clear of the card's rounded bottom corners: the clip (which
             // shapes the ripple) would otherwise cut into this line.
-            modifier = Modifier.padding(start = 8.dp, end = 8.dp, bottom = 10.dp)
+            modifier = Modifier.padding(start = 2.dp, end = 2.dp, bottom = 10.dp)
         )
     }
 }
