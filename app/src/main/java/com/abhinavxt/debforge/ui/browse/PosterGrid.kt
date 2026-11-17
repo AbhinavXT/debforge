@@ -410,16 +410,24 @@ fun TitleSheet(
                                 modifier = Modifier.size(18.dp)
                             )
                             Spacer(Modifier.width(8.dp))
-                            Text(
-                                when {
-                                    pending.isEmpty() -> stringResource(R.string.sheet_all_queued)
-                                    pending.size == 1 -> stringResource(R.string.action_download)
-                                    else -> stringResource(R.string.sheet_download_all, pending.size) +
-                                        " · " + formatSize(pending.sumOf { it.filesize })
-                                },
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
+                            Column {
+                                Text(
+                                    when {
+                                        pending.isEmpty() -> stringResource(R.string.sheet_all_queued)
+                                        pending.size == 1 -> stringResource(R.string.action_download)
+                                        else -> stringResource(R.string.sheet_download_all, pending.size)
+                                    },
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                                if (pending.size > 1) {
+                                    Text(
+                                        formatSize(pending.sumOf { it.filesize }),
+                                        style = MaterialTheme.typography.labelSmall,
+                                        maxLines = 1
+                                    )
+                                }
+                            }
                         }
                         if (following != null) {
                             val followCd = stringResource(if (following) R.string.follow_following else R.string.follow_action)
