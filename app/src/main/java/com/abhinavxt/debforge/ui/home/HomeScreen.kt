@@ -47,6 +47,7 @@ import androidx.compose.material3.Text
 import androidx.activity.compose.BackHandler
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
+import androidx.compose.foundation.focusGroup
 import androidx.compose.runtime.Composable
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.ui.input.pointer.PointerEventPass
@@ -427,7 +428,18 @@ fun HomeScreen(signedIn: Boolean) {
                 }
             ) { padding ->
                 // Consume what the bar took so inner screens don't pad for it twice.
-                content(Modifier.padding(padding).consumeWindowInsets(padding).fillMaxSize())
+                // With the bottom bar only DOWN reaches it: LEFT/RIGHT from an edge item must not jump to a tab.
+                @OptIn(androidx.compose.ui.ExperimentalComposeUiApi::class)
+                content(
+                    Modifier.padding(padding).consumeWindowInsets(padding).fillMaxSize()
+                        .focusProperties {
+                            exit = { dir ->
+                                if (dir == androidx.compose.ui.focus.FocusDirection.Left || dir == androidx.compose.ui.focus.FocusDirection.Right)
+                                    FocusRequester.Cancel else FocusRequester.Default
+                            }
+                        }
+                        .focusGroup()
+                )
             }
         }
         }
