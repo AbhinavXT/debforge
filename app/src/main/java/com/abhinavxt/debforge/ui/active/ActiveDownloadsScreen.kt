@@ -75,12 +75,13 @@ import com.abhinavxt.debforge.R
 import com.abhinavxt.debforge.domain.DownloadState
 import com.abhinavxt.debforge.download.LocalFiles
 import com.abhinavxt.debforge.ui.components.BannerCard
+import com.abhinavxt.debforge.ui.components.HeaderNavActions
 import com.abhinavxt.debforge.ui.components.IconBadge
 import com.abhinavxt.debforge.ui.components.MessageState
 import com.abhinavxt.debforge.ui.components.ScreenHeader
 
 @Composable
-fun ActiveDownloadsScreen(onOpenMedia: () -> Unit, viewModel: ActiveDownloadsViewModel = hiltViewModel()) {
+fun ActiveDownloadsScreen(onOpenMedia: () -> Unit, onOpenSettings: () -> Unit, viewModel: ActiveDownloadsViewModel = hiltViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val scheduledStart by viewModel.scheduledStartHour.collectAsStateWithLifecycle()
     val grouped = state.grouped
@@ -93,7 +94,7 @@ fun ActiveDownloadsScreen(onOpenMedia: () -> Unit, viewModel: ActiveDownloadsVie
             ScreenHeader(
                 title = stringResource(R.string.tab_downloads),
                 subtitle = if (totalSpeed > 0) "↓ ${formatSpeed(totalSpeed)}" else null
-            )
+            ) { HeaderNavActions(onOpenSettings) }
         }
     ) { padding ->
         if (state.isEmpty) {

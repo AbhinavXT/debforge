@@ -60,6 +60,7 @@ import com.abhinavxt.debforge.R
 import com.abhinavxt.debforge.domain.SearchQuality
 import com.abhinavxt.debforge.domain.SearchResult
 import com.abhinavxt.debforge.ui.browse.formatSize
+import com.abhinavxt.debforge.ui.components.HeaderNavActions
 import com.abhinavxt.debforge.ui.components.MessageState
 import com.abhinavxt.debforge.ui.components.ScreenHeader
 import com.abhinavxt.debforge.ui.components.SearchPill
@@ -75,6 +76,8 @@ import com.abhinavxt.debforge.ui.pluralRes
 fun SearchScreen(
     onAdd: (String) -> Unit,
     onOpenSettings: () -> Unit,
+    onOpenDownloads: () -> Unit,
+    activeDownloads: Int,
     viewModel: SearchViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -84,7 +87,9 @@ fun SearchScreen(
     val keyboard = LocalSoftwareKeyboardController.current
 
     Column(Modifier.fillMaxSize()) {
-        ScreenHeader(title = stringResource(R.string.tab_search))
+        ScreenHeader(title = stringResource(R.string.tab_search)) {
+            HeaderNavActions(onOpenSettings, onOpenDownloads = onOpenDownloads, activeCount = activeDownloads)
+        }
         when (available) {
             null -> return@Column
             false -> {

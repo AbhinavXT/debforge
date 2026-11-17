@@ -244,11 +244,17 @@ fun HomeScreen(signedIn: Boolean) {
                 composable(HomeTab.Search.route) {
                     SearchScreen(
                         onAdd = { addViewModel.open(prefillText = it) },
-                        onOpenSettings = { go(HomeTab.Settings) }
+                        onOpenSettings = { push(HomeTab.Settings) },
+                        onOpenDownloads = { push(HomeTab.Active) },
+                        activeDownloads = activeCount
                     )
                 }
                 composable(HomeTab.YouTube.route) {
-                    YouTubeScreen(onOpenDownloads = { push(HomeTab.Active) }, viewModel = youtubeViewModel)
+                    YouTubeScreen(
+                        onOpenDownloads = { push(HomeTab.Active) },
+                        onOpenSettings = { push(HomeTab.Settings) },
+                        activeDownloads = activeCount,
+                        viewModel = youtubeViewModel)
                 }
                 composable(HomeTab.Media.route) {
                     val context = LocalContext.current
@@ -270,10 +276,15 @@ fun HomeScreen(signedIn: Boolean) {
                 }
                 composable(HomeTab.Active.route) {
                     Pushed(wide, onBack = { navController.popBackStack() }) {
-                        ActiveDownloadsScreen(onOpenMedia = { go(HomeTab.Media) })
+                        ActiveDownloadsScreen(onOpenMedia = { go(HomeTab.Media) }, onOpenSettings = { push(HomeTab.Settings) })
                     }
                 }
-                composable(HomeTab.Browser.route) { BrowserScreen(onMagnet = addViewModel::offer) }
+                composable(HomeTab.Browser.route) { BrowserScreen(
+                    onMagnet = addViewModel::offer,
+                    onOpenDownloads = { push(HomeTab.Active) },
+                    onOpenSettings = { push(HomeTab.Settings) },
+                    activeDownloads = activeCount
+                ) }
                 composable(HomeTab.Settings.route) {
                     Pushed(wide, onBack = { navController.popBackStack() }) { SettingsScreen(onConnect = ::connect) }
                 }

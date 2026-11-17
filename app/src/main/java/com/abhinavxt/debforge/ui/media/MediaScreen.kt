@@ -50,8 +50,6 @@ import androidx.compose.material.icons.rounded.PlayCircle
 import androidx.compose.material.icons.rounded.SelectAll
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Badge
-import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -105,6 +103,7 @@ import com.abhinavxt.debforge.player.PlayerActivity
 import com.abhinavxt.debforge.ui.browse.formatSize
 import com.abhinavxt.debforge.ui.components.BannerCard
 import com.abhinavxt.debforge.ui.components.GeneratedArt
+import com.abhinavxt.debforge.ui.components.HeaderNavActions
 import com.abhinavxt.debforge.ui.components.MessageState
 import com.abhinavxt.debforge.ui.components.ScreenHeader
 import com.abhinavxt.debforge.ui.components.SearchPill
@@ -234,16 +233,14 @@ internal fun MediaContent(
             }
         } else {
             ScreenHeader(stringResource(R.string.media_title)) {
-                IconButton(onClick = onOpenDownloads) {
-                    BadgedBox(badge = { state.active?.let { Badge { Text("${it.count}") } } }) {
-                        Icon(
-                            Icons.Rounded.Download,
-                            state.active?.let { pluralStringResource(R.plurals.media_cd_downloads_active, it.count, it.count) }
-                                ?: stringResource(R.string.media_cd_downloads)
-                        )
-                    }
-                }
-                IconButton(onClick = onOpenSettings) { Icon(Icons.Rounded.Settings, stringResource(R.string.media_cd_settings)) }
+                HeaderNavActions(
+                    onOpenSettings,
+                    onOpenDownloads = onOpenDownloads,
+                    activeCount = state.active?.count ?: 0,
+                    downloadsDescription = state.active?.let { pluralStringResource(R.plurals.media_cd_downloads_active, it.count, it.count) }
+                        ?: stringResource(R.string.media_cd_downloads),
+                    settingsDescription = stringResource(R.string.media_cd_settings)
+                )
             }
         }
 

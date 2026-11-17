@@ -28,6 +28,12 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.Download
+import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
+import androidx.compose.ui.res.stringResource
+import com.abhinavxt.debforge.R
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -92,6 +98,30 @@ fun ScreenHeader(
         }
         actions()
     }
+}
+
+/**
+ * The Downloads and Settings buttons that sit at the end of a screen's header,
+ * Downloads first. [activeCount] badges Downloads; pass null for no Downloads
+ * button (the Downloads screen itself). [modifier] sizes both buttons.
+ */
+@Composable
+fun HeaderNavActions(
+    onOpenSettings: () -> Unit,
+    modifier: Modifier = Modifier,
+    onOpenDownloads: (() -> Unit)? = null,
+    activeCount: Int = 0,
+    downloadsDescription: String = stringResource(R.string.shell_cd_downloads),
+    settingsDescription: String = stringResource(R.string.shell_cd_settings)
+) {
+    if (onOpenDownloads != null) {
+        IconButton(onClick = onOpenDownloads, modifier = modifier) {
+            BadgedBox(badge = { if (activeCount > 0) Badge { Text("$activeCount") } }) {
+                Icon(Icons.Rounded.Download, downloadsDescription)
+            }
+        }
+    }
+    IconButton(onClick = onOpenSettings, modifier = modifier) { Icon(Icons.Rounded.Settings, settingsDescription) }
 }
 
 /** Small uppercase-free label above a group ("Downloads", "Appearance"). */

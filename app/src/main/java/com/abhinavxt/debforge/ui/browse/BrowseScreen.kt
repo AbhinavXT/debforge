@@ -96,6 +96,7 @@ import androidx.compose.ui.semantics.semantics
 import com.abhinavxt.debforge.ui.components.BannerCard
 import com.abhinavxt.debforge.ui.posters.PosterSetupSheet
 import com.abhinavxt.debforge.domain.MediaKind
+import com.abhinavxt.debforge.ui.components.HeaderNavActions
 import com.abhinavxt.debforge.ui.components.IconBadge
 import com.abhinavxt.debforge.ui.components.MessageState
 import com.abhinavxt.debforge.ui.components.ScreenHeader
@@ -425,14 +426,7 @@ fun BrowseScreen(
                                 Icon(Icons.Rounded.Refresh, contentDescription = stringResource(R.string.action_refresh))
                             }
                         }
-                        IconButton(onClick = onOpenDownloads) {
-                            androidx.compose.material3.BadgedBox(badge = {
-                                if (activeDownloads > 0) androidx.compose.material3.Badge { Text("$activeDownloads") }
-                            }) { Icon(Icons.Rounded.Download, stringResource(R.string.shell_cd_downloads)) }
-                        }
-                        IconButton(onClick = onOpenSettings) {
-                            Icon(Icons.Rounded.Settings, stringResource(R.string.shell_cd_settings))
-                        }
+                        HeaderNavActions(onOpenSettings, onOpenDownloads = onOpenDownloads, activeCount = activeDownloads)
                     }
                 }
             }

@@ -91,6 +91,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.abhinavxt.debforge.ui.components.HeaderNavActions
 import java.io.ByteArrayInputStream
 import java.text.NumberFormat
 import androidx.compose.ui.viewinterop.AndroidView
@@ -111,7 +112,7 @@ import com.abhinavxt.debforge.ui.browse.formatSize
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
-fun BrowserScreen(onMagnet: (String) -> Unit, viewModel: BrowserViewModel = hiltViewModel()) {
+fun BrowserScreen(onMagnet: (String) -> Unit, onOpenDownloads: () -> Unit, onOpenSettings: () -> Unit, activeDownloads: Int, viewModel: BrowserViewModel = hiltViewModel()) {
     val videos by viewModel.videos.collectAsStateWithLifecycle()
     val adBlock by viewModel.adBlock.collectAsStateWithLifecycle()
     var showAdBlock by remember { mutableStateOf(false) }
@@ -195,6 +196,13 @@ fun BrowserScreen(onMagnet: (String) -> Unit, viewModel: BrowserViewModel = hilt
                 IconButton(onClick = { webView?.reload() }) {
                     Icon(Icons.Filled.Refresh, contentDescription = stringResource(R.string.action_refresh))
                 }
+                // Smaller than the page buttons so the address pill keeps its room.
+                HeaderNavActions(
+                    onOpenSettings,
+                    modifier = Modifier.size(40.dp),
+                    onOpenDownloads = onOpenDownloads,
+                    activeCount = activeDownloads
+                )
             }
             AnimatedVisibility(visible = progress < 100, enter = fadeIn(), exit = fadeOut()) {
                 val shown by animateFloatAsState(progress / 100f, label = "pageProgress")

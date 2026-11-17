@@ -122,6 +122,7 @@ import com.abhinavxt.debforge.domain.YouTubeLinks
 import com.abhinavxt.debforge.domain.YouTubeSearchResult
 import com.abhinavxt.debforge.domain.YouTubeVideo
 import com.abhinavxt.debforge.ui.player.focusRing
+import com.abhinavxt.debforge.ui.components.HeaderNavActions
 import com.abhinavxt.debforge.ui.components.MessageState
 import com.abhinavxt.debforge.ui.components.ScreenHeader
 
@@ -131,6 +132,8 @@ private val RowShape = RoundedCornerShape(16.dp)
 @Composable
 fun YouTubeScreen(
     onOpenDownloads: () -> Unit,
+    onOpenSettings: () -> Unit,
+    activeDownloads: Int,
     modifier: Modifier = Modifier,
     viewModel: YouTubeViewModel = hiltViewModel()
 ) {
@@ -199,7 +202,9 @@ fun YouTubeScreen(
 
     Box(modifier.fillMaxSize()) {
         Column(Modifier.fillMaxSize()) {
-            ScreenHeader(stringResource(R.string.yt_title), subtitle = stringResource(R.string.yt_subtitle))
+            ScreenHeader(stringResource(R.string.yt_title), subtitle = stringResource(R.string.yt_subtitle)) {
+                HeaderNavActions(onOpenSettings, onOpenDownloads = onOpenDownloads, activeCount = activeDownloads)
+            }
             Spacer(Modifier.height(8.dp)) // scrolled content is clipped here, clear of the subtitle
             Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
                 YouTubeContent(
