@@ -410,7 +410,8 @@ fun TitleSheet(
                                 when {
                                     pending.isEmpty() -> stringResource(R.string.sheet_all_queued)
                                     pending.size == 1 -> stringResource(R.string.action_download)
-                                    else -> stringResource(R.string.sheet_download_all, pending.size)
+                                    else -> stringResource(R.string.sheet_download_all, pending.size) +
+                                        " · " + formatSize(pending.sumOf { it.filesize })
                                 },
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
@@ -516,24 +517,6 @@ fun TitleSheet(
                             modifier = Modifier.padding(top = 12.dp)
                         )
                     }
-                    if (onRemove != null) {
-                        Spacer(Modifier.height(12.dp))
-                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                        TextButton(
-                            onClick = onRemove,
-                            contentPadding = PaddingValues(end = 12.dp),
-                            modifier = Modifier.heightIn(min = 48.dp)
-                        ) {
-                            Icon(
-                                Icons.Rounded.DeleteOutline,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.error,
-                                modifier = Modifier.size(18.dp)
-                            )
-                            Spacer(Modifier.width(8.dp))
-                            Text(removeLabel, color = MaterialTheme.colorScheme.error)
-                        }
-                    }
                 }
             }
             meta?.overview?.let { overview ->
@@ -577,6 +560,27 @@ fun TitleSheet(
                         watchedOnTrakt = traktWatched.isNotEmpty() &&
                             com.abhinavxt.debforge.domain.TraktMatch.keyOf(f.info) in traktWatched
                     )
+                }
+            }
+            if (onRemove != null) {
+                item(key = "fixed:remove") {
+                    Column(Modifier.padding(start = 20.dp, end = 20.dp, top = 16.dp)) {
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                        TextButton(
+                            onClick = onRemove,
+                            contentPadding = PaddingValues(end = 12.dp),
+                            modifier = Modifier.heightIn(min = 48.dp)
+                        ) {
+                            Icon(
+                                Icons.Rounded.DeleteOutline,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.error,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text(removeLabel, color = MaterialTheme.colorScheme.error)
+                        }
+                    }
                 }
             }
         }
