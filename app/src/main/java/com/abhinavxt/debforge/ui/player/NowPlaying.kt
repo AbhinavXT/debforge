@@ -1,6 +1,13 @@
 package com.abhinavxt.debforge.ui.player
 
+import android.provider.Settings
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.MarqueeSpacing
+import androidx.compose.foundation.background
+import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -9,6 +16,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
@@ -29,12 +37,14 @@ import androidx.compose.material.icons.rounded.SkipNext
 import androidx.compose.material.icons.rounded.SkipPrevious
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -47,6 +57,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
@@ -55,6 +66,7 @@ import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import com.abhinavxt.debforge.R
 import com.abhinavxt.debforge.player.AudioRepeat
@@ -137,6 +149,7 @@ private fun Artwork(state: AudioState, modifier: Modifier) {
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun Controls(
     state: AudioState,
@@ -154,7 +167,17 @@ private fun Controls(
     Column(modifier.fillMaxWidth()) {
         Crossfade(track, label = "title") { t ->
             Column(Modifier.fillMaxWidth()) {
-                Text(t.title, style = MaterialTheme.typography.headlineSmall, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                val context = LocalContext.current
+                val scroll = remember(t) { titleMarqueeEnabled(animatorDurationScale(context)) }
+                Text(
+                    t.title,
+                    style = MaterialTheme.typography.headlineSmall,
+                    maxLines = 1,
+                    overflow = if (scroll) TextOverflow.Clip else TextOverflow.Ellipsis,
+                    modifier = if (scroll) Modifier.basicMarquee(
+                        iterations = Int.MAX_VALUE, initialDelayMillis = 1500, repeatDelayMillis = 1500, spacing = MarqueeSpacing(48.dp)
+                    ) else Modifier
+                )
                 Text(
                     t.artist ?: stringResource(R.string.audio_unknown_artist),
                     style = MaterialTheme.typography.titleMedium,
@@ -264,6 +287,7 @@ private fun ToggleButton(icon: androidx.compose.ui.graphics.vector.ImageVector, 
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun SeekBar(positionMs: Long, durationMs: Long, onSeek: (Long) -> Unit) {
     // While dragging, show the thumb's value; seek once on release.
@@ -272,6 +296,7 @@ private fun SeekBar(positionMs: Long, durationMs: Long, onSeek: (Long) -> Unit) 
     val shown = dragging ?: positionMs.coerceIn(0, duration).toFloat()
     val tnum = MaterialTheme.typography.labelMedium.copy(fontFeatureSettings = "tnum")
     val s = remember { MutableInteractionSource() }
+    val dragged by s.collectIsDraggedAsState()
     val desc = stringResource(R.string.audio_position_state, spoken(shown.toLong()), spoken(duration))
     Column(Modifier.fillMaxWidth().padding(top = 16.dp)) {
         Slider(
@@ -282,7 +307,22 @@ private fun SeekBar(positionMs: Long, durationMs: Long, onSeek: (Long) -> Unit) 
             interactionSource = s,
             modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
                 .focusRing(s, RoundedCornerShape(24.dp))
-                .semantics { stateDescription = desc }
+                .semantics { stateDescription = desc },
+            thumb = {
+                // The slot keeps one size so the track does not shift when the thumb grows on drag.
+                val thumb by animateDpAsState(if (dragged) 16.dp else 12.dp, label = "thumb")
+                Box(Modifier.size(16.dp), contentAlignment = Alignment.Center) {
+                    SliderDefaults.Thumb(s, thumbSize = DpSize(thumb, thumb))
+                }
+            },
+            track = { state ->
+                val cs = MaterialTheme.colorScheme
+                val range = state.valueRange
+                val fraction = ((state.value - range.start) / (range.endInclusive - range.start)).coerceIn(0f, 1f)
+                Box(Modifier.fillMaxWidth().height(4.dp).clip(CircleShape).background(cs.surfaceVariant)) {
+                    Box(Modifier.fillMaxWidth(fraction).height(4.dp).background(cs.primary))
+                }
+            }
         )
         Row(Modifier.fillMaxWidth().padding(horizontal = 4.dp), horizontalArrangement = Arrangement.SpaceBetween) {
             Text(formatClock(shown.toLong()), style = tnum, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -290,6 +330,12 @@ private fun SeekBar(positionMs: Long, durationMs: Long, onSeek: (Long) -> Unit) 
         }
     }
 }
+
+/** The title scrolls only when the system animations are on; with them off it stays one line with an ellipsis. */
+internal fun titleMarqueeEnabled(animatorDurationScale: Float): Boolean = animatorDurationScale > 0f
+
+private fun animatorDurationScale(context: android.content.Context): Float =
+    Settings.Global.getFloat(context.contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f)
 
 @Composable
 private fun spoken(ms: Long): String {
