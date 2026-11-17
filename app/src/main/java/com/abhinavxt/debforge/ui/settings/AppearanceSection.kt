@@ -146,9 +146,11 @@ internal fun AppearanceContent(
     SwitchSettingRow(
         icon = Icons.Rounded.Contrast,
         title = stringResource(R.string.set_pure_black),
-        subtitle = stringResource(R.string.set_pure_black_detail),
+        // Only applies to the dark theme: greyed out, with the reason, while the app is light.
+        subtitle = stringResource(if (dark) R.string.set_pure_black_detail else R.string.set_pure_black_light_only),
         checked = pureBlack,
-        onChange = onPureBlack
+        onChange = onPureBlack,
+        enabled = dark
     )
 }
 

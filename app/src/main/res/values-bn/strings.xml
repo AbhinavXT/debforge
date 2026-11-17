@@ -968,4 +968,5 @@
     <string name="yt_streaming">স্ট্রিম হচ্ছে…</string>
     <string name="yt_stream_failed">YouTube এই স্ট্রিমটি বন্ধ করেছে। এর বদলে ডাউনলোড করবেন?</string>
     <string name="yt_stream_download">ডাউনলোড</string>
+    <string name="set_pure_black_light_only">শুধু ডার্ক থিমের জন্য। অ্যাপ ডার্ক থাকলে এটি কাজ করে।</string>
 </resources>

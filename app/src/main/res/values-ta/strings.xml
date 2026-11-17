@@ -968,4 +968,5 @@
     <string name="yt_streaming">ஸ்ட்ரீம் ஆகிறது…</string>
     <string name="yt_stream_failed">YouTube இந்த ஸ்ட்ரீமை நிறுத்திவிட்டது. அதற்குப் பதிலாக பதிவிறக்கவா?</string>
     <string name="yt_stream_download">பதிவிறக்கு</string>
+    <string name="set_pure_black_light_only">இருண்ட தீமுக்கு மட்டும். ஆப் இருண்டதாக இருக்கும்போது பொருந்தும்.</string>
 </resources>

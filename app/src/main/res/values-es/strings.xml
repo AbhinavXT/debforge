@@ -1016,4 +1016,5 @@
     <string name="yt_streaming">Transmitiendo…</string>
     <string name="yt_stream_failed">YouTube detuvo esta transmisión. ¿Descargarla en su lugar?</string>
     <string name="yt_stream_download">Descargar</string>
+    <string name="set_pure_black_light_only">Solo para el tema oscuro. Se aplica cuando la app está en oscuro.</string>
 </resources>
