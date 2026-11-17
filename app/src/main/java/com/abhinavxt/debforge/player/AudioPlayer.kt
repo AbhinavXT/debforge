@@ -382,7 +382,17 @@ class AudioPlayer @Inject constructor(
         else if (minutes > 0) {
             val ms = minutes * 60_000L
             sleepDeadline = SystemClock.uptimeMillis() + ms // uptime, like delay() on the main dispatcher
-            sleepJob = scope.launch { delay(ms); p.pause(); cancelSleep() }
+            sleepJob = scope.launch {
+                // Republish on a clock so the "N min" label counts down while paused too (publishing otherwise follows playback).
+                var left = ms
+                while (left > 0) {
+                    val step = minOf(left, 30_000L)
+                    delay(step)
+                    left -= step
+                    if (left > 0) publish()
+                }
+                p.pause(); cancelSleep()
+            }
         }
         publish()
     }
