@@ -47,7 +47,9 @@ data class MediaUiState(
     val audioList: String? = null,
     val lists: AudioListsState = AudioListsState(),
     /** Number of audio tracks matching the search, before the list pick (what the tab badge shows). */
-    val audioTotal: Int = 0
+    val audioTotal: Int = 0,
+    /** False until Room has emitted the first time, so the screen does not flash its empty message. */
+    val loaded: Boolean = true
 ) {
     /** Tab badge count: the audio badge ignores the list pick. */
     fun count(k: FileKind): Int = shown[k].orEmpty().size.let { if (k == FileKind.Audio) maxOf(it, audioTotal) else it }
@@ -135,7 +137,7 @@ class MediaViewModel @Inject constructor(
         }
         val selected = pruneSelection(u.selected, view[u.kind].orEmpty().map { it.id })
         MediaUiState(view, rows.size, u.query, u.sort, u.kind, selected, active, u.audioList, lists, audioMatching)
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), MediaUiState())
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), MediaUiState(loaded = false))
 
     private fun comparator(sort: SortOrder): Comparator<Row> = when (sort) {
         SortOrder.DATE_DESC -> compareByDescending { it.entity.updatedAt }

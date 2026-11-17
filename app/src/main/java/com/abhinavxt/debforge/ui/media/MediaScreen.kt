@@ -261,7 +261,10 @@ internal fun MediaContent(
             )
         }
 
-        if (state.totalCount == 0) {
+        if (!state.loaded) {
+            // First load pending: show nothing rather than a wrong "Nothing downloaded yet".
+            Spacer(Modifier.fillMaxSize())
+        } else if (state.totalCount == 0) {
             MessageState(
                 icon = Icons.Rounded.Download,
                 title = stringResource(R.string.media_empty_title),
