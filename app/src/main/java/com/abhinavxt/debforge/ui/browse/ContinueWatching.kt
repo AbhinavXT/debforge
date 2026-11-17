@@ -39,6 +39,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -120,9 +121,11 @@ private fun ContinueCard(
     onRemove: () -> Unit
 ) {
     var menu by remember { mutableStateOf(false) }
+    // Wider cards on tablets so the row fills more of the width.
+    val cardWidth = if (LocalConfiguration.current.screenWidthDp >= 600) 280.dp else 220.dp
     Column(
         Modifier
-            .width(220.dp)
+            .width(cardWidth)
             .clip(MaterialTheme.shapes.medium)
             .combinedClickable(onClick = onPlay, onLongClick = { menu = true })
     ) {

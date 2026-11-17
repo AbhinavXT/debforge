@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -231,7 +232,8 @@ internal fun ControlBar(
             onQuery = onQuery,
             placeholder = stringResource(R.string.browse_search_hint),
             clearDescription = stringResource(R.string.action_clear),
-            modifier = Modifier.padding(horizontal = 16.dp)
+            // Capped like the YouTube field so it doesn't stretch across a tablet.
+            modifier = Modifier.padding(horizontal = 16.dp).widthIn(max = 560.dp)
         )
         Row(verticalAlignment = Alignment.CenterVertically) {
             // Filters wrap onto a second line rather than scroll, so "Group as series" and
