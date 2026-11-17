@@ -169,10 +169,13 @@ fun SettingsScreen(onConnect: () -> Unit, viewModel: SettingsViewModel = hiltVie
     }
 
     Scaffold(topBar = { ScreenHeader(title = stringResource(R.string.tab_settings)) }) { padding ->
+        // On wide screens the list keeps a readable width, centred, so a switch stays near its label.
+        androidx.compose.foundation.layout.BoxWithConstraints(Modifier.padding(padding).fillMaxSize()) {
+        val side = ((maxWidth - 640.dp) / 2).coerceAtLeast(0.dp)
         LazyColumn(
             state = listState,
-            modifier = Modifier.padding(padding).fillMaxSize(),
-            contentPadding = PaddingValues(bottom = 32.dp)
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(start = side, end = side, bottom = 32.dp)
         ) {
             item(key = "service") {
                 SectionCard(title = stringResource(R.string.set_service)) {
@@ -434,6 +437,7 @@ fun SettingsScreen(onConnect: () -> Unit, viewModel: SettingsViewModel = hiltVie
             item(key = "usage") { DataUsageSection() }
             item(key = "backup") { BackupSection() }
             item(key = "about") { AboutSection() }
+        }
         }
     }
 
