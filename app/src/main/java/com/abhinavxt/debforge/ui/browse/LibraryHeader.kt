@@ -235,7 +235,7 @@ internal fun ControlBar(
             // Capped like the YouTube field so it doesn't stretch across a tablet.
             modifier = Modifier.padding(horizontal = 16.dp).widthIn(max = 560.dp)
         )
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Row(verticalAlignment = Alignment.Top) {
             // Filters wrap onto a second line rather than scroll, so "Group as series" and
             // any long translation are always visible; the view toggle stays put at the end.
             @OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
@@ -269,7 +269,7 @@ internal fun ControlBar(
                 }
             }
             // The view mode is a button, not a filter: it shows the view you would switch to.
-            FilledTonalIconButton(onClick = onTogglePosters, modifier = Modifier.padding(horizontal = 8.dp)) {
+            FilledTonalIconButton(onClick = onTogglePosters, modifier = Modifier.padding(start = 8.dp, end = 8.dp, top = 8.dp)) {
                 Icon(
                     if (posterView) Icons.AutoMirrored.Rounded.ViewList else Icons.Rounded.GridView,
                     contentDescription = stringResource(
