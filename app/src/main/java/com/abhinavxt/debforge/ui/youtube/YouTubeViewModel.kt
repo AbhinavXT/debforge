@@ -173,7 +173,12 @@ class YouTubeViewModel @Inject constructor(
         saved.get<String>(LINK_KEY)?.let { run(it, record = false) }
     }
 
-    fun setInput(text: String) { _input.value = text }
+    fun setInput(text: String) {
+        // Emptying the field over a search's results (the X) goes back to the empty screen rather than leaving stale results under an empty field.
+        val cur = _ui.value
+        if (text.isEmpty() && cur is YouTubeUi.Results && cur.channelUrl == null) { reset(); return }
+        _input.value = text
+    }
 
     /** Called by the shell with a shared link. */
     fun offer(link: String) = submit(link)
