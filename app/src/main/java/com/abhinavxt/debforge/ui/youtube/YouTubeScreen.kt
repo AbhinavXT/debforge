@@ -801,7 +801,11 @@ private fun PreviewState(
     val audio = p.selected.isAudio
     val rows = p.choices.filter { it.isAudio == audio }
     val firstFocus = remember { FocusRequester() }
-    LaunchedEffect(p.video.id) { runCatching { firstFocus.requestFocus() } } // TV: land on the default row
+    val inputMode = androidx.compose.ui.platform.LocalInputModeManager.current
+    // TV / keyboard: land on the default row. Touch: no focus request, it would scroll the list a moment after the preview appears.
+    LaunchedEffect(p.video.id) {
+        if (inputMode.inputMode == androidx.compose.ui.input.InputMode.Keyboard) runCatching { firstFocus.requestFocus() }
+    }
     val thumb: @Composable (Modifier) -> Unit = { mod ->
         Box(mod.aspectRatio(16f / 9f).clip(MaterialTheme.shapes.large).background(MaterialTheme.colorScheme.surfaceContainerHigh)) {
             AsyncImage(
