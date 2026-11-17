@@ -50,7 +50,11 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.outlined.RemoveModerator
 import androidx.compose.material3.Badge
@@ -92,7 +96,6 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.abhinavxt.debforge.ui.components.HeaderNavActions
 import java.io.ByteArrayInputStream
 import java.text.NumberFormat
 import androidx.compose.ui.viewinterop.AndroidView
@@ -173,6 +176,7 @@ fun BrowserScreen(onMagnet: (String) -> Unit, onOpenDownloads: () -> Unit, onOpe
                 }
                 AddressPill(
                     committed = committed,
+                    onReload = { webView?.reload() },
                     modifier = Modifier.weight(1f).padding(vertical = 4.dp),
                     onGo = { typed ->
                         if (typed.isNotBlank()) webView?.loadUrl(DirectLinkParser.addressToUrl(typed))
@@ -194,14 +198,7 @@ fun BrowserScreen(onMagnet: (String) -> Unit, onOpenDownloads: () -> Unit, onOpe
                         )
                     }
                 }
-                IconButton(onClick = { webView?.reload() }) {
-                    Icon(Icons.Filled.Refresh, contentDescription = stringResource(R.string.action_refresh))
-                }
-                HeaderNavActions(
-                    onOpenSettings,
-                    onOpenDownloads = onOpenDownloads,
-                    activeCount = activeDownloads
-                )
+                BrowserOverflow(onOpenDownloads, onOpenSettings, activeDownloads)
             }
             AnimatedVisibility(visible = progress < 100, enter = fadeIn(), exit = fadeOut()) {
                 val shown by animateFloatAsState(progress / 100f, label = "pageProgress")
@@ -395,6 +392,31 @@ private fun AdBlockSheet(
     }
 }
 
+/** Downloads and Settings behind one button, so the address pill keeps its room. */
+@Composable
+private fun BrowserOverflow(onOpenDownloads: () -> Unit, onOpenSettings: () -> Unit, activeCount: Int) {
+    var open by remember { mutableStateOf(false) }
+    Box {
+        IconButton(onClick = { open = true }) {
+            BadgedBox(badge = { if (activeCount > 0) Badge { Text("$activeCount") } }) {
+                Icon(Icons.Filled.MoreVert, stringResource(R.string.browse_more_actions))
+            }
+        }
+        DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.shell_cd_downloads) + if (activeCount > 0) " ($activeCount)" else "") },
+                leadingIcon = { Icon(Icons.Filled.Download, null) },
+                onClick = { open = false; onOpenDownloads() }
+            )
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.shell_cd_settings)) },
+                leadingIcon = { Icon(Icons.Filled.Settings, null) },
+                onClick = { open = false; onOpenSettings() }
+            )
+        }
+    }
+}
+
 /** What the address bar shows at rest for a committed URL. */
 internal data class AddressParts(val host: String?, val tail: String, val warn: Boolean)
 
@@ -436,7 +458,7 @@ private fun percentDecode(s: String): String {
  * uncommitted typing, and warns only for plain http.
  */
 @Composable
-private fun AddressPill(committed: String, modifier: Modifier, onGo: (String) -> Unit) {
+private fun AddressPill(committed: String, onReload: () -> Unit, modifier: Modifier, onGo: (String) -> Unit) {
     val source = remember { MutableInteractionSource() }
     val focused by source.collectIsFocusedAsState()
     val cs = MaterialTheme.colorScheme
@@ -465,6 +487,9 @@ private fun AddressPill(committed: String, modifier: Modifier, onGo: (String) ->
         leadingIcon = if (parts.warn) {
             { Icon(Icons.Filled.Warning, stringResource(R.string.browser_connection_not_secure), Modifier.size(20.dp), tint = cs.error) }
         } else null,
+        trailingIcon = {
+            IconButton(onClick = onReload) { Icon(Icons.Filled.Refresh, stringResource(R.string.action_refresh)) }
+        },
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri, imeAction = ImeAction.Go),
         keyboardActions = KeyboardActions(onGo = { onGo(field.text) }),
         colors = TextFieldDefaults.colors(
