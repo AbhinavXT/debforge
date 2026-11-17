@@ -15,6 +15,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -408,6 +409,9 @@ private fun ResultsState(
     streamingUrl: String?,
 ) {
     val focus = remember { FocusRequester() }
+    // D-pad: the screen it replaced held focus (the Skeleton, the field); keep it on this screen instead of letting it fall to the first tab.
+    val keys = androidx.compose.ui.platform.LocalInputModeManager.current.inputMode == androidx.compose.ui.input.InputMode.Keyboard
+    LaunchedEffect(Unit) { if (keys) runCatching { focus.requestFocus() } }
     val loadMore by rememberUpdatedState(onLoadMore)
     // Asks while the last rows are on screen. The effect restarts when the item count or the loading flag changes, so
     // it also fires again at the bottom after an empty or all-duplicate page. After a failed page the restart stays quiet
@@ -941,8 +945,12 @@ private fun Skeleton() {
     )
     val loading = stringResource(R.string.yt_loading)
     val tone = MaterialTheme.colorScheme.surfaceContainerHigh
+    // D-pad: the field that held focus just left; hold it here so it does not fall to the first tab while loading.
+    val hold = remember { FocusRequester() }
+    val keys = androidx.compose.ui.platform.LocalInputModeManager.current.inputMode == androidx.compose.ui.input.InputMode.Keyboard
+    LaunchedEffect(Unit) { if (keys) runCatching { hold.requestFocus() } }
     Column(
-        Modifier.fillMaxSize().padding(horizontal = 16.dp, vertical = 8.dp).graphicsLayer { alpha = pulse.value }
+        Modifier.fillMaxSize().focusRequester(hold).focusable().padding(horizontal = 16.dp, vertical = 8.dp).graphicsLayer { alpha = pulse.value }
             .semantics { contentDescription = loading },
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {

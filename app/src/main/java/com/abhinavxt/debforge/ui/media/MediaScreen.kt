@@ -494,7 +494,7 @@ private fun VideoTile(e: DownloadEntity, progress: WatchProgress, selected: Bool
         is WatchProgress.InProgress -> stringResource(R.string.media_watched_percent, progress.percent)
         WatchProgress.Finished -> null
     }
-    Column(modifier.mediaClickable(shape, selected, onClick, onLong).then(if (stateText != null) Modifier.semantics { stateDescription = stateText } else Modifier)) {
+    Column(modifier.mediaClickable(shape, selected, onClick, onLong).padding(4.dp).then(if (stateText != null) Modifier.semantics { stateDescription = stateText } else Modifier)) {
         Box {
             Art(e, Modifier.fillMaxWidth().aspectRatio(16f / 9f).clip(shape), e.filename.substringAfterLast('.', "").uppercase())
             Icon(

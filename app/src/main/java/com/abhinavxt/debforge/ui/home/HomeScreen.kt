@@ -53,6 +53,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.remember
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.shape.RoundedCornerShape
+import com.abhinavxt.debforge.ui.player.focusRing
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -358,9 +361,12 @@ fun HomeScreen(signedIn: Boolean) {
                 ) {
                     HomeTab.entries.sortedBy { it == HomeTab.Settings }.forEach { tab ->
                         val selected = current?.hierarchy?.any { it.route == tab.route } == true
+                        val railSource = remember { MutableInteractionSource() }
                         NavigationRailItem(
                             selected = selected,
                             onClick = { go(tab) },
+                            interactionSource = railSource,
+                            modifier = Modifier.focusRing(railSource, RoundedCornerShape(16.dp)),
                             icon = { Icon(if (selected) tab.selectedIcon else tab.icon, contentDescription = null) },
                             label = { Text(stringResource(tab.labelRes), maxLines = 1, overflow = TextOverflow.Ellipsis) }
                         )
@@ -379,9 +385,12 @@ fun HomeScreen(signedIn: Boolean) {
                         NavigationBar(containerColor = MaterialTheme.colorScheme.surfaceContainer) {
                             HomeTab.entries.filter { it.inBar }.forEach { tab ->
                                 val selected = barRoute == tab.route
+                                val barSource = remember { MutableInteractionSource() }
                                 NavigationBarItem(
                                     selected = selected,
                                     onClick = { go(tab) },
+                                    interactionSource = barSource,
+                                    modifier = Modifier.focusRing(barSource, RoundedCornerShape(16.dp)),
                                     icon = { Icon(if (selected) tab.selectedIcon else tab.icon, contentDescription = null) },
                                     label = { Text(stringResource(tab.labelRes), maxLines = 1, overflow = TextOverflow.Ellipsis) }
                                 )
