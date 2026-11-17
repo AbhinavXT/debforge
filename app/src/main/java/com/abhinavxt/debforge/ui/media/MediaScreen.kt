@@ -84,6 +84,7 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -119,6 +120,7 @@ fun MediaScreen(
     viewModel: MediaViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val watch by viewModel.watch.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val snackbar = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -145,6 +147,7 @@ fun MediaScreen(
     Box(Modifier.fillMaxSize()) {
     MediaContent(
         state = state,
+        watch = watch,
         playingId = playingId,
         onKind = viewModel::setKind,
         onQuery = viewModel::setQuery,
@@ -195,7 +198,8 @@ internal fun MediaContent(
     onOpenDownloads: () -> Unit,
     onOpenSettings: () -> Unit,
     onOpenYouTube: () -> Unit,
-    lists: AudioListActions = AudioListActions()
+    lists: AudioListActions = AudioListActions(),
+    watch: Map<String, com.abhinavxt.debforge.data.playback.PlaybackEntity> = emptyMap()
 ) {
     val cs = MaterialTheme.colorScheme
     val selecting = state.selected.isNotEmpty()
@@ -347,7 +351,7 @@ internal fun MediaContent(
                         val selected = e.id in state.selected
                         val m = Modifier.animateItem()
                         when (state.kind) {
-                            FileKind.Video -> VideoTile(e, selected, m, onClick = { if (selecting) onToggle(e.id) else onOpenVideo(e) }, onLong = { onToggle(e.id) })
+                            FileKind.Video -> VideoTile(e, watchProgress(watch[e.id]), selected, m, onClick = { if (selecting) onToggle(e.id) else onOpenVideo(e) }, onLong = { onToggle(e.id) })
                             FileKind.Audio -> MediaRow(
                                 e, FileKind.Audio, selected, e.id == playingId, m,
                                 onClick = { if (selecting) onToggle(e.id) else onPlayAudio(items, items.indexOf(e)) },
@@ -474,18 +478,37 @@ private fun Art(e: DownloadEntity, modifier: Modifier, tag: String) {
 }
 
 @Composable
-private fun VideoTile(e: DownloadEntity, selected: Boolean, modifier: Modifier, onClick: () -> Unit, onLong: () -> Unit) {
+private fun VideoTile(e: DownloadEntity, progress: WatchProgress, selected: Boolean, modifier: Modifier, onClick: () -> Unit, onLong: () -> Unit) {
     val cs = MaterialTheme.colorScheme
     val shape = RoundedCornerShape(16.dp)
     val sub = listOfNotNull(e.formatLabel().takeIf { it.isNotEmpty() }, formatSize(e.filesize).takeIf { e.filesize > 0 }).joinToString(" · ")
     val channel = e.artist?.takeIf { it.isNotBlank() }
-    Column(modifier.mediaClickable(shape, selected, onClick, onLong)) {
+    val stateText = when (progress) {
+        WatchProgress.Unplayed -> stringResource(R.string.media_unplayed)
+        is WatchProgress.InProgress -> stringResource(R.string.media_watched_percent, progress.percent)
+        WatchProgress.Finished -> null
+    }
+    Column(modifier.mediaClickable(shape, selected, onClick, onLong).then(if (stateText != null) Modifier.semantics { stateDescription = stateText } else Modifier)) {
         Box {
             Art(e, Modifier.fillMaxWidth().aspectRatio(16f / 9f).clip(shape), e.filename.substringAfterLast('.', "").uppercase())
             Icon(
                 Icons.Rounded.PlayCircle, null, tint = cs.onSurface.copy(alpha = 0.85f),
                 modifier = Modifier.align(Alignment.Center).size(40.dp)
             )
+            // Bottom edge for progress, top-end corner for "new": clear of the centre play icon and the top-start checkmark.
+            when (progress) {
+                is WatchProgress.InProgress -> androidx.compose.material3.LinearProgressIndicator(
+                    progress = { progress.fraction },
+                    modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth().height(3.dp).clip(RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp)),
+                    trackColor = cs.surface.copy(alpha = 0.6f)
+                )
+                WatchProgress.Unplayed -> Box(
+                    Modifier.align(Alignment.TopEnd).padding(8.dp).size(12.dp)
+                        .background(cs.primary, androidx.compose.foundation.shape.CircleShape)
+                        .border(2.dp, cs.surface, androidx.compose.foundation.shape.CircleShape)
+                )
+                WatchProgress.Finished -> Unit
+            }
             if (selected) Icon(Icons.Rounded.CheckCircle, null, tint = cs.primary, modifier = Modifier.align(Alignment.TopStart).padding(8.dp).size(24.dp).background(cs.surface, androidx.compose.foundation.shape.CircleShape))
         }
         Text(e.displayTitle(), style = MaterialTheme.typography.titleSmall, maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(horizontal = 4.dp, vertical = 6.dp))

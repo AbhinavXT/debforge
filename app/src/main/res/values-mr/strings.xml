@@ -959,4 +959,6 @@
     <string name="media_list_empty_body">ट्रॅकच्या “आणखी क्रिया” मेनूमधून ट्रॅक जोडा.</string>
     <string name="media_playlist_options">प्लेलिस्ट पर्याय</string>
     <string name="media_favourite">आवडते</string>
+    <string name="media_unplayed">अजून पाहिलेले नाही</string>
+    <string name="media_watched_percent">%1$d%% पाहिले</string>
 </resources>

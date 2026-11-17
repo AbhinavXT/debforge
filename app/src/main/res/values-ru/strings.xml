@@ -1055,4 +1055,6 @@
     <string name="media_list_empty_body">Добавляйте треки через меню «Ещё» у трека.</string>
     <string name="media_playlist_options">Параметры плейлиста</string>
     <string name="media_favourite">В избранном</string>
+    <string name="media_unplayed">Ещё не просмотрено</string>
+    <string name="media_watched_percent">Просмотрено: %1$d%%</string>
 </resources>

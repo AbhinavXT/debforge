@@ -959,4 +959,6 @@
     <string name="media_list_empty_body">ট্র্যাকের “আরও অ্যাকশন” মেনু থেকে ট্র্যাক যোগ করুন।</string>
     <string name="media_playlist_options">প্লেলিস্টের বিকল্প</string>
     <string name="media_favourite">প্রিয়</string>
+    <string name="media_unplayed">এখনও দেখা হয়নি</string>
+    <string name="media_watched_percent">%1$d%% দেখা হয়েছে</string>
 </resources>

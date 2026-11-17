@@ -1007,4 +1007,6 @@
     <string name="media_list_empty_body">Añade pistas desde el menú «Más acciones» de una pista.</string>
     <string name="media_playlist_options">Opciones de la lista</string>
     <string name="media_favourite">Favorita</string>
+    <string name="media_unplayed">Aún sin ver</string>
+    <string name="media_watched_percent">%1$d%% visto</string>
 </resources>

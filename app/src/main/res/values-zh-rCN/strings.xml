@@ -911,4 +911,6 @@
     <string name="media_list_empty_body">请从曲目的“更多操作”菜单中添加曲目。</string>
     <string name="media_playlist_options">播放列表选项</string>
     <string name="media_favourite">已收藏</string>
+    <string name="media_unplayed">尚未观看</string>
+    <string name="media_watched_percent">已观看 %1$d%%</string>
 </resources>

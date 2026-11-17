@@ -959,4 +959,6 @@
     <string name="media_list_empty_body">Parçaları, parçanın “Diğer işlemler” menüsünden ekleyin.</string>
     <string name="media_playlist_options">Çalma listesi seçenekleri</string>
     <string name="media_favourite">Favori</string>
+    <string name="media_unplayed">Henüz izlenmedi</string>
+    <string name="media_watched_percent">%%%1$d izlendi</string>
 </resources>

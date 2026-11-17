@@ -959,4 +959,6 @@
     <string name="media_list_empty_body">ట్రాక్ యొక్క “మరిన్ని చర్యలు” మెనూ నుండి ట్రాక్‌లను జోడించండి.</string>
     <string name="media_playlist_options">ప్లేలిస్ట్ ఎంపికలు</string>
     <string name="media_favourite">ఇష్టమైనది</string>
+    <string name="media_unplayed">ఇంకా చూడలేదు</string>
+    <string name="media_watched_percent">%1$d%% చూశారు</string>
 </resources>

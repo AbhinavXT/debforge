@@ -959,4 +959,6 @@
     <string name="media_list_empty_body">Füge Titel über das Menü „Weitere Aktionen“ eines Titels hinzu.</string>
     <string name="media_playlist_options">Playlist-Optionen</string>
     <string name="media_favourite">Favorit</string>
+    <string name="media_unplayed">Noch nicht angesehen</string>
+    <string name="media_watched_percent">%1$d%% angesehen</string>
 </resources>

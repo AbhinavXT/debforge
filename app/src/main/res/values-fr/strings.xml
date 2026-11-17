@@ -1007,4 +1007,6 @@
     <string name="media_list_empty_body">Ajoutez des pistes depuis le menu « Plus d’actions » d’une piste.</string>
     <string name="media_playlist_options">Options de la playlist</string>
     <string name="media_favourite">Favori</string>
+    <string name="media_unplayed">Pas encore regardée</string>
+    <string name="media_watched_percent">%1$d%% regardée</string>
 </resources>

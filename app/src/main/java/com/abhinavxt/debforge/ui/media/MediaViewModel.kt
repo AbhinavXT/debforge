@@ -81,7 +81,8 @@ class MediaViewModel @Inject constructor(
     private val localPlayback: LocalPlayback,
     private val audioPlayer: AudioPlayer,
     settings: SettingsStore,
-    private val audioLists: AudioLists
+    private val audioLists: AudioLists,
+    playbackPositions: com.abhinavxt.debforge.data.playback.PlaybackPositions
 ) : ViewModel() {
 
     private data class Ui(val query: String, val sort: SortOrder, val kind: FileKind, val selected: Set<String>, val audioList: String? = null)
@@ -91,6 +92,11 @@ class MediaViewModel @Inject constructor(
     /** Settings: DebForge's player, or the "open with" chooser. */
     val useInternalPlayer: StateFlow<Boolean> = settings.internalPlayerFlow
         .stateIn(viewModelScope, SharingStarted.Eagerly, true)
+
+    /** Saved watch position per download id: local playback saves under the DownloadEntity id (LocalPlayback.toLocalItem). */
+    val watch: StateFlow<Map<String, com.abhinavxt.debforge.data.playback.PlaybackEntity>> = playbackPositions.all
+        .map { list -> list.associateBy { it.itemId } }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyMap())
 
     private val _playRequests = Channel<PlayRequest>(Channel.BUFFERED)
     val playRequests = _playRequests.receiveAsFlow()

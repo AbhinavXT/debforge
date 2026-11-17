@@ -961,4 +961,6 @@
     <string name="media_list_empty_body">Add tracks from a track’s More actions menu.</string>
     <string name="media_playlist_options">Playlist options</string>
     <string name="media_favourite">Favourite</string>
+    <string name="media_unplayed">Not watched yet</string>
+    <string name="media_watched_percent">%1$d%% watched</string>
 </resources>

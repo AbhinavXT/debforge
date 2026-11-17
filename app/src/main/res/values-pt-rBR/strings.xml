@@ -1007,4 +1007,6 @@
     <string name="media_list_empty_body">Adicione faixas pelo menu “Mais ações” de uma faixa.</string>
     <string name="media_playlist_options">Opções da playlist</string>
     <string name="media_favourite">Favorita</string>
+    <string name="media_unplayed">Ainda não assistido</string>
+    <string name="media_watched_percent">%1$d%% assistido</string>
 </resources>

@@ -911,4 +911,6 @@
     <string name="media_list_empty_body">Tambahkan lagu lewat menu “Tindakan lainnya” pada lagu.</string>
     <string name="media_playlist_options">Opsi playlist</string>
     <string name="media_favourite">Favorit</string>
+    <string name="media_unplayed">Belum ditonton</string>
+    <string name="media_watched_percent">%1$d%% ditonton</string>
 </resources>

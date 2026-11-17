@@ -959,4 +959,6 @@
     <string name="media_list_empty_body">ट्रैक के “और विकल्प” मेनू से ट्रैक जोड़ें।</string>
     <string name="media_playlist_options">प्लेलिस्ट विकल्प</string>
     <string name="media_favourite">पसंदीदा</string>
+    <string name="media_unplayed">अभी तक नहीं देखा</string>
+    <string name="media_watched_percent">%1$d%% देखा गया</string>
 </resources>
