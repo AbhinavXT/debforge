@@ -116,7 +116,7 @@ fun SearchSourcesSection(viewModel: SearchSourcesViewModel = hiltViewModel()) {
     var editingAvoid by remember { mutableStateOf(false) }
     var editingPrefer by remember { mutableStateOf(false) }
 
-    SectionCard(title = stringResource(R.string.sources_title)) {
+    SectionCard(modifier = Modifier.padding(top = 20.dp)) {
         SettingRow(
             icon = Icons.Rounded.TravelExplore,
             title = stringResource(R.string.sources_title),

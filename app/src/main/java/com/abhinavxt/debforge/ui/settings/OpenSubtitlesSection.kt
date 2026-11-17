@@ -98,7 +98,7 @@ fun OpenSubtitlesSection(viewModel: OpenSubtitlesViewModel = hiltViewModel()) {
     val username by viewModel.username.collectAsStateWithLifecycle()
     var editing by remember { mutableStateOf(false) }
 
-    SectionCard(title = stringResource(R.string.os_title)) {
+    SectionCard(modifier = Modifier.padding(top = 20.dp)) {
         SettingRow(
             icon = Icons.Rounded.Subtitles,
             title = stringResource(R.string.os_title),

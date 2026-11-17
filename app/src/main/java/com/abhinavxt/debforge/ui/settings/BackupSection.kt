@@ -215,7 +215,7 @@ fun BackupSection(viewModel: BackupViewModel = hiltViewModel()) {
         if (uri != null) viewModel.startRestore(uri)
     }
 
-    SectionCard(title = stringResource(R.string.backup_title)) {
+    SectionCard(modifier = Modifier.padding(top = 20.dp)) {
         SettingRow(
             icon = Icons.Rounded.SettingsBackupRestore,
             title = stringResource(R.string.backup_title),

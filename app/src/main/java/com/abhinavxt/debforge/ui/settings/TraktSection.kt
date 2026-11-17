@@ -159,7 +159,10 @@ fun TraktSection(viewModel: TraktViewModel = hiltViewModel()) {
     val syncing by viewModel.syncing.collectAsStateWithLifecycle()
     val credentials by viewModel.credentials.collectAsStateWithLifecycle()
 
-    SectionCard(title = stringResource(R.string.trakt_title)) {
+    SectionCard(
+        title = if (user != null) stringResource(R.string.trakt_title) else null,
+        modifier = if (user == null) Modifier.padding(top = 20.dp) else Modifier
+    ) {
         val signedIn = user
         if (signedIn == null) {
             SettingRow(
