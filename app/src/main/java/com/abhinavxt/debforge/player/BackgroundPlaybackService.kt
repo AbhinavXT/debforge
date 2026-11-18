@@ -18,6 +18,7 @@ import androidx.media3.session.CommandButton
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
 import androidx.media3.session.SessionCommand
+import androidx.media3.session.SessionError
 import androidx.media3.session.SessionResult
 import com.abhinavxt.debforge.data.prefs.SettingsStore
 import com.google.common.collect.ImmutableList
@@ -159,7 +160,7 @@ class BackgroundPlaybackService : MediaSessionService() {
             val sign = when (customCommand.customAction) {
                 SkipCommands.BACK.customAction -> -1
                 SkipCommands.FORWARD.customAction -> 1
-                else -> return Futures.immediateFuture(SessionResult(SessionResult.RESULT_ERROR_NOT_SUPPORTED))
+                else -> return Futures.immediateFuture(SessionResult(SessionError.ERROR_NOT_SUPPORTED))
             }
             audio.seekBy(sign * skipMs(currentSeconds))
             return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
