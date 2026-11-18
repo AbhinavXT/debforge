@@ -29,11 +29,12 @@ class BlockingCallsTest {
         val server = stalledServer()
         try {
             val started = CompletableDeferred<Unit>()
+            var failure: Throwable? = null
             val job = async(Dispatchers.Default) {
                 runCatching { BlockingCalls.run {
                     started.complete(Unit)
                     client.newCall(Request.Builder().url("http://127.0.0.1:${server.localPort}/").build()).execute().close()
-                } }
+                } }.also { failure = it.exceptionOrNull() }
             }
             started.await()
             Thread.sleep(300) // let the read block
@@ -41,6 +42,7 @@ class BlockingCallsTest {
             withTimeout(5_000) { job.cancelAndJoin() }
             val ms = (System.nanoTime() - t0) / 1_000_000
             assertTrue("cancel took $ms ms", ms < 3_000)
+            assertTrue("expected CancellationException, got $failure", failure is kotlinx.coroutines.CancellationException)
         } finally {
             server.close()
         }

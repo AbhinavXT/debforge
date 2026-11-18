@@ -1775,7 +1775,7 @@ class PlayerActivity : ComponentActivity() {
             }
             val message = try {
                 if (downloadDao.getById(item.id) != null) R.string.yt_already_queued
-                else { downloads.enqueue(item); R.string.yt_queued }
+                else { downloads.enqueue(item, foreground = true); R.string.yt_queued }
             } catch (e: kotlinx.coroutines.CancellationException) {
                 throw e
             } catch (e: Exception) {

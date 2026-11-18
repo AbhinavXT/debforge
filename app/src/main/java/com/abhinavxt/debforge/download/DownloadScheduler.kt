@@ -157,7 +157,10 @@ class DownloadScheduler @Inject constructor(
         if (pending != null) {
             val reason = js.getPendingJobReason(JOB_ID)
             val recent = System.currentTimeMillis() - lastScheduledAt < RECENT_SCHEDULE_MS
-            val replace = shouldReplacePending(reason, runner.hasLiveSession(), block, foreground, recent)
+            // The caller's flag can be stale (a coroutine finishing after the user left),
+            // and cancelling a pending job while hidden would lose the system's retry:
+            // schedule() is refused when not visible. So verify, don't trust.
+            val replace = shouldReplacePending(reason, runner.hasLiveSession(), block, foreground && isAppInForeground(), recent)
             // Left over from builds that made JobScheduler enforce Wi-Fi-only:
             // it never starts on mobile data, even after the user turns the
             // rule off, and it made every new download wait behind it.
@@ -189,6 +192,12 @@ class DownloadScheduler @Inject constructor(
             Log.w(TAG, "User-initiated job not scheduled", e)
             false
         }
+    }
+
+    private fun isAppInForeground(): Boolean {
+        val info = android.app.ActivityManager.RunningAppProcessInfo()
+        android.app.ActivityManager.getMyMemoryState(info)
+        return info.importance <= android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND
     }
 
     @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)

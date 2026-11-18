@@ -3,8 +3,10 @@ package com.abhinavxt.debforge.data.net
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlin.coroutines.coroutineContext
 import okhttp3.Call
 import okhttp3.EventListener
 import java.io.IOException
@@ -25,6 +27,7 @@ object BlockingCalls {
     private class Scope {
         val calls = ConcurrentHashMap.newKeySet<Call>()
         val cancelled = AtomicBoolean(false)
+        val finished = AtomicBoolean(false)
     }
 
     private val scopes = ConcurrentHashMap<Thread, Scope>()
@@ -55,13 +58,22 @@ object BlockingCalls {
             try {
                 awaitCancellation()
             } finally {
-                scope.cancelled.set(true)
-                scope.calls.toList().forEach { it.cancel() }
+                // Normal completion also ends the watcher; only a real cancel cancels calls.
+                if (!scope.finished.get()) {
+                    scope.cancelled.set(true)
+                    scope.calls.toList().forEach { it.cancel() }
+                }
             }
         }
         try {
             block()
+        } catch (e: IOException) {
+            // A cancelled call surfaces as IOException("Canceled"); report the
+            // cancellation itself so callers don't show a network error.
+            if (scope.cancelled.get()) coroutineContext.ensureActive()
+            throw e
         } finally {
+            scope.finished.set(true)
             // Completed or cancelled: nothing more to track.
             scopes.remove(thread, scope)
             scope.calls.clear()
