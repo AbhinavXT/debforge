@@ -1,0 +1,2 @@
+• Audio player: close button on the mini and full player, swipe the mini player away to stop, swipe the full player down to minimise
+• Tap a channel name in a video preview, playlist or the audio player to open that channel
