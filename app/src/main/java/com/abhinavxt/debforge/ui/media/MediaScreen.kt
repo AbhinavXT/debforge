@@ -41,6 +41,7 @@ import androidx.compose.material.icons.automirrored.rounded.Sort
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Delete
+import androidx.compose.material.icons.rounded.History
 import androidx.compose.material.icons.rounded.DeleteOutline
 import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.icons.rounded.GraphicEq
@@ -125,6 +126,7 @@ fun MediaScreen(
     onOpenDownloads: () -> Unit,
     onOpenSettings: () -> Unit,
     onOpenYouTube: () -> Unit,
+    onOpenHistory: () -> Unit = {},
     viewModel: MediaViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -176,6 +178,7 @@ fun MediaScreen(
         onOpenDownloads = onOpenDownloads,
         onOpenSettings = onOpenSettings,
         onOpenYouTube = onOpenYouTube,
+        onOpenHistory = onOpenHistory,
         lists = AudioListActions(
             onPick = viewModel::selectAudioList,
             onToggleFavourite = viewModel::toggleFavourite,
@@ -208,6 +211,7 @@ internal fun MediaContent(
     onOpenDownloads: () -> Unit,
     onOpenSettings: () -> Unit,
     onOpenYouTube: () -> Unit,
+    onOpenHistory: () -> Unit = {},
     lists: AudioListActions = AudioListActions(),
     watch: Map<String, com.abhinavxt.debforge.data.playback.PlaybackEntity>? = null,
     internalPlayer: Boolean = true
@@ -241,6 +245,7 @@ internal fun MediaContent(
             }
         } else {
             ScreenHeader(stringResource(R.string.media_title)) {
+                IconButton(onClick = onOpenHistory) { Icon(Icons.Rounded.History, stringResource(R.string.history_title)) }
                 HeaderNavActions(
                     onOpenSettings,
                     onOpenDownloads = onOpenDownloads,

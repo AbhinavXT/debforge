@@ -102,6 +102,7 @@ import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeOut
+import com.abhinavxt.debforge.ui.history.HistoryScreen
 import com.abhinavxt.debforge.ui.player.ArtworkShare
 import com.abhinavxt.debforge.ui.player.animatorDurationScale
 import androidx.compose.animation.slideInVertically
@@ -134,6 +135,13 @@ private enum class HomeTab(
     Active("active", R.string.tab_downloads, Icons.Outlined.Download, Icons.Filled.Download, inBar = false),
     Settings("settings", R.string.tab_settings, Icons.Outlined.Settings, Icons.Filled.Settings, inBar = false)
 }
+
+/** Play history: pushed from the Media tab header, so it is a route but not a tab. */
+private const val HISTORY_ROUTE = "history"
+
+/** Screens reached from a header icon: Back returns to where they were opened from. */
+private fun isPushedRoute(route: String?) =
+    route == HomeTab.Active.route || route == HomeTab.Settings.route || route == HISTORY_ROUTE
 
 /**
  * The app shell. Bottom-nav switches between Browse / Search / Active / Browser /
@@ -175,14 +183,14 @@ fun HomeScreen(signedIn: Boolean) {
     val backStackEntry by navController.currentBackStackEntryAsState()
     val current = backStackEntry?.destination
     // Pushed Downloads/Settings keep the tab they were opened from highlighted in the bar.
-    val barRoute = if (current?.route == HomeTab.Active.route || current?.route == HomeTab.Settings.route)
+    val barRoute = if (isPushedRoute(current?.route))
         backStackEntry?.let { navController.previousBackStackEntry?.destination?.route } ?: current?.route
     else current?.route
 
     fun go(tab: HomeTab) {
         // Drop a pushed Downloads/Settings first so it isn't saved with its tab and restored on top of it later.
         val route = navController.currentDestination?.route
-        if ((route == HomeTab.Active.route || route == HomeTab.Settings.route) && route != tab.route) navController.popBackStack()
+        if (isPushedRoute(route) && route != tab.route) navController.popBackStack()
         // Already on the back stack (selected, or a screen was pushed on top of it): pop back to its root.
         if (navController.popBackStack(tab.route, inclusive = false)) return
         navController.navigate(tab.route) {
@@ -195,23 +203,24 @@ fun HomeScreen(signedIn: Boolean) {
     // Downloads and Settings are pushed (no tab state to keep), so Back returns to where the user was.
     // The tab a pushed screen was opened from, so Back always returns there.
     var pushedFrom by remember { mutableStateOf<String?>(null) }
-    fun push(tab: HomeTab) {
+    fun pushRoute(route: String) {
         val from = navController.currentDestination?.route
         // Settings opened from Downloads goes back to Downloads, which already remembers its own origin.
-        if (from != HomeTab.Active.route && from != HomeTab.Settings.route) pushedFrom = from
-        navController.navigate(tab.route) { launchSingleTop = true }
+        if (!isPushedRoute(from)) pushedFrom = from
+        navController.navigate(route) { launchSingleTop = true }
     }
+    fun push(tab: HomeTab) = pushRoute(tab.route)
     fun backFromPushed() {
         val origin = pushedFrom
         navController.popBackStack()
         val now = navController.currentDestination?.route
-        val isPushed = now == HomeTab.Active.route || now == HomeTab.Settings.route
+        val isPushed = isPushedRoute(now)
         if (origin != null && !isPushed && now != origin) {
             HomeTab.entries.firstOrNull { it.route == origin }?.let { go(it) }
         }
     }
 
-    BackHandler(enabled = current?.route == HomeTab.Active.route || current?.route == HomeTab.Settings.route) { backFromPushed() }
+    BackHandler(enabled = isPushedRoute(current?.route)) { backFromPushed() }
 
     // A channel name tapped outside the YouTube tab (the audio player): minimise the full player and show the channel page there.
     // Ignored while a playlist download runs on the YouTube tab. Back from the page returns to the tab it was opened from.
@@ -313,8 +322,14 @@ fun HomeScreen(signedIn: Boolean) {
                         },
                         onOpenDownloads = { push(HomeTab.Active) },
                         onOpenSettings = { push(HomeTab.Settings) },
-                        onOpenYouTube = { go(HomeTab.YouTube) }
+                        onOpenYouTube = { go(HomeTab.YouTube) },
+                        onOpenHistory = { pushRoute(HISTORY_ROUTE) }
                     )
+                }
+                composable(HISTORY_ROUTE) {
+                    Pushed(wide, onBack = ::backFromPushed) {
+                        HistoryScreen(onOpenYouTube = { url -> youtubeViewModel.offer(url); go(HomeTab.YouTube) })
+                    }
                 }
                 composable(HomeTab.Active.route) {
                     Pushed(wide, onBack = ::backFromPushed) {
@@ -420,7 +435,8 @@ fun HomeScreen(signedIn: Boolean) {
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                     HomeTab.entries.sortedBy { it == HomeTab.Settings }.forEach { tab ->
-                        val selected = current?.hierarchy?.any { it.route == tab.route } == true
+                        val selected = current?.hierarchy?.any { it.route == tab.route } == true ||
+                            (tab == HomeTab.Media && current?.route == HISTORY_ROUTE)
                         val railSource = remember { MutableInteractionSource() }
                         NavigationRailItem(
                             selected = selected,

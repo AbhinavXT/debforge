@@ -17,6 +17,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import com.abhinavxt.debforge.MainActivity
 import com.abhinavxt.debforge.data.local.DownloadDao
+import com.abhinavxt.debforge.data.history.PlayHistory
 import com.abhinavxt.debforge.data.playback.AudioQueueStore
 import com.abhinavxt.debforge.data.playback.AudioResume
 import com.abhinavxt.debforge.data.playback.QueueSnapshot
@@ -34,6 +35,7 @@ import com.abhinavxt.debforge.domain.YouTubeLinks
 import com.abhinavxt.debforge.domain.YouTubeStream
 import com.abhinavxt.debforge.domain.YouTubeVideo
 import com.abhinavxt.debforge.player.youtube.YouTubeMediaSourceFactory
+import com.abhinavxt.debforge.ui.history.audioHistoryEntry
 import com.abhinavxt.debforge.player.youtube.YouTubeStreamTag
 import com.abhinavxt.debforge.player.youtube.YouTubeStreaming
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -241,7 +243,8 @@ class AudioPlayer @Inject constructor(
     private val resume: AudioResume,
     private val youtubeResolver: YouTubeResolver,
     private val queueStore: AudioQueueStore,
-    private val downloads: DownloadDao
+    private val downloads: DownloadDao,
+    private val history: PlayHistory
 ) {
 
     private val _state = MutableStateFlow(AudioState())
@@ -282,9 +285,14 @@ class AudioPlayer @Inject constructor(
             val p = player ?: return
             val id = tracks.getOrNull(old.mediaItemIndex)?.id ?: return
             when {
-                reason == Player.DISCONTINUITY_REASON_AUTO_TRANSITION -> scope.launch { resume.forget(id) } // finished
-                reason == Player.DISCONTINUITY_REASON_SEEK && old.mediaItemIndex != new.mediaItemIndex ->
+                reason == Player.DISCONTINUITY_REASON_AUTO_TRANSITION -> {
+                    scope.launch { resume.forget(id) } // finished
+                    recordHistory(p, old.mediaItemIndex, old.positionMs, ended = true)
+                }
+                reason == Player.DISCONTINUITY_REASON_SEEK && old.mediaItemIndex != new.mediaItemIndex -> {
                     save(p, old.mediaItemIndex, old.positionMs)
+                    recordHistory(p, old.mediaItemIndex, old.positionMs)
+                }
             }
         }
 
@@ -365,7 +373,9 @@ class AudioPlayer @Inject constructor(
 
     init {
         // Save the position now and then while playing, so a killed process loses little.
-        scope.launch { playing.collectLatest { if (it) while (true) { delay(15_000); saveCurrent(); savePositionNow() } } }
+        scope.launch { playing.collectLatest { if (it) while (true) { delay(15_000); saveSpot(); savePositionNow() } } }
+        // Play history: the same cadence as the video player (about every 5 s while playing); pause and track changes record too.
+        scope.launch { playing.collectLatest { if (it) while (true) { delay(5_000); recordCurrent() } } }
         // The queue itself, saved a moment after it stops changing.
         scope.launch { queueChanged.debounce(500).collect { saveQueueNow() } }
         // Republish the position only while playing and somebody is watching.
@@ -739,7 +749,21 @@ class AudioPlayer @Inject constructor(
         artistUrl = artistUrl
     )
 
-    private fun saveCurrent() { player?.let { save(it, it.currentMediaItemIndex, it.currentPosition) } }
+    private fun saveCurrent() { saveSpot(); recordCurrent() }
+
+    private fun saveSpot() { player?.let { save(it, it.currentMediaItemIndex, it.currentPosition) } }
+
+    private fun recordCurrent() { player?.let { recordHistory(it, it.currentMediaItemIndex, it.currentPosition) } }
+
+    /** Adds the track at [index] to the play history (skipped under 5 s unless [ended]; nothing while history is paused). */
+    private fun recordHistory(p: Player, index: Int, positionMs: Long, ended: Boolean = false) {
+        val track = tracks.getOrNull(index) ?: return
+        val timeline = p.currentTimeline
+        val windowMs = if (index < timeline.windowCount) timeline.getWindow(index, Timeline.Window()).durationMs else C.TIME_UNSET
+        val duration = if (windowMs != C.TIME_UNSET) windowMs
+            else if (index == p.currentMediaItemIndex) currentDurationMs(p) else 0L
+        audioHistoryEntry(track, positionMs, duration, ended, System.currentTimeMillis())?.let(history::record)
+    }
 
     /** Remembers a long track's spot; a finished track forgets it, a peek leaves an earlier spot alone. */
     private fun save(p: Player, index: Int, positionMs: Long) {
