@@ -1,0 +1,5 @@
+• YouTube: search, then download a video or its audio at the quality you pick, whole playlists and subtitles, or stream without downloading
+• Media: everything you downloaded in one place, with an audio player (speed, sleep timer, favourites, playlists, resume)
+• Much better on TV and tablets: the remote reaches every control, and layouts use the width
+• Settings reorganised with your account at the top
+• New headline font and many smaller fixes
