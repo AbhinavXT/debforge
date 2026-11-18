@@ -7,17 +7,17 @@ import coil.imageLoader
 import coil.request.ImageRequest
 import coil.request.SuccessResult
 import coil.transform.RoundedCornersTransformation
+import android.net.Uri
+import com.abhinavxt.debforge.data.playback.AudioQueueStore
 import com.abhinavxt.debforge.player.AudioPlayer
 import com.abhinavxt.debforge.player.AudioTrack
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import kotlin.coroutines.cancellation.CancellationException
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -30,7 +30,8 @@ import javax.inject.Singleton
 @Singleton
 class PlayerWidgetSync @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val audio: AudioPlayer
+    private val audio: AudioPlayer,
+    private val queueStore: AudioQueueStore
 ) {
     /** Android refused to start playback from the background: Play opens the app until something plays. */
     private val startBlocked = MutableStateFlow(false)
@@ -39,8 +40,6 @@ class PlayerWidgetSync @Inject constructor(
 
     fun start(scope: CoroutineScope) {
         scope.launch {
-            // A new process: bring the saved queue back so the widget shows it (and its buttons work).
-            restoreForWidget()
             combine(audio.state, startBlocked) { a, blocked ->
                 if (blocked && (a.isPlaying || a.track == null)) startBlocked.value = false
                 Key(a.track?.id, a.track?.title, a.track?.artist, a.isPlaying, a.hasPrevious, a.hasNext, audio.isActive && !blocked)
@@ -56,14 +55,10 @@ class PlayerWidgetSync @Inject constructor(
     /** Playback could not be started from a widget tap: switch the Play button to "open the app". */
     fun markStartBlocked() { startBlocked.value = true }
 
-    suspend fun restoreForWidget() {
-        if (PlayerWidgetRenderer.widgetIds(context).isEmpty()) return
-        runCatching { withContext(Dispatchers.Main) { audio.restore() } }
-    }
-
     /** Renders the current state now (text first, artwork once it has loaded). */
     suspend fun refresh() {
         if (PlayerWidgetRenderer.widgetIds(context).isEmpty()) return
+        if (!audio.isActive) { renderSaved(); return }
         val a = audio.state.value
         val track = a.track
         val cached = track?.let { t -> art?.takeIf { it.first == t.id }?.second }
@@ -76,6 +71,34 @@ class PlayerWidgetSync @Inject constructor(
         if (now.track?.id == track.id) {
             runCatching { PlayerWidgetRenderer.push(context, stateOf(now, bmp, audio.isActive && !startBlocked.value)) }
         }
+    }
+
+    /**
+     * No player in this process (it was just started, or the queue was cleared): show the saved queue's
+     * current track straight from disk, without restoring anything. The buttons still reach
+     * [AudioPlayer.playFromWidget], which restores when the user taps.
+     */
+    private suspend fun renderSaved() {
+        val snap = runCatching { queueStore.load() }.getOrNull()
+        val tracks = snap?.queue?.tracks.orEmpty()
+        val at = tracks.indexOfFirst { it.id == snap?.position?.curId }.takeIf { it >= 0 } ?: 0
+        val saved = tracks.getOrNull(at)
+        if (saved == null) {
+            art = null
+            runCatching { PlayerWidgetRenderer.push(context, stateOf(com.abhinavxt.debforge.player.AudioState(), null, live = false)) }
+            return
+        }
+        val repeatAll = snap?.queue?.repeat == com.abhinavxt.debforge.player.AudioRepeat.ALL
+        val cached = art?.takeIf { it.first == saved.id }?.second
+        fun state(bmp: Bitmap?) = PlayerWidgetState(
+            saved.title, saved.artist, isPlaying = false, hasPrevious = true,
+            hasNext = repeatAll || at < tracks.lastIndex, art = bmp, live = true, empty = false
+        )
+        runCatching { PlayerWidgetRenderer.push(context, state(cached)) }
+        if (cached != null || saved.artworkUrl == null) return
+        val bmp = loadArt(AudioTrack(saved.id, Uri.EMPTY, saved.title, saved.artist, null, saved.artworkUrl)) ?: return
+        art = saved.id to bmp
+        if (!audio.isActive) runCatching { PlayerWidgetRenderer.push(context, state(bmp)) }
     }
 
     private suspend fun loadArt(track: AudioTrack): Bitmap? {

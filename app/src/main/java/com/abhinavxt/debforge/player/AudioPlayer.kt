@@ -575,18 +575,41 @@ class AudioPlayer @Inject constructor(
      */
     suspend fun playFromWidget(action: WidgetAction): Boolean = withContext(Dispatchers.Main.immediate) {
         restore()
-        if (player == null) return@withContext false
+        val p = player ?: return@withContext false
+        var activated = false
         if (restoredPending) {
-            activateJob?.takeIf { it.isActive }?.join()
-            if (restoredPending && !activate()) return@withContext false
-            if (action == WidgetAction.TOGGLE) return@withContext true // activating started playback
+            val running = activateJob?.takeIf { it.isActive }
+            if (running != null) running.join()
+            if (restoredPending) {
+                if (!activate()) return@withContext false
+                activated = true
+            } else if (action == WidgetAction.TOGGLE) {
+                // An in-app tap was already activating: that started playback, toggling again would pause it.
+                return@withContext playbackTookHold(p)
+            }
+            activated = true
+            if (action == WidgetAction.TOGGLE) return@withContext playbackTookHold(p) // activating started playback
         }
         when (action) {
             WidgetAction.TOGGLE -> toggle()
             WidgetAction.NEXT -> next()
             WidgetAction.PREVIOUS -> previous()
         }
-        true
+        !activated || playbackTookHold(p)
+    }
+
+    /**
+     * After a widget-started activation: playback is really going within ~2 s. A refusal later in the
+     * service's foreground start would leave the player idle or paused; then it is paused and false returned.
+     */
+    private suspend fun playbackTookHold(p: ExoPlayer): Boolean {
+        repeat(20) {
+            if (player !== p) return false
+            if (p.playWhenReady && (p.playbackState == Player.STATE_READY || p.playbackState == Player.STATE_BUFFERING)) return true
+            delay(100)
+        }
+        if (player === p) p.pause()
+        return false
     }
 
     fun toggle() {

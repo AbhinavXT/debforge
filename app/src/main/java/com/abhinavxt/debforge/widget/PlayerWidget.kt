@@ -35,16 +35,13 @@ class PlayerWidget : AppWidgetProvider() {
         inBackground {
             // Under goAsync's ~10 s: a streamed track may need its link looked up first.
             val started = withTimeoutOrNull(START_TIMEOUT_MS) { audio.playFromWidget(action) }
-            if (started == false) sync.markStartBlocked()
+            if (started != true) sync.markStartBlocked() // refused, nothing to play, or too slow: open the app instead
             sync.refresh()
         }
     }
 
     override fun onUpdate(context: Context, manager: AppWidgetManager, ids: IntArray) {
-        inBackground {
-            sync.restoreForWidget()
-            sync.refresh()
-        }
+        inBackground { sync.refresh() }
     }
 
     /** Keeps the process alive until [block] finishes (goAsync allows ~10 s). */
