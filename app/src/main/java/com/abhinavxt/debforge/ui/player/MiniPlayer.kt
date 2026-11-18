@@ -36,10 +36,22 @@ import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.SkipNext
 import androidx.compose.material.icons.rounded.Close
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.SwipeToDismissBox
-import androidx.compose.material3.SwipeToDismissBoxValue
-import androidx.compose.material3.rememberSwipeToDismissBoxState
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.spring
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.draggable
+import androidx.compose.foundation.gestures.rememberDraggableState
+import androidx.compose.foundation.layout.offset
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.IntOffset
+import kotlin.math.abs
+import kotlin.math.roundToInt
+import kotlinx.coroutines.launch
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -49,7 +61,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -193,7 +204,7 @@ internal fun PlayPauseIcon(playing: Boolean, modifier: Modifier = Modifier) {
 }
 
 /** 64dp bar above the navigation bar: artwork, title, play/pause, next; tap to expand. */
-@OptIn(ExperimentalSharedTransitionApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun MiniPlayer(
     state: AudioState,
@@ -220,14 +231,44 @@ fun MiniPlayer(
     val toggleFocus = remember { FocusRequester() }
     val linkFocus = remember { FocusRequester() }
     val hasLink = !track.artist.isNullOrBlank() && track.artistUrl != null
-    // Swiping the bar away to either side stops playback and clears the queue.
-    // Keyed on the track so a new track always shows the bar again; the close fires once the swipe has settled.
-    val dismissState = key(track.id) { rememberSwipeToDismissBoxState() }
+    // Swiping the bar away to either side stops playback and clears the queue. The offset is our own
+    // Animatable, so it is never NaN (a fresh Material swipe state is until its anchors are set).
+    val offset = remember { Animatable(0f) }
+    var widthPx by remember { mutableFloatStateOf(0f) }
+    var dismissing by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
     val latestClose by rememberUpdatedState(onClose)
-    LaunchedEffect(track.id, dismissState.currentValue) {
-        if (dismissState.currentValue != SwipeToDismissBoxValue.Settled) latestClose()
+    val flingVelocity = with(LocalDensity.current) { DISMISS_FLING_DP.dp.toPx() }
+    LaunchedEffect(track.id) {
+        dismissing = false
+        offset.snapTo(0f)
     }
-    SwipeToDismissBox(dismissState, backgroundContent = {}, modifier = modifier) {
+    val drag = rememberDraggableState { delta ->
+        if (!dismissing && widthPx > 0f) scope.launch { offset.snapTo(offset.value + delta) }
+    }
+    Box(
+        modifier
+            .onSizeChanged { widthPx = it.width.toFloat() }
+            .draggable(
+                drag, Orientation.Horizontal,
+                onDragStarted = { offset.stop() },
+                onDragStopped = { velocity ->
+                    val width = widthPx
+                    if (dismissing || width <= 0f) return@draggable
+                    val dir = miniPlayerDismissDirection(offset.value, velocity, width, flingVelocity)
+                    scope.launch {
+                        if (dir == 0) {
+                            offset.animateTo(0f, spring(stiffness = 400f))
+                        } else {
+                            dismissing = true
+                            offset.animateTo(dir * width, tween(200))
+                            latestClose()
+                        }
+                    }
+                }
+            )
+            .offset { IntOffset(offset.value.takeIf { it.isFinite() }?.roundToInt() ?: 0, 0) }
+    ) {
     Surface(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp).animateContentSize(),
         shape = shape,

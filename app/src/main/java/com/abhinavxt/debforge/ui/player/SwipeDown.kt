@@ -22,6 +22,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.layout.onSizeChanged
+import kotlin.math.abs
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
@@ -31,6 +32,16 @@ internal const val DISMISS_VELOCITY = 1500f
 /** A downward drag of [offset] px at [velocity] px/s on a [height] px tall sheet completes when it went far or fast enough. */
 internal fun shouldDismissSwipe(offset: Float, velocity: Float, height: Float): Boolean =
     offset > 0f && height > 0f && (offset >= height * DISMISS_FRACTION || velocity >= DISMISS_VELOCITY)
+
+internal const val DISMISS_FRACTION_MINI = 0.375f
+internal const val DISMISS_FLING_DP = 1000f
+
+/** -1 / 1 to throw the bar off to the left / right, 0 to spring back. Unmeasured widths never dismiss. */
+internal fun miniPlayerDismissDirection(offset: Float, velocity: Float, width: Float, flingVelocity: Float): Int {
+    if (width <= 0f || !width.isFinite() || !offset.isFinite() || !velocity.isFinite()) return 0
+    if (abs(velocity) >= flingVelocity) return if (velocity > 0f) 1 else -1
+    return if (abs(offset) >= width * DISMISS_FRACTION_MINI) (if (offset > 0f) 1 else -1) else 0
+}
 
 internal class SwipeDownState(val onDismiss: () -> Unit) {
     var offset by mutableFloatStateOf(0f)
