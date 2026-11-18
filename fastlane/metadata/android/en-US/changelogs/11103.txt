@@ -1,0 +1,4 @@
+• Audio downloads finish in a moment instead of minutes
+• Downloads no longer get stuck on "Waiting" after the system stops them; queued downloads say what they wait for
+• Fixed a crash when returning to the app after the audio player moved to the next track
+• Resume and pause respond straight away
