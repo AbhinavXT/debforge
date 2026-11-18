@@ -18,6 +18,7 @@ import javax.inject.Singleton
  *     {"app":"DebForge","format":1,"created":"…","version":"1.1.2",
  *      "settings":{"wifi_only":true,…},
  *      "follows":[{"provider":"TORBOX","showKey":"show:the bear",…}],
+ *      "audioLists":{…},"history":{…},"searches":{…},   <- optional sections, each "v":1
  *      "secrets":{"kdf":"PBKDF2WithHmacSHA256","iterations":310000,
  *                 "salt":"…","iv":"…","data":"…"}}      <- only if opted in
  *
@@ -30,6 +31,10 @@ class BackupManager @Inject constructor(
     private val settings: SettingsStore,
     private val tokens: TokenStore,
     private val follows: com.abhinavxt.debforge.data.follow.FollowStore,
+    private val audioLists: com.abhinavxt.debforge.data.playback.AudioLists,
+    private val history: com.abhinavxt.debforge.data.history.PlayHistory,
+    private val searchStore: com.abhinavxt.debforge.data.search.SearchHistoryStore,
+    private val youtubeSearchStore: com.abhinavxt.debforge.data.search.YouTubeSearchHistoryStore,
     moshi: Moshi
 ) {
     private val mapAdapter: JsonAdapter<Map<String, Any?>> = moshi.adapter<Map<String, Any?>>(
@@ -47,6 +52,12 @@ class BackupManager @Inject constructor(
             // Followed shows. Not secret; older versions ignore the key.
             "follows" to com.abhinavxt.debforge.data.follow.FollowBackup.toJson(follows.all())
         )
+        // Optional sections (each "v":1); older versions ignore them. A failing one is left out.
+        runCatching { AudioListsBackup.toJson(audioLists.snapshot()) }.getOrNull()?.let { root["audioLists"] = it }
+        runCatching { HistoryBackup.toJson(history.all()) }.getOrNull()?.let { root["history"] = it }
+        runCatching {
+            SearchesBackup.toJson(SearchesBackup.Model(searchStore.all(), youtubeSearchStore.all()))
+        }.getOrNull()?.let { root["searches"] = it }
         if (password != null) {
             val secrets = linkedMapOf<String, Any?>(
                 "active" to tokens.activeProvider()?.name,
@@ -73,14 +84,24 @@ class BackupManager @Inject constructor(
     }
 
     /** What a file holds, read before restoring (to know whether to ask for a password). */
-    data class Preview(val createdAt: String?, val settingsCount: Int, val hasSecrets: Boolean)
+    data class Preview(
+        val createdAt: String?,
+        val settingsCount: Int,
+        val hasSecrets: Boolean,
+        val hasLists: Boolean = false,
+        val hasHistory: Boolean = false,
+        val hasSearches: Boolean = false
+    )
 
     fun preview(json: String): Preview {
         val root = parse(json)
         return Preview(
             createdAt = root["created"] as? String,
             settingsCount = (root["settings"] as? Map<*, *>)?.size ?: 0,
-            hasSecrets = root["secrets"] is Map<*, *>
+            hasSecrets = root["secrets"] is Map<*, *>,
+            hasLists = root["audioLists"] is Map<*, *>,
+            hasHistory = root["history"] is Map<*, *>,
+            hasSearches = root["searches"] is Map<*, *>
         )
     }
 
@@ -91,7 +112,11 @@ class BackupManager @Inject constructor(
         /** Shows newly followed from the file (already-followed ones are merged, not counted). */
         val followsAdded: Int = 0,
         /** Anything followed after the restore: the episode check must be scheduled. */
-        val anyFollows: Boolean = false
+        val anyFollows: Boolean = false,
+        val favouritesAdded: Int = 0,
+        val playlistsAdded: Int = 0,
+        val historyAdded: Int = 0,
+        val searchesAdded: Int = 0
     )
 
     /**
@@ -116,6 +141,13 @@ class BackupManager @Inject constructor(
         val outcome = settings.restoreValues((root["settings"] as? Map<String, Any?>).orEmpty())
         val followsAdded = follows.mergeFromBackup(com.abhinavxt.debforge.data.follow.FollowBackup.fromJson(root["follows"]))
 
+        // Each section on its own, so a broken one cannot stop the others. Merge only, never delete.
+        val lists = runCatching { audioLists.mergeFromBackup(AudioListsBackup.fromJson(root["audioLists"])) }.getOrNull()
+        val historyAdded = runCatching { history.mergeFromBackup(HistoryBackup.fromJson(root["history"])) }.getOrDefault(0)
+        val searches = SearchesBackup.fromJson(root["searches"])
+        val searchesAdded = runCatching { searchStore.mergeFromBackup(searches.search) }.getOrDefault(0) +
+            runCatching { youtubeSearchStore.mergeFromBackup(searches.youtube) }.getOrDefault(0)
+
         var services = emptyList<ProviderId>()
         if (opened != null) {
             val signIns = (opened["signIns"] as? Map<*, *>).orEmpty().mapNotNull { (name, v) ->
@@ -132,7 +164,10 @@ class BackupManager @Inject constructor(
             (opened["tmdbKey"] as? String)?.takeIf { it.isNotBlank() }?.let { settings.setTmdbKey(it) }
             services = signIns.keys.toList()
         }
-        return Result(outcome.applied, services, outcome.skippedFolder, followsAdded, follows.all().isNotEmpty())
+        return Result(
+            outcome.applied, services, outcome.skippedFolder, followsAdded, follows.all().isNotEmpty(),
+            lists?.favouritesAdded ?: 0, lists?.playlistsAdded ?: 0, historyAdded, searchesAdded
+        )
     }
 
     private fun parse(json: String): Map<String, Any?> {

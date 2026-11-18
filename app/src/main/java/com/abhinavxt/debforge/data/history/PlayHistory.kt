@@ -108,6 +108,16 @@ abstract class HistoryDao {
         val existing = get(entity.itemId)
         if (existing == null || existing.playedAt < entity.playedAt) record(entity, keep)
     }
+
+    /** For restore: writes the rows newer than what is stored, then prunes once. Returns how many were written. */
+    @Transaction
+    open suspend fun mergeFromBackup(rows: List<HistoryEntity>, keep: Int = HISTORY_LIMIT): Int {
+        val have = all().associate { it.itemId to it.playedAt }
+        val todo = com.abhinavxt.debforge.data.backup.HistoryBackup.toWrite(have, rows, keep)
+        todo.forEach { upsert(it) }
+        prune(keep)
+        return todo.size
+    }
 }
 
 /**
@@ -142,4 +152,7 @@ class PlayHistory internal constructor(
     suspend fun clear() = dao.clear()
 
     suspend fun insertIfNewer(entry: HistoryEntity) = dao.insertIfNewer(entry)
+
+    /** Backup restore: merge, newest playedAt wins per item. Returns rows added or updated. */
+    suspend fun mergeFromBackup(rows: List<HistoryEntity>): Int = dao.mergeFromBackup(rows)
 }

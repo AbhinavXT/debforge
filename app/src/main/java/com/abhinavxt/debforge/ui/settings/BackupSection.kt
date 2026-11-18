@@ -157,6 +157,11 @@ class BackupViewModel @Inject constructor(
                 if (r.followsAdded > 0) {
                     parts += context.resources.getQuantityString(R.plurals.restore_follows_n, r.followsAdded, r.followsAdded)
                 }
+                if (r.favouritesAdded + r.playlistsAdded + r.historyAdded + r.searchesAdded > 0) {
+                    parts += context.getString(
+                        R.string.restore_done_lists, r.favouritesAdded, r.playlistsAdded, r.historyAdded, r.searchesAdded
+                    )
+                }
                 com.abhinavxt.debforge.download.follow.FollowJobService.sync(context, r.anyFollows)
                 if (r.skippedFolder) parts += context.getString(R.string.restore_folder_skipped)
                 BackupUi.Done(parts.joinToString("\n"))
@@ -172,7 +177,7 @@ class BackupViewModel @Inject constructor(
 
     private suspend fun read(uri: Uri): String = withContext(Dispatchers.IO) {
         context.contentResolver.openInputStream(uri)?.use { input ->
-            // A settings backup is tiny; refuse anything big rather than load it.
+            // Backups are small (history included); refuse anything over the cap rather than load it.
             val bytes = input.readNBytesCompat(MAX_BYTES + 1)
             if (bytes.size > MAX_BYTES) throw BackupManager.BackupFormatException()
             String(bytes)
@@ -199,7 +204,7 @@ class BackupViewModel @Inject constructor(
     }
 
     private companion object {
-        const val MAX_BYTES = 256 * 1024
+        const val MAX_BYTES = 4 * 1024 * 1024
     }
 }
 

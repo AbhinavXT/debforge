@@ -6,6 +6,8 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
+import com.abhinavxt.debforge.data.backup.AudioListsBackup
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import org.json.JSONArray
 import org.json.JSONObject
@@ -91,6 +93,22 @@ class AudioLists @Inject constructor(@ApplicationContext private val context: Co
     private val listsKey = stringPreferencesKey("lists")
 
     val state: Flow<AudioListsState> = context.audioListsStore.data.map { decodeAudioLists(it[favKey], it[listsKey]) }
+
+    suspend fun snapshot(): AudioListsState {
+        val prefs = context.audioListsStore.data.first()
+        return decodeAudioLists(prefs[favKey], prefs[listsKey])
+    }
+
+    /** Backup restore: union with [incoming], nothing removed. Returns what was added. */
+    suspend fun mergeFromBackup(incoming: AudioListsState): AudioListsBackup.Merged {
+        var result = AudioListsBackup.Merged(AudioListsState(), 0, 0)
+        context.audioListsStore.edit { prefs ->
+            result = AudioListsBackup.merge(decodeAudioLists(prefs[favKey], prefs[listsKey]), incoming)
+            prefs[favKey] = encodeFavourites(result.state)
+            prefs[listsKey] = encodePlaylists(result.state)
+        }
+        return result
+    }
 
     /** Files were deleted: forget their ids everywhere. */
     suspend fun prune(ids: Set<String>) = update { it.pruneTracks(ids) }
