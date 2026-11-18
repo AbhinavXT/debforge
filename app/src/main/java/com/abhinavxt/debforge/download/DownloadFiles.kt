@@ -73,10 +73,14 @@ object DownloadFiles {
                 source.inputStream().use { copyStream(it, out, total, check) }
                 out.fd.sync()
             }
-            if (pfd.statSize != total) throw IOException("Copied file has the wrong size")
+            if (pfd.statSize != total) throw copyFailed("Copied file has the wrong size: ${pfd.statSize} of $total bytes")
         }
         return total
     }
+
+    /** What the user sees when saving into the chosen folder fails; the technical [detail] rides along as the cause, for the log. */
+    internal fun copyFailed(detail: String) =
+        IOException("Couldn't save the file to the chosen folder. Try again.", IOException(detail))
 
     /** Copies [input] to [out] through a 1 MiB buffer; throws unless exactly [total] bytes went across. */
     @Throws(IOException::class)
@@ -91,7 +95,7 @@ object DownloadFiles {
             copied += n
         }
         out.flush()
-        if (copied != total) throw IOException("Copy was short ($copied of $total bytes)")
+        if (copied != total) throw copyFailed("Copy was short ($copied of $total bytes)")
     }
 
     /** An open, writable channel positioned where the caller asked. Close with `use {}`. */

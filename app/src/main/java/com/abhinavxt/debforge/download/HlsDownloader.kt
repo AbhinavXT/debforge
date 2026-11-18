@@ -193,11 +193,13 @@ class HlsDownloader @Inject constructor(
             return@withContext DownloadOutcome.Failure(e.message ?: "Finalize failed")
         } ?: return@withContext DownloadOutcome.Failure("Size verification failed")
 
-        if (privatePart != null) DownloadFiles.deletePending(entity.id)
         withContext(NonCancellable) {
             downloadDao.updateLink(entity.id, entity.downloadUrl, 1, size)
             downloadDao.updateBytes(entity.id, size)
             downloadDao.updateState(entity.id, DownloadState.COMPLETED)
+            // Only now: killed before this point, the finished private file is still there for the retry.
+            // A failed delete is harmless (it is also removed when the download is deleted).
+            if (privatePart != null) DownloadFiles.deletePending(entity.id)
         }
         progressTracker.update(entity.id, size, size, DownloadState.COMPLETED)
         progressTracker.clear(entity.id)
@@ -275,11 +277,11 @@ class HlsDownloader @Inject constructor(
             val copyStart = System.nanoTime()
             try {
                 DownloadFiles.copyTo(File(privatePart), partPath) { job?.ensureActive() }
-                if (!DownloadFiles.verifyAndPromote(partPath, finalPath, written)) throw IOException("Copied file has the wrong size")
+                if (!DownloadFiles.verifyAndPromote(partPath, finalPath, written)) throw DownloadFiles.copyFailed("Promoted file is not $written bytes")
             } catch (e: Exception) {
                 runCatching { DownloadFiles.deletePart(partPath) }
                 if (e is CancellationException) throw e
-                Log.i(tag, "copy to the chosen folder failed (${e.message})")
+                Log.i(tag, "copy to the chosen folder failed (${e.cause?.message ?: e.message})")
                 throw if (e is IOException) e else IOException(e.message, e)
             }
             Log.i(tag, "fast via private copy: patch $patchMs ms, copy ${(System.nanoTime() - copyStart) / 1_000_000} ms")

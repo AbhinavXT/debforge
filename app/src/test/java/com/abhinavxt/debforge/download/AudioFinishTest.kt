@@ -74,9 +74,11 @@ class PrivateAudioPartTest {
         val out = java.io.ByteArrayOutputStream()
         DownloadFiles.copyStream(data.inputStream(), out, data.size.toLong())
         org.junit.Assert.assertArrayEquals(data, out.toByteArray())
-        org.junit.Assert.assertThrows(java.io.IOException::class.java) {
+        val e = org.junit.Assert.assertThrows(java.io.IOException::class.java) {
             DownloadFiles.copyStream(data.inputStream(), java.io.ByteArrayOutputStream(), data.size + 1L)
         }
+        org.junit.Assert.assertEquals("Couldn't save the file to the chosen folder. Try again.", e.message)
+        org.junit.Assert.assertTrue(e.cause!!.message!!.contains("short"))
     }
 
     @Test fun copyStreamStopsWhenCancelled() {
