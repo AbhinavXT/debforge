@@ -61,6 +61,12 @@ class ActiveDownloadsViewModel @Inject constructor(
     conditions: DownloadConditions
 ) : ViewModel() {
 
+    /** Why queued rows are waiting (network, Wi-Fi, charger, schedule), or null. */
+    val blocked: StateFlow<Block?> = conditions.blocked
+
+    /** Called when the screen is shown: restart a stalled queue. */
+    fun kick() { viewModelScope.launch { controller.kick() } }
+
     /**
      * Start hour of the download window while the schedule is holding the
      * queue, else null. Queued rows alone just say "Waiting"; this explains why.

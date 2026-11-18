@@ -1,6 +1,7 @@
 package com.abhinavxt.debforge.download
 
 import android.content.Context
+import android.util.Log
 import com.abhinavxt.debforge.data.local.ChunkDao
 import com.abhinavxt.debforge.data.local.DownloadDao
 import com.abhinavxt.debforge.data.local.DownloadEntity
@@ -266,6 +267,7 @@ class DownloadQueueRunner @Inject constructor(
                     downloadDao.updateState(entity.id, DownloadState.PAUSED)
                 }
                 Interrupt.YIELD -> if (!completed) {
+                    Log.i("DownloadQueue", "Requeued ${entity.id}: host stopped (yield)")
                     downloadDao.updateState(entity.id, DownloadState.QUEUED)
                 }
                 Interrupt.CANCEL -> {

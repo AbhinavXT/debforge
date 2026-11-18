@@ -10,7 +10,14 @@ import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
 import com.abhinavxt.debforge.data.local.DownloadDao
+import com.abhinavxt.debforge.download.conditions.Block
 import com.abhinavxt.debforge.download.conditions.DownloadConditions
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import java.util.concurrent.atomic.AtomicBoolean
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -35,6 +42,53 @@ class DownloadScheduler @Inject constructor(
     private val downloadDao: DownloadDao,
     private val conditions: DownloadConditions
 ) {
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    private val recoveryPending = AtomicBoolean(false)
+
+    init {
+        // Pending work must not sit idle after a condition clears (network
+        // back, Wi-Fi joined, charger plugged, window opened). Only the
+        // blocked -> unblocked transition counts: the initial value is not a
+        // change, and ensureRunning on a job that is just starting could
+        // restart it.
+        scope.launch {
+            var previous: Block? = conditions.currentBlock()
+            conditions.blocked.collect { now ->
+                if (shouldRestartOnUnblock(previous, now)) {
+                    Log.i(TAG, "Condition cleared (was $previous); checking the queue")
+                    runCatching { ensureRunning() }.onFailure { Log.w(TAG, "ensureRunning failed", it) }
+                }
+                previous = now
+            }
+        }
+    }
+
+    /**
+     * After the system stopped the job: give its own retry (with backoff) a
+     * moment, then, if no job is pending and nothing runs, start one. Skipped
+     * when the user stopped the app. One check in flight at a time, so a
+     * system that keeps stopping the job can't make this loop.
+     */
+    fun recoverAfterStop() {
+        if (!recoveryPending.compareAndSet(false, true)) return
+        scope.launch {
+            try {
+                delay(RECOVERY_DELAY_MS)
+                if (runner.offerWork() || !downloadDao.hasPendingWork()) return@launch
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                    val js = context.getSystemService(JobScheduler::class.java)
+                    if (js?.getPendingJob(JOB_ID) != null) return@launch // system retry is queued
+                }
+                Log.i(TAG, "No job pending after a stop; rescheduling")
+                ensureRunning()
+            } catch (e: Exception) {
+                Log.w(TAG, "recoverAfterStop failed", e)
+            } finally {
+                recoveryPending.set(false)
+            }
+        }
+    }
+
     /**
      * Safe to call any time; no-op if nothing is queued or the queue already
      * runs. Returns false only when there IS work but Android wouldn't let us
@@ -130,8 +184,12 @@ class DownloadScheduler @Inject constructor(
         false
     }
 
-    private companion object {
-        const val TAG = "DownloadScheduler"
-        const val JOB_ID = 4201
+    companion object {
+        private const val TAG = "DownloadScheduler"
+        private const val JOB_ID = 4201
+        private const val RECOVERY_DELAY_MS = 30_000L
+
+        /** True when a blocker just cleared (was set, now none). */
+        fun shouldRestartOnUnblock(previous: Block?, now: Block?): Boolean = previous != null && now == null
     }
 }

@@ -86,6 +86,9 @@ class DownloadController @Inject constructor(
         scheduler.ensureRunning()
     }
 
+    /** Starts the queue if work is pending and nothing runs (Downloads screen opened). */
+    suspend fun kick() { scheduler.ensureRunning() }
+
     fun pause(id: String) = runner.pause(id)
 
     fun cancel(id: String) = runner.cancel(id)

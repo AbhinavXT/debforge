@@ -3,6 +3,7 @@ package com.abhinavxt.debforge.download
 import android.app.job.JobParameters
 import android.app.job.JobService
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -69,12 +70,19 @@ class DownloadJobService : JobService() {
 
     override fun onStopJob(params: JobParameters): Boolean {
         stopped = true
+        val userStop = params.stopReason == JobParameters.STOP_REASON_USER
+        Log.i(TAG, "onStopJob reason=${params.stopReason} userStop=$userStop")
         session?.let(runner::stop)
         session = null
         observer?.cancel()
         // Let the system retry (e.g. when the network returns) unless the user
         // deliberately stopped DebForge from the Task Manager.
-        return params.stopReason != JobParameters.STOP_REASON_USER
+        if (!userStop) scheduler.recoverAfterStop()
+        return !userStop
+    }
+
+    private companion object {
+        const val TAG = "DownloadJob"
     }
 
     override fun onDestroy() {

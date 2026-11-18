@@ -55,6 +55,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -85,6 +86,8 @@ fun ActiveDownloadsScreen(onOpenMedia: () -> Unit, onOpenSettings: () -> Unit, v
     val state by viewModel.state.collectAsStateWithLifecycle()
     val scheduledStart by viewModel.scheduledStartHour.collectAsStateWithLifecycle()
     val grouped = state.grouped
+    // Showing the list is a chance to restart a queue that stalled.
+    LaunchedEffect(Unit) { viewModel.kick() }
     // Combined speed of everything running, shown under the title.
     val running = grouped[DownloadState.DOWNLOADING].orEmpty()
     val totalSpeed = running.filterNot { it.waitingForNetwork || it.finishing }.sumOf { it.bytesPerSecond.coerceAtLeast(0) }
@@ -245,6 +248,7 @@ private fun ScheduleNotice(startHour: Int) {
 
 @Composable
 private fun QueuedRow(row: ActiveRow, vm: ActiveDownloadsViewModel, modifier: Modifier = Modifier) {
+    val reason = vm.blocked.collectAsStateWithLifecycle().value?.labelRes
     val cs = MaterialTheme.colorScheme
     val view = LocalView.current
     val labels = remember(row.entity.filename) { row.entity.releaseLabelsFor() }
@@ -253,7 +257,9 @@ private fun QueuedRow(row: ActiveRow, vm: ActiveDownloadsViewModel, modifier: Mo
         modifier = modifier,
         labels = labels,
         filename = row.entity.filename,
-        statusOptions = listOf(stringResource(R.string.dl_waiting_size, formatBytes(row.entity.filesize))),
+        statusOptions = reason?.let {
+            listOf("${stringResource(it)} · ${formatBytes(row.entity.filesize)}")
+        } ?: listOf(stringResource(R.string.dl_waiting_size, formatBytes(row.entity.filesize))),
         icon = Icons.Rounded.Schedule,
         iconContainer = cs.secondaryContainer,
         iconTint = cs.onSecondaryContainer,
