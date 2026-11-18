@@ -53,10 +53,12 @@ class Fmp4HeaderTest {
         val refType: Int = 0,
         val initialDur: Long = 0,
         val truncate: Int = 0,
+        val emptyMvhdLast: Boolean = false,
+        val firstOffset: Long = 0,
     )
 
     private fun moov(w: W, s: Spec) = w.box("moov", s.large) {
-        box("mvhd") {
+        if (!s.emptyMvhdLast) box("mvhd") {
             u8(s.ver); zeros(3)
             if (s.ver == 0) { u32(0); u32(0); u32(s.movieTs) } else { u64(0); u64(0); u32(s.movieTs) }
             dur("mvhd", s.ver, s.initialDur)
@@ -83,6 +85,7 @@ class Fmp4HeaderTest {
             if (s.mehd) box("mehd") { u8(s.ver); zeros(3); dur("mehd", s.ver, s.initialDur) }
             box("trex") { zeros(24) }
         }
+        if (s.emptyMvhdLast) box("mvhd") { }
     }
 
     private class Built(val bytes: ByteArray, val marks: Map<String, Int>, val s: Spec)
@@ -101,7 +104,7 @@ class Fmp4HeaderTest {
         if (!s.moovAfterMdat) moov(w, s)
         if (s.sidx) w.box("sidx") {
             u8(s.ver); zeros(3); u32(1); u32(s.sidxTs)
-            if (s.ver == 0) { u32(0); u32(0) } else { u64(0); u64(0) }
+            if (s.ver == 0) { u32(0); u32(0) } else { u64(0); u64(s.firstOffset) }
             u16(0); u16(s.refs)
             for (sz in fragSizes) { u32((s.refType.toLong() shl 31) or (sz + s.sidxSizeDelta)); u32(s.refDur); u32(0) }
         }
@@ -223,5 +226,44 @@ class Fmp4HeaderTest {
         val f = file(b.bytes)
         Fmp4Header.patch(f, ok(Fmp4Header.check(f, null)))
         assertEquals(1L, readField(f.readBytes(), b.marks["mvhd"]!!, 0))
+    }
+
+    private fun assertUnsupported(bytes: ByteArray) {
+        assertTrue(Fmp4Header.check(file(bytes), null) is Fmp4Header.Result.Unsupported)
+    }
+
+    // ftyp is 20 bytes, so moov starts at 20 and its first child (mvhd) at 28 in build() output.
+    private fun withBox(at: Int, size: Long, type: String, large: Long? = null): ByteArray {
+        val bytes = build(Spec()).bytes.copyOf()
+        val bb = ByteBuffer.wrap(bytes)
+        bb.putInt(at, size.toInt())
+        for (i in 0 until 4) bytes[at + 4 + i] = type[i].code.toByte()
+        if (large != null) bb.putLong(at + 8, large)
+        return bytes
+    }
+
+    @Test(timeout = 2000) fun hugeLargesizeAtTopLevel() {
+        assertUnsupported(withBox(20, 1, "free", Long.MAX_VALUE - 5))
+        assertUnsupported(withBox(20, 1, "free", Long.MAX_VALUE))
+    }
+
+    @Test(timeout = 2000) fun hugeLargesizeInsideMoov() {
+        assertUnsupported(withBox(28, 1, "free", Long.MAX_VALUE - 5))
+        assertUnsupported(withBox(28, 1, "free", Long.MAX_VALUE))
+    }
+
+    @Test(timeout = 2000) fun sizeSmallerThanHeader() {
+        assertUnsupported(withBox(20, 4, "free"))
+        assertUnsupported(withBox(28, 4, "free"))
+        assertUnsupported(withBox(28, 1, "free", 3))
+    }
+
+    @Test(timeout = 2000) fun emptyMvhdAtEndOfMoov() {
+        assertUnsupported(build(Spec(emptyMvhdLast = true)).bytes)
+    }
+
+    @Test(timeout = 2000) fun wrappingSidxFirstOffset() {
+        assertUnsupported(build(Spec(ver = 1, firstOffset = Long.MAX_VALUE)).bytes)
+        assertUnsupported(build(Spec(ver = 1, firstOffset = Long.MAX_VALUE - 100)).bytes)
     }
 }

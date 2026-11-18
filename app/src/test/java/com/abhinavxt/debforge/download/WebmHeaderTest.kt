@@ -114,6 +114,11 @@ class WebmHeaderTest {
         assertTrue(bad(WebmHeader.check(write(good(tr = tracks(2, 2))), null)).contains("audio track"))
     }
 
+    @Test fun twoTracksElements() {
+        val b = ebml() + segment(info(f64(0x4489, 120000.0)) + tracks(2) + tracks(2) + cues() + cluster())
+        assertTrue(bad(WebmHeader.check(write(b), null)).contains("Tracks"))
+    }
+
     @Test fun videoTrack() {
         assertTrue(bad(WebmHeader.check(write(good(tr = tracks(1))), null)).contains("audio track"))
     }

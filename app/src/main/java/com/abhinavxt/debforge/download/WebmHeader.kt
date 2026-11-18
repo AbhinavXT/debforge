@@ -98,6 +98,7 @@ object WebmHeader {
                             }
                         }
                         else -> {
+                            if (tracks != -1) return unsupported("more than one Tracks element")
                             tracks = 0
                             forEachChild(b) { id, off, size ->
                                 if (id == ID_TRACK_ENTRY) {

@@ -241,7 +241,8 @@ class HlsDownloader @Inject constructor(
                 Log.i(tag, "combine: promote failed (${ms()} ms)")
                 return null
             }
-            DownloadFiles.deletePart(partPath) // a stale .part.mux or .audio
+            // a stale .part.mux or .audio; the file is already in place, so never fail on this
+            runCatching { DownloadFiles.deletePart(partPath) }
             Log.i(tag, "fast: $kind promoted without remux in ${ms()} ms")
             written
         } catch (e: Exception) {

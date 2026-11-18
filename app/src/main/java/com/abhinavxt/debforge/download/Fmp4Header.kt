@@ -47,6 +47,8 @@ object Fmp4Header {
         Result.Unsupported(e.message ?: "unsupported")
     } catch (e: java.io.IOException) {
         Result.Unsupported("read failed: ${e.message}")
+    } catch (e: RuntimeException) {
+        Result.Unsupported("malformed file (${e.javaClass.simpleName})")
     }
 
     /**
@@ -110,7 +112,12 @@ object Fmp4Header {
             durSum += sb.getInt(p + 4).toLong() and U32_MAX
             p += 12
         }
-        if (sidx.end + firstOffset + sizeSum != len) throw Unsup("sidx does not cover the file")
+        val covered = try {
+            Math.addExact(Math.addExact(sidx.end, firstOffset), sizeSum)
+        } catch (e: ArithmeticException) {
+            throw Unsup("sidx does not cover the file")
+        }
+        if (covered != len) throw Unsup("sidx does not cover the file")
         if (durSum <= 0) throw Unsup("sidx duration 0")
         val sec = durSum.toDouble() / sTs
         if (expected != null && Math.abs(sec - expected) > maxOf(2.0, expected * 0.02)) {
@@ -163,18 +170,21 @@ object Fmp4Header {
 
         val fields = ArrayList<Field>()
         // mvhd
-        val mv = ver(mb, mvhd, base)
         val mvOff = (mvhd.payloadStart - base).toInt()
+        if (mvhd.size - mvhd.headerSize < 20) throw Unsup("short mvhd")
+        val mv = ver(mb, mvhd, base)
         val mvNeed = if (mv == 0) 20 else 32
         if (mvhd.size - mvhd.headerSize < mvNeed) throw Unsup("short mvhd")
         val movieTs = if (mv == 0) mb.getInt(mvOff + 12).toLong() and U32_MAX else mb.getInt(mvOff + 20).toLong() and U32_MAX
         if (movieTs == 0L) throw Unsup("movie timescale 0")
         fields += field("mvhd", mvhd, mv, if (mv == 0) 16 else 24, durSum, sTs, movieTs, base)
         // tkhd
+        if (tkhd.size - tkhd.headerSize < 24) throw Unsup("short tkhd")
         val tv = ver(mb, tkhd, base)
         if (tkhd.size - tkhd.headerSize < (if (tv == 0) 24 else 36)) throw Unsup("short tkhd")
         fields += field("tkhd", tkhd, tv, if (tv == 0) 20 else 28, durSum, sTs, movieTs, base)
         // mdhd
+        if (mdhd.size - mdhd.headerSize < 20) throw Unsup("short mdhd")
         val dv = ver(mb, mdhd, base)
         val dOff = (mdhd.payloadStart - base).toInt()
         if (mdhd.size - mdhd.headerSize < (if (dv == 0) 20 else 32)) throw Unsup("short mdhd")
@@ -183,6 +193,7 @@ object Fmp4Header {
         fields += field("mdhd", mdhd, dv, if (dv == 0) 16 else 24, durSum, sTs, mediaTs, base)
         // mehd
         if (mehd != null) {
+            if (mehd.size - mehd.headerSize < 8) throw Unsup("short mehd")
             val ev = ver(mb, mehd, base)
             if (mehd.size - mehd.headerSize < (if (ev == 0) 8 else 12)) throw Unsup("short mehd")
             fields += field("mehd", mehd, ev, 4, durSum, sTs, movieTs, base)
@@ -222,9 +233,9 @@ object Fmp4Header {
                 if (to - p < 16) throw Unsup("truncated child box")
                 size = mb.getLong(p + 8); hs = 16
             } else if (size == 0L) size = (to - p).toLong()
-            if (size < hs || p + size > to) throw Unsup("bad child box size ($type)")
+            if (size < hs || size > to - p) throw Unsup("bad child box size ($type)")
             out += BoxHeader(type, base + p, hs, size)
-            p += size.toInt()
+            p += size.toInt() // fits: 8 <= size <= to - p
         }
         return out
     }
@@ -239,7 +250,7 @@ object Fmp4Header {
             if (len - pos < 16) throw Unsup("truncated box header")
             size = readBuf(ch, pos + 8, 8).getLong(0); hs = 16
         } else if (size == 0L) size = len - pos
-        if (size < hs || size < 0 || pos + size > len) throw Unsup("box $type overruns the file")
+        if (size < hs || size > len - pos) throw Unsup("box $type overruns the file")
         return BoxHeader(type, pos, hs, size)
     }
 
