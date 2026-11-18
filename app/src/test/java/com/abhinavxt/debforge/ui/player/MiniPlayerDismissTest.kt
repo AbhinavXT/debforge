@@ -14,4 +14,7 @@ class MiniPlayerDismissTest {
     }
     @Test fun unmeasuredWidthDoesNothing() = assertEquals(0, miniPlayerDismissDirection(500f, 5000f, 0f, fling))
     @Test fun nanDoesNothing() = assertEquals(0, miniPlayerDismissDirection(Float.NaN, 0f, 1000f, fling))
+    @Test fun trackChangeDuringDismissAnimationKeepsIt() = assertEquals(false, shouldResetOnTrackChange(true, true))
+    @Test fun trackChangeAfterDismissFinishedResets() = assertEquals(true, shouldResetOnTrackChange(true, false))
+    @Test fun trackChangeWhenIdleResets() = assertEquals(true, shouldResetOnTrackChange(false, false))
 }

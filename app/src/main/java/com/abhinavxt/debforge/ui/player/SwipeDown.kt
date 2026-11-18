@@ -43,6 +43,9 @@ internal fun miniPlayerDismissDirection(offset: Float, velocity: Float, width: F
     return if (abs(offset) >= width * DISMISS_FRACTION_MINI) (if (offset > 0f) 1 else -1) else 0
 }
 
+/** A track change resets the bar unless a committed dismiss is still animating (it must finish and close). */
+internal fun shouldResetOnTrackChange(dismissing: Boolean, dismissAnimating: Boolean): Boolean = !dismissing || !dismissAnimating
+
 internal class SwipeDownState(val onDismiss: () -> Unit) {
     var offset by mutableFloatStateOf(0f)
     var height by mutableFloatStateOf(0f)

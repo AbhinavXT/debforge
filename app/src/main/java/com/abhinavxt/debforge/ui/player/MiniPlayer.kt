@@ -41,7 +41,10 @@ import androidx.compose.animation.core.spring
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
-import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.absoluteOffset
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.withContext
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
@@ -233,41 +236,52 @@ fun MiniPlayer(
     val hasLink = !track.artist.isNullOrBlank() && track.artistUrl != null
     // Swiping the bar away to either side stops playback and clears the queue. The offset is our own
     // Animatable, so it is never NaN (a fresh Material swipe state is until its anchors are set).
-    val offset = remember { Animatable(0f) }
+    // Live drag position is plain state so each delta is visible to onDragStopped at once; the Animatable only settles.
+    var offsetPx by remember { mutableFloatStateOf(0f) }
     var widthPx by remember { mutableFloatStateOf(0f) }
     var dismissing by remember { mutableStateOf(false) }
+    val anim = remember { object { var job: Job? = null } }
     val scope = rememberCoroutineScope()
     val latestClose by rememberUpdatedState(onClose)
     val flingVelocity = with(LocalDensity.current) { DISMISS_FLING_DP.dp.toPx() }
     LaunchedEffect(track.id) {
-        dismissing = false
-        offset.snapTo(0f)
+        // A committed dismiss still closes; only a finished one (or none) is reset for the new track.
+        if (shouldResetOnTrackChange(dismissing, anim.job?.isActive == true)) {
+            dismissing = false
+            offsetPx = 0f
+        }
     }
     val drag = rememberDraggableState { delta ->
-        if (!dismissing && widthPx > 0f) scope.launch { offset.snapTo(offset.value + delta) }
+        if (!dismissing && widthPx > 0f) offsetPx += delta
     }
     Box(
         modifier
             .onSizeChanged { widthPx = it.width.toFloat() }
             .draggable(
                 drag, Orientation.Horizontal,
-                onDragStarted = { offset.stop() },
+                onDragStarted = { if (!dismissing) anim.job?.cancel() },
                 onDragStopped = { velocity ->
                     val width = widthPx
                     if (dismissing || width <= 0f) return@draggable
-                    val dir = miniPlayerDismissDirection(offset.value, velocity, width, flingVelocity)
-                    scope.launch {
-                        if (dir == 0) {
-                            offset.animateTo(0f, spring(stiffness = 400f))
-                        } else {
-                            dismissing = true
-                            offset.animateTo(dir * width, tween(200))
-                            latestClose()
+                    val dir = miniPlayerDismissDirection(offsetPx, velocity, width, flingVelocity)
+                    if (dir == 0) {
+                        anim.job = scope.launch {
+                            Animatable(offsetPx).animateTo(0f, spring(stiffness = 400f)) { offsetPx = value }
+                        }
+                    } else {
+                        dismissing = true
+                        anim.job = scope.launch {
+                            try {
+                                Animatable(offsetPx).animateTo(dir * width, tween(200)) { offsetPx = value }
+                            } finally {
+                                withContext(NonCancellable) { latestClose() }
+                            }
                         }
                     }
                 }
             )
-            .offset { IntOffset(offset.value.takeIf { it.isFinite() }?.roundToInt() ?: 0, 0) }
+            // Drag deltas are physical, so the offset must not be mirrored in right-to-left layouts.
+            .absoluteOffset { IntOffset(offsetPx.takeIf { it.isFinite() }?.roundToInt() ?: 0, 0) }
     ) {
     Surface(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp).animateContentSize(),
