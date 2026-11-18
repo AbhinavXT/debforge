@@ -478,15 +478,14 @@ fun HomeScreen(signedIn: Boolean) {
             BackHandler(enabled = nowPlaying) { nowPlaying = false }
             // While fading out the controls are inert.
             val leaving = transition.targetState == androidx.compose.animation.EnterExitState.PostExit
-            Box(
-                Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface).windowInsetsPadding(WindowInsets.systemBars)
-                    .pointerInput(leaving) {
+            run {
+                NowPlaying(
+                    modifier = Modifier.pointerInput(leaving) {
                         if (leaving) awaitPointerEventScope {
                             while (true) awaitPointerEvent(PointerEventPass.Initial).changes.forEach { it.consume() }
                         }
-                    }
-            ) {
-                NowPlaying(
+                    },
+                    padSystemBars = true,
                     state = audio,
                     onToggle = shell.audio::toggle,
                     onNext = shell.audio::next,

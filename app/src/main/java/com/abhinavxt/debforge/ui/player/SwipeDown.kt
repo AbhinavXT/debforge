@@ -2,6 +2,7 @@ package com.abhinavxt.debforge.ui.player
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
@@ -21,6 +22,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.layout.onSizeChanged
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 internal const val DISMISS_FRACTION = 0.25f
@@ -47,15 +49,20 @@ internal fun rememberSwipeDown(onDismiss: () -> Unit): SwipeDownState {
  */
 internal fun Modifier.swipeDownToDismiss(state: SwipeDownState): Modifier = composed {
     val scope = rememberCoroutineScope()
+    val anim = remember { object { var job: Job? = null } }
     fun settle(velocity: Float) {
-        if (shouldDismissSwipe(state.offset, velocity, state.height)) state.onDismiss()
-        else scope.launch {
-            Animatable(state.offset).animateTo(0f, spring(stiffness = 400f)) { state.offset = value }
+        anim.job?.cancel()
+        val dismiss = shouldDismissSwipe(state.offset, velocity, state.height)
+        // On dismiss the sheet eases back to place while it fades out, so the shared artwork does not fly from a displaced spot.
+        anim.job = scope.launch {
+            Animatable(state.offset).animateTo(0f, if (dismiss) tween(300) else spring(stiffness = 400f)) { state.offset = value }
         }
+        if (dismiss) state.onDismiss()
     }
     val connection = remember {
         object : NestedScrollConnection {
             override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+                if (source == NestedScrollSource.UserInput) anim.job?.cancel()
                 if (source != NestedScrollSource.UserInput || state.offset <= 0f || available.y >= 0f) return Offset.Zero
                 val next = (state.offset + available.y).coerceAtLeast(0f)
                 val used = next - state.offset
@@ -78,6 +85,6 @@ internal fun Modifier.swipeDownToDismiss(state: SwipeDownState): Modifier = comp
     this
         .onSizeChanged { state.height = it.height.toFloat() }
         .nestedScroll(connection)
-        .draggable(drag, Orientation.Vertical, onDragStopped = { settle(it) })
+        .draggable(drag, Orientation.Vertical, onDragStarted = { anim.job?.cancel() }, onDragStopped = { settle(it) })
         .graphicsLayer { translationY = state.offset }
 }

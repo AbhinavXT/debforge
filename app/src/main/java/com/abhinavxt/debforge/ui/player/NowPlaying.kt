@@ -50,6 +50,12 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.draggable
+import androidx.compose.foundation.gestures.rememberDraggableState
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
@@ -118,14 +124,16 @@ fun NowPlaying(
     /** Takes focus when the player opens (D-pad). */
     playFocus: FocusRequester? = null,
     /** Opens the artist's channel page: (name, url). Only offered for a track that has a channel url. */
-    onChannel: (String, String) -> Unit = { _, _ -> }
+    onChannel: (String, String) -> Unit = { _, _ -> },
+    /** Pads the content for the system bars while the sheet itself stays full-bleed (so it slides over the screen below). */
+    padSystemBars: Boolean = false
 ) {
     val track = state.track ?: return
     // Trap D-pad focus inside the player: focusProperties on a wrapper does not reach focusables nested in
     // another focusable behind it, so the player itself refuses to let focus leave.
     val dismiss = rememberSwipeDown(onClose)
     Surface(modifier.fillMaxSize().swipeDownToDismiss(dismiss).focusProperties { exit = { FocusRequester.Cancel } }.focusGroup(), color = MaterialTheme.colorScheme.surface) {
-        BoxWithConstraints(Modifier.fillMaxSize()) {
+        BoxWithConstraints(Modifier.fillMaxSize().then(if (padSystemBars) Modifier.windowInsetsPadding(WindowInsets.systemBars) else Modifier)) {
             val wide = maxWidth > maxHeight && maxWidth >= 600.dp
             Column(Modifier.fillMaxSize().padding(horizontal = 24.dp)) {
                 val s = remember { MutableInteractionSource() }
@@ -357,6 +365,8 @@ private fun SeekBar(positionMs: Long, durationMs: Long, onSeek: (Long) -> Unit) 
             valueRange = 0f..duration.toFloat(),
             interactionSource = s,
             modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
+                // Vertical drags on the bar are taken here so they never minimise the player.
+                .draggable(rememberDraggableState { }, Orientation.Vertical)
                 .focusRing(s, RoundedCornerShape(24.dp))
                 // D-pad: LEFT/RIGHT step the position while the bar is focused.
                 .onPreviewKeyEvent { e ->

@@ -47,6 +47,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -215,10 +219,12 @@ fun MiniPlayer(
     val rowFocus = expandFocus ?: remember { FocusRequester() }
     val toggleFocus = remember { FocusRequester() }
     // Swiping the bar away to either side stops playback and clears the queue.
-    val dismissState = rememberSwipeToDismissBoxState(confirmValueChange = { value ->
-        if (value != SwipeToDismissBoxValue.Settled) onClose()
-        true
-    })
+    // Keyed on the track so a new track always shows the bar again; the close fires once the swipe has settled.
+    val dismissState = key(track.id) { rememberSwipeToDismissBoxState() }
+    val latestClose by rememberUpdatedState(onClose)
+    LaunchedEffect(track.id, dismissState.currentValue) {
+        if (dismissState.currentValue != SwipeToDismissBoxValue.Settled) latestClose()
+    }
     SwipeToDismissBox(dismissState, backgroundContent = {}, modifier = modifier) {
     Surface(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp).animateContentSize(),
