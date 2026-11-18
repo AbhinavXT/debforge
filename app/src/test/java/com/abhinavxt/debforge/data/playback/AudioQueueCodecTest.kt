@@ -21,6 +21,13 @@ class AudioQueueCodecTest {
         assertEquals(q, AudioQueueCodec.decode(AudioQueueCodec.encode(q)))
     }
 
+    @Test fun shuffleOrderRoundTripsAndBadOnesAreDropped() {
+        val q = QueueSnapshot(listOf(local, yt, local.copy(id = "b")), shuffle = true, shuffleOrder = listOf(2, 0, 1))
+        assertEquals(listOf(2, 0, 1), AudioQueueCodec.decode(AudioQueueCodec.encode(q))!!.shuffleOrder)
+        assertNull(AudioQueueCodec.decode(AudioQueueCodec.encode(q.copy(shuffleOrder = listOf(0, 0, 1))))!!.shuffleOrder)
+        assertNull(AudioQueueCodec.decode("""{"v":1,"t":[{"i":"a","n":"S","k":"l"}],"s":true}""")!!.shuffleOrder)
+    }
+
     @Test fun unknownFieldsIgnored() {
         val raw = """{"v":1,"zz":1,"t":[{"i":"a","n":"S","k":"l","extra":[1]}],"s":false,"r":"ALL","p":1.0}"""
         val q = AudioQueueCodec.decode(raw)!!

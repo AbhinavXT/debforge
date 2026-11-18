@@ -46,8 +46,14 @@ data class QueueSnapshot(
     val tracks: List<SavedTrack>,
     val shuffle: Boolean = false,
     val repeat: AudioRepeat = AudioRepeat.OFF,
-    val speed: Float = 1f
+    val speed: Float = 1f,
+    /** The shuffled play order as indices into [tracks]; null when unknown (older snapshot, shuffle off, or a capped list). */
+    val shuffleOrder: List<Int>? = null
 )
+
+/** [order] when it is a permutation of 0 until [size], otherwise null. */
+fun validShuffleOrder(order: List<Int>?, size: Int): List<Int>? =
+    order?.takeIf { it.size == size && it.toSet() == (0 until size).toSet() }
 
 /** Where in the queue playback stopped. */
 data class SavedPosition(val curId: String?, val positionMs: Long, val durationMs: Long)
@@ -85,8 +91,12 @@ object AudioQueueCodec {
                 }
             })
         }
-        return JSONObject().put("v", VERSION).put("t", arr).put("s", q.shuffle)
-            .put("r", q.repeat.name).put("p", q.speed.toDouble()).toString()
+        val json = JSONObject().put("v", VERSION).put("t", arr).put("s", q.shuffle)
+            .put("r", q.repeat.name).put("p", q.speed.toDouble())
+        // Indices into the saved list: meaningless once the list was cut down to a window.
+        validShuffleOrder(q.shuffleOrder, q.tracks.size)?.takeIf { q.tracks.size <= MAX_SAVED_TRACKS }
+            ?.let { o -> json.put("o", JSONArray().also { a -> o.forEach(a::put) }) }
+        return json.toString()
     }
 
     /** Null for garbage, a newer version or a missing track list; unknown fields are ignored. */
@@ -116,7 +126,9 @@ object AudioQueueCodec {
                 tracks = tracks,
                 shuffle = o.optBoolean("s", false),
                 repeat = runCatching { AudioRepeat.valueOf(o.optString("r", "OFF")) }.getOrDefault(AudioRepeat.OFF),
-                speed = o.optDouble("p", 1.0).toFloat().takeIf { it > 0f } ?: 1f
+                speed = o.optDouble("p", 1.0).toFloat().takeIf { it > 0f } ?: 1f,
+                shuffleOrder = o.optJSONArray("o")?.let { a -> (0 until a.length()).map { a.optInt(it, -1) } }
+                    ?.let { validShuffleOrder(it, tracks.size) }
             )
         }.getOrNull()
     }

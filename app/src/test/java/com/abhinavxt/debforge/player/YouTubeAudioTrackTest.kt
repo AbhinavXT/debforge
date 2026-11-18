@@ -33,4 +33,11 @@ class YouTubeAudioTrackTest {
         assertFalse(mayRecoverLink(1_000, 1_000 + YT_RECOVER_GAP_MS - 1))
         assertTrue(mayRecoverLink(1_000, 1_000 + YT_RECOVER_GAP_MS))
     }
+
+    @Test fun failingFreshLinkGetsOneRetryAfterAPause() {
+        assertEquals(0L, recoverDelayMs(0, null, 5))
+        assertEquals(YT_RECOVER_RETRY_DELAY_MS, recoverDelayMs(1, 1_000, 2_000))
+        assertNull(recoverDelayMs(2, 1_000, 3_000))
+        assertEquals(0L, recoverDelayMs(2, 1_000, 1_000 + YT_RECOVER_GAP_MS))
+    }
 }

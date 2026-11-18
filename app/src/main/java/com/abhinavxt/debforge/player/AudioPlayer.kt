@@ -24,6 +24,8 @@ import com.abhinavxt.debforge.data.playback.SavedPosition
 import com.abhinavxt.debforge.data.playback.SavedTrack
 import com.abhinavxt.debforge.data.playback.Snapshot
 import com.abhinavxt.debforge.data.playback.restorePlan
+import com.abhinavxt.debforge.data.playback.validShuffleOrder
+import androidx.media3.exoplayer.source.ShuffleOrder.DefaultShuffleOrder
 import com.abhinavxt.debforge.domain.DownloadState
 import com.abhinavxt.debforge.download.LocalFiles
 import com.abhinavxt.debforge.data.youtube.YouTubeResolver
@@ -97,6 +99,18 @@ fun freshAudioStream(video: YouTubeVideo, itag: Int, sdkInt: Int): YouTubeStream
 /** A stream error is worth one re-resolve unless one already ran in the last [YT_RECOVER_GAP_MS] (a link that fails at once stays failed). */
 const val YT_RECOVER_GAP_MS = 60_000L
 fun mayRecoverLink(lastAttemptAtMs: Long?, nowMs: Long): Boolean = lastAttemptAtMs == null || nowMs - lastAttemptAtMs >= YT_RECOVER_GAP_MS
+
+/**
+ * How long to wait before re-resolving after a stream error, null for none. A link that was just looked up and still
+ * fails (a freshly restored queue after a cold start) gets one more try after a pause; after that, or when the last
+ * try is recent, the track stays failed. [attempts] counts the tries in the current burst, [lastAttemptAtMs] the latest.
+ */
+const val YT_RECOVER_RETRY_DELAY_MS = 2_000L
+fun recoverDelayMs(attempts: Int, lastAttemptAtMs: Long?, nowMs: Long): Long? = when {
+    lastAttemptAtMs == null || nowMs - lastAttemptAtMs >= YT_RECOVER_GAP_MS -> 0L
+    attempts < 2 -> YT_RECOVER_RETRY_DELAY_MS
+    else -> null
+}
 
 enum class AudioRepeat { OFF, ALL, ONE }
 
@@ -288,10 +302,16 @@ class AudioPlayer @Inject constructor(
             val bad = p.currentMediaItemIndex
             val yt = tracks.getOrNull(bad)
             // A streamed link that expired: look it up again once and carry on at the same second.
-            if (yt?.youtube != null && mayRecoverLink(recoverAttempts[yt.id], SystemClock.uptimeMillis())) {
-                recoverAttempts[yt.id] = SystemClock.uptimeMillis()
+            val now = SystemClock.uptimeMillis()
+            val last = recoverAttempts[yt?.id]
+            val wait = if (yt?.youtube != null) recoverDelayMs(recoverCounts[yt.id] ?: 0, last, now) else null
+            if (yt != null && wait != null) {
+                val burst = if (last == null || now - last >= YT_RECOVER_GAP_MS) 0 else recoverCounts[yt.id] ?: 0
+                recoverAttempts[yt.id] = now
+                recoverCounts[yt.id] = burst + 1
                 recoverJob?.cancel()
-                recoverJob = scope.launch { if (!recover(yt, bad, p.currentPosition)) dropTrack(bad, yt.id) }
+                val at = p.currentPosition
+                recoverJob = scope.launch { delay(wait); if (!recover(yt, bad, at)) dropTrack(bad, yt.id) }
                 return
             }
             dropTrack(bad, yt?.id)
@@ -299,6 +319,7 @@ class AudioPlayer @Inject constructor(
     }
 
     private val recoverAttempts = HashMap<String, Long>()
+    private val recoverCounts = HashMap<String, Int>()
     private var recoverJob: Job? = null
 
     /** [track] with a fresh stream URL (and itag, when the old one is gone), or null when it could not be looked up. */
@@ -395,7 +416,7 @@ class AudioPlayer @Inject constructor(
         val p = exo()
         cancelSleep() // "End of track" was for a track of the old queue
         recoverJob?.cancel()
-        recoverAttempts.clear()
+        recoverAttempts.clear(); recoverCounts.clear()
         activateJob?.cancel()
         pendingAction = null
         restoredPending = false
@@ -452,6 +473,11 @@ class AudioPlayer @Inject constructor(
         restoredDurationMs = 0L
         if (restored[plan.index].id == snap.position.curId) { restoredDurationId = snap.position.curId; restoredDurationMs = snap.position.durationMs }
         p.setMediaItems(restored.map { it.toMediaItem() }, plan.index, plan.posMs)
+        if (snap.queue.shuffle) {
+            // Same order as before the restart; unusable when tracks were dropped (the saved indices no longer line up).
+            validShuffleOrder(snap.queue.shuffleOrder, snap.queue.tracks.size)?.takeIf { plan.tracks.size == snap.queue.tracks.size }
+                ?.let { p.setShuffleOrder(DefaultShuffleOrder(it.toIntArray(), System.nanoTime())) }
+        }
         p.shuffleModeEnabled = snap.queue.shuffle
         p.repeatMode = snap.queue.repeat.toPlayerMode()
         p.setPlaybackSpeed(snap.queue.speed)
@@ -685,10 +711,24 @@ class AudioPlayer @Inject constructor(
         val p = player ?: return
         if (tracks.isEmpty()) return
         val queue = QueueSnapshot(
-            tracks.map { it.toSaved() }, p.shuffleModeEnabled, repeatFromPlayerMode(p.repeatMode), p.playbackParameters.speed
+            tracks.map { it.toSaved() }, p.shuffleModeEnabled, repeatFromPlayerMode(p.repeatMode), p.playbackParameters.speed,
+            shuffleOrder = if (p.shuffleModeEnabled) shuffleOrderOf(p) else null
         )
         val position = SavedPosition(tracks.getOrNull(p.currentMediaItemIndex)?.id, p.currentPosition, currentDurationMs(p))
         scope.launch { queueStore.saveQueue(Snapshot(queue, position)) }
+    }
+
+    /** The play order with shuffle on, read from the timeline (the player does not expose its ShuffleOrder). */
+    private fun shuffleOrderOf(p: Player): List<Int>? {
+        val t = p.currentTimeline
+        if (t.windowCount != tracks.size) return null
+        val order = ArrayList<Int>(t.windowCount)
+        var i = t.getFirstWindowIndex(true)
+        while (i != C.INDEX_UNSET && order.size <= t.windowCount) {
+            order += i
+            i = t.getNextWindowIndex(i, Player.REPEAT_MODE_OFF, true)
+        }
+        return validShuffleOrder(order, t.windowCount)
     }
 
     private fun AudioTrack.toSaved() = SavedTrack(
