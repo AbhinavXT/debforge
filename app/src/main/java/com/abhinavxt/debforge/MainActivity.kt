@@ -102,7 +102,7 @@ class MainActivity : ComponentActivity() {
         // user-initiated job / foreground service. Resumes anything still
         // QUEUED — e.g. after Android's background time limit paused it, or
         // after the process was killed.
-        lifecycleScope.launch { downloadScheduler.ensureRunning() }
+        lifecycleScope.launch { downloadScheduler.ensureRunning(foreground = true) }
         // "Delete downloads after N days", if the user turned it on.
         lifecycleScope.launch { runCatching { housekeeper.run() } }
     }

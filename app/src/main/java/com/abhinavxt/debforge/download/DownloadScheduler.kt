@@ -108,7 +108,12 @@ class DownloadScheduler @Inject constructor(
         ScheduleAlarm.set(context, at)
     }
 
-    suspend fun ensureRunning(): Boolean {
+    /**
+     * [foreground] = the app is visible (UIDT scheduling allowed) and the user
+     * can see the queue: a job already pending (waiting out the system's
+     * backoff) is replaced by a fresh one, provided nothing blocks downloads.
+     */
+    suspend fun ensureRunning(foreground: Boolean = false): Boolean {
         if (runner.offerWork()) return true
         if (!downloadDao.hasPendingWork()) return true
 
@@ -126,12 +131,12 @@ class DownloadScheduler @Inject constructor(
         // Allowed to run now: a pending window alarm has nothing left to do.
         if (!rules.scheduleEnabled) ScheduleAlarm.cancel(context)
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE && scheduleJob()) return true
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE && scheduleJob(replacePending = foreground && block == null)) return true
         return startForegroundService()
     }
 
     @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
-    private suspend fun scheduleJob(): Boolean {
+    private suspend fun scheduleJob(replacePending: Boolean): Boolean {
         val js = context.getSystemService(JobScheduler::class.java) ?: return false
         if (!js.canRunUserInitiatedJobs()) return false
         // Already scheduled or running: scheduling again with the same id
@@ -139,7 +144,10 @@ class DownloadScheduler @Inject constructor(
         // offerWork() would have returned true.)
         val pending = js.getPendingJob(JOB_ID)
         if (pending != null) {
-            if (!pending.requiresUnmetered()) return true
+            // offerWork() was false, so no session is live: this job is waiting
+            // (backoff), not running. Replace it so it starts now.
+            if (!pending.requiresUnmetered() && !replacePending) return true
+            if (replacePending) Log.i(TAG, "Replacing pending job so it starts now")
             // Left over from builds that made JobScheduler enforce Wi-Fi-only:
             // it never starts on mobile data, even after the user turns the
             // rule off, and it made every new download wait behind it.
