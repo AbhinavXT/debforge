@@ -26,6 +26,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
+import com.abhinavxt.debforge.data.net.BlockingCalls
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONObject
@@ -88,7 +89,7 @@ class DirectLinks @Inject constructor(
         )
     }
 
-    override suspend fun resolveLink(sourceRef: String): ResolvedLink = withContext(Dispatchers.IO) {
+    override suspend fun resolveLink(sourceRef: String): ResolvedLink = BlockingCalls.run {
         when {
             sourceRef.startsWith(PIXELDRAIN) ->
                 ResolvedLink(DirectLinkParser.pixeldrainDownloadUrl(sourceRef.removePrefix(PIXELDRAIN)), null, null)

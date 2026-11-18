@@ -1,5 +1,6 @@
 package com.abhinavxt.debforge.data.youtube
 
+import com.abhinavxt.debforge.data.net.BlockingCalls
 import com.abhinavxt.debforge.di.ApiHttpClient
 import com.abhinavxt.debforge.domain.Container
 import com.abhinavxt.debforge.domain.StreamKind
@@ -55,7 +56,7 @@ sealed class YouTubeException(message: String, cause: Throwable? = null) : Excep
 class YouTubeResolver @Inject constructor(@ApiHttpClient private val client: OkHttpClient) {
     private val init by lazy { NewPipe.init(NewPipeDownloader(client), Localization("en", "US")) }
 
-    suspend fun resolve(url: String): YouTubeVideo = withContext(Dispatchers.IO) {
+    suspend fun resolve(url: String): YouTubeVideo = BlockingCalls.run {
         val id = YouTubeLinks.videoId(url)
             ?: throw if (YouTubeLinks.isPlaylistOnly(url)) YouTubeException.PlaylistOnly()
             else YouTubeException.Unavailable("Not a YouTube video link")

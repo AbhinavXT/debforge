@@ -3,6 +3,7 @@ package com.abhinavxt.debforge.di
 import android.util.Log
 import android.webkit.CookieManager
 import com.abhinavxt.debforge.BuildConfig
+import com.abhinavxt.debforge.data.net.BlockingCalls
 import com.squareup.moshi.Moshi
 import dagger.Module
 import dagger.Provides
@@ -49,6 +50,7 @@ object NetworkModule {
         }
         return OkHttpClient.Builder()
             .addInterceptor(logging)
+            .eventListenerFactory(BlockingCalls.eventListenerFactory)
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
             .build()
@@ -77,6 +79,7 @@ object NetworkModule {
             .readTimeout(60, TimeUnit.SECONDS)
             .connectionPool(ConnectionPool(32, 5L, TimeUnit.MINUTES))
             .retryOnConnectionFailure(true)
+            .eventListenerFactory(BlockingCalls.eventListenerFactory)
             .cookieJar(BrowserCookies)
             .build()
 
