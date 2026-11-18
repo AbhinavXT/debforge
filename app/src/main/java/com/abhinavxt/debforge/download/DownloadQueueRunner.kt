@@ -170,6 +170,7 @@ class DownloadQueueRunner @Inject constructor(
             chunkDao.deleteForDownload(id)
             downloadDao.delete(id)
             DownloadFiles.deletePart(entity?.partFilePath)
+            DownloadFiles.deletePending(id)
             artworkFile(context, id).delete()
             progressTracker.clear(id)
             clearStoppedNoticeIfIdle()
@@ -304,6 +305,7 @@ class DownloadQueueRunner @Inject constructor(
                     chunkDao.deleteForDownload(entity.id)
                     downloadDao.delete(entity.id)
                     DownloadFiles.deletePart(entity.partFilePath)
+                    DownloadFiles.deletePending(entity.id)
                     artworkFile(context, entity.id).delete()
                     // Honour an explicit cancel even if the file was already promoted.
                     if (completed) DownloadFiles.deleteFinal(entity.finalFilePath)

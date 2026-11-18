@@ -45,3 +45,43 @@ class AudioFinishTest {
         assertNull(AudioFinish.kindFor("/x/a.m4a", 1, false))
     }
 }
+
+class PrivateAudioPartTest {
+    private val saf = "saf:content://x/tree/p%3AD#a.m4a"
+
+    @Test fun privatePartOnlyForFastAudioInPickedFolder() {
+        org.junit.Assert.assertTrue(AudioFinish.needsPrivatePart(AudioFinish.Kind.M4A, saf))
+        org.junit.Assert.assertFalse(AudioFinish.needsPrivatePart(null, saf))
+        org.junit.Assert.assertFalse(AudioFinish.needsPrivatePart(AudioFinish.Kind.M4A, "/data/a.m4a"))
+    }
+
+    @Test fun pendingNameIsSafe() {
+        org.junit.Assert.assertEquals("yt_abc_1.part", AudioFinish.pendingName("yt:abc/1"))
+    }
+
+    @Test fun resumeAfterCopyFailureKeepsCompletePrivateFile() {
+        org.junit.Assert.assertFalse(AudioFinish.mustRestart(100, 100))
+        org.junit.Assert.assertFalse(AudioFinish.mustRestart(0, null))
+    }
+
+    @Test fun restartWhenPrivateFileMissingOrShort() {
+        org.junit.Assert.assertTrue(AudioFinish.mustRestart(100, null))
+        org.junit.Assert.assertTrue(AudioFinish.mustRestart(100, 50))
+    }
+
+    @Test fun copyStreamCopiesAllBytesAndDetectsShortCopy() {
+        val data = ByteArray(2_500_000) { it.toByte() }
+        val out = java.io.ByteArrayOutputStream()
+        DownloadFiles.copyStream(data.inputStream(), out, data.size.toLong())
+        org.junit.Assert.assertArrayEquals(data, out.toByteArray())
+        org.junit.Assert.assertThrows(java.io.IOException::class.java) {
+            DownloadFiles.copyStream(data.inputStream(), java.io.ByteArrayOutputStream(), data.size + 1L)
+        }
+    }
+
+    @Test fun copyStreamStopsWhenCancelled() {
+        org.junit.Assert.assertThrows(IllegalStateException::class.java) {
+            DownloadFiles.copyStream(ByteArray(10).inputStream(), java.io.ByteArrayOutputStream(), 10) { error("cancelled") }
+        }
+    }
+}

@@ -51,6 +51,49 @@ object DownloadFiles {
     /** The temp path we stream bytes into. */
     fun partPathFor(finalPath: String): String = "$finalPath.part"
 
+    /** App-private working file for download [id] (not in the user's folder), see [AudioFinish.needsPrivatePart]. */
+    fun pendingPathFor(id: String): String = File(File(context.filesDir, "pending"), AudioFinish.pendingName(id)).path
+
+    /** Removes the private working file of [id]. Safe if absent. */
+    fun deletePending(id: String) {
+        runCatching { File(pendingPathFor(id)).delete() }
+    }
+
+    /**
+     * Copies the plain file [source] to [destPath] (any kind of path) in one buffered stream, replacing
+     * what is there, and returns the bytes copied. [check] runs per buffer (cancellation). Throws
+     * IOException when the copy is short or fails; the caller removes the partial destination.
+     */
+    @Throws(IOException::class)
+    fun copyTo(source: File, destPath: String, check: () -> Unit = {}): Long {
+        val total = source.length()
+        openFd(destPath).use { pfd ->
+            ioErrno { Os.ftruncate(pfd.fileDescriptor, 0) }
+            FileOutputStream(pfd.fileDescriptor).use { out ->
+                source.inputStream().use { copyStream(it, out, total, check) }
+                out.fd.sync()
+            }
+            if (pfd.statSize != total) throw IOException("Copied file has the wrong size")
+        }
+        return total
+    }
+
+    /** Copies [input] to [out] through a 1 MiB buffer; throws unless exactly [total] bytes went across. */
+    @Throws(IOException::class)
+    internal fun copyStream(input: java.io.InputStream, out: java.io.OutputStream, total: Long, check: () -> Unit = {}) {
+        val buf = ByteArray(1 shl 20)
+        var copied = 0L
+        while (true) {
+            check()
+            val n = input.read(buf)
+            if (n < 0) break
+            out.write(buf, 0, n)
+            copied += n
+        }
+        out.flush()
+        if (copied != total) throw IOException("Copy was short ($copied of $total bytes)")
+    }
+
     /** An open, writable channel positioned where the caller asked. Close with `use {}`. */
     class WriteHandle internal constructor(
         val channel: FileChannel,

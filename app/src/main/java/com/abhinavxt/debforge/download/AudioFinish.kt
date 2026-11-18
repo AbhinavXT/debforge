@@ -32,4 +32,18 @@ object AudioFinish {
             else -> null
         }
     }
+
+    /** Audio downloads to a picked (SAF) folder are downloaded privately and then copied: a fast finish needs a plain file. */
+    fun needsPrivatePart(kind: Kind?, finalPath: String): Boolean = kind != null && SafPaths.isSaf(finalPath)
+
+    /** File name of the private working copy of download [id]. */
+    fun pendingName(id: String): String = id.replace(Regex("[^A-Za-z0-9._-]"), "_") + ".part"
+
+    /**
+     * Whether a private download must start over: rows say [doneBytes] were written, but the private
+     * file ([privateLength], null when absent) doesn't hold them (an older version wrote into the
+     * picked folder, or the private file was cleared).
+     */
+    fun mustRestart(doneBytes: Long, privateLength: Long?): Boolean =
+        doneBytes > 0 && (privateLength == null || privateLength < doneBytes)
 }

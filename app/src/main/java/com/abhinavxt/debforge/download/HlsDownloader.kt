@@ -14,6 +14,7 @@ import com.abhinavxt.debforge.download.conditions.DownloadConditions
 import com.abhinavxt.debforge.download.conditions.RateLimiter
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -73,7 +74,7 @@ class HlsDownloader @Inject constructor(
 
     suspend fun download(entity: DownloadEntity, partPath: String, finalPath: String): DownloadOutcome = withContext(Dispatchers.IO) {
         val yt = YouTubeLinks.isSourceRef(entity.sourceRef)
-        val tracks = try {
+        val tracks0 = try {
             if (yt) youtubeSource.tracks(entity, partPath).mapIndexed { i, m ->
                 Track(m, if (i == 0) partPath else "$partPath.audio")
             } else listOfNotNull(
@@ -90,6 +91,11 @@ class HlsDownloader @Inject constructor(
             val msg = if (e is YouTubeException.Network) "Couldn't reach YouTube. Check your connection, then retry." else e.message ?: "Couldn't load the video"
             return@withContext DownloadOutcome.Failure(msg, permanent)
         }
+        // Audio for a picked folder: downloaded into app-private storage, fixed there, then copied in one go
+        // (header fix and the muxer are slow or impossible through the folder picker).
+        val audioKind = if (yt && tracks0.size == 1) AudioFinish.kindFor(finalPath, 1, AudioFinish.isSingleProgressive(tracks0[0].media)) else null
+        val privatePart = if (AudioFinish.needsPrivatePart(audioKind, finalPath)) DownloadFiles.pendingPathFor(entity.id) else null
+        val tracks = if (privatePart == null) tracks0 else listOf(Track(tracks0[0].media, privatePart))
         val total = tracks.sumOf { it.pieces.size }
         val allPieces = tracks.flatMap { it.pieces }
         // YouTube pieces have exact lengths: the total is known, and a piece plan that changed (new length) is detected.
@@ -101,6 +107,20 @@ class HlsDownloader @Inject constructor(
         if (done.size > total || done.withIndex().any { (i, c) -> c.index != i || (yt && (c.bytesWritten != allPieces[i].length || c.startByte != allPieces[i].offset)) }) {
             chunkDao.deleteForDownload(entity.id)
             done = emptyList()
+        }
+        if (privatePart != null) {
+            val have = File(privatePart).takeIf { it.exists() }?.length()
+            if (AudioFinish.mustRestart(done.sumOf { it.bytesWritten }, have)) {
+                // An older version's half-download in the folder, or a cleared private file: restart privately.
+                chunkDao.deleteForDownload(entity.id)
+                done = emptyList()
+                DownloadFiles.deletePart(partPath)
+            }
+            val need = ytBytes - done.sumOf { it.bytesWritten }
+            val free = DownloadFiles.availableBytes(privatePart)
+            if (need > 0 && free != null && free < need) {
+                return@withContext DownloadOutcome.Failure("Not enough free space on the device to download this")
+            }
         }
         var downloaded = done.sumOf { it.bytesWritten }
         val sizes = mutableListOf<Long>()
@@ -156,8 +176,8 @@ class HlsDownloader @Inject constructor(
                 // Audio only: YouTube's M4A / WebM are already complete files, but a fragmented M4A often has
                 // zero header durations. A file that passes the header check is fixed in place (M4A) or kept
                 // as is (WebM); anything else is re-copied through the muxer.
-                yt -> finishAudio(tracks[0].media, partPath, finalPath, sizes.single())
-                    ?: combine(partPath, finalPath, separateAudio = false, audioOnly = true)
+                yt -> finishAudio(tracks[0].media, partPath, finalPath, sizes.single(), privatePart, coroutineContext[Job])
+                    ?: combine(partPath, finalPath, separateAudio = false, audioOnly = true, input = privatePart ?: partPath)
                 tracks[0].media.init != null -> try {
                     combine(partPath, finalPath, separateAudio = false)
                 } catch (e: IOException) {
@@ -173,6 +193,7 @@ class HlsDownloader @Inject constructor(
             return@withContext DownloadOutcome.Failure(e.message ?: "Finalize failed")
         } ?: return@withContext DownloadOutcome.Failure("Size verification failed")
 
+        if (privatePart != null) DownloadFiles.deletePending(entity.id)
         withContext(NonCancellable) {
             downloadDao.updateLink(entity.id, entity.downloadUrl, 1, size)
             downloadDao.updateBytes(entity.id, size)
@@ -211,17 +232,22 @@ class HlsDownloader @Inject constructor(
      * idempotent, [DownloadFiles.verifyAndPromote] replaces an existing final file, and a stale .part.mux
      * is never promoted (it is deleted with the rest after the promote, or truncated by [combine]).
      */
-    private fun finishAudio(media: HlsPlaylist.Media, partPath: String, finalPath: String, written: Long): Long? {
+    private fun finishAudio(
+        media: HlsPlaylist.Media, partPath: String, finalPath: String, written: Long,
+        privatePart: String? = null, job: Job? = null
+    ): Long? {
         val tag = "AudioFinish"
         val start = System.nanoTime()
         fun ms() = (System.nanoTime() - start) / 1_000_000
         val kind = AudioFinish.kindFor(finalPath, 1, AudioFinish.isSingleProgressive(media))
-        if (kind == null || SafPaths.isSaf(partPath) || SafPaths.isSaf(finalPath)) {
+        // A picked-folder download not taken private (e.g. an older version's) can't be fixed in place.
+        if (kind == null || (privatePart == null && (SafPaths.isSaf(partPath) || SafPaths.isSaf(finalPath)))) {
             Log.i(tag, "combine: not a plain progressive file (${ms()} ms to decide)")
             return null
         }
-        return try {
-            val file = File(partPath)
+        val workPath = privatePart ?: partPath
+        try {
+            val file = File(workPath)
             val expected = media.durationSec.toLong().takeIf { it > 0 }
             val reason = when (kind) {
                 AudioFinish.Kind.M4A -> when (val r = Fmp4Header.check(file, expected)) {
@@ -237,6 +263,29 @@ class HlsDownloader @Inject constructor(
                 Log.i(tag, "combine: header check said $reason (${ms()} ms)")
                 return null
             }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Log.i(tag, "combine: fast path failed (${e.message}) after ${ms()} ms")
+            return null
+        }
+        if (privatePart != null) {
+            // The finished file is kept on failure, so a retry only repeats the copy.
+            val patchMs = ms()
+            val copyStart = System.nanoTime()
+            try {
+                DownloadFiles.copyTo(File(privatePart), partPath) { job?.ensureActive() }
+                if (!DownloadFiles.verifyAndPromote(partPath, finalPath, written)) throw IOException("Copied file has the wrong size")
+            } catch (e: Exception) {
+                runCatching { DownloadFiles.deletePart(partPath) }
+                if (e is CancellationException) throw e
+                Log.i(tag, "copy to the chosen folder failed (${e.message})")
+                throw if (e is IOException) e else IOException(e.message, e)
+            }
+            Log.i(tag, "fast via private copy: patch $patchMs ms, copy ${(System.nanoTime() - copyStart) / 1_000_000} ms")
+            return written
+        }
+        return try {
             if (!DownloadFiles.verifyAndPromote(partPath, finalPath, written)) {
                 Log.i(tag, "combine: promote failed (${ms()} ms)")
                 return null
@@ -256,9 +305,9 @@ class HlsDownloader @Inject constructor(
      * (.part.mux), promoted to [finalPath]; the joined inputs are deleted
      * after. Returns its size.
      */
-    private suspend fun combine(partPath: String, finalPath: String, separateAudio: Boolean, audioOnly: Boolean = false): Long? {
+    private suspend fun combine(partPath: String, finalPath: String, separateAudio: Boolean, audioOnly: Boolean = false, input: String = partPath): Long? {
         val muxPath = "$partPath.mux"
-        val size = DownloadFiles.openFd(partPath).use { video ->
+        val size = DownloadFiles.openFd(input).use { video ->
             val audio = if (separateAudio) DownloadFiles.openFd("$partPath.audio") else null
             audio.use {
                 DownloadFiles.openFd(muxPath).use { out ->
@@ -273,6 +322,7 @@ class HlsDownloader @Inject constructor(
         if (!DownloadFiles.verifyAndPromote(muxPath, finalPath, size)) return null
         // Only the joined inputs are left: .part and .part.audio.
         DownloadFiles.deletePart(partPath)
+        if (input != partPath) runCatching { File(input).delete() }
         return size
     }
 
