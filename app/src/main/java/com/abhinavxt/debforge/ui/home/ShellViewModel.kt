@@ -9,6 +9,7 @@ import com.abhinavxt.debforge.player.AudioPlayer
 import com.abhinavxt.debforge.ui.add.PendingAddStore
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
@@ -32,6 +33,11 @@ class ShellViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), true)
     val audioSkipSeconds: StateFlow<Int> = settings.audioSkipSecondsFlow
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), com.abhinavxt.debforge.player.DEFAULT_SKIP_SECONDS)
+    init {
+        // The mini player comes back paused after the app was closed.
+        viewModelScope.launch { audio.restore() }
+    }
+
     val activeCount: StateFlow<Int> = dao.observeAll()
         .map { rows -> rows.count { it.state == DownloadState.DOWNLOADING || it.state == DownloadState.QUEUED } }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0)

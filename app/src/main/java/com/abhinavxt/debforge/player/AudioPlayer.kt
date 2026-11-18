@@ -16,7 +16,16 @@ import androidx.media3.common.Timeline
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import com.abhinavxt.debforge.MainActivity
+import com.abhinavxt.debforge.data.local.DownloadDao
+import com.abhinavxt.debforge.data.playback.AudioQueueStore
 import com.abhinavxt.debforge.data.playback.AudioResume
+import com.abhinavxt.debforge.data.playback.QueueSnapshot
+import com.abhinavxt.debforge.data.playback.SavedPosition
+import com.abhinavxt.debforge.data.playback.SavedTrack
+import com.abhinavxt.debforge.data.playback.Snapshot
+import com.abhinavxt.debforge.data.playback.restorePlan
+import com.abhinavxt.debforge.domain.DownloadState
+import com.abhinavxt.debforge.download.LocalFiles
 import com.abhinavxt.debforge.data.youtube.YouTubeResolver
 import com.abhinavxt.debforge.domain.YouTubeFormats
 import com.abhinavxt.debforge.domain.YouTubeLinks
@@ -31,7 +40,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -203,12 +217,14 @@ fun formatClock(ms: Long): String {
  * shown by [BackgroundPlaybackService] as a media notification. Video uses
  * its own player; [stopForVideo] makes room for it.
  */
-@OptIn(UnstableApi::class)
+@OptIn(UnstableApi::class, FlowPreview::class)
 @Singleton
 class AudioPlayer @Inject constructor(
     @ApplicationContext private val context: Context,
     private val resume: AudioResume,
-    private val youtubeResolver: YouTubeResolver
+    private val youtubeResolver: YouTubeResolver,
+    private val queueStore: AudioQueueStore,
+    private val downloads: DownloadDao
 ) {
 
     private val _state = MutableStateFlow(AudioState())
@@ -216,6 +232,15 @@ class AudioPlayer @Inject constructor(
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private val playing = MutableStateFlow(false)
+    private val queueChanged = MutableStateFlow(0)
+    private val restoreLock = Mutex()
+    /** Restored from disk and not yet prepared: nothing plays, no service runs, until the user acts ([activate]). */
+    private var restoredPending = false
+    private var activating = false
+    private var activateJob: Job? = null
+    /** The restored current track's length, shown while the unprepared player cannot report it. */
+    private var restoredDurationId: String? = null
+    private var restoredDurationMs = 0L
     private var player: ExoPlayer? = null
 
     private val listener = object : Player.Listener {
@@ -234,7 +259,7 @@ class AudioPlayer @Inject constructor(
             if (playbackState == Player.STATE_ENDED && sleepAtEnd) cancelSleep()
         }
 
-        override fun onIsPlayingChanged(isPlaying: Boolean) { if (!isPlaying) saveCurrent() }
+        override fun onIsPlayingChanged(isPlaying: Boolean) { if (!isPlaying) { saveCurrent(); savePositionNow() } }
 
         override fun onPositionDiscontinuity(old: Player.PositionInfo, new: Player.PositionInfo, reason: Int) {
             val p = player ?: return
@@ -247,6 +272,7 @@ class AudioPlayer @Inject constructor(
         }
 
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+            savePositionNow()
             // Repeat-one keeps the same item, so the timer still applies; any other change of item drops it.
             if (sleepAtEnd && !sleepEndStillApplies(sleepItemId, mediaItem?.mediaId)) cancelSleep()
             if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED || reason == Player.MEDIA_ITEM_TRANSITION_REASON_REPEAT) return
@@ -272,24 +298,30 @@ class AudioPlayer @Inject constructor(
     private val recoverAttempts = HashMap<String, Long>()
     private var recoverJob: Job? = null
 
-    /** Swaps in a fresh URL for [track] at [index] and resumes at [positionMs]; false when it could not be refreshed. */
-    private suspend fun recover(track: AudioTrack, index: Int, positionMs: Long): Boolean {
-        val yt = track.youtube ?: return false
+    /** [track] with a fresh stream URL (and itag, when the old one is gone), or null when it could not be looked up. */
+    private suspend fun refreshed(track: AudioTrack): AudioTrack? {
+        val yt = track.youtube ?: return null
         val stream = try {
             freshAudioStream(youtubeResolver.resolve("https://www.youtube.com/watch?v=${yt.videoId}"), yt.audioItag, android.os.Build.VERSION.SDK_INT)
         } catch (e: kotlinx.coroutines.CancellationException) {
             throw e // play()/clear() replaced the queue: not a failure
         } catch (e: Exception) {
             null
-        } ?: return false
+        } ?: return null
+        return track.copy(uri = Uri.parse(stream.url), youtube = yt.copy(audioItag = stream.itag))
+    }
+
+    /** Swaps in a fresh URL for [track] at [index] and resumes at [positionMs]; false when it could not be refreshed. */
+    private suspend fun recover(track: AudioTrack, index: Int, positionMs: Long): Boolean {
+        val fresh = refreshed(track) ?: return false
         val p = player ?: return true // cleared meanwhile: nothing to drop
         if (tracks.getOrNull(index)?.id != track.id) return true // the queue changed under us
-        val fresh = track.copy(uri = Uri.parse(stream.url), youtube = yt.copy(audioItag = stream.itag))
         tracks = tracks.toMutableList().also { it[index] = fresh }
         p.replaceMediaItem(index, fresh.toMediaItem())
         p.seekTo(index, positionMs)
         p.prepare()
         p.play()
+        queueChanged.value++
         return true
     }
 
@@ -304,11 +336,14 @@ class AudioPlayer @Inject constructor(
         p.removeMediaItem(at)
         p.prepare()
         p.play()
+        queueChanged.value++
     }
 
     init {
         // Save the position now and then while playing, so a killed process loses little.
-        scope.launch { playing.collectLatest { if (it) while (true) { delay(15_000); saveCurrent() } } }
+        scope.launch { playing.collectLatest { if (it) while (true) { delay(15_000); saveCurrent(); savePositionNow() } } }
+        // The queue itself, saved a moment after it stops changing.
+        scope.launch { queueChanged.debounce(500).collect { saveQueueNow() } }
         // Republish the position only while playing and somebody is watching.
         scope.launch {
             combine(_state.subscriptionCount.map { it > 0 }, playing) { watched, on -> watched && on }
@@ -358,6 +393,9 @@ class AudioPlayer @Inject constructor(
         cancelSleep() // "End of track" was for a track of the old queue
         recoverJob?.cancel()
         recoverAttempts.clear()
+        activateJob?.cancel()
+        restoredPending = false
+        activating = false
         pauseBackgroundedVideo()
         tracks = queue
         p.setMediaItems(queue.map { it.toMediaItem() }, startIndex.coerceIn(queue.indices), startMs)
@@ -371,6 +409,103 @@ class AudioPlayer @Inject constructor(
         // Always: the service may have stopped itself (task removed) while the player lived on.
         context.startService(Intent(context, BackgroundPlaybackService::class.java))
         publish()
+        queueChanged.value++
+    }
+
+    /**
+     * Brings the saved queue back after the app was closed: paused at the same track and second, with shuffle,
+     * repeat and speed. The player is not prepared and no service starts until the user plays (see [activate]).
+     * False when something is already loaded or nothing was saved.
+     */
+    suspend fun restore(): Boolean = restoreLock.withLock {
+        if (player != null) return@withLock false
+        val snap = queueStore.load() ?: return@withLock false
+        val local = withContext(Dispatchers.IO) {
+            snap.queue.tracks.filter { it.local }.mapNotNull { t ->
+                val row = downloads.getById(t.id) ?: return@mapNotNull null
+                if (row.state != DownloadState.COMPLETED || row.finalFilePath?.let { LocalFiles.exists(it) } != true) return@mapNotNull null
+                audioTrackFor(context, row)?.let { t.id to it }
+            }.toMap()
+        }
+        val plan = restorePlan(snap) { it in local }
+        if (plan == null) { queueStore.forget(); return@withLock false }
+        if (player != null) return@withLock false // play() got in while we were reading
+        val restored = plan.tracks.mapNotNull { t ->
+            if (t.local) local[t.id] else {
+                val video = t.videoId
+                val itag = t.itag
+                if (video == null || itag == null) null
+                else AudioTrack(t.id, t.streamUrl?.let { Uri.parse(it) } ?: Uri.EMPTY, t.title, t.artist, null, t.artworkUrl,
+                    YouTubeAudio(video, itag), t.artistUrl)
+            }
+        }
+        if (restored.size != plan.tracks.size) return@withLock false
+        val p = exo()
+        tracks = restored
+        p.setMediaItems(restored.map { it.toMediaItem() }, plan.index, plan.posMs)
+        p.shuffleModeEnabled = snap.queue.shuffle
+        p.repeatMode = snap.queue.repeat.toPlayerMode()
+        p.setPlaybackSpeed(snap.queue.speed)
+        p.playWhenReady = false
+        restoredPending = true
+        if (restored[plan.index].id == snap.position.curId) { restoredDurationId = snap.position.curId; restoredDurationMs = snap.position.durationMs }
+        publish()
+        true
+    }
+
+    /**
+     * First user action on a restored queue: re-resolve a streamed current track (its link has expired), hand the player
+     * to the service and start. False when it could not start (the app may not start a service from the background).
+     */
+    private suspend fun activate(): Boolean {
+        val p = player ?: return false
+        if (!restoredPending) return true
+        activating = true // the play button flips at once, even while the link is looked up
+        publish()
+        try {
+            val at = p.currentMediaItemIndex
+            val track = tracks.getOrNull(at)
+            var failed = false
+            if (track?.youtube != null) {
+                val fresh = refreshed(track)
+                if (player !== p) return false
+                if (fresh == null) failed = true
+                else if (tracks.getOrNull(at)?.id == track.id) {
+                    tracks = tracks.toMutableList().also { it[at] = fresh }
+                    p.replaceMediaItem(at, fresh.toMediaItem())
+                    p.seekTo(at, p.currentPosition)
+                    queueChanged.value++
+                }
+            }
+            pauseBackgroundedVideo()
+            BackgroundPlayback.openIntent = Intent(context, MainActivity::class.java)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                .putExtra(BackgroundPlayback.EXTRA_EXPAND_NOW_PLAYING, true)
+            BackgroundPlayback.player = p
+            try {
+                context.startService(Intent(context, BackgroundPlaybackService::class.java))
+            } catch (e: IllegalStateException) { // not allowed to start a service from the background
+                BackgroundPlayback.player = null
+                BackgroundPlayback.openIntent = null
+                return false
+            }
+            restoredPending = false
+            if (failed && track != null) { dropTrack(at, track.id); return false }
+            p.prepare()
+            p.play()
+            return true
+        } finally {
+            activating = false
+            publish()
+        }
+    }
+
+    /** Runs [block] on the player; the first action on a restored queue starts it first (see [activate]). */
+    private fun whenActive(block: (ExoPlayer) -> Unit) {
+        val p = player ?: return
+        if (!restoredPending) { block(p); return }
+        if (activateJob?.isActive == true) return
+        activateJob = scope.launch { if (activate()) player?.let(block) }
     }
 
     private var tracks: List<AudioTrack> = emptyList()
@@ -381,7 +516,7 @@ class AudioPlayer @Inject constructor(
     private var sleepAtEnd = false
     private var sleepItemId: String? = null
 
-    fun setSpeed(speed: Float) { player?.setPlaybackSpeed(speed) }
+    fun setSpeed(speed: Float) { player?.setPlaybackSpeed(speed); queueChanged.value++ }
 
     /** [minutes] 0 = off, [SLEEP_END_OF_TRACK], or a countdown; pauses (keeps the queue) when it fires. */
     fun setSleepTimer(minutes: Int) {
@@ -415,17 +550,19 @@ class AudioPlayer @Inject constructor(
         publish()
     }
 
-    fun toggle() { player?.let { if (wantsToPlay(it.playWhenReady, it.playbackState)) it.pause() else it.play() } }
-    fun next() { player?.seekToNextMediaItem() }
+    fun toggle() {
+        if (restoredPending) { whenActive { }; return } // activating already starts playback
+        player?.let { if (wantsToPlay(it.playWhenReady, it.playbackState)) it.pause() else it.play() }
+    }
+    fun next() { whenActive { it.seekToNextMediaItem() } }
     /** Past 3 seconds restarts the track, like every music player. */
-    fun previous() {
-        val p = player ?: return
+    fun previous() = whenActive { p ->
         if (p.currentPosition > p.maxSeekToPreviousPosition) forgetCurrentSpot() // restarts this track
         p.seekToPrevious()
     }
     fun seekTo(ms: Long) {
         if (seekForgetsSpot(ms)) forgetCurrentSpot()
-        player?.seekTo(ms); publish()
+        whenActive { it.seekTo(ms); publish() }
     }
     /** Skips [deltaMs] from the current position, staying inside the track. */
     fun seekBy(deltaMs: Long) {
@@ -438,11 +575,11 @@ class AudioPlayer @Inject constructor(
         val id = player?.let { tracks.getOrNull(it.currentMediaItemIndex)?.id } ?: return
         scope.launch { resume.forget(id) }
     }
-    fun setShuffle(on: Boolean) { player?.shuffleModeEnabled = on }
-    fun cycleRepeat() { player?.let { it.repeatMode = repeatFromPlayerMode(it.repeatMode).next().toPlayerMode() } }
+    fun setShuffle(on: Boolean) { player?.shuffleModeEnabled = on; queueChanged.value++ }
+    fun cycleRepeat() { player?.let { it.repeatMode = repeatFromPlayerMode(it.repeatMode).next().toPlayerMode(); queueChanged.value++ } }
 
     /** Plays [index] of the current queue (tapping "Up next"). */
-    fun skipTo(index: Int) { player?.let { it.seekToDefaultPosition(index); it.play() } }
+    fun skipTo(index: Int) = whenActive { it.seekToDefaultPosition(index); it.play() }
 
     /** Files were deleted: take them out of the queue, moving on if the current one went, and forget where they were left. */
     fun removeTracks(ids: Set<String>) {
@@ -458,11 +595,44 @@ class AudioPlayer @Inject constructor(
         val before = p.currentMediaItem?.mediaId
         tracks = queueWithout(tracks, ids) { it.id }
         gone.asReversed().forEach { p.removeMediaItem(it) }
-        if (p.playbackState == Player.STATE_IDLE) { p.prepare(); p.play() }
+        if (p.playbackState == Player.STATE_IDLE && !restoredPending) { p.prepare(); p.play() }
         // The removal's own transition is skipped (it also fires for a new queue), so start the next track where it was left.
         p.currentMediaItem?.mediaId?.takeIf { it != before }?.let { applyResume(it) }
+        queueChanged.value++
         publish()
     }
+
+    private fun currentDurationMs(p: Player): Long =
+        p.duration.takeIf { it != C.TIME_UNSET }
+            ?: restoredDurationMs.takeIf { restoredPending && restoredDurationId == tracks.getOrNull(p.currentMediaItemIndex)?.id }
+            ?: 0L
+
+    /** Remembers the current track and second for the restore after a restart. */
+    private fun savePositionNow() {
+        val p = player ?: return
+        val id = tracks.getOrNull(p.currentMediaItemIndex)?.id ?: return
+        val pos = p.currentPosition
+        val dur = currentDurationMs(p)
+        scope.launch { queueStore.savePosition(id, pos, dur) }
+    }
+
+    private fun saveQueueNow() {
+        val p = player ?: return
+        if (tracks.isEmpty()) return
+        val queue = QueueSnapshot(
+            tracks.map { it.toSaved() }, p.shuffleModeEnabled, repeatFromPlayerMode(p.repeatMode), p.playbackParameters.speed
+        )
+        val position = SavedPosition(tracks.getOrNull(p.currentMediaItemIndex)?.id, p.currentPosition, currentDurationMs(p))
+        scope.launch { queueStore.saveQueue(Snapshot(queue, position)) }
+    }
+
+    private fun AudioTrack.toSaved() = SavedTrack(
+        id = id, title = title, artist = artist, local = youtube == null,
+        videoId = youtube?.videoId, itag = youtube?.audioItag,
+        streamUrl = if (youtube != null) uri.toString() else null,
+        artworkUrl = if (youtube != null) artworkUrl else null,
+        artistUrl = artistUrl
+    )
 
     private fun saveCurrent() { player?.let { save(it, it.currentMediaItemIndex, it.currentPosition) } }
 
@@ -482,6 +652,10 @@ class AudioPlayer @Inject constructor(
     fun clear() {
         saveCurrent()
         recoverJob?.cancel()
+        activateJob?.cancel()
+        restoredPending = false
+        activating = false
+        scope.launch { queueStore.forget() } // closing the queue (or a video taking over) forgets it
         playing.value = false
         BackgroundPlayback.openIntent = null // only audio sets it; a later video must open itself
         val p = player ?: return
@@ -515,9 +689,9 @@ class AudioPlayer @Inject constructor(
         _state.value = AudioState(
             queue = tracks,
             index = p.currentMediaItemIndex,
-            isPlaying = wantsToPlay(p.playWhenReady, p.playbackState),
+            isPlaying = activating || wantsToPlay(p.playWhenReady, p.playbackState),
             positionMs = p.currentPosition,
-            durationMs = p.duration.takeIf { it != C.TIME_UNSET } ?: 0,
+            durationMs = currentDurationMs(p),
             shuffle = p.shuffleModeEnabled,
             repeat = repeatFromPlayerMode(p.repeatMode),
             hasNext = p.hasNextMediaItem(),
