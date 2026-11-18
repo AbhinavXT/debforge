@@ -321,7 +321,7 @@
     <string name="backup_detail">将设置保存到文件，并可在本机或其他手机上恢复。</string>
     <string name="backup_create">备份</string>
     <string name="backup_restore">恢复</string>
-    <string name="backup_what">始终包含下载规则、文件夹、外观、已追剧集和其他设置。</string>
+    <string name="backup_what">始终包含下载规则、文件夹、外观、已追剧集、收藏、播放列表、播放历史、最近搜索和其他设置。</string>
     <string name="backup_include_signins">包含登录信息</string>
     <string name="backup_include_signins_detail">服务登录信息和 TMDB 密钥，使用密码加密。</string>
     <string name="backup_password">密码</string>
@@ -939,4 +939,30 @@
     <string name="about_licences_intro">DebForge 是遵循 GNU GPL v3 的自由软件，使用了以下开源库。</string>
     <string name="about_whats_new">新功能</string>
     <string name="about_whats_new_detail">GitHub 上此版本的发行说明</string>
+
+    <!-- M11: restore queue, player widget, play history, storage limit, backup -->
+    <string name="restore_done_lists">另外已恢复：%1$d 个收藏、%2$d 个播放列表、%3$d 条历史记录、%4$d 条最近搜索。</string>
+    <string name="widget_player_label">DebForge 播放器</string>
+    <string name="widget_player_description">DebForge 正在播放内容的封面和控制按钮</string>
+    <string name="widget_player_idle">未在播放</string>
+    <string name="widget_player_idle_hint">在 DebForge 中播放点什么吧</string>
+    <string name="history_title">历史记录</string>
+    <string name="history_empty">还没有播放过任何内容</string>
+    <string name="history_paused_banner">历史记录已暂停，新的播放不会被记录。</string>
+    <string name="history_pause">暂停历史记录</string>
+    <string name="history_clear">清除历史记录</string>
+    <string name="history_clear_confirm">清除播放历史？续播位置会保留。</string>
+    <string name="history_remove">从历史记录中移除</string>
+    <string name="history_missing">%1$s 已不再下载</string>
+    <string name="history_source_downloaded">已下载</string>
+    <string name="history_source_cloud">云端</string>
+    <string name="history_source_youtube">YouTube</string>
+    <string name="set_storage_limit">存储上限</string>
+    <string name="set_storage_limit_detail">如果 DebForge 的下载将超出此上限，新的下载会等待。不会删除任何内容。文件夹中的其他文件不计入。</string>
+    <string name="set_storage_limit_off">关闭</string>
+    <string name="set_storage_limit_gb">%1$d GB</string>
+    <string name="set_storage_used">已用：%1$s</string>
+    <string name="wait_storage">已达存储上限</string>
+    <string name="notif_storage_title">下载等待中</string>
+    <string name="notif_storage_text">已达存储上限。请删除下载内容或在设置中提高上限。</string>
 </resources>

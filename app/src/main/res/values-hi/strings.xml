@@ -334,7 +334,7 @@
     <string name="backup_detail">अपनी सेटिंग्स एक फ़ाइल में सहेजें, और इस या किसी दूसरे फ़ोन पर वापस लाएँ।</string>
     <string name="backup_create">बैकअप लें</string>
     <string name="backup_restore">वापस लाएँ</string>
-    <string name="backup_what">डाउनलोड नियम, फ़ोल्डर, रूप-रंग, फ़ॉलो किए गए शो और बाकी सेटिंग्स हमेशा शामिल होती हैं।</string>
+    <string name="backup_what">डाउनलोड नियम, फ़ोल्डर, रूप-रंग, फ़ॉलो किए गए शो, पसंदीदा, प्लेलिस्ट, चलाने का इतिहास, हाल की खोजें और बाकी सेटिंग्स हमेशा शामिल होती हैं।</string>
     <string name="backup_include_signins">साइन-इन भी शामिल करें</string>
     <string name="backup_include_signins_detail">सेवा लॉगिन और आपकी TMDB key, पासवर्ड से एन्क्रिप्ट की हुई।</string>
     <string name="backup_password">पासवर्ड</string>
@@ -987,4 +987,30 @@
     <string name="about_licences_intro">DebForge GNU GPL v3 के तहत मुक्त सॉफ़्टवेयर है। यह इन ओपन-सोर्स लाइब्रेरी से बना है।</string>
     <string name="about_whats_new">नया क्या है</string>
     <string name="about_whats_new_detail">GitHub पर इस संस्करण के रिलीज़ नोट्स</string>
+
+    <!-- M11: restore queue, player widget, play history, storage limit, backup -->
+    <string name="restore_done_lists">ये भी बहाल हुए: %1$d पसंदीदा, %2$d प्लेलिस्ट, %3$d इतिहास प्रविष्टियाँ, %4$d हाल की खोजें।</string>
+    <string name="widget_player_label">DebForge प्लेयर</string>
+    <string name="widget_player_description">DebForge में जो चल रहा है उसका आर्टवर्क और नियंत्रण</string>
+    <string name="widget_player_idle">कुछ नहीं चल रहा</string>
+    <string name="widget_player_idle_hint">DebForge में कुछ चलाएँ</string>
+    <string name="history_title">इतिहास</string>
+    <string name="history_empty">अभी तक कुछ नहीं चलाया गया</string>
+    <string name="history_paused_banner">इतिहास रुका हुआ है। नए प्ले दर्ज नहीं किए जाएँगे।</string>
+    <string name="history_pause">इतिहास रोकें</string>
+    <string name="history_clear">इतिहास साफ़ करें</string>
+    <string name="history_clear_confirm">चलाने का इतिहास साफ़ करें? आगे चलाने की स्थितियाँ बनी रहेंगी।</string>
+    <string name="history_remove">इतिहास से हटाएँ</string>
+    <string name="history_missing">%1$s अब डाउनलोड किया हुआ नहीं है</string>
+    <string name="history_source_downloaded">डाउनलोड किया गया</string>
+    <string name="history_source_cloud">क्लाउड</string>
+    <string name="history_source_youtube">YouTube</string>
+    <string name="set_storage_limit">स्टोरेज सीमा</string>
+    <string name="set_storage_limit_detail">अगर DebForge के डाउनलोड इस सीमा से ऊपर जाएँगे तो नए डाउनलोड इंतज़ार करेंगे। कुछ भी हटाया नहीं जाता। फ़ोल्डर की अन्य फ़ाइलें गिनी नहीं जातीं।</string>
+    <string name="set_storage_limit_off">बंद</string>
+    <string name="set_storage_limit_gb">%1$d GB</string>
+    <string name="set_storage_used">उपयोग: %1$s</string>
+    <string name="wait_storage">स्टोरेज सीमा पूरी हो गई</string>
+    <string name="notif_storage_title">डाउनलोड इंतज़ार में हैं</string>
+    <string name="notif_storage_text">स्टोरेज सीमा पूरी हो गई। डाउनलोड हटाएँ या सेटिंग्स में सीमा बढ़ाएँ।</string>
 </resources>

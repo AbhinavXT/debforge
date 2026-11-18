@@ -334,7 +334,7 @@
     <string name="backup_detail">আপনার সেটিংস একটি ফাইলে সেভ করুন, এবং এই বা অন্য ফোনে ফিরিয়ে আনুন।</string>
     <string name="backup_create">ব্যাকআপ নিন</string>
     <string name="backup_restore">রিস্টোর করুন</string>
-    <string name="backup_what">ডাউনলোডের নিয়ম, ফোল্ডার, চেহারা, ফলো করা শো ও অন্যান্য সেটিংস সবসময় থাকে।</string>
+    <string name="backup_what">ডাউনলোডের নিয়ম, ফোল্ডার, চেহারা, ফলো করা শো, ফেভারিট, প্লেলিস্ট, প্লে ইতিহাস, সাম্প্রতিক সার্চ ও অন্যান্য সেটিংস সবসময় থাকে।</string>
     <string name="backup_include_signins">সাইন-ইনও রাখুন</string>
     <string name="backup_include_signins_detail">সার্ভিস লগইন ও আপনার TMDB key, পাসওয়ার্ড দিয়ে এনক্রিপ্ট করা।</string>
     <string name="backup_password">পাসওয়ার্ড</string>
@@ -987,4 +987,30 @@
     <string name="about_licences_intro">DebForge হলো GNU GPL v3 এর অধীনে মুক্ত সফটওয়্যার। এটি নিচের ওপেন-সোর্স লাইব্রেরি দিয়ে তৈরি।</string>
     <string name="about_whats_new">নতুন কী আছে</string>
     <string name="about_whats_new_detail">GitHub-এ এই সংস্করণের রিলিজ নোট</string>
+
+    <!-- M11: restore queue, player widget, play history, storage limit, backup -->
+    <string name="restore_done_lists">আরও পুনরুদ্ধার হয়েছে: %1$dটি ফেভারিট, %2$dটি প্লেলিস্ট, %3$dটি ইতিহাস এন্ট্রি, %4$dটি সাম্প্রতিক সার্চ।</string>
+    <string name="widget_player_label">DebForge প্লেয়ার</string>
+    <string name="widget_player_description">DebForge-এ যা চলছে তার আর্টওয়ার্ক ও নিয়ন্ত্রণ</string>
+    <string name="widget_player_idle">কিছু চলছে না</string>
+    <string name="widget_player_idle_hint">DebForge-এ কিছু চালান</string>
+    <string name="history_title">ইতিহাস</string>
+    <string name="history_empty">এখনও কিছু চালানো হয়নি</string>
+    <string name="history_paused_banner">ইতিহাস বিরতিতে আছে। নতুন প্লে রেকর্ড হবে না।</string>
+    <string name="history_pause">ইতিহাস বিরতি দিন</string>
+    <string name="history_clear">ইতিহাস মুছুন</string>
+    <string name="history_clear_confirm">প্লে ইতিহাস মুছবেন? আবার শুরুর অবস্থান থাকবে।</string>
+    <string name="history_remove">ইতিহাস থেকে সরান</string>
+    <string name="history_missing">%1$s আর ডাউনলোড করা নেই</string>
+    <string name="history_source_downloaded">ডাউনলোড করা</string>
+    <string name="history_source_cloud">ক্লাউড</string>
+    <string name="history_source_youtube">YouTube</string>
+    <string name="set_storage_limit">স্টোরেজ সীমা</string>
+    <string name="set_storage_limit_detail">DebForge-এর ডাউনলোড এই সীমা ছাড়িয়ে গেলে নতুন ডাউনলোড অপেক্ষা করে। কিছুই মোছা হয় না। ফোল্ডারের অন্য ফাইল গণনা হয় না।</string>
+    <string name="set_storage_limit_off">বন্ধ</string>
+    <string name="set_storage_limit_gb">%1$d GB</string>
+    <string name="set_storage_used">ব্যবহৃত: %1$s</string>
+    <string name="wait_storage">স্টোরেজ সীমা পূর্ণ</string>
+    <string name="notif_storage_title">ডাউনলোড অপেক্ষায়</string>
+    <string name="notif_storage_text">স্টোরেজ সীমা পূর্ণ। ডাউনলোড মুছুন বা সেটিংসে সীমা বাড়ান।</string>
 </resources>

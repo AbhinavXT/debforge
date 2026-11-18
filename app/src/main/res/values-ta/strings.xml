@@ -334,7 +334,7 @@
     <string name="backup_detail">உங்கள் அமைப்புகளை ஒரு கோப்பில் சேமித்து, இந்த அல்லது வேறொரு ஃபோனில் மீட்டெடுக்கவும்.</string>
     <string name="backup_create">காப்புப்பிரதி எடு</string>
     <string name="backup_restore">மீட்டெடு</string>
-    <string name="backup_what">பதிவிறக்க விதிகள், கோப்புறை, தோற்றம், பின்தொடரும் தொடர்கள் மற்றும் பிற அமைப்புகள் எப்போதும் சேர்க்கப்படும்.</string>
+    <string name="backup_what">பதிவிறக்க விதிகள், கோப்புறை, தோற்றம், பின்தொடரும் தொடர்கள், பிடித்தவை, பிளேலிஸ்ட்கள், இயக்க வரலாறு, சமீபத்திய தேடல்கள் மற்றும் பிற அமைப்புகள் எப்போதும் சேர்க்கப்படும்.</string>
     <string name="backup_include_signins">உள்நுழைவுகளையும் சேர்</string>
     <string name="backup_include_signins_detail">சேவை உள்நுழைவுகளும் உங்கள் TMDB key-உம், கடவுச்சொல்லால் என்க்ரிப்ட் செய்யப்பட்டு.</string>
     <string name="backup_password">கடவுச்சொல்</string>
@@ -987,4 +987,30 @@
     <string name="about_licences_intro">DebForge GNU GPL v3 கீழ் உள்ள கட்டற்ற மென்பொருள். இது இந்த திறந்த மூல நூலகங்களால் உருவாக்கப்பட்டது.</string>
     <string name="about_whats_new">புதியவை என்ன</string>
     <string name="about_whats_new_detail">GitHub இல் இந்தப் பதிப்பின் வெளியீட்டுக் குறிப்புகள்</string>
+
+    <!-- M11: restore queue, player widget, play history, storage limit, backup -->
+    <string name="restore_done_lists">இவையும் மீட்டெடுக்கப்பட்டன: %1$d பிடித்தவை, %2$d பிளேலிஸ்ட்கள், %3$d வரலாற்று பதிவுகள், %4$d சமீபத்திய தேடல்கள்.</string>
+    <string name="widget_player_label">DebForge பிளேயர்</string>
+    <string name="widget_player_description">DebForge-இல் இயங்குவதன் படமும் கட்டுப்பாடுகளும்</string>
+    <string name="widget_player_idle">எதுவும் இயங்கவில்லை</string>
+    <string name="widget_player_idle_hint">DebForge-இல் ஏதாவது இயக்குங்கள்</string>
+    <string name="history_title">வரலாறு</string>
+    <string name="history_empty">இன்னும் எதுவும் இயக்கப்படவில்லை</string>
+    <string name="history_paused_banner">வரலாறு இடைநிறுத்தப்பட்டுள்ளது. புதிய இயக்கங்கள் பதிவாகாது.</string>
+    <string name="history_pause">வரலாற்றை இடைநிறுத்து</string>
+    <string name="history_clear">வரலாற்றை அழி</string>
+    <string name="history_clear_confirm">இயக்க வரலாற்றை அழிக்கவா? தொடரும் இடங்கள் அப்படியே இருக்கும்.</string>
+    <string name="history_remove">வரலாற்றிலிருந்து நீக்கு</string>
+    <string name="history_missing">%1$s இனி பதிவிறக்கப்படவில்லை</string>
+    <string name="history_source_downloaded">பதிவிறக்கப்பட்டது</string>
+    <string name="history_source_cloud">கிளவுடு</string>
+    <string name="history_source_youtube">YouTube</string>
+    <string name="set_storage_limit">சேமிப்பக வரம்பு</string>
+    <string name="set_storage_limit_detail">DebForge பதிவிறக்கங்கள் இந்த வரம்பை மீறினால் புதிய பதிவிறக்கங்கள் காத்திருக்கும். எதுவும் நீக்கப்படாது. கோப்புறையிலுள்ள மற்ற கோப்புகள் கணக்கில் வராது.</string>
+    <string name="set_storage_limit_off">முடக்கம்</string>
+    <string name="set_storage_limit_gb">%1$d GB</string>
+    <string name="set_storage_used">பயன்படுத்தியது: %1$s</string>
+    <string name="wait_storage">சேமிப்பக வரம்பு எட்டப்பட்டது</string>
+    <string name="notif_storage_title">பதிவிறக்கங்கள் காத்திருக்கின்றன</string>
+    <string name="notif_storage_text">சேமிப்பக வரம்பு எட்டப்பட்டது. பதிவிறக்கங்களை நீக்கவும் அல்லது அமைப்புகளில் வரம்பை உயர்த்தவும்.</string>
 </resources>

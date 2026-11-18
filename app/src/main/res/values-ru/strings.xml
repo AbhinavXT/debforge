@@ -360,7 +360,7 @@
     <string name="backup_detail">Сохраните настройки в файл и восстановите их на этом или другом телефоне.</string>
     <string name="backup_create">Создать копию</string>
     <string name="backup_restore">Восстановить</string>
-    <string name="backup_what">Правила загрузки, папка, оформление, отслеживаемые сериалы и другие настройки включаются всегда.</string>
+    <string name="backup_what">Правила загрузки, папка, оформление, отслеживаемые сериалы, избранное, плейлисты, история воспроизведения, недавние запросы и другие настройки включаются всегда.</string>
     <string name="backup_include_signins">Включить данные входа</string>
     <string name="backup_include_signins_detail">Входы в сервисы и ваш ключ TMDB, зашифрованные паролем.</string>
     <string name="backup_password">Пароль</string>
@@ -1083,4 +1083,30 @@
     <string name="about_licences_intro">DebForge — свободное ПО под лицензией GNU GPL v3. Приложение использует эти библиотеки с открытым кодом.</string>
     <string name="about_whats_new">Что нового</string>
     <string name="about_whats_new_detail">Примечания к этой версии на GitHub</string>
+
+    <!-- M11: restore queue, player widget, play history, storage limit, backup -->
+    <string name="restore_done_lists">Также восстановлено: избранное — %1$d, плейлисты — %2$d, записи истории — %3$d, недавние запросы — %4$d.</string>
+    <string name="widget_player_label">Плеер DebForge</string>
+    <string name="widget_player_description">Обложка и управление тем, что играет в DebForge</string>
+    <string name="widget_player_idle">Ничего не играет</string>
+    <string name="widget_player_idle_hint">Включите что-нибудь в DebForge</string>
+    <string name="history_title">История</string>
+    <string name="history_empty">Пока ничего не воспроизводилось</string>
+    <string name="history_paused_banner">История приостановлена. Новые воспроизведения не записываются.</string>
+    <string name="history_pause">Приостановить историю</string>
+    <string name="history_clear">Очистить историю</string>
+    <string name="history_clear_confirm">Очистить историю воспроизведения? Позиции для продолжения сохранятся.</string>
+    <string name="history_remove">Удалить из истории</string>
+    <string name="history_missing">«%1$s» больше нет на устройстве</string>
+    <string name="history_source_downloaded">Загружено</string>
+    <string name="history_source_cloud">Облако</string>
+    <string name="history_source_youtube">YouTube</string>
+    <string name="set_storage_limit">Лимит хранилища</string>
+    <string name="set_storage_limit_detail">Новые загрузки ждут, если загрузки DebForge превысят этот лимит. Ничего не удаляется. Другие файлы в папке не учитываются.</string>
+    <string name="set_storage_limit_off">Выкл.</string>
+    <string name="set_storage_limit_gb">%1$d ГБ</string>
+    <string name="set_storage_used">Занято: %1$s</string>
+    <string name="wait_storage">Достигнут лимит хранилища</string>
+    <string name="notif_storage_title">Загрузки ожидают</string>
+    <string name="notif_storage_text">Достигнут лимит хранилища. Удалите загрузки или увеличьте лимит в настройках.</string>
 </resources>

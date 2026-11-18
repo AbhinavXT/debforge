@@ -334,7 +334,7 @@
     <string name="backup_detail">మీ సెట్టింగ్‌లను ఒక ఫైల్‌లో సేవ్ చేసి, ఈ ఫోన్‌లో లేదా వేరే ఫోన్‌లో రీస్టోర్ చేయండి.</string>
     <string name="backup_create">బ్యాకప్ చేయి</string>
     <string name="backup_restore">రీస్టోర్ చేయి</string>
-    <string name="backup_what">డౌన్‌లోడ్ నియమాలు, ఫోల్డర్, రూపురేఖలు, ఫాలో చేస్తున్న షోలు, ఇతర సెట్టింగ్‌లు ఎల్లప్పుడూ చేర్చబడతాయి.</string>
+    <string name="backup_what">డౌన్‌లోడ్ నియమాలు, ఫోల్డర్, రూపురేఖలు, ఫాలో చేస్తున్న షోలు, ఇష్టమైనవి, ప్లేలిస్ట్‌లు, ప్లే చరిత్ర, ఇటీవలి శోధనలు, ఇతర సెట్టింగ్‌లు ఎల్లప్పుడూ చేర్చబడతాయి.</string>
     <string name="backup_include_signins">సైన్-ఇన్‌లను కూడా చేర్చు</string>
     <string name="backup_include_signins_detail">సర్వీస్ లాగిన్‌లు, మీ TMDB key, పాస్‌వర్డ్‌తో ఎన్‌క్రిప్ట్ చేయబడి.</string>
     <string name="backup_password">పాస్‌వర్డ్</string>
@@ -987,4 +987,30 @@
     <string name="about_licences_intro">DebForge GNU GPL v3 కింద ఉచిత సాఫ్ట్‌వేర్. ఇది ఈ ఓపెన్-సోర్స్ లైబ్రరీలతో నిర్మించబడింది.</string>
     <string name="about_whats_new">కొత్తగా ఏముంది</string>
     <string name="about_whats_new_detail">GitHub లో ఈ వెర్షన్ విడుదల గమనికలు</string>
+
+    <!-- M11: restore queue, player widget, play history, storage limit, backup -->
+    <string name="restore_done_lists">ఇవి కూడా పునరుద్ధరించబడ్డాయి: %1$d ఇష్టమైనవి, %2$d ప్లేలిస్ట్‌లు, %3$d చరిత్ర నమోదులు, %4$d ఇటీవలి శోధనలు.</string>
+    <string name="widget_player_label">DebForge ప్లేయర్</string>
+    <string name="widget_player_description">DebForge‌లో ప్లే అవుతున్న దాని ఆర్ట్‌వర్క్, నియంత్రణలు</string>
+    <string name="widget_player_idle">ఏదీ ప్లే కావడం లేదు</string>
+    <string name="widget_player_idle_hint">DebForge‌లో ఏదైనా ప్లే చేయండి</string>
+    <string name="history_title">చరిత్ర</string>
+    <string name="history_empty">ఇంకా ఏదీ ప్లే చేయలేదు</string>
+    <string name="history_paused_banner">చరిత్ర పాజ్ చేయబడింది. కొత్త ప్లేలు రికార్డ్ కావు.</string>
+    <string name="history_pause">చరిత్రను పాజ్ చేయి</string>
+    <string name="history_clear">చరిత్రను తొలగించు</string>
+    <string name="history_clear_confirm">ప్లే చరిత్రను తొలగించాలా? కొనసాగింపు స్థానాలు అలాగే ఉంటాయి.</string>
+    <string name="history_remove">చరిత్ర నుండి తీసివేయి</string>
+    <string name="history_missing">%1$s ఇకపై డౌన్‌లోడ్ చేసి లేదు</string>
+    <string name="history_source_downloaded">డౌన్‌లోడ్ చేసినవి</string>
+    <string name="history_source_cloud">క్లౌడ్</string>
+    <string name="history_source_youtube">YouTube</string>
+    <string name="set_storage_limit">నిల్వ పరిమితి</string>
+    <string name="set_storage_limit_detail">DebForge డౌన్‌లోడ్‌లు ఈ పరిమితిని దాటితే కొత్త డౌన్‌లోడ్‌లు వేచి ఉంటాయి. ఏదీ తొలగించబడదు. ఫోల్డర్‌లోని ఇతర ఫైళ్లు లెక్కించబడవు.</string>
+    <string name="set_storage_limit_off">ఆఫ్</string>
+    <string name="set_storage_limit_gb">%1$d GB</string>
+    <string name="set_storage_used">వినియోగం: %1$s</string>
+    <string name="wait_storage">నిల్వ పరిమితి చేరుకుంది</string>
+    <string name="notif_storage_title">డౌన్‌లోడ్‌లు వేచి ఉన్నాయి</string>
+    <string name="notif_storage_text">నిల్వ పరిమితి చేరుకుంది. డౌన్‌లోడ్‌లను తొలగించండి లేదా సెట్టింగ్‌లలో పరిమితిని పెంచండి.</string>
 </resources>

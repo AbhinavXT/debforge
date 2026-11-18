@@ -335,7 +335,7 @@
     <string name="backup_detail">Save your settings to a file, and restore them on this or another phone.</string>
     <string name="backup_create">Back up</string>
     <string name="backup_restore">Restore</string>
-    <string name="backup_what">Download rules, folder, appearance, followed shows and other settings are always included.</string>
+    <string name="backup_what">Download rules, folder, appearance, followed shows, favourites, playlists, play history, recent searches and other settings are always included.</string>
     <string name="backup_include_signins">Include sign-ins</string>
     <string name="backup_include_signins_detail">Service logins and your TMDB key, encrypted with a password.</string>
     <string name="backup_password">Password</string>
@@ -989,4 +989,30 @@
     <string name="about_licences_intro">DebForge is free software under the GNU GPL v3. It is built with these open-source libraries.</string>
     <string name="about_whats_new">What’s new</string>
     <string name="about_whats_new_detail">Release notes for this version on GitHub</string>
+
+    <!-- M11: restore queue, player widget, play history, storage limit, backup -->
+    <string name="restore_done_lists">Also restored: %1$d favourites, %2$d playlists, %3$d history entries, %4$d recent searches.</string>
+    <string name="widget_player_label">DebForge player</string>
+    <string name="widget_player_description">Artwork and controls for what DebForge is playing</string>
+    <string name="widget_player_idle">Nothing playing</string>
+    <string name="widget_player_idle_hint">Play something in DebForge</string>
+    <string name="history_title">History</string>
+    <string name="history_empty">Nothing played yet</string>
+    <string name="history_paused_banner">History is paused. New plays aren\'t recorded.</string>
+    <string name="history_pause">Pause history</string>
+    <string name="history_clear">Clear history</string>
+    <string name="history_clear_confirm">Clear your play history? Resume positions are kept.</string>
+    <string name="history_remove">Remove from history</string>
+    <string name="history_missing">%1$s is no longer downloaded</string>
+    <string name="history_source_downloaded">Downloaded</string>
+    <string name="history_source_cloud">Cloud</string>
+    <string name="history_source_youtube">YouTube</string>
+    <string name="set_storage_limit">Storage limit</string>
+    <string name="set_storage_limit_detail">New downloads wait when DebForge\'s downloads would go over this. Nothing is deleted. Other files in the folder don\'t count.</string>
+    <string name="set_storage_limit_off">Off</string>
+    <string name="set_storage_limit_gb">%1$d GB</string>
+    <string name="set_storage_used">Used: %1$s</string>
+    <string name="wait_storage">Storage limit reached</string>
+    <string name="notif_storage_title">Downloads waiting</string>
+    <string name="notif_storage_text">Storage limit reached. Delete downloads or raise the limit in Settings.</string>
 </resources>

@@ -334,7 +334,7 @@
     <string name="backup_detail">Speichere deine Einstellungen in einer Datei und stelle sie auf diesem oder einem anderen Handy wieder her.</string>
     <string name="backup_create">Sichern</string>
     <string name="backup_restore">Wiederherstellen</string>
-    <string name="backup_what">Download-Regeln, Ordner, Darstellung, gefolgte Serien und weitere Einstellungen sind immer enthalten.</string>
+    <string name="backup_what">Download-Regeln, Ordner, Darstellung, gefolgte Serien, Favoriten, Playlists, Wiedergabeverlauf, letzte Suchen und weitere Einstellungen sind immer enthalten.</string>
     <string name="backup_include_signins">Anmeldungen einschließen</string>
     <string name="backup_include_signins_detail">Dienst-Anmeldungen und dein TMDB-Schlüssel, mit einem Passwort verschlüsselt.</string>
     <string name="backup_password">Passwort</string>
@@ -987,4 +987,30 @@
     <string name="about_licences_intro">DebForge ist freie Software unter der GNU GPL v3. Es nutzt diese Open-Source-Bibliotheken.</string>
     <string name="about_whats_new">Neuigkeiten</string>
     <string name="about_whats_new_detail">Versionshinweise zu dieser Version auf GitHub</string>
+
+    <!-- M11: restore queue, player widget, play history, storage limit, backup -->
+    <string name="restore_done_lists">Außerdem wiederhergestellt: %1$d Favoriten, %2$d Playlists, %3$d Verlaufseinträge, %4$d letzte Suchen.</string>
+    <string name="widget_player_label">DebForge-Player</string>
+    <string name="widget_player_description">Cover und Steuerung für die aktuelle DebForge-Wiedergabe</string>
+    <string name="widget_player_idle">Keine Wiedergabe</string>
+    <string name="widget_player_idle_hint">Spiele etwas in DebForge ab</string>
+    <string name="history_title">Verlauf</string>
+    <string name="history_empty">Noch nichts abgespielt</string>
+    <string name="history_paused_banner">Der Verlauf ist pausiert. Neue Wiedergaben werden nicht aufgezeichnet.</string>
+    <string name="history_pause">Verlauf pausieren</string>
+    <string name="history_clear">Verlauf löschen</string>
+    <string name="history_clear_confirm">Wiedergabeverlauf löschen? Fortsetzungspositionen bleiben erhalten.</string>
+    <string name="history_remove">Aus dem Verlauf entfernen</string>
+    <string name="history_missing">%1$s ist nicht mehr heruntergeladen</string>
+    <string name="history_source_downloaded">Heruntergeladen</string>
+    <string name="history_source_cloud">Cloud</string>
+    <string name="history_source_youtube">YouTube</string>
+    <string name="set_storage_limit">Speicherlimit</string>
+    <string name="set_storage_limit_detail">Neue Downloads warten, wenn die Downloads von DebForge dieses Limit überschreiben würden. Es wird nichts gelöscht. Andere Dateien im Ordner zählen nicht.</string>
+    <string name="set_storage_limit_off">Aus</string>
+    <string name="set_storage_limit_gb">%1$d GB</string>
+    <string name="set_storage_used">Belegt: %1$s</string>
+    <string name="wait_storage">Speicherlimit erreicht</string>
+    <string name="notif_storage_title">Downloads warten</string>
+    <string name="notif_storage_text">Speicherlimit erreicht. Lösche Downloads oder erhöhe das Limit in den Einstellungen.</string>
 </resources>

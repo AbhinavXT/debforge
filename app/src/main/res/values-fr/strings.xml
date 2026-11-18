@@ -347,7 +347,7 @@
     <string name="backup_detail">Enregistrez vos paramètres dans un fichier et restaurez-les sur ce téléphone ou un autre.</string>
     <string name="backup_create">Sauvegarder</string>
     <string name="backup_restore">Restaurer</string>
-    <string name="backup_what">Les règles de téléchargement, le dossier, l\'apparence, les séries suivies et les autres paramètres sont toujours inclus.</string>
+    <string name="backup_what">Les règles de téléchargement, le dossier, l\'apparence, les séries suivies, les favoris, les playlists, l\'historique de lecture, les recherches récentes et les autres paramètres sont toujours inclus.</string>
     <string name="backup_include_signins">Inclure les connexions</string>
     <string name="backup_include_signins_detail">Identifiants des services et votre clé TMDB, chiffrés avec un mot de passe.</string>
     <string name="backup_password">Mot de passe</string>
@@ -1035,4 +1035,30 @@
     <string name="about_licences_intro">DebForge est un logiciel libre sous GNU GPL v3. Il utilise ces bibliothèques open source.</string>
     <string name="about_whats_new">Nouveautés</string>
     <string name="about_whats_new_detail">Notes de version sur GitHub</string>
+
+    <!-- M11: restore queue, player widget, play history, storage limit, backup -->
+    <string name="restore_done_lists">Également restaurés : %1$d favoris, %2$d playlists, %3$d entrées d\'historique, %4$d recherches récentes.</string>
+    <string name="widget_player_label">Lecteur DebForge</string>
+    <string name="widget_player_description">Pochette et commandes de ce que DebForge lit</string>
+    <string name="widget_player_idle">Aucune lecture en cours</string>
+    <string name="widget_player_idle_hint">Lancez une lecture dans DebForge</string>
+    <string name="history_title">Historique</string>
+    <string name="history_empty">Rien n\'a encore été lu</string>
+    <string name="history_paused_banner">L\'historique est en pause. Les nouvelles lectures ne sont pas enregistrées.</string>
+    <string name="history_pause">Mettre l\'historique en pause</string>
+    <string name="history_clear">Effacer l\'historique</string>
+    <string name="history_clear_confirm">Effacer votre historique de lecture ? Les positions de reprise sont conservées.</string>
+    <string name="history_remove">Retirer de l\'historique</string>
+    <string name="history_missing">%1$s n\'est plus téléchargé</string>
+    <string name="history_source_downloaded">Téléchargé</string>
+    <string name="history_source_cloud">Cloud</string>
+    <string name="history_source_youtube">YouTube</string>
+    <string name="set_storage_limit">Limite de stockage</string>
+    <string name="set_storage_limit_detail">Les nouveaux téléchargements attendent si ceux de DebForge dépassaient cette limite. Rien n\'est supprimé. Les autres fichiers du dossier ne comptent pas.</string>
+    <string name="set_storage_limit_off">Désactivée</string>
+    <string name="set_storage_limit_gb">%1$d Go</string>
+    <string name="set_storage_used">Utilisé : %1$s</string>
+    <string name="wait_storage">Limite de stockage atteinte</string>
+    <string name="notif_storage_title">Téléchargements en attente</string>
+    <string name="notif_storage_text">Limite de stockage atteinte. Supprimez des téléchargements ou augmentez la limite dans les paramètres.</string>
 </resources>

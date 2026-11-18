@@ -347,7 +347,7 @@
     <string name="backup_detail">Salve suas configurações em um arquivo e restaure-as neste ou em outro celular.</string>
     <string name="backup_create">Fazer backup</string>
     <string name="backup_restore">Restaurar</string>
-    <string name="backup_what">Regras de download, pasta, aparência, séries seguidas e outras configurações são sempre incluídas.</string>
+    <string name="backup_what">Regras de download, pasta, aparência, séries seguidas, favoritos, playlists, histórico de reprodução, pesquisas recentes e outras configurações são sempre incluídos.</string>
     <string name="backup_include_signins">Incluir logins</string>
     <string name="backup_include_signins_detail">Logins dos serviços e sua chave do TMDB, criptografados com uma senha.</string>
     <string name="backup_password">Senha</string>
@@ -1035,4 +1035,30 @@
     <string name="about_licences_intro">O DebForge é software livre sob a GNU GPL v3. Ele usa estas bibliotecas de código aberto.</string>
     <string name="about_whats_new">Novidades</string>
     <string name="about_whats_new_detail">Notas desta versão no GitHub</string>
+
+    <!-- M11: restore queue, player widget, play history, storage limit, backup -->
+    <string name="restore_done_lists">Também restaurados: %1$d favoritos, %2$d playlists, %3$d itens do histórico, %4$d pesquisas recentes.</string>
+    <string name="widget_player_label">Player do DebForge</string>
+    <string name="widget_player_description">Capa e controles do que o DebForge está tocando</string>
+    <string name="widget_player_idle">Nada tocando</string>
+    <string name="widget_player_idle_hint">Reproduza algo no DebForge</string>
+    <string name="history_title">Histórico</string>
+    <string name="history_empty">Nada reproduzido ainda</string>
+    <string name="history_paused_banner">O histórico está pausado. Novas reproduções não são registradas.</string>
+    <string name="history_pause">Pausar histórico</string>
+    <string name="history_clear">Limpar histórico</string>
+    <string name="history_clear_confirm">Limpar seu histórico de reprodução? As posições para retomar são mantidas.</string>
+    <string name="history_remove">Remover do histórico</string>
+    <string name="history_missing">%1$s não está mais baixado</string>
+    <string name="history_source_downloaded">Baixado</string>
+    <string name="history_source_cloud">Nuvem</string>
+    <string name="history_source_youtube">YouTube</string>
+    <string name="set_storage_limit">Limite de armazenamento</string>
+    <string name="set_storage_limit_detail">Novos downloads esperam se os downloads do DebForge passarem deste limite. Nada é apagado. Outros arquivos da pasta não contam.</string>
+    <string name="set_storage_limit_off">Desativado</string>
+    <string name="set_storage_limit_gb">%1$d GB</string>
+    <string name="set_storage_used">Usado: %1$s</string>
+    <string name="wait_storage">Limite de armazenamento atingido</string>
+    <string name="notif_storage_title">Downloads em espera</string>
+    <string name="notif_storage_text">Limite de armazenamento atingido. Apague downloads ou aumente o limite em Configurações.</string>
 </resources>

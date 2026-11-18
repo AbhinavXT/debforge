@@ -56,6 +56,8 @@ class SettingsStore @Inject constructor(
     private val keyNightMode = booleanPreferencesKey("player_night_mode")
     private val keyStreamPreviews = booleanPreferencesKey("player_stream_previews")
     private val keyPlayerArtColor = booleanPreferencesKey("player_art_color")
+    private val keyHistoryPaused = booleanPreferencesKey("history_paused")
+    private val keyStorageLimitGb = intPreferencesKey("storage_limit_gb")
     private val keyAudioSkipSeconds = intPreferencesKey("audio_skip_seconds")
     private val keyPlayerGestures = booleanPreferencesKey("player_gestures")
     private val keyPlayerShowRemaining = booleanPreferencesKey("player_show_remaining")
@@ -218,9 +220,18 @@ class SettingsStore @Inject constructor(
             scheduleEnabled = p[keyScheduleOn] ?: false,
             scheduleStartHour = p[keyScheduleStart] ?: 1,
             scheduleEndHour = p[keyScheduleEnd] ?: 7,
-            speedLimitKbps = p[keySpeedLimit] ?: 0
+            speedLimitKbps = p[keySpeedLimit] ?: 0,
+            storageLimitGb = validStorageLimitGb(p[keyStorageLimitGb])
         )
     }
+
+    /** Play history recording is off while true. */
+    val historyPausedFlow: Flow<Boolean> = context.settingsDataStore.data.map { it[keyHistoryPaused] ?: false }
+    suspend fun setHistoryPaused(v: Boolean) = context.settingsDataStore.edit { it[keyHistoryPaused] = v }
+
+    /** Cap on DebForge's own downloads in GB; 0 = off. */
+    val storageLimitGbFlow: Flow<Int> = context.settingsDataStore.data.map { validStorageLimitGb(it[keyStorageLimitGb]) }
+    suspend fun setStorageLimitGb(v: Int) = context.settingsDataStore.edit { it[keyStorageLimitGb] = validStorageLimitGb(v) }
 
     /**
      * Look for a new release on launch (one anonymous GitHub request). Defaults
@@ -302,11 +313,14 @@ class SettingsStore @Inject constructor(
     private val backupBooleans get() = listOf(
         keyDynamicColor, keyPosterView, keyOrganize, keyWifiOnly, keyChargingOnly,
         keyScheduleOn, keyAutoUpdate, keyRemoveAfter, keyPureBlack, keyShowExtras, keyClipboardOffer, keyAdBlock,
-        keyInternalPlayer, keyAutoplayNext, keyPip, keyAutoSkipIntro, keyNightMode, keyStreamPreviews
+        keyInternalPlayer, keyAutoplayNext, keyPip, keyAutoSkipIntro, keyNightMode, keyStreamPreviews,
+        keyPlayerArtColor, keyPlayerGestures, keyPlayerShowRemaining, keyPlayerBackground, keyHistoryPaused
     )
     /** May be blank on purpose (nothing avoided, no site left unblocked). */
-    private val backupStrings get() = listOf(keyReleaseAvoid, keyReleasePrefer, keyAdBlockOffSites, keyYouTubeQuality)
-    private val backupInts get() = listOf(keySortOrder, keyThemeMode, keyScheduleStart, keyScheduleEnd, keySpeedLimit, keyAutoDeleteDays)
+    private val backupStrings get() = listOf(keyReleaseAvoid, keyReleasePrefer, keyAdBlockOffSites, keyYouTubeQuality,
+        keyAudioLanguage, keySubtitleLanguage, keySubtitleStyle)
+    private val backupInts get() = listOf(keySortOrder, keyThemeMode, keyScheduleStart, keyScheduleEnd, keySpeedLimit, keyAutoDeleteDays,
+        keyAudioSkipSeconds, keyStorageLimitGb)
 
     /** Only values the user actually set; defaults stay defaults on the new phone. */
     suspend fun backupValues(): Map<String, Any> {
@@ -334,7 +348,7 @@ class SettingsStore @Inject constructor(
             }
             backupInts.forEach { k ->
                 // JSON numbers arrive as Double.
-                (values[k.name] as? Number)?.let { e[k] = it.toInt(); applied++ }
+                (values[k.name] as? Number)?.let { e[k] = restoredInt(k.name, it); applied++ }
             }
             backupStrings.forEach { k ->
                 (values[k.name] as? String)?.let { e[k] = it; applied++ }
@@ -353,6 +367,17 @@ class SettingsStore @Inject constructor(
     suspend fun tmdbKeyForBackup(): String? = tmdbKeyFlow.first().takeIf { it.isNotBlank() }
 
     companion object {
+        /** Restored int settings that have a fixed set of choices are snapped to it. */
+        internal fun restoredInt(name: String, n: Number): Int {
+            val d = n.toDouble()
+            val v = if (d.isNaN()) 0 else d.coerceIn(Int.MIN_VALUE.toDouble(), Int.MAX_VALUE.toDouble()).toInt()
+            return when (name) {
+                "audio_skip_seconds" -> com.abhinavxt.debforge.player.validSkipSeconds(v)
+                "storage_limit_gb" -> validStorageLimitGb(v)
+                else -> v
+            }
+        }
+
         /**
          * No folder: the first download asks for one. DebForge doesn't hold
          * All files access, so there's no shared folder it could default to.
@@ -372,5 +397,12 @@ data class DownloadRules(
     val scheduleStartHour: Int = 1,
     val scheduleEndHour: Int = 7,
     /** 0 = unlimited. */
-    val speedLimitKbps: Int = 0
+    val speedLimitKbps: Int = 0,
+    /** Cap on DebForge's downloads in GB; 0 = off. */
+    val storageLimitGb: Int = 0
 )
+
+/** Choices offered for the storage limit, in GB; 0 = off. */
+val STORAGE_LIMITS_GB = listOf(0, 1, 2, 5, 10, 20, 50, 100, 200, 500)
+
+fun validStorageLimitGb(v: Int?): Int = if (v != null && v in STORAGE_LIMITS_GB) v else 0

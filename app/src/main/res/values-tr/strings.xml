@@ -334,7 +334,7 @@
     <string name="backup_detail">Ayarlarınızı bir dosyaya kaydedin ve bu telefonda veya başka bir telefonda geri yükleyin.</string>
     <string name="backup_create">Yedekle</string>
     <string name="backup_restore">Geri yükle</string>
-    <string name="backup_what">İndirme kuralları, klasör, görünüm, takip edilen diziler ve diğer ayarlar her zaman dahil edilir.</string>
+    <string name="backup_what">İndirme kuralları, klasör, görünüm, takip edilen diziler, favoriler, oynatma listeleri, oynatma geçmişi, son aramalar ve diğer ayarlar her zaman dahil edilir.</string>
     <string name="backup_include_signins">Giriş bilgilerini dahil et</string>
     <string name="backup_include_signins_detail">Hizmet girişleri ve TMDB anahtarınız, bir şifreyle şifrelenir.</string>
     <string name="backup_password">Şifre</string>
@@ -987,4 +987,30 @@
     <string name="about_licences_intro">DebForge, GNU GPL v3 altında özgür yazılımdır. Şu açık kaynak kitaplıklarla geliştirilmiştir.</string>
     <string name="about_whats_new">Yenilikler</string>
     <string name="about_whats_new_detail">Bu sürümün GitHub\'daki sürüm notları</string>
+
+    <!-- M11: restore queue, player widget, play history, storage limit, backup -->
+    <string name="restore_done_lists">Ayrıca geri yüklendi: %1$d favori, %2$d oynatma listesi, %3$d geçmiş kaydı, %4$d son arama.</string>
+    <string name="widget_player_label">DebForge oynatıcısı</string>
+    <string name="widget_player_description">DebForge\'da çalanın kapağı ve kontrolleri</string>
+    <string name="widget_player_idle">Hiçbir şey çalmıyor</string>
+    <string name="widget_player_idle_hint">DebForge\'da bir şey oynatın</string>
+    <string name="history_title">Geçmiş</string>
+    <string name="history_empty">Henüz bir şey oynatılmadı</string>
+    <string name="history_paused_banner">Geçmiş duraklatıldı. Yeni oynatmalar kaydedilmiyor.</string>
+    <string name="history_pause">Geçmişi duraklat</string>
+    <string name="history_clear">Geçmişi temizle</string>
+    <string name="history_clear_confirm">Oynatma geçmişi temizlensin mi? Devam etme konumları korunur.</string>
+    <string name="history_remove">Geçmişten kaldır</string>
+    <string name="history_missing">%1$s artık indirilmiş değil</string>
+    <string name="history_source_downloaded">İndirilenler</string>
+    <string name="history_source_cloud">Bulut</string>
+    <string name="history_source_youtube">YouTube</string>
+    <string name="set_storage_limit">Depolama sınırı</string>
+    <string name="set_storage_limit_detail">DebForge indirmeleri bu sınırı aşacaksa yeni indirmeler bekler. Hiçbir şey silinmez. Klasördeki diğer dosyalar sayılmaz.</string>
+    <string name="set_storage_limit_off">Kapalı</string>
+    <string name="set_storage_limit_gb">%1$d GB</string>
+    <string name="set_storage_used">Kullanılan: %1$s</string>
+    <string name="wait_storage">Depolama sınırına ulaşıldı</string>
+    <string name="notif_storage_title">İndirmeler bekliyor</string>
+    <string name="notif_storage_text">Depolama sınırına ulaşıldı. İndirmeleri silin veya sınırı Ayarlar\'dan artırın.</string>
 </resources>

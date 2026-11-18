@@ -321,7 +321,7 @@
     <string name="backup_detail">Simpan setelan Anda ke file, lalu pulihkan di ponsel ini atau ponsel lain.</string>
     <string name="backup_create">Cadangkan</string>
     <string name="backup_restore">Pulihkan</string>
-    <string name="backup_what">Aturan unduhan, folder, tampilan, serial yang diikuti, dan setelan lainnya selalu disertakan.</string>
+    <string name="backup_what">Aturan unduhan, folder, tampilan, serial yang diikuti, favorit, playlist, riwayat pemutaran, pencarian terbaru, dan setelan lainnya selalu disertakan.</string>
     <string name="backup_include_signins">Sertakan info masuk</string>
     <string name="backup_include_signins_detail">Login layanan dan key TMDB Anda, dienkripsi dengan sandi.</string>
     <string name="backup_password">Sandi</string>
@@ -939,4 +939,30 @@
     <string name="about_licences_intro">DebForge adalah perangkat lunak bebas di bawah GNU GPL v3. Dibangun dengan pustaka sumber terbuka berikut.</string>
     <string name="about_whats_new">Yang baru</string>
     <string name="about_whats_new_detail">Catatan rilis versi ini di GitHub</string>
+
+    <!-- M11: restore queue, player widget, play history, storage limit, backup -->
+    <string name="restore_done_lists">Juga dipulihkan: %1$d favorit, %2$d playlist, %3$d entri riwayat, %4$d pencarian terbaru.</string>
+    <string name="widget_player_label">Pemutar DebForge</string>
+    <string name="widget_player_description">Sampul dan kontrol untuk yang sedang diputar di DebForge</string>
+    <string name="widget_player_idle">Tidak ada yang diputar</string>
+    <string name="widget_player_idle_hint">Putar sesuatu di DebForge</string>
+    <string name="history_title">Riwayat</string>
+    <string name="history_empty">Belum ada yang diputar</string>
+    <string name="history_paused_banner">Riwayat dijeda. Pemutaran baru tidak dicatat.</string>
+    <string name="history_pause">Jeda riwayat</string>
+    <string name="history_clear">Hapus riwayat</string>
+    <string name="history_clear_confirm">Hapus riwayat pemutaran? Posisi lanjut tetap disimpan.</string>
+    <string name="history_remove">Hapus dari riwayat</string>
+    <string name="history_missing">%1$s tidak lagi diunduh</string>
+    <string name="history_source_downloaded">Diunduh</string>
+    <string name="history_source_cloud">Cloud</string>
+    <string name="history_source_youtube">YouTube</string>
+    <string name="set_storage_limit">Batas penyimpanan</string>
+    <string name="set_storage_limit_detail">Unduhan baru menunggu jika unduhan DebForge akan melebihi batas ini. Tidak ada yang dihapus. File lain di folder tidak dihitung.</string>
+    <string name="set_storage_limit_off">Mati</string>
+    <string name="set_storage_limit_gb">%1$d GB</string>
+    <string name="set_storage_used">Terpakai: %1$s</string>
+    <string name="wait_storage">Batas penyimpanan tercapai</string>
+    <string name="notif_storage_title">Unduhan menunggu</string>
+    <string name="notif_storage_text">Batas penyimpanan tercapai. Hapus unduhan atau naikkan batas di Setelan.</string>
 </resources>
