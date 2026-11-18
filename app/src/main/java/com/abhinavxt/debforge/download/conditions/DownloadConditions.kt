@@ -8,6 +8,8 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.BatteryManager
 import androidx.core.content.ContextCompat
+import com.abhinavxt.debforge.data.local.DownloadDao
+import com.abhinavxt.debforge.data.local.DownloadEntity
 import com.abhinavxt.debforge.data.prefs.DownloadRules
 import com.abhinavxt.debforge.data.prefs.SettingsStore
 import com.abhinavxt.debforge.download.NetworkMonitor
@@ -39,7 +41,9 @@ enum class Block(val message: String, @StringRes val labelRes: Int, val waitInPl
     NO_NETWORK("Waiting for network", R.string.wait_network, true),
     NEEDS_WIFI("Waiting for Wi-Fi", R.string.wait_wifi, true),
     NEEDS_CHARGER("Waiting for charger", R.string.wait_charger, true),
-    OUTSIDE_SCHEDULE("Waiting for scheduled hours", R.string.wait_schedule, false)
+    OUTSIDE_SCHEDULE("Waiting for scheduled hours", R.string.wait_schedule, false),
+    /** Only ever shown ([DownloadConditions.shownBlock]); never returned by [DownloadConditions.evaluate]. */
+    STORAGE_LIMIT("Storage limit reached", R.string.wait_storage, false)
 }
 
 /** Plugged-in state, tracked via sticky battery broadcasts. */
@@ -76,7 +80,8 @@ class PowerMonitor @Inject constructor(@ApplicationContext private val context: 
 class DownloadConditions @Inject constructor(
     private val settings: SettingsStore,
     private val network: NetworkMonitor,
-    private val power: PowerMonitor
+    private val power: PowerMonitor,
+    private val downloadDao: DownloadDao
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
@@ -106,6 +111,41 @@ class DownloadConditions @Inject constructor(
         .stateIn(scope, SharingStarted.Eagerly, null)
 
     fun currentBlock(): Block? = blocked.value
+
+    /**
+     * True while the storage limit holds the next not-yet-started download.
+     * Deliberately separate from [blocked]: ChunkedDownloader watches that flow
+     * mid-file, and the limit must never interrupt the running download.
+     */
+    val storageBlocked: StateFlow<Boolean> = combine(
+        rules, downloadDao.observeReservedBytes(), downloadDao.observeNextQueued()
+    ) { r, reserved, next ->
+        storageBlocks(storageLimitBytes(r.storageLimitGb), reserved, next)
+    }
+        .distinctUntilChanged()
+        .stateIn(scope, SharingStarted.Eagerly, false)
+
+    /** What the Downloads screen shows: a rule blocker, else the storage limit. */
+    val shownBlock: StateFlow<Block?> = combine(blocked, storageBlocked) { b, full ->
+        b ?: Block.STORAGE_LIMIT.takeIf { full }
+    }
+        .distinctUntilChanged()
+        .stateIn(scope, SharingStarted.Eagerly, null)
+
+    /** Fresh (saved settings + database) answer for whether [next] must wait for storage. */
+    suspend fun freshStorageBlocks(next: DownloadEntity?): Boolean {
+        if (next == null) return false
+        val cap = storageLimitBytes(settings.downloadRulesFlow.first().storageLimitGb)
+        if (cap <= 0) return false
+        return storageBlocks(cap, downloadDao.reservedBytes(), next)
+    }
+
+    /** [freshStorageBlocks] for the oldest queued file. */
+    suspend fun freshStorageBlocked(): Boolean {
+        val cap = storageLimitBytes(settings.downloadRulesFlow.first().storageLimitGb)
+        if (cap <= 0) return false
+        return storageBlocks(cap, downloadDao.reservedBytes(), downloadDao.nextInState())
+    }
 
     /**
      * Like [currentBlock], but re-evaluated right now from the latest saved

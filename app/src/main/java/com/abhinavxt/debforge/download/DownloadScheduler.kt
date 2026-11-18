@@ -68,6 +68,19 @@ class DownloadScheduler @Inject constructor(
                 previous = now
             }
         }
+        // Storage limit raised, or downloads deleted: only the blocked ->
+        // unblocked transition restarts the queue (same rule as above).
+        scope.launch {
+            var previous = conditions.storageBlocked.value
+            conditions.storageBlocked.collect { now ->
+                if (shouldRestartOnStorageUnblock(previous, now)) {
+                    Log.i(TAG, "Storage limit no longer reached; checking the queue")
+                    DownloadNotifications.cancelStorageLimit(context)
+                    runCatching { ensureRunning() }.onFailure { Log.w(TAG, "ensureRunning failed", it) }
+                }
+                previous = now
+            }
+        }
     }
 
     /**
@@ -122,6 +135,7 @@ class DownloadScheduler @Inject constructor(
         if (runner.offerWork()) return@withLock true
         if (!downloadDao.hasPendingWork()) {
             DownloadNotifications.cancelStoppedBySystem(context)
+            DownloadNotifications.cancelStorageLimit(context)
             return@withLock true
         }
 
@@ -141,6 +155,16 @@ class DownloadScheduler @Inject constructor(
 
         // The suspending calls above left a gap in which a host may have started.
         if (runner.offerWork()) return@withLock true
+
+        // Storage limit: the next file may not start. No host, no alarm; the
+        // storageBlocked collector restarts the queue when it clears. Returning
+        // here (not starting a host) is what stops a STORAGE_FULL host stop
+        // from looping through onIdle -> ensureRunning -> start -> stop.
+        if (conditions.freshStorageBlocked()) {
+            if (!isAppInForeground()) DownloadNotifications.notifyStorageLimit(context)
+            return@withLock true
+        }
+        DownloadNotifications.cancelStorageLimit(context)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE && scheduleJob(foreground, block)) return@withLock true
         startForegroundService()
@@ -222,6 +246,9 @@ class DownloadScheduler @Inject constructor(
 
         /** True when a blocker just cleared (was set, now none). */
         fun shouldRestartOnUnblock(previous: Block?, now: Block?): Boolean = previous != null && now == null
+
+        /** True when the storage limit just stopped holding the queue. */
+        fun shouldRestartOnStorageUnblock(previous: Boolean, now: Boolean): Boolean = previous && !now
 
         /** After a stop: act only when no host runs and there is work left. */
         fun shouldRecover(hostRunning: Boolean, hasPendingWork: Boolean): Boolean = !hostRunning && hasPendingWork

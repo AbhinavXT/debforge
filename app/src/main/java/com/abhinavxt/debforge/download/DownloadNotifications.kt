@@ -28,6 +28,7 @@ object DownloadNotifications {
     private const val READY_ID = 1003
     private const val FOLLOW_ID = 1004
     private const val STOPPED_ID = 1005
+    private const val STORAGE_ID = 1006
 
     fun ensureChannel(context: Context) {
         val nm = context.getSystemService(NotificationManager::class.java)
@@ -110,6 +111,24 @@ object DownloadNotifications {
 
     fun cancelStoppedBySystem(context: Context) {
         runCatching { context.getSystemService(NotificationManager::class.java).cancel(STOPPED_ID) }
+    }
+
+    /** The storage limit is holding the queue. One notification, updated in place. */
+    fun notifyStorageLimit(context: Context) {
+        ensureChannel(context)
+        val n = NotificationCompat.Builder(context, CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_notification_download)
+            .setContentTitle(context.getString(R.string.notif_storage_title))
+            .setContentText(context.getString(R.string.notif_storage_text))
+            .setOnlyAlertOnce(true)
+            .setAutoCancel(true)
+            .setContentIntent(openAppIntent(context))
+            .build()
+        runCatching { context.getSystemService(NotificationManager::class.java).notify(STORAGE_ID, n) }
+    }
+
+    fun cancelStorageLimit(context: Context) {
+        runCatching { context.getSystemService(NotificationManager::class.java).cancel(STORAGE_ID) }
     }
 
     /** Schedule window opened but Android didn't let us start in the background. */

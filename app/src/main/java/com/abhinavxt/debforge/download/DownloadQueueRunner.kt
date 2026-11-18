@@ -59,7 +59,11 @@ class DownloadQueueRunner @Inject constructor(
      * Why a session ended. DEFERRED = a rule (the schedule) says "not now";
      * the host should shut down and let [DownloadScheduler] set a wake-up.
      */
-    enum class StopCause { QUEUE_EMPTY, DEFERRED, HOST_STOPPED }
+    enum class StopCause {
+        QUEUE_EMPTY, DEFERRED, HOST_STOPPED,
+        /** The next file would go over the storage limit; it stays QUEUED. */
+        STORAGE_FULL
+    }
 
     /** A host's handle on the running queue. */
     class Session internal constructor(internal val onIdle: (StopCause) -> Unit) {
@@ -217,6 +221,13 @@ class DownloadQueueRunner @Inject constructor(
                         }
                     }
                     if (exit) break else continue
+                }
+                // Storage limit: a file that has not started waits (row stays
+                // QUEUED, nothing is deleted). Checked only between files, so
+                // the running file is never interrupted.
+                if (conditions.freshStorageBlocks(next)) {
+                    cause = StopCause.STORAGE_FULL
+                    break
                 }
                 if (runOne(s, next) is DownloadOutcome.Deferred) {
                     cause = StopCause.DEFERRED

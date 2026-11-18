@@ -130,6 +130,26 @@ interface DownloadDao {
     )
     suspend fun remainingPendingBytes(): Long
 
+    /**
+     * Bytes DebForge's downloads occupy: finished, running, and started partial
+     * files. Counts what was downloaded if that already exceeds the declared size.
+     */
+    @Query(
+        "SELECT COALESCE(SUM(MAX(filesize, bytesDownloaded)), 0) FROM downloads " +
+            "WHERE state IN ('COMPLETED', 'DOWNLOADING') OR bytesDownloaded > 0"
+    )
+    fun observeReservedBytes(): Flow<Long>
+
+    @Query(
+        "SELECT COALESCE(SUM(MAX(filesize, bytesDownloaded)), 0) FROM downloads " +
+            "WHERE state IN ('COMPLETED', 'DOWNLOADING') OR bytesDownloaded > 0"
+    )
+    suspend fun reservedBytes(): Long
+
+    /** The file the queue would start next (oldest QUEUED), or null. */
+    @Query("SELECT * FROM downloads WHERE state = 'QUEUED' ORDER BY createdAt ASC LIMIT 1")
+    fun observeNextQueued(): Flow<DownloadEntity?>
+
     @Query("DELETE FROM downloads WHERE rdId = :rdId")
     suspend fun delete(rdId: String)
 

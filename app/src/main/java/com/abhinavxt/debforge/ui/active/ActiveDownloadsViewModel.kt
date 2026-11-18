@@ -62,7 +62,7 @@ class ActiveDownloadsViewModel @Inject constructor(
 ) : ViewModel() {
 
     /** Why queued rows are waiting (network, Wi-Fi, charger, schedule), or null. */
-    val blocked: StateFlow<Block?> = conditions.blocked
+    val blocked: StateFlow<Block?> = conditions.shownBlock
 
     /** Called when the screen is shown: restart a stalled queue. */
     fun kick() { viewModelScope.launch { controller.kick() } }
