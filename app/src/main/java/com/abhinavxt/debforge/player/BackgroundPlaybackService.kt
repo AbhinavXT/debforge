@@ -2,6 +2,12 @@ package com.abhinavxt.debforge.player
 
 import android.app.PendingIntent
 import android.content.Intent
+import android.content.pm.ServiceInfo
+import androidx.core.app.NotificationChannelCompat
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
+import androidx.media3.session.DefaultMediaNotificationProvider
+import kotlinx.coroutines.delay
 import android.os.Bundle
 import com.abhinavxt.debforge.R
 import androidx.annotation.OptIn
@@ -47,11 +53,7 @@ class BackgroundPlaybackService : MediaSessionService() {
 
     override fun onCreate() {
         super.onCreate()
-        val player = BackgroundPlayback.player
-        if (player == null) {
-            stopSelf()
-            return
-        }
+        val player = BackgroundPlayback.player ?: return // onStartCommand ends the service (after any required startForeground)
         // Tapping the notification returns to the player where it left off
         // (audio: the app with "now playing" open).
         val open = PendingIntent.getActivity(
@@ -71,6 +73,49 @@ class BackgroundPlaybackService : MediaSessionService() {
                 session?.setMediaButtonPreferences(skipButtons(seconds))
             }
         }
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        // startForegroundService() obliges startForeground() within seconds, whatever happens next (player
+        // gone, playback failed). Post a placeholder on Media3's own channel and id; its notification replaces it.
+        if (intent?.getBooleanExtra(BackgroundPlayback.EXTRA_FOREGROUND_REQUIRED, false) == true) {
+            startForegroundPlaceholder()
+        }
+        if (session == null) { // no player was handed over (cleared meanwhile)
+            stopForeground(STOP_FOREGROUND_REMOVE)
+            stopSelf()
+            return START_NOT_STICKY
+        }
+        val result = super.onStartCommand(intent, flags, startId)
+        if (intent?.getBooleanExtra(BackgroundPlayback.EXTRA_FOREGROUND_REQUIRED, false) == true) {
+            scope.launch { // playback that never began leaves no media notification to take its place
+                delay(PLACEHOLDER_GRACE_MS)
+                val state = session?.player?.playbackState
+                if (state == null || state == Player.STATE_IDLE) stopForeground(STOP_FOREGROUND_REMOVE)
+            }
+        }
+        return result
+    }
+
+    private fun startForegroundPlaceholder() {
+        val nm = NotificationManagerCompat.from(this)
+        val channel = DefaultMediaNotificationProvider.DEFAULT_CHANNEL_ID
+        if (nm.getNotificationChannel(channel) == null) {
+            nm.createNotificationChannel(
+                NotificationChannelCompat.Builder(channel, NotificationManagerCompat.IMPORTANCE_LOW)
+                    .setName(getString(androidx.media3.session.R.string.default_notification_channel_name))
+                    .build()
+            )
+        }
+        val notification = NotificationCompat.Builder(this, channel)
+            .setSmallIcon(androidx.media3.session.R.drawable.media3_notification_small_icon)
+            .setOngoing(true)
+            .setSilent(true)
+            .build()
+        startForeground(
+            DefaultMediaNotificationProvider.DEFAULT_NOTIFICATION_ID, notification,
+            ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
+        )
     }
 
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? = session
@@ -149,6 +194,8 @@ private fun skipIcon(seconds: Int, forward: Boolean): Int = when (seconds) {
     else -> if (forward) CommandButton.ICON_SKIP_FORWARD_10 else CommandButton.ICON_SKIP_BACK_10
 }
 
+private const val PLACEHOLDER_GRACE_MS = 3_000L
+
 /** Hand-over of the activity's player to [BackgroundPlaybackService]. */
 object BackgroundPlayback {
     @Volatile var player: Player? = null
@@ -158,4 +205,7 @@ object BackgroundPlayback {
 
     /** Boolean extra on that intent: open the app with "now playing" expanded. */
     const val EXTRA_EXPAND_NOW_PLAYING = "com.abhinavxt.debforge.EXPAND_NOW_PLAYING"
+
+    /** Boolean extra on the service intent: started with startForegroundService, so it must call startForeground at once. */
+    const val EXTRA_FOREGROUND_REQUIRED = "com.abhinavxt.debforge.FOREGROUND_REQUIRED"
 }

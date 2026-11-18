@@ -554,7 +554,7 @@ class AudioPlayer @Inject constructor(
             true
         } catch (e: IllegalStateException) {
             try {
-                context.startForegroundService(intent)
+                context.startForegroundService(Intent(intent).putExtra(BackgroundPlayback.EXTRA_FOREGROUND_REQUIRED, true))
                 true
             } catch (e: IllegalStateException) { false } // not allowed from the background at all
         }
