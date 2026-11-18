@@ -23,6 +23,8 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import android.system.Os
+import android.util.Log
+import java.io.File
 import java.io.IOException
 import java.nio.ByteBuffer
 import java.util.concurrent.ConcurrentHashMap
@@ -151,8 +153,11 @@ class HlsDownloader @Inject constructor(
         val size = try {
             when {
                 tracks.size == 2 -> combine(partPath, finalPath, separateAudio = true)
-                // Audio only: YouTube's M4A / WebM are fragmented, a raw copy has no duration.
-                yt -> combine(partPath, finalPath, separateAudio = false, audioOnly = true)
+                // Audio only: YouTube's M4A / WebM are already complete files, but a fragmented M4A often has
+                // zero header durations. A file that passes the header check is fixed in place (M4A) or kept
+                // as is (WebM); anything else is re-copied through the muxer.
+                yt -> finishAudio(tracks[0].media, partPath, finalPath, sizes.single())
+                    ?: combine(partPath, finalPath, separateAudio = false, audioOnly = true)
                 tracks[0].media.init != null -> try {
                     combine(partPath, finalPath, separateAudio = false)
                 } catch (e: IOException) {
@@ -198,6 +203,51 @@ class HlsDownloader @Inject constructor(
         if (playlist.live) throw IOException("Live streams can't be downloaded")
         if (playlist.segments.isEmpty()) throw IOException("The stream is empty")
         return playlist
+    }
+
+    /**
+     * The fast audio finish: header-checked (and for M4A patched in place) .part promoted as the final
+     * file. Null when it doesn't apply or fails, so the caller runs [combine]. Rerun-safe: the patch is
+     * idempotent, [DownloadFiles.verifyAndPromote] replaces an existing final file, and a stale .part.mux
+     * is never promoted (it is deleted with the rest after the promote, or truncated by [combine]).
+     */
+    private fun finishAudio(media: HlsPlaylist.Media, partPath: String, finalPath: String, written: Long): Long? {
+        val tag = "AudioFinish"
+        val start = System.nanoTime()
+        fun ms() = (System.nanoTime() - start) / 1_000_000
+        val kind = AudioFinish.kindFor(finalPath, 1, AudioFinish.isSingleProgressive(media))
+        if (kind == null || SafPaths.isSaf(partPath) || SafPaths.isSaf(finalPath)) {
+            Log.i(tag, "combine: not a plain progressive file (${ms()} ms to decide)")
+            return null
+        }
+        return try {
+            val file = File(partPath)
+            val expected = media.durationSec.toLong().takeIf { it > 0 }
+            val reason = when (kind) {
+                AudioFinish.Kind.M4A -> when (val r = Fmp4Header.check(file, expected)) {
+                    is Fmp4Header.Result.Ok -> { Fmp4Header.patch(file, r.plan); null }
+                    is Fmp4Header.Result.Unsupported -> r.reason
+                }
+                AudioFinish.Kind.WEBM -> when (val r = WebmHeader.check(file, expected)) {
+                    is WebmHeader.Result.Ok -> null
+                    is WebmHeader.Result.Unsupported -> r.reason
+                }
+            }
+            if (reason != null) {
+                Log.i(tag, "combine: header check said $reason (${ms()} ms)")
+                return null
+            }
+            if (!DownloadFiles.verifyAndPromote(partPath, finalPath, written)) {
+                Log.i(tag, "combine: promote failed (${ms()} ms)")
+                return null
+            }
+            DownloadFiles.deletePart(partPath) // a stale .part.mux or .audio
+            Log.i(tag, "fast: $kind promoted without remux in ${ms()} ms")
+            written
+        } catch (e: Exception) {
+            Log.i(tag, "combine: fast path failed (${e.message}) after ${ms()} ms")
+            null
+        }
     }
 
     /**
