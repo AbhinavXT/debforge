@@ -35,9 +35,10 @@ class Converters {
 @Database(
     entities = [
         DownloadEntity::class, ChunkEntity::class, MediaMetaEntity::class, WatchEntity::class, UsageEntity::class,
-        com.abhinavxt.debforge.data.playback.PlaybackEntity::class
+        com.abhinavxt.debforge.data.playback.PlaybackEntity::class,
+        com.abhinavxt.debforge.data.history.HistoryEntity::class
     ],
-    version = 11,
+    version = 12,
     // Schemas land in app/schemas (commit them): DatabaseMigrationTest checks
     // every migration against them. v1–v7 were rebuilt from the migrations.
     exportSchema = true
@@ -50,13 +51,14 @@ abstract class DebForgeDatabase : RoomDatabase() {
     abstract fun watchDao(): WatchDao
     abstract fun usageDao(): UsageDao
     abstract fun playbackDao(): com.abhinavxt.debforge.data.playback.PlaybackDao
+    abstract fun historyDao(): com.abhinavxt.debforge.data.history.HistoryDao
 
     companion object {
         const val NAME = "debforge.db"
 
         /** Every migration, oldest first. A new one goes here (and DatabaseMigrationTest checks it). Lazy: they are declared below. */
         val ALL_MIGRATIONS: Array<Migration> by lazy {
-            arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11)
+            arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12)
         }
 
         /**
@@ -127,6 +129,33 @@ abstract class DebForgeDatabase : RoomDatabase() {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE `downloads` ADD COLUMN `title` TEXT")
                 db.execSQL("ALTER TABLE `downloads` ADD COLUMN `artist` TEXT")
+            }
+        }
+
+        /**
+         * v11 -> v12: play history. New table only; `playback_positions` and everything else are
+         * untouched. Seeded from the videos already watched so History is not empty after the update
+         * (a row with no download behind it still plays from the cloud).
+         */
+        val MIGRATION_11_12 = object : Migration(11, 12) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `play_history` (`itemId` TEXT NOT NULL, `kind` TEXT NOT NULL, " +
+                        "`origin` TEXT NOT NULL, `provider` TEXT, `sourceRef` TEXT NOT NULL, `parentRef` TEXT, " +
+                        "`showKey` TEXT, `title` TEXT NOT NULL, `subtitle` TEXT, `artworkUrl` TEXT, " +
+                        "`positionMs` INTEGER NOT NULL, `durationMs` INTEGER NOT NULL, `playedAt` INTEGER NOT NULL, " +
+                        "PRIMARY KEY(`itemId`))"
+                )
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_play_history_playedAt` ON `play_history` (`playedAt`)")
+                db.execSQL(
+                    "INSERT OR IGNORE INTO play_history (itemId, kind, origin, provider, sourceRef, parentRef, showKey, " +
+                        "title, subtitle, artworkUrl, positionMs, durationMs, playedAt) " +
+                        "SELECT itemId, 'VIDEO', CASE WHEN itemId LIKE 'ytstream:%' THEN 'YOUTUBE' ELSE 'CLOUD' END, " +
+                        "CASE WHEN itemId LIKE 'ytstream:%' THEN NULL ELSE provider END, " +
+                        "CASE WHEN itemId LIKE 'ytstream:%' THEN substr(itemId, 10) ELSE sourceRef END, " +
+                        "parentRef, showKey, title, NULL, NULL, positionMs, durationMs, updatedAt " +
+                        "FROM playback_positions"
+                )
             }
         }
 

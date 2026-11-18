@@ -149,6 +149,59 @@ class DatabaseMigrationTest {
         }
     }
 
+    @Test
+    fun v11DataSurvivesAndWatchedVideosSeedThePlayHistory() {
+        val name = create(11) { db ->
+            db.execSQL(
+                "INSERT INTO downloads (rdId, provider, filename, originalLink, downloadUrl, host, filesize, chunksAllowed, state, " +
+                    "bytesDownloaded, createdAt, updatedAt) VALUES ('d1', 'REAL_DEBRID', 'a.mkv', 'link', 'url', 'host', 100, 8, 'COMPLETED', 100, 1, 2)"
+            )
+            db.execSQL(
+                "INSERT INTO playback_positions (itemId, provider, sourceRef, filename, title, showKey, positionMs, durationMs, " +
+                    "finished, updatedAt, parentRef) VALUES ('p1', 'TORBOX', 'ref1', 'Show.S01E02.mkv', 'Show S01E02', 'show:show', " +
+                    "61000, 1800000, 0, 500, 'torrent1')"
+            )
+            db.execSQL(
+                "INSERT INTO playback_positions (itemId, provider, sourceRef, filename, title, showKey, positionMs, durationMs, " +
+                    "finished, updatedAt, parentRef) VALUES ('ytstream:abc', 'DIRECT', 'https://youtu.be/abc', '', 'A video', NULL, " +
+                    "9000, 60000, 0, 700, NULL)"
+            )
+        }
+        val room = openWithRoom(name)
+        try {
+            runBlocking {
+                // Nothing that was there is lost.
+                assertEquals(100L, room.downloadDao().getById("d1")?.bytesDownloaded)
+                assertEquals(61_000L, room.playbackDao().get("p1")?.positionMs)
+                assertEquals(9_000L, room.playbackDao().get("ytstream:abc")?.positionMs)
+
+                val history = room.historyDao().all()
+                assertEquals(listOf("ytstream:abc", "p1"), history.map { it.itemId }) // newest first
+
+                val cloud = history.single { it.itemId == "p1" }
+                assertEquals("VIDEO", cloud.kind)
+                assertEquals("CLOUD", cloud.origin)
+                assertEquals("TORBOX", cloud.provider)
+                assertEquals("ref1", cloud.sourceRef)
+                assertEquals("torrent1", cloud.parentRef)
+                assertEquals("show:show", cloud.showKey)
+                assertEquals("Show S01E02", cloud.title)
+                assertNull(cloud.subtitle)
+                assertEquals(61_000L, cloud.positionMs)
+                assertEquals(1_800_000L, cloud.durationMs)
+                assertEquals(500L, cloud.playedAt)
+
+                val yt = history.single { it.itemId == "ytstream:abc" }
+                assertEquals("YOUTUBE", yt.origin)
+                assertNull(yt.provider)
+                assertEquals("abc", yt.sourceRef)
+                assertEquals(700L, yt.playedAt)
+            }
+        } finally {
+            room.close()
+        }
+    }
+
     // --- helpers ---------------------------------------------------------------
 
     private fun schemaFile(version: Int) =

@@ -110,6 +110,7 @@ import com.abhinavxt.debforge.ui.browse.playExternally
 class PlayerActivity : ComponentActivity() {
 
     @Inject lateinit var positions: PlaybackPositions
+    @Inject lateinit var history: com.abhinavxt.debforge.data.history.PlayHistory
     @Inject lateinit var audioPlayer: AudioPlayer
     @Inject lateinit var upNext: UpNext
     @Inject lateinit var subtitleResolver: SubtitleResolver
@@ -2079,6 +2080,26 @@ class PlayerActivity : ComponentActivity() {
                 updatedAt = System.currentTimeMillis()
             )
         )
+        if (com.abhinavxt.debforge.data.history.shouldRecord(position, ended)) {
+            val yt = youtube
+            history.record(
+                com.abhinavxt.debforge.data.history.HistoryEntity(
+                    itemId = id.itemId,
+                    kind = com.abhinavxt.debforge.data.history.HistoryKind.VIDEO,
+                    origin = com.abhinavxt.debforge.data.history.historyOriginFor(yt != null, isLocalFile()),
+                    provider = if (yt != null) null else id.provider.name,
+                    sourceRef = yt?.videoId ?: id.sourceRef,
+                    parentRef = id.parentRef,
+                    showKey = id.showKey,
+                    title = title,
+                    subtitle = yt?.uploader?.takeIf { it.isNotBlank() },
+                    artworkUrl = null,
+                    positionMs = position,
+                    durationMs = duration,
+                    playedAt = System.currentTimeMillis()
+                )
+            )
+        }
     }
 
     override fun onStart() {

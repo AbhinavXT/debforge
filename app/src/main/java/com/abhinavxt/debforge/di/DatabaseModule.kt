@@ -46,4 +46,7 @@ object DatabaseModule {
 
     @Provides
     fun provideUsageDao(db: DebForgeDatabase): com.abhinavxt.debforge.data.usage.UsageDao = db.usageDao()
+
+    @Provides
+    fun provideHistoryDao(db: DebForgeDatabase): com.abhinavxt.debforge.data.history.HistoryDao = db.historyDao()
 }
