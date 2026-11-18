@@ -45,6 +45,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.sync.Mutex
@@ -526,9 +527,7 @@ class AudioPlayer @Inject constructor(
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
                 .putExtra(BackgroundPlayback.EXTRA_EXPAND_NOW_PLAYING, true)
             BackgroundPlayback.player = p
-            try {
-                context.startService(Intent(context, BackgroundPlaybackService::class.java))
-            } catch (e: IllegalStateException) { // not allowed to start a service from the background
+            if (!startPlaybackService()) {
                 BackgroundPlayback.player = null
                 BackgroundPlayback.openIntent = null
                 return false
@@ -541,6 +540,23 @@ class AudioPlayer @Inject constructor(
         } finally {
             activating = false
             publish()
+        }
+    }
+
+    /**
+     * Starts the playback service. A plain start is refused from the background (a cold process answering a widget
+     * tap), but a foreground start is exempt when the user tapped a widget; the service then promotes itself once playing.
+     */
+    private fun startPlaybackService(): Boolean {
+        val intent = Intent(context, BackgroundPlaybackService::class.java)
+        return try {
+            context.startService(intent)
+            true
+        } catch (e: IllegalStateException) {
+            try {
+                context.startForegroundService(intent)
+                true
+            } catch (e: IllegalStateException) { false } // not allowed from the background at all
         }
     }
 
@@ -601,6 +617,9 @@ class AudioPlayer @Inject constructor(
         player?.pauseAtEndOfMediaItems = false
         publish()
     }
+
+    /** Emits once the saved queue is gone from disk, so a widget showing it from there can update. */
+    val queueForgotten = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
 
     /** True when this process has a player (playing, or a restored queue waiting for a tap). */
     val isActive: Boolean get() = player != null
@@ -786,7 +805,7 @@ class AudioPlayer @Inject constructor(
         pendingAction = null
         restoredPending = false
         activating = false
-        scope.launch { queueStore.forget() } // closing the queue (or a video taking over) forgets it
+        scope.launch { queueStore.forget(); queueForgotten.tryEmit(Unit) } // closing the queue (or a video taking over) forgets it
         playing.value = false
         BackgroundPlayback.openIntent = null // only audio sets it; a later video must open itself
         val p = player ?: return

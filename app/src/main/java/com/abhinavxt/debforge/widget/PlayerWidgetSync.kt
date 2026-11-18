@@ -45,6 +45,8 @@ class PlayerWidgetSync @Inject constructor(
                 Key(a.track?.id, a.track?.title, a.track?.artist, a.isPlaying, a.hasPrevious, a.hasNext, audio.isActive && !blocked)
             }.distinctUntilChanged().collectLatest { refresh() }
         }
+        // The widget shows the saved queue while no player is alive: redraw once clearing has erased it.
+        scope.launch { audio.queueForgotten.collect { refresh() } }
     }
 
     private data class Key(
