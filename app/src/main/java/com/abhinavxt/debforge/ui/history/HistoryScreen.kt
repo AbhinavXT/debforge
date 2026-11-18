@@ -218,23 +218,26 @@ private fun HistoryRow(e: HistoryEntity, onClick: () -> Unit, onRemove: () -> Un
     }
     val sub = listOfNotNull(e.subtitle?.takeIf { it.isNotBlank() }, stringResource(originLabelRes(e.origin)), time).joinToString(" · ")
     val progress = historyProgress(e.positionMs, e.durationMs)
-    Row(
-        modifier
-            .fillMaxWidth()
-            .clip(shape)
-            .then(if (focused) Modifier.border(2.dp, cs.primary, shape) else Modifier)
-            .clickable(interactionSource = source, indication = androidx.compose.material3.ripple(), onClick = onClick)
-            .padding(start = 8.dp, top = 6.dp, bottom = 6.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Artwork(e, Modifier.size(56.dp).clip(RoundedCornerShape(12.dp)))
-        Spacer(Modifier.width(12.dp))
-        Column(Modifier.weight(1f)) {
-            Text(e.title, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            Text(sub, style = MaterialTheme.typography.bodySmall, color = cs.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            if (progress != null && progress > 0f) {
-                Spacer(Modifier.height(6.dp))
-                LinearProgressIndicator(progress = { progress }, modifier = Modifier.fillMaxWidth().height(3.dp))
+    // The main area and the delete button are sibling focus targets, so DPAD_RIGHT from the row reaches the button.
+    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            modifier
+                .weight(1f)
+                .clip(shape)
+                .then(if (focused) Modifier.border(2.dp, cs.primary, shape) else Modifier)
+                .clickable(interactionSource = source, indication = androidx.compose.material3.ripple(), onClick = onClick)
+                .padding(start = 8.dp, top = 6.dp, bottom = 6.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Artwork(e, Modifier.size(56.dp).clip(RoundedCornerShape(12.dp)))
+            Spacer(Modifier.width(12.dp))
+            Column(Modifier.weight(1f)) {
+                Text(e.title, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(sub, style = MaterialTheme.typography.bodySmall, color = cs.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                if (progress != null && progress > 0f) {
+                    Spacer(Modifier.height(6.dp))
+                    LinearProgressIndicator(progress = { progress }, modifier = Modifier.fillMaxWidth().height(3.dp))
+                }
             }
         }
         IconButton(onClick = onRemove) {
