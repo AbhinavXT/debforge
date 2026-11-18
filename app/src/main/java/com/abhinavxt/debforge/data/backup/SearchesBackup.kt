@@ -18,10 +18,10 @@ object SearchesBackup {
         return Model(list("search"), list("youtube"))
     }
 
-    /** The file's entries first, then the existing ones, case-insensitively de-duplicated, at most MAX. */
+    /** The existing entries first, then the file's new ones, case-insensitively de-duplicated, at most MAX. */
     fun merge(existing: List<String>, incoming: List<String>): List<String> {
         val seen = HashSet<String>()
-        return (incoming + existing).filter { seen.add(it.lowercase()) }.take(SearchHistoryStore.MAX)
+        return (existing + incoming).filter { seen.add(it.lowercase()) }.take(SearchHistoryStore.MAX)
     }
 
     /** How many of [merged] were not in [existing]. */

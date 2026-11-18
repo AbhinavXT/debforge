@@ -45,7 +45,7 @@ open class SearchHistoryStore internal constructor(private val context: Context,
 
     suspend fun all(): List<String> = decode(context.searchHistoryDataStore.data.first()[key])
 
-    /** Backup restore: the file's [incoming] first, then what is here, de-duplicated, capped. Returns how many were new. */
+    /** Backup restore: what is here first, then the new ones from [incoming], de-duplicated, capped. Returns how many were new. */
     suspend fun mergeFromBackup(incoming: List<String>): Int {
         var added = 0
         context.searchHistoryDataStore.edit { prefs ->

@@ -116,7 +116,7 @@ abstract class HistoryDao {
         val todo = com.abhinavxt.debforge.data.backup.HistoryBackup.toWrite(have, rows, keep)
         todo.forEach { upsert(it) }
         prune(keep)
-        return todo.size
+        return todo.count { get(it.itemId) != null }
     }
 }
 

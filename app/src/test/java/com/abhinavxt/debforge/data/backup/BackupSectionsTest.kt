@@ -71,7 +71,7 @@ class BackupSectionsTest {
 
     @Test fun historyRoundTrip() {
         val rows = listOf(
-            row("a", 10).copy(subtitle = "s", artworkUrl = "u", showKey = "k", parentRef = "pr"),
+            row("a", 10).copy(subtitle = "s", artworkUrl = "https://u/a.jpg", showKey = "k", parentRef = "pr"),
             row("b", 5).copy(provider = null)
         )
         assertEquals(rows, HistoryBackup.fromJson(viaJson(HistoryBackup.toJson(rows))))
@@ -90,9 +90,29 @@ class BackupSectionsTest {
                 ) + ok
             )
         )
-        // a huge number is clamped by toLong, not a crash
-        assertEquals(setOf("n", "neg", "a"), parsed.map { it.itemId }.toSet())
+        // an impossible date is rejected
+        assertEquals(setOf("neg", "a"), parsed.map { it.itemId }.toSet())
         assertEquals(0L, parsed.first { it.itemId == "neg" }.positionMs)
+    }
+
+    @Test fun historyRejectsFutureDatesUnknownTypesAndBadFields() {
+        fun item(vararg over: Pair<String, Any?>) = HistoryBackup.toJson(listOf(row("a", 1000)))
+            .let { (it["items"] as List<*>)[0] as Map<*, *> }
+            .let { m -> m.entries.associate { it.key as String to it.value }.toMutableMap().also { it.putAll(over) } }
+        fun parse(vararg over: Pair<String, Any?>) =
+            HistoryBackup.fromJson(mapOf("items" to listOf(item(*over))), now = 5000)
+        assertEquals(1, parse().size)
+        assertTrue(parse("at" to 5000L + 2 * 24 * 3600 * 1000).isEmpty())
+        assertEquals(1, parse("at" to 5000L).size)
+        assertTrue(parse("k" to "PHOTO").isEmpty())
+        assertTrue(parse("o" to "MARS").isEmpty())
+        assertTrue(parse("o" to "LOCAL").isEmpty())
+        assertTrue(parse("p" to "NOPE").isEmpty())
+        assertEquals(null, parse("p" to null).single().provider)
+        assertTrue(parse("t" to "x".repeat(501)).isEmpty())
+        assertTrue(parse("s" to "x".repeat(2049)).isEmpty())
+        assertEquals(null, parse("a" to "file:///x").single().artworkUrl)
+        assertEquals("https://x/y.png", parse("a" to "https://x/y.png").single().artworkUrl)
     }
 
     @Test fun historyNewestWinsAndOldIsIgnored() {
@@ -119,11 +139,12 @@ class BackupSectionsTest {
     @Test fun searchesMergeFileFirstDedupedAndCapped() {
         val existing = listOf("one", "Two", "three")
         val merged = SearchesBackup.merge(existing, listOf("TWO", "four"))
-        assertEquals(listOf("TWO", "four", "one", "three"), merged)
+        assertEquals(listOf("one", "Two", "three", "four"), merged)
         assertEquals(1, SearchesBackup.added(existing, merged))
         val many = SearchesBackup.merge((1..8).map { "e$it" }, (1..8).map { "i$it" })
         assertEquals(10, many.size)
-        assertEquals("i1", many.first())
+        assertEquals("e1", many.first())
+        assertEquals(listOf("e1", "e2", "e3", "e4", "e5", "e6", "e7", "e8", "i1", "i2"), many)
     }
 
     // ---- file level
