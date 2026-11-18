@@ -12,12 +12,24 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.net.ServerSocket
+import java.net.Socket
+import java.util.concurrent.CopyOnWriteArrayList
+import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
 class BlockingCallsTest {
-    /** A server that accepts and never answers: a stalled connection. */
+    private val accepted = CopyOnWriteArrayList<Socket>()
+    private val acceptedLatch = CountDownLatch(1)
+
+    /**
+     * A server that accepts and never answers: a stalled connection. Accepted
+     * sockets are kept referenced: a garbage-collected socket is closed, which
+     * the client would see as end-of-stream instead of a stall.
+     */
     private fun stalledServer(): ServerSocket = ServerSocket(0).also { server ->
-        Thread { runCatching { while (true) server.accept() } }.apply { isDaemon = true }.start()
+        Thread {
+            runCatching { while (true) { accepted += server.accept(); acceptedLatch.countDown() } }
+        }.apply { isDaemon = true }.start()
     }
 
     private val client = OkHttpClient.Builder()
@@ -37,6 +49,7 @@ class BlockingCallsTest {
                 } }.also { failure = it.exceptionOrNull() }
             }
             started.await()
+            assertTrue("server never accepted", acceptedLatch.await(10, TimeUnit.SECONDS))
             Thread.sleep(300) // let the read block
             val t0 = System.nanoTime()
             withTimeout(5_000) { job.cancelAndJoin() }
@@ -45,6 +58,7 @@ class BlockingCallsTest {
             assertTrue("expected CancellationException, got $failure", failure is kotlinx.coroutines.CancellationException)
         } finally {
             server.close()
+            accepted.forEach { runCatching { it.close() } }
         }
     }
 
