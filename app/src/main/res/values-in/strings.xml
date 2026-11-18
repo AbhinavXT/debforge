@@ -536,6 +536,9 @@
     <string name="set_player_gestures_detail">Ketuk dua kali di sisi untuk melompat, geser untuk kecerahan, volume, atau memajukan, tahan untuk putar cepat, cubit untuk zoom.</string>
     <string name="set_player_art_color">Warna dari sampul</string>
     <string name="set_player_art_color_detail">Warnai pemutar audio dengan warna sampul lagu.</string>
+    <string name="set_skip_length">Durasi lompatan</string>
+    <string name="set_skip_length_detail">Seberapa jauh tombol mundur dan maju pada pemutar audio melompat.</string>
+    <string name="skip_seconds">%d dtk</string>
     <plurals name="player_gesture_seek_n">
         <item quantity="other">%d detik</item>
     </plurals>
@@ -869,8 +872,8 @@
     <string name="audio_pause">Jeda</string>
     <string name="audio_next">Berikutnya</string>
     <string name="audio_previous">Sebelumnya</string>
-    <string name="audio_back_10">Mundur 10 detik</string>
-    <string name="audio_forward_10">Maju 10 detik</string>
+    <string name="audio_back_n">Mundur %d detik</string>
+    <string name="audio_forward_n">Maju %d detik</string>
     <string name="audio_shuffle_on">Acak aktif</string>
     <string name="audio_shuffle_off">Acak nonaktif</string>
     <string name="audio_repeat_off">Ulangi nonaktif</string>

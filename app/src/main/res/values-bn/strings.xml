@@ -564,6 +564,9 @@
     <string name="set_player_gestures_detail">পাশে দুবার ট্যাপ করে এগোন-পিছোন, সোয়াইপ করে উজ্জ্বলতা, ভলিউম বা টেনে সরান, চেপে ধরে দ্রুত চালান, পিঞ্চ করে জুম করুন।</string>
     <string name="set_player_art_color">আর্টওয়ার্ক থেকে রং</string>
     <string name="set_player_art_color_detail">ট্র্যাকের আর্টওয়ার্কের রঙে অডিও প্লেয়ার রাঙান।</string>
+    <string name="set_skip_length">স্কিপের দৈর্ঘ্য</string>
+    <string name="set_skip_length_detail">অডিও প্লেয়ারের পেছনে ও সামনে যাওয়ার বোতাম কত সেকেন্ড এগোবে।</string>
+    <string name="skip_seconds">%d সে.</string>
     <plurals name="player_gesture_seek_n">
         <item quantity="one">%d সেকেন্ড</item>
         <item quantity="other">%d সেকেন্ড</item>
@@ -914,8 +917,8 @@
     <string name="audio_pause">বিরতি</string>
     <string name="audio_next">পরেরটি</string>
     <string name="audio_previous">আগেরটি</string>
-    <string name="audio_back_10">১০ সেকেন্ড পেছনে</string>
-    <string name="audio_forward_10">১০ সেকেন্ড সামনে</string>
+    <string name="audio_back_n">%d সেকেন্ড পেছনে</string>
+    <string name="audio_forward_n">%d সেকেন্ড সামনে</string>
     <string name="audio_shuffle_on">শাফল চালু</string>
     <string name="audio_shuffle_off">শাফল বন্ধ</string>
     <string name="audio_repeat_off">রিপিট বন্ধ</string>

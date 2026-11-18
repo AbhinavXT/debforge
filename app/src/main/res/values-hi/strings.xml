@@ -564,6 +564,9 @@
     <string name="set_player_gestures_detail">किनारों पर दो बार टैप करके आगे-पीछे करें, स्वाइप करके चमक, आवाज़ या वीडियो आगे-पीछे करें, दबाकर रखें तो तेज़ चलेगा, पिंच करके ज़ूम करें।</string>
     <string name="set_player_art_color">आर्टवर्क से रंग</string>
     <string name="set_player_art_color_detail">ऑडियो प्लेयर को ट्रैक के आर्टवर्क के रंग में रंगें।</string>
+    <string name="set_skip_length">स्किप की अवधि</string>
+    <string name="set_skip_length_detail">ऑडियो प्लेयर के पीछे और आगे वाले बटन कितने सेकंड छोड़ते हैं।</string>
+    <string name="skip_seconds">%d से.</string>
     <plurals name="player_gesture_seek_n">
         <item quantity="one">%d सेकंड</item>
         <item quantity="other">%d सेकंड</item>
@@ -914,8 +917,8 @@
     <string name="audio_pause">रोकें</string>
     <string name="audio_next">अगला</string>
     <string name="audio_previous">पिछला</string>
-    <string name="audio_back_10">10 सेकंड पीछे</string>
-    <string name="audio_forward_10">10 सेकंड आगे</string>
+    <string name="audio_back_n">%d सेकंड पीछे</string>
+    <string name="audio_forward_n">%d सेकंड आगे</string>
     <string name="audio_shuffle_on">शफ़ल चालू</string>
     <string name="audio_shuffle_off">शफ़ल बंद</string>
     <string name="audio_repeat_off">रिपीट बंद</string>

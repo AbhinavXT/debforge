@@ -30,6 +30,8 @@ class ShellViewModel @Inject constructor(
 ) : ViewModel() {
     val playerArtColor: StateFlow<Boolean> = settings.playerArtColorFlow
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), true)
+    val audioSkipSeconds: StateFlow<Int> = settings.audioSkipSecondsFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), com.abhinavxt.debforge.player.DEFAULT_SKIP_SECONDS)
     val activeCount: StateFlow<Int> = dao.observeAll()
         .map { rows -> rows.count { it.state == DownloadState.DOWNLOADING || it.state == DownloadState.QUEUED } }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0)

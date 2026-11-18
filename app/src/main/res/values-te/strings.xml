@@ -564,6 +564,9 @@
     <string name="set_player_gestures_detail">అంచులపై రెండుసార్లు తట్టి ముందుకు-వెనక్కు వెళ్లండి, స్వైప్‌తో ప్రకాశం, వాల్యూమ్ లేదా వీడియో జరపండి, నొక్కి పట్టుకుంటే వేగంగా ప్లే అవుతుంది, పించ్‌తో జూమ్ చేయండి.</string>
     <string name="set_player_art_color">ఆర్ట్‌వర్క్ నుండి రంగు</string>
     <string name="set_player_art_color_detail">ఆడియో ప్లేయర్‌కు ట్రాక్ ఆర్ట్‌వర్క్ రంగును ఇవ్వండి.</string>
+    <string name="set_skip_length">స్కిప్ నిడివి</string>
+    <string name="set_skip_length_detail">ఆడియో ప్లేయర్‌లోని వెనుక, ముందు బటన్లు ఎన్ని సెకన్లు దాటుతాయి.</string>
+    <string name="skip_seconds">%d సె.</string>
     <plurals name="player_gesture_seek_n">
         <item quantity="one">%d సెకను</item>
         <item quantity="other">%d సెకన్లు</item>
@@ -914,8 +917,8 @@
     <string name="audio_pause">పాజ్ చేయి</string>
     <string name="audio_next">తదుపరి</string>
     <string name="audio_previous">మునుపటి</string>
-    <string name="audio_back_10">10 సెకన్లు వెనక్కి</string>
-    <string name="audio_forward_10">10 సెకన్లు ముందుకు</string>
+    <string name="audio_back_n">%d సెకన్లు వెనుకకు</string>
+    <string name="audio_forward_n">%d సెకన్లు ముందుకు</string>
     <string name="audio_shuffle_on">షఫుల్ ఆన్</string>
     <string name="audio_shuffle_off">షఫుల్ ఆఫ్</string>
     <string name="audio_repeat_off">రిపీట్ ఆఫ్</string>

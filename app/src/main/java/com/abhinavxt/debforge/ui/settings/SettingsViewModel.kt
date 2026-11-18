@@ -212,6 +212,11 @@ class SettingsViewModel @Inject constructor(
     )
     fun setPlayerArtColor(v: Boolean) = viewModelScope.launch { settingsStore.setPlayerArtColor(v) }
 
+    val audioSkipSeconds: StateFlow<Int> = settingsStore.audioSkipSecondsFlow.stateIn(
+        viewModelScope, SharingStarted.WhileSubscribed(5_000), com.abhinavxt.debforge.player.DEFAULT_SKIP_SECONDS
+    )
+    fun setAudioSkipSeconds(v: Int) = viewModelScope.launch { settingsStore.setAudioSkipSeconds(v) }
+
     val playerGestures: StateFlow<Boolean> = settingsStore.playerGesturesFlow.stateIn(
         viewModelScope, SharingStarted.WhileSubscribed(5_000), true
     )

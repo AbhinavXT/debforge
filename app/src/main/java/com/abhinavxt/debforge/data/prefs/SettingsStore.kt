@@ -56,6 +56,7 @@ class SettingsStore @Inject constructor(
     private val keyNightMode = booleanPreferencesKey("player_night_mode")
     private val keyStreamPreviews = booleanPreferencesKey("player_stream_previews")
     private val keyPlayerArtColor = booleanPreferencesKey("player_art_color")
+    private val keyAudioSkipSeconds = intPreferencesKey("audio_skip_seconds")
     private val keyPlayerGestures = booleanPreferencesKey("player_gestures")
     private val keyPlayerShowRemaining = booleanPreferencesKey("player_show_remaining")
     private val keyAudioLanguage = stringPreferencesKey("player_audio_language")
@@ -175,6 +176,10 @@ class SettingsStore @Inject constructor(
     /** Player: audio player background tinted from the track artwork. On by default. */
     val playerArtColorFlow: Flow<Boolean> = context.settingsDataStore.data.map { it[keyPlayerArtColor] ?: true }
     suspend fun setPlayerArtColor(v: Boolean) = context.settingsDataStore.edit { it[keyPlayerArtColor] = v }
+
+    /** Audio player skip back / forward length in seconds; always one of [com.abhinavxt.debforge.player.SKIP_LENGTHS]. */
+    val audioSkipSecondsFlow: Flow<Int> = context.settingsDataStore.data.map { com.abhinavxt.debforge.player.validSkipSeconds(it[keyAudioSkipSeconds]) }
+    suspend fun setAudioSkipSeconds(v: Int) = context.settingsDataStore.edit { it[keyAudioSkipSeconds] = com.abhinavxt.debforge.player.validSkipSeconds(v) }
 
     /** Player: the right-hand time shows what's left instead of the length (tap it to switch). */
     val playerShowRemainingFlow: Flow<Boolean> = context.settingsDataStore.data.map { it[keyPlayerShowRemaining] ?: false }

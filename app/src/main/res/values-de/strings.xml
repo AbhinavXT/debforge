@@ -564,6 +564,9 @@
     <string name="set_player_gestures_detail">Seiten doppelt tippen zum Springen, wischen für Helligkeit, Lautstärke oder zum Spulen, halten für schnelle Wiedergabe, zusammenziehen zum Zoomen.</string>
     <string name="set_player_art_color">Farbe aus dem Cover</string>
     <string name="set_player_art_color_detail">Den Audioplayer in den Farben des Titelbilds einfärben.</string>
+    <string name="set_skip_length">Sprunglänge</string>
+    <string name="set_skip_length_detail">Wie weit die Vor- und Zurück-Tasten des Audioplayers springen.</string>
+    <string name="skip_seconds">%d s</string>
     <plurals name="player_gesture_seek_n">
         <item quantity="one">%d Sekunde</item>
         <item quantity="other">%d Sekunden</item>
@@ -914,8 +917,8 @@
     <string name="audio_pause">Pause</string>
     <string name="audio_next">Weiter</string>
     <string name="audio_previous">Zurück</string>
-    <string name="audio_back_10">10 Sekunden zurück</string>
-    <string name="audio_forward_10">10 Sekunden vor</string>
+    <string name="audio_back_n">%d Sekunden zurück</string>
+    <string name="audio_forward_n">%d Sekunden vor</string>
     <string name="audio_shuffle_on">Zufallswiedergabe an</string>
     <string name="audio_shuffle_off">Zufallswiedergabe aus</string>
     <string name="audio_repeat_off">Wiederholen aus</string>

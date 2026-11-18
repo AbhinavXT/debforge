@@ -41,6 +41,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Bedtime
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Forward10
+import androidx.compose.material.icons.rounded.Forward30
+import androidx.compose.material.icons.rounded.Forward5
+import androidx.compose.material.icons.rounded.Replay
+import androidx.compose.material.icons.rounded.Replay30
+import androidx.compose.material.icons.rounded.Replay5
+import com.abhinavxt.debforge.player.DEFAULT_SKIP_SECONDS
+import com.abhinavxt.debforge.player.skipMs
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material.icons.rounded.Replay10
 import androidx.compose.material.icons.rounded.Repeat
@@ -89,6 +96,9 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
@@ -135,7 +145,9 @@ fun NowPlaying(
     /** Pads the content for the system bars while the sheet itself stays full-bleed (so it slides over the screen below). */
     padSystemBars: Boolean = false,
     /** Tints the background from the track's artwork. */
-    artColor: Boolean = true
+    artColor: Boolean = true,
+    /** Length of the skip back / forward buttons. */
+    skipSeconds: Int = DEFAULT_SKIP_SECONDS
 ) {
     val track = state.track ?: return
     val surface = MaterialTheme.colorScheme.surface
@@ -167,7 +179,7 @@ fun NowPlaying(
                             Artwork(state, share, Modifier.fillMaxWidth(0.7f).widthIn(max = 360.dp))
                         }
                         Column(Modifier.weight(1f).fillMaxHeight(), verticalArrangement = Arrangement.Center) {
-                            Controls(state, onToggle, onNext, onPrevious, onSeek, onSkip, onShuffle, onRepeat, onSpeed, onSleep, playFocus = playFocus, onChannel = onChannel)
+                            Controls(state, onToggle, onNext, onPrevious, onSeek, onSkip, onShuffle, onRepeat, onSpeed, onSleep, playFocus = playFocus, onChannel = onChannel, skipSeconds = skipSeconds)
                             Queue(state, onSkipTo, Modifier.weight(1f, fill = false).heightIn(max = 220.dp))
                         }
                     }
@@ -184,7 +196,7 @@ fun NowPlaying(
                             ) {
                                 // Capped by the screen height so tall tablets keep the controls and Up next on screen.
                                 Artwork(state, share, Modifier.widthIn(max = this@BoxWithConstraints.maxHeight * 0.4f / 0.85f).fillMaxWidth(0.85f))
-                                Controls(state, onToggle, onNext, onPrevious, onSeek, onSkip, onShuffle, onRepeat, onSpeed, onSleep, Modifier.padding(top = 24.dp), playFocus, onChannel)
+                                Controls(state, onToggle, onNext, onPrevious, onSeek, onSkip, onShuffle, onRepeat, onSpeed, onSleep, Modifier.padding(top = 24.dp), playFocus, onChannel, skipSeconds)
                             }
                         }
                     )
@@ -233,7 +245,8 @@ private fun Controls(
     onSleep: (Int) -> Unit,
     modifier: Modifier = Modifier,
     playFocus: FocusRequester? = null,
-    onChannel: (String, String) -> Unit = { _, _ -> }
+    onChannel: (String, String) -> Unit = { _, _ -> },
+    skipSeconds: Int = DEFAULT_SKIP_SECONDS
 ) {
     val track = state.track ?: return
     Column(modifier.fillMaxWidth()) {
@@ -264,8 +277,8 @@ private fun Controls(
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically) {
             val cs = MaterialTheme.colorScheme
             val s0 = remember { MutableInteractionSource() }
-            IconButton({ onSkip(-SKIP_STEP_MS) }, Modifier.size(48.dp).focusRing(s0, CircleShape), interactionSource = s0) {
-                Icon(Icons.Rounded.Replay10, stringResource(R.string.audio_back_10), Modifier.size(28.dp))
+            IconButton({ onSkip(-skipMs(skipSeconds)) }, Modifier.size(48.dp).focusRing(s0, CircleShape), interactionSource = s0) {
+                SkipIcon(skipSeconds, forward = false, stringResource(R.string.audio_back_n, skipSeconds))
             }
             val s1 = remember { MutableInteractionSource() }
             IconButton(onPrevious, Modifier.size(52.dp).focusRing(s1, CircleShape), interactionSource = s1) {
@@ -281,8 +294,8 @@ private fun Controls(
                 Icon(Icons.Rounded.SkipNext, stringResource(R.string.audio_next), Modifier.size(32.dp))
             }
             val s4 = remember { MutableInteractionSource() }
-            IconButton({ onSkip(SKIP_STEP_MS) }, Modifier.size(48.dp).focusRing(s4, CircleShape), interactionSource = s4) {
-                Icon(Icons.Rounded.Forward10, stringResource(R.string.audio_forward_10), Modifier.size(28.dp))
+            IconButton({ onSkip(skipMs(skipSeconds)) }, Modifier.size(48.dp).focusRing(s4, CircleShape), interactionSource = s4) {
+                SkipIcon(skipSeconds, forward = true, stringResource(R.string.audio_forward_n, skipSeconds))
             }
         }
         Row(Modifier.fillMaxWidth().padding(top = 8.dp), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically) {
@@ -429,7 +442,25 @@ private fun SeekBar(positionMs: Long, durationMs: Long, onSeek: (Long) -> Unit) 
 }
 
 private const val SEEK_STEP_MS = 10_000L
-private const val SKIP_STEP_MS = 10_000L
+
+/** Replay/Forward icon for [seconds]: Material has 5, 10 and 30; 15 is the plain arrow with the number over it. */
+@Composable
+private fun SkipIcon(seconds: Int, forward: Boolean, description: String) {
+    val icon = when (seconds) {
+        5 -> if (forward) Icons.Rounded.Forward5 else Icons.Rounded.Replay5
+        30 -> if (forward) Icons.Rounded.Forward30 else Icons.Rounded.Replay30
+        10 -> if (forward) Icons.Rounded.Forward10 else Icons.Rounded.Replay10
+        else -> null
+    }
+    if (icon != null) {
+        Icon(icon, description, Modifier.size(28.dp))
+        return
+    }
+    Box(Modifier.size(28.dp).semantics { contentDescription = description }, contentAlignment = Alignment.Center) {
+        Icon(Icons.Rounded.Replay, null, Modifier.fillMaxSize().then(if (forward) Modifier.graphicsLayer { scaleX = -1f } else Modifier))
+        Text(seconds.toString(), fontSize = 9.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 2.dp))
+    }
+}
 
 /** Next position for a D-pad step: continues from [pending] while a key is held, else from [positionMs]. */
 internal fun nextSeekTarget(pending: Long?, positionMs: Long, step: Long, durationMs: Long): Long =

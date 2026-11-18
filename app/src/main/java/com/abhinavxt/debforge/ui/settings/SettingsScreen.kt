@@ -37,6 +37,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.Logout
 import androidx.compose.material.icons.automirrored.rounded.Sort
 import androidx.compose.material.icons.rounded.AutoDelete
+import androidx.compose.material.icons.rounded.Forward10
 import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material.icons.rounded.TouchApp
 import androidx.compose.material.icons.rounded.FastForward
@@ -143,6 +144,7 @@ fun SettingsScreen(onConnect: () -> Unit, onBack: (() -> Unit)? = null, viewMode
     val autoSkipIntro by viewModel.autoSkipIntro.collectAsStateWithLifecycle()
     val streamPreviews by viewModel.streamPreviews.collectAsStateWithLifecycle()
     val playerArtColor by viewModel.playerArtColor.collectAsStateWithLifecycle()
+    val audioSkipSeconds by viewModel.audioSkipSeconds.collectAsStateWithLifecycle()
     val playerGestures by viewModel.playerGestures.collectAsStateWithLifecycle()
     val audioLanguage by viewModel.audioLanguage.collectAsStateWithLifecycle()
     val subtitleLanguage by viewModel.subtitleLanguage.collectAsStateWithLifecycle()
@@ -433,6 +435,8 @@ fun SettingsScreen(onConnect: () -> Unit, onBack: (() -> Unit)? = null, viewMode
                             checked = playerArtColor,
                             onChange = viewModel::setPlayerArtColor
                         )
+                        RowDivider()
+                        SkipLengthRow(current = audioSkipSeconds, onPick = viewModel::setAudioSkipSeconds)
                         RowDivider()
                         LanguageRow(
                             icon = Icons.Rounded.Audiotrack,
@@ -1047,6 +1051,35 @@ private fun HourPicker(hour: Int, onPick: (Int) -> Unit) {
         DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
             (0..23).forEach { h ->
                 DropdownMenuItem(text = { Text("%02d:00".format(h)) }, onClick = { onPick(h); open = false })
+            }
+        }
+    }
+}
+
+@Composable
+private fun SkipLengthRow(current: Int, onPick: (Int) -> Unit) {
+    var open by remember { mutableStateOf(false) }
+    Box {
+        SettingRow(
+            icon = Icons.Rounded.Forward10,
+            title = stringResource(R.string.set_skip_length),
+            subtitle = stringResource(R.string.set_skip_length_detail),
+            onClick = { open = true },
+            trailing = {
+                Text(
+                    stringResource(R.string.skip_seconds, current),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+        )
+        DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
+            com.abhinavxt.debforge.player.SKIP_LENGTHS.forEach { n ->
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.skip_seconds, n)) },
+                    leadingIcon = { if (n == current) Icon(Icons.Rounded.Check, contentDescription = null) },
+                    onClick = { onPick(n); open = false }
+                )
             }
         }
     }

@@ -620,6 +620,9 @@
     <string name="set_player_gestures_detail">Двойное касание по краям — перемотка, свайп — яркость, громкость или перемотка, удержание — быстрое воспроизведение, щипок — масштаб.</string>
     <string name="set_player_art_color">Цвет из обложки</string>
     <string name="set_player_art_color_detail">Окрашивать аудиоплеер в цвета обложки трека.</string>
+    <string name="set_skip_length">Длина перемотки</string>
+    <string name="set_skip_length_detail">На сколько секунд перематывают кнопки назад и вперёд в аудиоплеере.</string>
+    <string name="skip_seconds">%d с</string>
     <plurals name="player_gesture_seek_n">
         <item quantity="one">%d секунда</item>
         <item quantity="few">%d секунды</item>
@@ -1004,8 +1007,8 @@
     <string name="audio_pause">Пауза</string>
     <string name="audio_next">Далее</string>
     <string name="audio_previous">Назад</string>
-    <string name="audio_back_10">Назад на 10 секунд</string>
-    <string name="audio_forward_10">Вперёд на 10 секунд</string>
+    <string name="audio_back_n">Назад на %d с</string>
+    <string name="audio_forward_n">Вперёд на %d с</string>
     <string name="audio_shuffle_on">Перемешивание включено</string>
     <string name="audio_shuffle_off">Перемешивание выключено</string>
     <string name="audio_repeat_off">Повтор выключен</string>

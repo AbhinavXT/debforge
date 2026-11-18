@@ -564,6 +564,9 @@
     <string name="set_player_gestures_detail">बाजूंवर दोनदा टॅप करून पुढे-मागे जा, स्वाइप करून ब्राइटनेस, आवाज किंवा व्हिडिओ पुढे-मागे करा, दाबून ठेवल्यास वेगाने चालेल, पिंच करून झूम करा.</string>
     <string name="set_player_art_color">आर्टवर्कमधून रंग</string>
     <string name="set_player_art_color_detail">ऑडिओ प्लेयरला ट्रॅकच्या आर्टवर्कचा रंग द्या.</string>
+    <string name="set_skip_length">स्किपचा कालावधी</string>
+    <string name="set_skip_length_detail">ऑडिओ प्लेयरची मागे आणि पुढे जाणारी बटणे किती सेकंद सरकतात.</string>
+    <string name="skip_seconds">%d से.</string>
     <plurals name="player_gesture_seek_n">
         <item quantity="one">%d सेकंद</item>
         <item quantity="other">%d सेकंद</item>
@@ -914,8 +917,8 @@
     <string name="audio_pause">थांबवा</string>
     <string name="audio_next">पुढील</string>
     <string name="audio_previous">मागील</string>
-    <string name="audio_back_10">१० सेकंद मागे</string>
-    <string name="audio_forward_10">१० सेकंद पुढे</string>
+    <string name="audio_back_n">%d सेकंद मागे</string>
+    <string name="audio_forward_n">%d सेकंद पुढे</string>
     <string name="audio_shuffle_on">शफल चालू</string>
     <string name="audio_shuffle_off">शफल बंद</string>
     <string name="audio_repeat_off">रिपीट बंद</string>

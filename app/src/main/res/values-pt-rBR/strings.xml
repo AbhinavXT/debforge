@@ -592,6 +592,9 @@
     <string name="set_player_gestures_detail">Toque duas vezes nas laterais para pular, deslize para brilho, volume ou avançar, segure para reproduzir rápido, pince para dar zoom.</string>
     <string name="set_player_art_color">Cor da capa</string>
     <string name="set_player_art_color_detail">Colorir o player de áudio com as cores da capa da faixa.</string>
+    <string name="set_skip_length">Duração do salto</string>
+    <string name="set_skip_length_detail">Quanto os botões de voltar e avançar do player de áudio pulam.</string>
+    <string name="skip_seconds">%d s</string>
     <plurals name="player_gesture_seek_n">
         <item quantity="one">%d segundo</item>
         <item quantity="many">%d segundos</item>
@@ -959,8 +962,8 @@
     <string name="audio_pause">Pausar</string>
     <string name="audio_next">Próxima</string>
     <string name="audio_previous">Anterior</string>
-    <string name="audio_back_10">Voltar 10 segundos</string>
-    <string name="audio_forward_10">Avançar 10 segundos</string>
+    <string name="audio_back_n">Voltar %d segundos</string>
+    <string name="audio_forward_n">Avançar %d segundos</string>
     <string name="audio_shuffle_on">Aleatório ativado</string>
     <string name="audio_shuffle_off">Aleatório desativado</string>
     <string name="audio_repeat_off">Repetir desativado</string>

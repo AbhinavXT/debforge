@@ -566,6 +566,9 @@
     <string name="set_player_gestures_detail">Double-tap the sides to skip, swipe for brightness and volume or to scrub, hold for fast playback, pinch to zoom.</string>
     <string name="set_player_art_color">Colour from artwork</string>
     <string name="set_player_art_color_detail">Tint the audio player with the track\'s artwork.</string>
+    <string name="set_skip_length">Skip length</string>
+    <string name="set_skip_length_detail">How far the audio player\'s back and forward buttons jump.</string>
+    <string name="skip_seconds">%d s</string>
     <plurals name="player_gesture_seek_n">
         <item quantity="one">%d second</item>
         <item quantity="other">%d seconds</item>
@@ -916,8 +919,8 @@
     <string name="audio_pause">Pause</string>
     <string name="audio_next">Next</string>
     <string name="audio_previous">Previous</string>
-    <string name="audio_back_10">Back 10 seconds</string>
-    <string name="audio_forward_10">Forward 10 seconds</string>
+    <string name="audio_back_n">Back %d seconds</string>
+    <string name="audio_forward_n">Forward %d seconds</string>
     <string name="audio_shuffle_on">Shuffle on</string>
     <string name="audio_shuffle_off">Shuffle off</string>
     <string name="audio_repeat_off">Repeat off</string>

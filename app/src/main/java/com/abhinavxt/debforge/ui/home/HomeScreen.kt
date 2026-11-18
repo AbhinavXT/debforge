@@ -161,6 +161,7 @@ fun HomeScreen(signedIn: Boolean) {
     val youtubeViewModel: YouTubeViewModel = hiltViewModel()
     val audio by shell.audio.state.collectAsStateWithLifecycle()
     val artColor by shell.playerArtColor.collectAsStateWithLifecycle()
+    val skipSeconds by shell.audioSkipSeconds.collectAsStateWithLifecycle()
     val activeCount by shell.activeCount.collectAsStateWithLifecycle()
     var nowPlaying by rememberSaveable { mutableStateOf(false) }
     val expandRequested by NowPlayingRequest.expand.collectAsStateWithLifecycle()
@@ -494,6 +495,7 @@ fun HomeScreen(signedIn: Boolean) {
                     },
                     padSystemBars = true,
                     artColor = artColor,
+                    skipSeconds = skipSeconds,
                     state = audio,
                     onToggle = shell.audio::toggle,
                     onNext = shell.audio::next,
