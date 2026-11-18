@@ -73,6 +73,7 @@ import androidx.compose.ui.layout.ContentScale
 import com.abhinavxt.debforge.R
 import com.abhinavxt.debforge.player.AudioState
 import com.abhinavxt.debforge.player.AudioTrack
+import com.abhinavxt.debforge.ui.components.channelLink
 import com.abhinavxt.debforge.ui.components.GeneratedArt
 import com.abhinavxt.debforge.ui.theme.DebforgeTheme
 
@@ -197,6 +198,8 @@ fun MiniPlayer(
     onExpand: () -> Unit,
     onClose: () -> Unit,
     modifier: Modifier = Modifier,
+    /** Opens the artist's channel page: (name, url). Only offered for a track that has a channel url. */
+    onChannel: (String, String) -> Unit = { _, _ -> },
     /** The shared transition scope; null when no shared transition runs. */
     sharedScope: SharedTransitionScope? = null,
     /** True while the full player is open: the artwork then lives there and this slot stays empty. */
@@ -240,11 +243,13 @@ fun MiniPlayer(
                 Crossfade(track, Modifier.weight(1f), label = "track") { t ->
                     Column {
                         Text(t.title, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        val artistUrl = t.artistUrl?.takeIf { !t.artist.isNullOrBlank() }
                         Text(
                             t.artist ?: stringResource(R.string.audio_unknown_artist),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            maxLines = 1, overflow = TextOverflow.Ellipsis
+                            maxLines = 1, overflow = TextOverflow.Ellipsis,
+                            modifier = if (artistUrl != null && t.artist != null) Modifier.channelLink(stringResource(R.string.yt_open_channel, t.artist)) { onChannel(t.artist, artistUrl) } else Modifier
                         )
                     }
                 }

@@ -24,6 +24,8 @@ data class YouTubeVideo(
     val thumbnailUrl: String?,
     val streams: List<YouTubeStream>,
     val subtitles: List<YouTubeSubtitle> = emptyList(),
+    /** The uploader's channel page; null when the extractor gave none. */
+    val uploaderUrl: String? = null,
 )
 
 /** A WebVTT track YouTube offers for a video; [languageCode] is a BCP 47 tag, [auto] marks machine captions. */

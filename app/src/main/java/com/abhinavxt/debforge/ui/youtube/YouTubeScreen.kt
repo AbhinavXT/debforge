@@ -96,6 +96,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
+import com.abhinavxt.debforge.ui.components.channelLink
 import com.abhinavxt.debforge.ui.components.dpadEscape
 import com.abhinavxt.debforge.ui.components.rememberCursorField
 import androidx.compose.ui.focus.focusProperties
@@ -322,8 +323,8 @@ internal fun YouTubeContent(
             YouTubeUi.Empty -> EmptyState(input, clipLink, onInput, onSubmit, onPaste, trending, recent, onRemoveRecent, onClearRecent, onPick, onChannel, onLoadTrending, onPlayResult, streamingUrl)
             YouTubeUi.Resolving -> Skeleton()
             is YouTubeUi.Results -> ResultsState(state, input, onInput, onSubmit, onPaste, onPick, onChannel, onLoadMore, resultsList, onPlayResult, streamingUrl)
-            is YouTubeUi.Preview -> PreviewState(state, onReset, onMode, onSelect, onSubtitle, onDownload, onPlay)
-            is YouTubeUi.Playlist -> PlaylistState(state, onReset, onToggle, onSelectAll, onQuality, onDownloadPlaylist, onCancelBatch)
+            is YouTubeUi.Preview -> PreviewState(state, onReset, onMode, onSelect, onSubtitle, onDownload, onPlay, onChannel)
+            is YouTubeUi.Playlist -> PlaylistState(state, onReset, onToggle, onSelectAll, onQuality, onDownloadPlaylist, onCancelBatch, onChannel)
             is YouTubeUi.Error -> MessageState(
                 icon = Icons.Rounded.ErrorOutline,
                 title = stringResource(errorTitle(state.kind, state.search, state.channel)),
@@ -590,6 +591,7 @@ private fun PlaylistState(
     onQuality: (DefaultQuality) -> Unit,
     onDownload: () -> Unit,
     onCancel: () -> Unit,
+    onChannel: (String, String) -> Unit,
 ) {
     val busy = p.progress != null
     val firstFocus = remember { FocusRequester() }
@@ -647,7 +649,7 @@ private fun PlaylistState(
                     }
                 }
             }
-            items(p.items, key = { it.url }) { PlaylistRow(it, it.url in p.selected, !busy) { onToggle(it.url) } }
+            items(p.items, key = { it.url }) { PlaylistRow(it, it.url in p.selected, !busy, onChannel = if (busy) null else onChannel) { onToggle(it.url) } }
         }
         // Pinned like the single-video preview: the list scrolls, the primary action does not.
         Surface(color = MaterialTheme.colorScheme.surfaceContainer, tonalElevation = 3.dp, shadowElevation = 6.dp, modifier = Modifier.fillMaxWidth()) {
@@ -688,7 +690,7 @@ private fun qualityLabel(q: DefaultQuality) = when (q) {
 }
 
 @Composable
-private fun PlaylistRow(r: YouTubeSearchResult, checked: Boolean, enabled: Boolean, onToggle: () -> Unit) {
+private fun PlaylistRow(r: YouTubeSearchResult, checked: Boolean, enabled: Boolean, onChannel: ((String, String) -> Unit)? = null, onToggle: () -> Unit) {
     val source = remember { MutableInteractionSource() }
     Row(
         Modifier.fillMaxWidth().heightIn(min = 56.dp).clip(RowShape).focusRing(source, RowShape)
@@ -702,7 +704,11 @@ private fun PlaylistRow(r: YouTubeSearchResult, checked: Boolean, enabled: Boole
         Column(Modifier.weight(1f)) {
             Text(r.title, style = MaterialTheme.typography.titleSmall, maxLines = 2, overflow = TextOverflow.Ellipsis)
             if (!r.channel.isNullOrBlank()) {
-                Text(r.channel, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                val channelUrl = r.channelUrl?.takeIf { onChannel != null }
+                Text(
+                    r.channel, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis,
+                    modifier = if (channelUrl != null) Modifier.channelLink(stringResource(R.string.yt_open_channel, r.channel)) { onChannel?.invoke(r.channel, channelUrl) } else Modifier,
+                )
             }
         }
     }
@@ -829,6 +835,7 @@ private fun PreviewState(
     onSubtitle: (YouTubeSubtitle?) -> Unit,
     onDownload: () -> Unit,
     onPlay: () -> Unit,
+    onChannel: (String, String) -> Unit,
 ) {
     val audio = p.selected.isAudio
     val rows = p.choices.filter { it.isAudio == audio }
@@ -862,7 +869,11 @@ private fun PreviewState(
         Row(verticalAlignment = Alignment.Top) {
             Column(Modifier.weight(1f)) {
                 Text(p.video.title, style = MaterialTheme.typography.titleMedium, maxLines = 2, overflow = TextOverflow.Ellipsis)
-                Text(p.video.uploader, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                val uploaderUrl = p.video.uploaderUrl?.takeIf { p.video.uploader.isNotBlank() }
+                Text(
+                    p.video.uploader, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis,
+                    modifier = if (uploaderUrl != null) Modifier.channelLink(stringResource(R.string.yt_open_channel, p.video.uploader)) { onChannel(p.video.uploader, uploaderUrl) } else Modifier,
+                )
             }
             IconButton(onClick = onReset) { Icon(Icons.Rounded.Close, contentDescription = stringResource(R.string.yt_another_link)) }
         }

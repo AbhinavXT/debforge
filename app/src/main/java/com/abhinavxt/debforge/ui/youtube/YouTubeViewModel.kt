@@ -187,9 +187,10 @@ class YouTubeViewModel @Inject constructor(
     /** The results a tapped result came from, so Back returns there; cleared by any new submit. */
     private var fromResults: YouTubeUi.Results? = null
 
-    /** An open channel list: [back] is the search it was opened from (null: the empty screen). */
+    /** An open channel list: [back] is the screen it was opened from (null: the empty screen). */
     private class ChannelNav(val name: String, val url: String, val back: Back?)
-    private class Back(val results: YouTubeUi.Results, val next: Page?, val list: LazyListState)
+    /** A screen to return to: its state, the field and saved link that went with it, and the results a preview came from. */
+    private class Back(val ui: YouTubeUi, val input: String, val link: String?, val fromResults: YouTubeUi.Results?, val next: Page?, val list: LazyListState)
     private var channel: ChannelNav? = null
 
     fun submit(text: String) = run(text, record = true)
@@ -286,13 +287,25 @@ class YouTubeViewModel @Inject constructor(
     private fun updatePlaylist(f: (YouTubeUi.Playlist) -> YouTubeUi.Playlist) =
         _ui.update { if (it is YouTubeUi.Playlist && it.progress == null) f(it) else it }
 
-    /** Opens a channel's videos from a result row or the empty screen; Back returns to where it was opened. */
+    /**
+     * Opens a channel's videos from a result row, a preview, a playlist or another tab; Back returns to where it was opened
+     * (a search, a preview or a playlist), or to the empty screen from anywhere else.
+     */
     fun openChannel(name: String, url: String) {
         val cur = _ui.value
-        if (cur !is YouTubeUi.Empty && !(cur is YouTubeUi.Results && cur.channelUrl == null)) return
+        if (cur is YouTubeUi.Results && cur.channelUrl == url) return // already there
         job?.cancel()
         moreJob?.cancel()
-        val back = (cur as? YouTubeUi.Results)?.let { Back(it.copy(loadingMore = false), nextPage, resultsList) }
+        batchJob?.cancel()
+        pending = null // a download waiting on the folder prompt belongs to the screen being left
+        val back = when {
+            cur is YouTubeUi.Results && cur.channelUrl == null ->
+                Back(cur.copy(loadingMore = false), _input.value, saved.get<String>(LINK_KEY), null, nextPage, resultsList)
+            cur is YouTubeUi.Preview || (cur is YouTubeUi.Playlist && cur.progress == null) ->
+                Back(cur, _input.value, saved.get<String>(LINK_KEY), fromResults, nextPage, resultsList)
+            else -> null // empty, loading, an error, or another channel
+        }
+        fromResults = null
         loadChannel(ChannelNav(name, url, back))
     }
 
@@ -371,9 +384,10 @@ class YouTubeViewModel @Inject constructor(
             nextPage = back?.next
             if (back != null) {
                 resultsList = back.list
-                _input.value = back.results.query
-                saved[LINK_KEY] = back.results.query
-                _ui.value = back.results
+                fromResults = back.fromResults
+                _input.value = back.input
+                if (back.link != null) saved[LINK_KEY] = back.link else saved.remove<String>(LINK_KEY)
+                _ui.value = back.ui
                 return
             }
         }

@@ -53,7 +53,9 @@ data class AudioTrack(
     /** Remote artwork (a YouTube thumbnail); [artworkFile] wins when both are set. */
     val artworkUrl: String? = null,
     /** Set for a streamed YouTube track: [uri] is then the audio stream URL, which expires. */
-    val youtube: YouTubeAudio? = null
+    val youtube: YouTubeAudio? = null,
+    /** The artist's channel page, for a streamed YouTube track; not stored anywhere, so a downloaded file has none. */
+    val artistUrl: String? = null
 )
 
 /** Which YouTube audio stream a track plays, enough to re-resolve it when the link expires. */
@@ -67,7 +69,8 @@ fun youtubeAudioTrack(video: YouTubeVideo, audio: YouTubeStream) = AudioTrack(
     artist = video.uploader.ifBlank { null },
     artworkFile = null,
     artworkUrl = video.thumbnailUrl,
-    youtube = YouTubeAudio(video.id, audio.itag)
+    youtube = YouTubeAudio(video.id, audio.itag),
+    artistUrl = video.uploaderUrl
 )
 
 /** The fresh stream for [itag] (or the nearest audio choice when it is gone) after re-resolving [video]; null if it has no audio. */

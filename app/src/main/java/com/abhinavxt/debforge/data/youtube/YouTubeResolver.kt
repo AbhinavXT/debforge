@@ -69,6 +69,7 @@ class YouTubeResolver @Inject constructor(@ApiHttpClient private val client: OkH
             id = id,
             title = info.name.orEmpty(),
             uploader = info.uploaderName.orEmpty(),
+            uploaderUrl = info.uploaderUrl?.takeIf { it.isNotBlank() },
             durationSec = info.duration,
             thumbnailUrl = info.thumbnails.maxByOrNull { it.height }?.url,
             streams = info.videoOnlyStreams.mapNotNull { video(it) } + info.audioStreams.mapNotNull { audio(it) },

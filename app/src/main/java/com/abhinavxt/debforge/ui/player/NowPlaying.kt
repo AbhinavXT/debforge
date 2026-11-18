@@ -14,6 +14,7 @@ import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import com.abhinavxt.debforge.ui.components.channelLink
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -115,7 +116,9 @@ fun NowPlaying(
     modifier: Modifier = Modifier,
     share: ArtworkShare? = null,
     /** Takes focus when the player opens (D-pad). */
-    playFocus: FocusRequester? = null
+    playFocus: FocusRequester? = null,
+    /** Opens the artist's channel page: (name, url). Only offered for a track that has a channel url. */
+    onChannel: (String, String) -> Unit = { _, _ -> }
 ) {
     val track = state.track ?: return
     // Trap D-pad focus inside the player: focusProperties on a wrapper does not reach focusables nested in
@@ -141,7 +144,7 @@ fun NowPlaying(
                             Artwork(state, share, Modifier.fillMaxWidth(0.7f).widthIn(max = 360.dp))
                         }
                         Column(Modifier.weight(1f).fillMaxHeight(), verticalArrangement = Arrangement.Center) {
-                            Controls(state, onToggle, onNext, onPrevious, onSeek, onShuffle, onRepeat, onSpeed, onSleep, playFocus = playFocus)
+                            Controls(state, onToggle, onNext, onPrevious, onSeek, onShuffle, onRepeat, onSpeed, onSleep, playFocus = playFocus, onChannel = onChannel)
                             Queue(state, onSkipTo, Modifier.weight(1f, fill = false).heightIn(max = 220.dp))
                         }
                     }
@@ -158,7 +161,7 @@ fun NowPlaying(
                             ) {
                                 // Capped by the screen height so tall tablets keep the controls and Up next on screen.
                                 Artwork(state, share, Modifier.widthIn(max = this@BoxWithConstraints.maxHeight * 0.4f / 0.85f).fillMaxWidth(0.85f))
-                                Controls(state, onToggle, onNext, onPrevious, onSeek, onShuffle, onRepeat, onSpeed, onSleep, Modifier.padding(top = 24.dp), playFocus)
+                                Controls(state, onToggle, onNext, onPrevious, onSeek, onShuffle, onRepeat, onSpeed, onSleep, Modifier.padding(top = 24.dp), playFocus, onChannel)
                             }
                         }
                     )
@@ -205,7 +208,8 @@ private fun Controls(
     onSpeed: (Float) -> Unit,
     onSleep: (Int) -> Unit,
     modifier: Modifier = Modifier,
-    playFocus: FocusRequester? = null
+    playFocus: FocusRequester? = null,
+    onChannel: (String, String) -> Unit = { _, _ -> }
 ) {
     val track = state.track ?: return
     Column(modifier.fillMaxWidth()) {
@@ -222,11 +226,13 @@ private fun Controls(
                         iterations = Int.MAX_VALUE, initialDelayMillis = 1500, repeatDelayMillis = 1500, spacing = MarqueeSpacing(48.dp)
                     ) else Modifier
                 )
+                val artistUrl = t.artistUrl?.takeIf { !t.artist.isNullOrBlank() }
                 Text(
                     t.artist ?: stringResource(R.string.audio_unknown_artist),
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1, overflow = TextOverflow.Ellipsis
+                    maxLines = 1, overflow = TextOverflow.Ellipsis,
+                    modifier = if (artistUrl != null && t.artist != null) Modifier.channelLink(stringResource(R.string.yt_open_channel, t.artist)) { onChannel(t.artist, artistUrl) } else Modifier
                 )
             }
         }

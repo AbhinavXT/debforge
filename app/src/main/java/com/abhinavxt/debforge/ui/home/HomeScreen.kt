@@ -211,6 +211,13 @@ fun HomeScreen(signedIn: Boolean) {
 
     BackHandler(enabled = current?.route == HomeTab.Active.route || current?.route == HomeTab.Settings.route) { backFromPushed() }
 
+    // A channel name tapped outside the YouTube tab (the audio player): minimise the full player and show the channel page there.
+    val openChannel: (String, String) -> Unit = { name, url ->
+        nowPlaying = false
+        go(HomeTab.YouTube)
+        youtubeViewModel.openChannel(name, url)
+    }
+
     // A YouTube link shared into the app (cold start or already open).
     val pendingYouTube by shell.pending.youtube.collectAsStateWithLifecycle()
     LaunchedEffect(pendingYouTube) {
@@ -378,6 +385,7 @@ fun HomeScreen(signedIn: Boolean) {
                 onNext = shell.audio::next,
                 onExpand = { nowPlaying = true },
                 onClose = shell.audio::clear,
+                onChannel = openChannel,
                 modifier = Modifier.onFocusChanged { if (it.hasFocus) miniHasFocus = true },
                 sharedScope = if (sharedMotion) sharedScope else null,
                 expanded = nowPlaying,
@@ -491,6 +499,7 @@ fun HomeScreen(signedIn: Boolean) {
                     onSkipTo = shell.audio::skipTo,
                     onClose = { nowPlaying = false },
                     onStop = { nowPlaying = false; shell.audio.clear() },
+                    onChannel = openChannel,
                     playFocus = playFocus,
                     share = if (sharedMotion && sharedScope != null) ArtworkShare(sharedScope, this@AnimatedVisibility) else null
                 )
