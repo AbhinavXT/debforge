@@ -1,0 +1,8 @@
+• Audio player: skip back/forward buttons (5–30 s, set in Settings), also in the notification
+• Audio player background tinted from the artwork (can be turned off)
+• Home screen player widget
+• The audio queue comes back after the app is closed
+• Play history in the Media tab
+• Optional storage limit for downloads (nothing is ever deleted)
+• Backups now include favourites, playlists, history and searches. Backups over 256 KB can't be restored by older versions
+• Fixes
