@@ -228,7 +228,12 @@ class DownloadScheduler @Inject constructor(
         fun shouldReplacePending(reason: Int?, sessionLive: Boolean, block: Block?, foreground: Boolean, recentlyScheduled: Boolean = false): Boolean {
             if (!foreground || sessionLive || block != null || recentlyScheduled || reason == null) return false
             return reason == JobScheduler.PENDING_JOB_REASON_UNDEFINED ||
-                reason == JobScheduler.PENDING_JOB_REASON_JOB_SCHEDULER_OPTIMIZATION
+                reason == JobScheduler.PENDING_JOB_REASON_JOB_SCHEDULER_OPTIMIZATION ||
+                // JobScheduler implements backoff after a stop as an earliest-run
+                // time, reported as MINIMUM_LATENCY (there is no BACKOFF reason).
+                // Safe: job 4201 never sets a minimum latency (the schedule
+                // window uses ScheduleAlarm, not the job), so here it means backoff.
+                reason == JobScheduler.PENDING_JOB_REASON_CONSTRAINT_MINIMUM_LATENCY
         }
     }
 }

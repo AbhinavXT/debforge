@@ -17,6 +17,15 @@ class PendingJobDecisionTest {
         assertTrue(shouldReplacePending(optimisation, sessionLive = false, block = null, foreground = true))
     }
 
+    @Test fun replacesJobWaitingOutBackoff() {
+        val backoff = JobScheduler.PENDING_JOB_REASON_CONSTRAINT_MINIMUM_LATENCY
+        assertTrue(shouldReplacePending(backoff, sessionLive = false, block = null, foreground = true))
+        assertFalse(shouldReplacePending(backoff, sessionLive = true, block = null, foreground = true))
+        assertFalse(shouldReplacePending(backoff, false, null, foreground = false))
+        assertFalse(shouldReplacePending(backoff, false, Block.NO_NETWORK, true))
+        assertFalse(shouldReplacePending(backoff, false, null, true, recentlyScheduled = true))
+    }
+
     @Test fun neverReplacesExecutingOrLiveJob() {
         assertFalse(shouldReplacePending(JobScheduler.PENDING_JOB_REASON_EXECUTING, false, null, true))
         assertFalse(shouldReplacePending(retry, sessionLive = true, block = null, foreground = true))

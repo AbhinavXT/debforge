@@ -12,6 +12,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import com.abhinavxt.debforge.domain.ThemeMode
 import com.abhinavxt.debforge.download.DownloadController
+import com.abhinavxt.debforge.download.DownloadNotifications
 import com.abhinavxt.debforge.download.DownloadScheduler
 import com.abhinavxt.debforge.ui.AppViewModel
 import com.abhinavxt.debforge.ui.CrashReportPrompt
@@ -98,6 +99,8 @@ class MainActivity : ComponentActivity() {
 
     override fun onStart() {
         super.onStart()
+        // The user is back in the app: the "tap to resume" notification is done.
+        DownloadNotifications.cancelStoppedBySystem(this)
         // The app is visible, so this is the moment Android allows starting a
         // user-initiated job / foreground service. Resumes anything still
         // QUEUED — e.g. after Android's background time limit paused it, or

@@ -107,6 +107,7 @@ class DownloadController @Inject constructor(
         }
         artworkFile(context, id).delete()
         downloadDao.delete(id)
+        if (!downloadDao.hasPendingWork()) DownloadNotifications.cancelStoppedBySystem(context)
         true
     }
 
@@ -120,6 +121,7 @@ class DownloadController @Inject constructor(
         val queued = downloadDao.pauseQueued()
         val running = downloadDao.downloadingIds()
         running.forEach { runner.pause(it) }
+        if (running.isEmpty() && !downloadDao.hasPendingWork()) DownloadNotifications.cancelStoppedBySystem(context)
         return queued + running.size
     }
 

@@ -79,6 +79,8 @@ class DownloadQueueRunner @Inject constructor(
     @Volatile private var currentJob: Job? = null
     @Volatile private var currentId: String? = null
     @Volatile private var interrupt: Interrupt? = null
+    /** Makes "is [id] current? then interrupt" atomic with the item switch in [runOne]. */
+    private val switchLock = Any()
 
     /**
      * PAUSE / CANCEL come from the user. YIELD means the host is going away
@@ -149,6 +151,7 @@ class DownloadQueueRunner @Inject constructor(
         if (interruptIfActive(id, Interrupt.PAUSE)) return
         scope.launch {
             downloadDao.updateState(id, DownloadState.PAUSED)
+            clearStoppedNoticeIfIdle()
             // The loop may have picked this file up while the write was in
             // flight (after its "was it paused?" check): stop it now rather
             // than let it download until the next tap.
@@ -165,16 +168,24 @@ class DownloadQueueRunner @Inject constructor(
             DownloadFiles.deletePart(entity?.partFilePath)
             artworkFile(context, id).delete()
             progressTracker.clear(id)
+            clearStoppedNoticeIfIdle()
             interruptIfActive(id, Interrupt.CANCEL) // same race as pause
         }
     }
 
+    /** "Paused by the system" has nothing to offer once no work is left. */
+    private suspend fun clearStoppedNoticeIfIdle() {
+        if (!downloadDao.hasPendingWork()) DownloadNotifications.cancelStoppedBySystem(context)
+    }
+
     /** Interrupts [id] if it's the file downloading now. */
     private fun interruptIfActive(id: String, why: Interrupt): Boolean {
-        if (id != currentId) return false
-        interrupt = why
-        currentJob?.cancel()
-        return true
+        synchronized(switchLock) {
+            if (id != currentId) return false
+            interrupt = why
+            currentJob?.cancel()
+            return true
+        }
     }
 
     // --- loop --------------------------------------------------------------
@@ -223,7 +234,6 @@ class DownloadQueueRunner @Inject constructor(
 
     /** Returns the engine's outcome (null if it never ran / was interrupted). */
     private suspend fun runOne(s: Session, entity: DownloadEntity): DownloadOutcome? {
-        interrupt = null
 
         val result = arrayOfNulls<DownloadOutcome>(1)
         val job = scope.launch(start = CoroutineStart.LAZY) {
@@ -237,8 +247,11 @@ class DownloadQueueRunner @Inject constructor(
         }
 
         // Publish order: currentJob FIRST, currentId LAST (see class doc).
-        currentJob = job
-        currentId = entity.id
+        synchronized(switchLock) {
+            interrupt = null
+            currentJob = job
+            currentId = entity.id
+        }
         _active.value = ActiveFile(entity.id, entity.filename)
 
         // Guards: a non-active cancel/pause may have raced ahead and deleted
@@ -302,8 +315,10 @@ class DownloadQueueRunner @Inject constructor(
     }
 
     private fun unpublish() {
-        currentJob = null
-        currentId = null
+        synchronized(switchLock) {
+            currentJob = null
+            currentId = null
+        }
         _active.value = null
     }
 }
