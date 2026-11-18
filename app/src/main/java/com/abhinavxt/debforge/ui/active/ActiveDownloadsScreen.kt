@@ -40,6 +40,7 @@ import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.Schedule
+import androidx.compose.material.icons.rounded.Storage
 import androidx.compose.material.icons.rounded.Share
 import android.widget.Toast
 import androidx.compose.material3.Button
@@ -85,6 +86,7 @@ import com.abhinavxt.debforge.ui.components.ScreenHeader
 fun ActiveDownloadsScreen(onOpenMedia: () -> Unit, onOpenSettings: () -> Unit, viewModel: ActiveDownloadsViewModel = hiltViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val scheduledStart by viewModel.scheduledStartHour.collectAsStateWithLifecycle()
+    val storageLimited by viewModel.storageLimited.collectAsStateWithLifecycle()
     val grouped = state.grouped
     // Showing the list is a chance to restart a queue that stalled.
     LaunchedEffect(Unit) { viewModel.kick() }
@@ -118,6 +120,9 @@ fun ActiveDownloadsScreen(onOpenMedia: () -> Unit, onOpenSettings: () -> Unit, v
             val start = scheduledStart
             if (start != null && grouped[DownloadState.QUEUED].orEmpty().isNotEmpty()) {
                 item(key = "schedule-notice", contentType = "notice") { Box(Modifier.animateItem()) { ScheduleNotice(start) } }
+            }
+            if (storageLimited && grouped[DownloadState.QUEUED].orEmpty().isNotEmpty()) {
+                item(key = "storage-notice", contentType = "notice") { Box(Modifier.animateItem()) { StorageLimitNotice() } }
             }
             // Display order: action-needed states first.
             SECTION_ORDER.forEach { sectionState ->
@@ -232,6 +237,18 @@ private fun DownloadingRow(row: ActiveRow, vm: ActiveDownloadsViewModel, modifie
             }
         }
     )
+}
+
+/** "Storage limit reached" above the queue it is holding. */
+@Composable
+private fun StorageLimitNotice() {
+    BannerCard(
+        icon = Icons.Rounded.Storage,
+        text = stringResource(R.string.wait_storage),
+        container = MaterialTheme.colorScheme.secondaryContainer,
+        onContainer = MaterialTheme.colorScheme.onSecondaryContainer,
+        modifier = Modifier.padding(bottom = 4.dp)
+    ) { Spacer(Modifier.width(12.dp)) }
 }
 
 /** "Outside your download hours. Queued files start at 01:00." */

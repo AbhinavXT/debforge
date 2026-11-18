@@ -14,6 +14,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -63,6 +64,10 @@ class ActiveDownloadsViewModel @Inject constructor(
 
     /** Why queued rows are waiting (network, Wi-Fi, charger, schedule), or null. */
     val blocked: StateFlow<Block?> = conditions.shownBlock
+
+    /** True while the storage limit is what holds the queue. */
+    val storageLimited: StateFlow<Boolean> = conditions.shownBlock.map { it == Block.STORAGE_LIMIT }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
 
     /** Called when the screen is shown: restart a stalled queue. */
     fun kick() { viewModelScope.launch { controller.kick() } }
