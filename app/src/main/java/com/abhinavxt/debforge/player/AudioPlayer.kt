@@ -2,8 +2,11 @@ package com.abhinavxt.debforge.player
 
 import android.content.Context
 import android.content.Intent
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.net.Uri
 import android.os.SystemClock
+import android.widget.Toast
 import androidx.annotation.OptIn
 import androidx.core.net.toUri
 import androidx.media3.common.AudioAttributes
@@ -16,6 +19,7 @@ import androidx.media3.common.Timeline
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import com.abhinavxt.debforge.MainActivity
+import com.abhinavxt.debforge.R
 import com.abhinavxt.debforge.data.local.DownloadDao
 import com.abhinavxt.debforge.data.history.PlayHistory
 import com.abhinavxt.debforge.data.playback.AudioQueueStore
@@ -29,6 +33,7 @@ import com.abhinavxt.debforge.data.playback.validShuffleOrder
 import androidx.media3.exoplayer.source.ShuffleOrder.DefaultShuffleOrder
 import com.abhinavxt.debforge.domain.DownloadState
 import com.abhinavxt.debforge.download.LocalFiles
+import com.abhinavxt.debforge.data.youtube.YouTubeException
 import com.abhinavxt.debforge.data.youtube.YouTubeResolver
 import com.abhinavxt.debforge.domain.YouTubeFormats
 import com.abhinavxt.debforge.domain.YouTubeLinks
@@ -113,6 +118,18 @@ fun recoverDelayMs(attempts: Int, lastAttemptAtMs: Long?, nowMs: Long): Long? = 
     lastAttemptAtMs == null || nowMs - lastAttemptAtMs >= YT_RECOVER_GAP_MS -> 0L
     attempts < 2 -> YT_RECOVER_RETRY_DELAY_MS
     else -> null
+}
+
+/**
+ * Why a streamed track's link could not be looked up again: [OFFLINE] (no validated network, or the lookup failed on
+ * the connection) keeps the track for when the connection is back; [BROKEN] (the video is gone, private, or has no
+ * audio) drops it.
+ */
+enum class LinkFailure { OFFLINE, BROKEN }
+fun linkFailure(error: Throwable?, online: Boolean): LinkFailure = when {
+    !online -> LinkFailure.OFFLINE
+    generateSequence(error) { it.cause }.any { it is YouTubeException.Network || it is java.io.IOException } -> LinkFailure.OFFLINE
+    else -> LinkFailure.BROKEN
 }
 
 enum class AudioRepeat { OFF, ALL, ONE }
@@ -310,6 +327,8 @@ class AudioPlayer @Inject constructor(
             val p = player ?: return
             val bad = p.currentMediaItemIndex
             val yt = tracks.getOrNull(bad)
+            // No connection: the stream did not fail, the network did. Keep it (and what follows) for later.
+            if (yt?.youtube != null && !isOnline()) { keepOffline(yt.id); return }
             // A streamed link that expired: look it up again once and carry on at the same second.
             val now = SystemClock.uptimeMillis()
             val last = recoverAttempts[yt?.id]
@@ -331,22 +350,53 @@ class AudioPlayer @Inject constructor(
     private val recoverCounts = HashMap<String, Int>()
     private var recoverJob: Job? = null
 
-    /** [track] with a fresh stream URL (and itag, when the old one is gone), or null when it could not be looked up. */
-    private suspend fun refreshed(track: AudioTrack): AudioTrack? {
-        val yt = track.youtube ?: return null
-        val stream = try {
-            freshAudioStream(youtubeResolver.resolve("https://www.youtube.com/watch?v=${yt.videoId}"), yt.audioItag, android.os.Build.VERSION.SDK_INT)
+    /** The outcome of looking a streamed track's link up again. */
+    private sealed interface Refresh {
+        class Fresh(val track: AudioTrack) : Refresh
+        /** No connection: keep the track as it is. */
+        object Offline : Refresh
+        /** The video itself is gone (or has no audio): drop the track. */
+        object Broken : Refresh
+    }
+
+    /** [track] with a fresh stream URL (and itag, when the old one is gone), or why it could not be looked up. */
+    private suspend fun refreshed(track: AudioTrack): Refresh {
+        val yt = track.youtube ?: return Refresh.Broken
+        val video = try {
+            youtubeResolver.resolve("https://www.youtube.com/watch?v=${yt.videoId}")
         } catch (e: kotlinx.coroutines.CancellationException) {
             throw e // play()/clear() replaced the queue: not a failure
         } catch (e: Exception) {
-            null
-        } ?: return null
-        return track.copy(uri = Uri.parse(stream.url), youtube = yt.copy(audioItag = stream.itag))
+            return if (linkFailure(e, isOnline()) == LinkFailure.OFFLINE) Refresh.Offline else Refresh.Broken
+        }
+        val stream = freshAudioStream(video, yt.audioItag, android.os.Build.VERSION.SDK_INT) ?: return Refresh.Broken
+        return Refresh.Fresh(track.copy(uri = Uri.parse(stream.url), youtube = yt.copy(audioItag = stream.itag)))
     }
 
-    /** Swaps in a fresh URL for [track] at [index] and resumes at [positionMs]; false when it could not be refreshed. */
+    private fun isOnline(): Boolean {
+        val cm = context.getSystemService(ConnectivityManager::class.java) ?: return true
+        val caps = cm.getNetworkCapabilities(cm.activeNetwork) ?: return false
+        return caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+    }
+
+    private fun showOffline() = Toast.makeText(context, R.string.yt_err_network, Toast.LENGTH_SHORT).show()
+
+    /** A streamed track failed for want of a connection: stay on it, paused, and let Play try again later. */
+    private fun keepOffline(id: String) {
+        recoverJob?.cancel()
+        recoverAttempts.remove(id); recoverCounts.remove(id) // not the link's fault: the next try starts afresh
+        player?.pause()
+        publish()
+        showOffline()
+    }
+
+    /** Swaps in a fresh URL for [track] at [index] and resumes at [positionMs]; false when the track should be dropped. */
     private suspend fun recover(track: AudioTrack, index: Int, positionMs: Long): Boolean {
-        val fresh = refreshed(track) ?: return false
+        val fresh = when (val r = refreshed(track)) {
+            is Refresh.Fresh -> r.track
+            Refresh.Offline -> { if (tracks.getOrNull(index)?.id == track.id) keepOffline(track.id); return true }
+            Refresh.Broken -> return false
+        }
         val p = player ?: return true // cleared meanwhile: nothing to drop
         if (tracks.getOrNull(index)?.id != track.id) return true // the queue changed under us
         tracks = tracks.toMutableList().also { it[index] = fresh }
@@ -511,8 +561,14 @@ class AudioPlayer @Inject constructor(
             val track = tracks.getOrNull(at)
             var failed = false
             if (track?.youtube != null) {
-                val fresh = refreshed(track)
+                val r = refreshed(track)
                 if (player !== p) return false
+                if (r === Refresh.Offline) {
+                    // Keep the restored queue as it is for when the connection is back; the widget opens the app instead.
+                    if (!fromWidget) showOffline()
+                    return false
+                }
+                val fresh = (r as? Refresh.Fresh)?.track
                 if (fresh == null) failed = true
                 else if (tracks.getOrNull(at)?.id == track.id) {
                     tracks = tracks.toMutableList().also { it[at] = fresh }
@@ -675,7 +731,13 @@ class AudioPlayer @Inject constructor(
             if (activating) whenActive { it.pause() } else whenActive { }
             return
         }
-        player?.let { if (wantsToPlay(it.playWhenReady, it.playbackState)) it.pause() else it.play() }
+        player?.let {
+            if (wantsToPlay(it.playWhenReady, it.playbackState)) it.pause()
+            else {
+                if (it.playbackState == Player.STATE_IDLE) it.prepare() // stopped by an error (kept while offline): try again
+                it.play()
+            }
+        }
     }
     fun next() { whenActive { it.seekToNextMediaItem() } }
     /** Past 3 seconds restarts the track, like every music player. */

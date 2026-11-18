@@ -138,7 +138,6 @@ class BackgroundPlaybackService : MediaSessionService() {
             it.release()
         }
         session = null
-        BackgroundPlayback.foregroundStart.reset()
         scope.cancel()
         super.onDestroy()
     }
@@ -226,8 +225,14 @@ object BackgroundPlayback {
 
     /** Starts the service from the background: it must post a notification at once ([EXTRA_FOREGROUND_REQUIRED]). */
     fun startForeground(context: Context) {
-        context.startForegroundService(Intent(context, BackgroundPlaybackService::class.java).putExtra(EXTRA_FOREGROUND_REQUIRED, true))
+        // Before the call: the service may answer (and a stop may arrive) as soon as it returns.
         foregroundStart.foregroundStartRequested()
+        try {
+            context.startForegroundService(Intent(context, BackgroundPlaybackService::class.java).putExtra(EXTRA_FOREGROUND_REQUIRED, true))
+        } catch (e: RuntimeException) {
+            foregroundStart.foregroundStartFailed()
+            throw e
+        }
     }
 
     /** Stops the service, or, while its foreground start is still pending, has it stop itself right after. */
