@@ -34,6 +34,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Bedtime
+import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material.icons.rounded.Repeat
 import androidx.compose.material.icons.rounded.RepeatOne
@@ -110,6 +111,7 @@ fun NowPlaying(
     onSleep: (Int) -> Unit,
     onSkipTo: (Int) -> Unit,
     onClose: () -> Unit,
+    onStop: () -> Unit,
     modifier: Modifier = Modifier,
     share: ArtworkShare? = null,
     /** Takes focus when the player opens (D-pad). */
@@ -118,13 +120,20 @@ fun NowPlaying(
     val track = state.track ?: return
     // Trap D-pad focus inside the player: focusProperties on a wrapper does not reach focusables nested in
     // another focusable behind it, so the player itself refuses to let focus leave.
-    Surface(modifier.fillMaxSize().focusProperties { exit = { FocusRequester.Cancel } }.focusGroup(), color = MaterialTheme.colorScheme.surface) {
+    val dismiss = rememberSwipeDown(onClose)
+    Surface(modifier.fillMaxSize().swipeDownToDismiss(dismiss).focusProperties { exit = { FocusRequester.Cancel } }.focusGroup(), color = MaterialTheme.colorScheme.surface) {
         BoxWithConstraints(Modifier.fillMaxSize()) {
             val wide = maxWidth > maxHeight && maxWidth >= 600.dp
             Column(Modifier.fillMaxSize().padding(horizontal = 24.dp)) {
                 val s = remember { MutableInteractionSource() }
-                IconButton(onClose, Modifier.size(48.dp).focusRing(s, CircleShape), interactionSource = s) {
-                    Icon(Icons.Rounded.KeyboardArrowDown, stringResource(R.string.audio_close))
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    IconButton(onClose, Modifier.size(48.dp).focusRing(s, CircleShape), interactionSource = s) {
+                        Icon(Icons.Rounded.KeyboardArrowDown, stringResource(R.string.audio_close))
+                    }
+                    val sx = remember { MutableInteractionSource() }
+                    IconButton(onStop, Modifier.size(48.dp).focusRing(sx, CircleShape), interactionSource = sx) {
+                        Icon(Icons.Rounded.Close, stringResource(R.string.audio_stop_close))
+                    }
                 }
                 if (wide) {
                     Row(Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(32.dp)) {
@@ -439,11 +448,11 @@ private fun Queue(state: AudioState, onSkipTo: (Int) -> Unit, modifier: Modifier
 @Preview(showBackground = true, heightDp = 780)
 @Composable
 private fun NowPlayingPreview() = DebforgeTheme {
-    NowPlaying(previewState, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})
+    NowPlaying(previewState, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})
 }
 
 @Preview(showBackground = true, widthDp = 900, heightDp = 480)
 @Composable
 private fun NowPlayingWidePreview() = DebforgeTheme {
-    NowPlaying(previewState.copy(shuffle = true, repeat = AudioRepeat.ONE), {}, {}, {}, {}, {}, {}, {}, {}, {}, {})
+    NowPlaying(previewState.copy(shuffle = true, repeat = AudioRepeat.ONE), {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})
 }

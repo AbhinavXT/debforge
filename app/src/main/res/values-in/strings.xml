@@ -870,6 +870,7 @@
     <string name="audio_repeat_all">Ulangi semua</string>
     <string name="audio_repeat_one">Ulangi satu</string>
     <string name="audio_close">Tutup yang sedang diputar</string>
+    <string name="audio_stop_close">Hentikan dan tutup pemutar</string>
     <string name="audio_expand">Buka yang sedang diputar</string>
     <string name="audio_up_next">Berikutnya</string>
     <string name="audio_speed_cd">Kecepatan pemutaran, %1$s</string>

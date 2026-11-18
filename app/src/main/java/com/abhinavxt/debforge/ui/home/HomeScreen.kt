@@ -377,6 +377,7 @@ fun HomeScreen(signedIn: Boolean) {
                 onToggle = shell.audio::toggle,
                 onNext = shell.audio::next,
                 onExpand = { nowPlaying = true },
+                onClose = shell.audio::clear,
                 modifier = Modifier.onFocusChanged { if (it.hasFocus) miniHasFocus = true },
                 sharedScope = if (sharedMotion) sharedScope else null,
                 expanded = nowPlaying,
@@ -489,6 +490,7 @@ fun HomeScreen(signedIn: Boolean) {
                     onSleep = shell.audio::setSleepTimer,
                     onSkipTo = shell.audio::skipTo,
                     onClose = { nowPlaying = false },
+                    onStop = { nowPlaying = false; shell.audio.clear() },
                     playFocus = playFocus,
                     share = if (sharedMotion && sharedScope != null) ArtworkShare(sharedScope, this@AnimatedVisibility) else null
                 )

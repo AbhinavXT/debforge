@@ -915,6 +915,7 @@
     <string name="audio_repeat_all">అన్నీ రిపీట్ చేయి</string>
     <string name="audio_repeat_one">ఒకదాన్ని రిపీట్ చేయి</string>
     <string name="audio_close">ఇప్పుడు ప్లే అవుతున్నదాన్ని మూసివేయి</string>
+    <string name="audio_stop_close">ఆపి ప్లేయర్‌ను మూసివేయి</string>
     <string name="audio_expand">ఇప్పుడు ప్లే అవుతున్నదాన్ని తెరువు</string>
     <string name="audio_up_next">తర్వాత</string>
     <string name="audio_speed_cd">ప్లేబ్యాక్ వేగం, %1$s</string>

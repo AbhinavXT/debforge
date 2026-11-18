@@ -960,6 +960,7 @@
     <string name="audio_repeat_all">Repetir todas</string>
     <string name="audio_repeat_one">Repetir uma</string>
     <string name="audio_close">Fechar reprodução atual</string>
+    <string name="audio_stop_close">Parar e fechar o player</string>
     <string name="audio_expand">Abrir reprodução atual</string>
     <string name="audio_up_next">A seguir</string>
     <string name="audio_speed_cd">Velocidade de reprodução, %1$s</string>

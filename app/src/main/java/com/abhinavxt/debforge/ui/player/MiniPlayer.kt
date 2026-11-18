@@ -35,6 +35,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.SkipNext
+import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxValue
+import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -183,13 +188,14 @@ internal fun PlayPauseIcon(playing: Boolean, modifier: Modifier = Modifier) {
 }
 
 /** 64dp bar above the navigation bar: artwork, title, play/pause, next; tap to expand. */
-@OptIn(ExperimentalSharedTransitionApi::class)
+@OptIn(ExperimentalSharedTransitionApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun MiniPlayer(
     state: AudioState,
     onToggle: () -> Unit,
     onNext: () -> Unit,
     onExpand: () -> Unit,
+    onClose: () -> Unit,
     modifier: Modifier = Modifier,
     /** The shared transition scope; null when no shared transition runs. */
     sharedScope: SharedTransitionScope? = null,
@@ -205,8 +211,14 @@ fun MiniPlayer(
     // The row is a focus target around the buttons; arrows do not enter it on their own, so route them.
     val rowFocus = expandFocus ?: remember { FocusRequester() }
     val toggleFocus = remember { FocusRequester() }
+    // Swiping the bar away to either side stops playback and clears the queue.
+    val dismissState = rememberSwipeToDismissBoxState(confirmValueChange = { value ->
+        if (value != SwipeToDismissBoxValue.Settled) onClose()
+        true
+    })
+    SwipeToDismissBox(dismissState, backgroundContent = {}, modifier = modifier) {
     Surface(
-        modifier = modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp).animateContentSize(),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp).animateContentSize(),
         shape = shape,
         color = MaterialTheme.colorScheme.surfaceContainerHigh
     ) {
@@ -244,6 +256,10 @@ fun MiniPlayer(
                 IconButton(onNext, Modifier.size(48.dp).focusRing(s2, RoundedCornerShape(24.dp)), enabled = state.hasNext, interactionSource = s2) {
                     Icon(Icons.Rounded.SkipNext, stringResource(R.string.audio_next))
                 }
+                val s3 = remember { MutableInteractionSource() }
+                IconButton(onClose, Modifier.size(48.dp).focusRing(s3, RoundedCornerShape(24.dp)), interactionSource = s3) {
+                    Icon(Icons.Rounded.Close, stringResource(R.string.audio_stop_close))
+                }
             }
             LinearProgressIndicator(
                 progress = { if (state.durationMs > 0) (state.positionMs.toFloat() / state.durationMs).coerceIn(0f, 1f) else 0f },
@@ -252,6 +268,7 @@ fun MiniPlayer(
                 drawStopIndicator = {}
             )
         }
+    }
     }
 }
 
@@ -267,4 +284,4 @@ internal val previewState = AudioState(
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Preview(showBackground = true)
 @Composable
-private fun MiniPlayerPreview() = DebforgeTheme { MiniPlayer(previewState, {}, {}, {}) }
+private fun MiniPlayerPreview() = DebforgeTheme { MiniPlayer(previewState, {}, {}, {}, {}) }

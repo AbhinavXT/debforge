@@ -870,6 +870,7 @@
     <string name="audio_repeat_all">全部循环</string>
     <string name="audio_repeat_one">单曲循环</string>
     <string name="audio_close">关闭正在播放</string>
+    <string name="audio_stop_close">停止并关闭播放器</string>
     <string name="audio_expand">打开正在播放</string>
     <string name="audio_up_next">接下来播放</string>
     <string name="audio_speed_cd">播放速度，%1$s</string>

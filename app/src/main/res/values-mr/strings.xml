@@ -915,6 +915,7 @@
     <string name="audio_repeat_all">सर्व रिपीट करा</string>
     <string name="audio_repeat_one">एक रिपीट करा</string>
     <string name="audio_close">आता सुरू असलेले बंद करा</string>
+    <string name="audio_stop_close">थांबवा आणि प्लेयर बंद करा</string>
     <string name="audio_expand">आता सुरू असलेले उघडा</string>
     <string name="audio_up_next">पुढे</string>
     <string name="audio_speed_cd">प्लेबॅक गती, %1$s</string>
