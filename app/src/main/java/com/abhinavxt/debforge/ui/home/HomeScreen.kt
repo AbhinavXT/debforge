@@ -497,6 +497,7 @@ fun HomeScreen(signedIn: Boolean) {
                     onNext = shell.audio::next,
                     onPrevious = shell.audio::previous,
                     onSeek = shell.audio::seekTo,
+                    onSkip = shell.audio::seekBy,
                     onShuffle = shell.audio::setShuffle,
                     onRepeat = shell.audio::cycleRepeat,
                     onSpeed = shell.audio::setSpeed,

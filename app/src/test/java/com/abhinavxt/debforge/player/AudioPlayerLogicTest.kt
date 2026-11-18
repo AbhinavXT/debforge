@@ -5,6 +5,14 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class AudioPlayerLogicTest {
+    @Test fun skipTargetClampsToTrack() {
+        assertEquals(40_000L, skipTarget(30_000, 10_000, 100_000))
+        assertEquals(0L, skipTarget(4_000, -10_000, 100_000))
+        assertEquals(100_000L, skipTarget(95_000, 10_000, 100_000))
+        assertEquals(105_000L, skipTarget(95_000, 10_000, androidx.media3.common.C.TIME_UNSET))
+        assertEquals(0L, skipTarget(4_000, -10_000, androidx.media3.common.C.TIME_UNSET))
+    }
+
     @Test fun repeatCyclesOffAllOneOff() {
         assertEquals(AudioRepeat.ALL, AudioRepeat.OFF.next())
         assertEquals(AudioRepeat.ONE, AudioRepeat.ALL.next())

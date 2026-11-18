@@ -912,6 +912,8 @@
     <string name="audio_pause">रोकें</string>
     <string name="audio_next">अगला</string>
     <string name="audio_previous">पिछला</string>
+    <string name="audio_back_10">10 सेकंड पीछे</string>
+    <string name="audio_forward_10">10 सेकंड आगे</string>
     <string name="audio_shuffle_on">शफ़ल चालू</string>
     <string name="audio_shuffle_off">शफ़ल बंद</string>
     <string name="audio_repeat_off">रिपीट बंद</string>

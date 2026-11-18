@@ -957,6 +957,8 @@
     <string name="audio_pause">Pausar</string>
     <string name="audio_next">Próxima</string>
     <string name="audio_previous">Anterior</string>
+    <string name="audio_back_10">Voltar 10 segundos</string>
+    <string name="audio_forward_10">Avançar 10 segundos</string>
     <string name="audio_shuffle_on">Aleatório ativado</string>
     <string name="audio_shuffle_off">Aleatório desativado</string>
     <string name="audio_repeat_off">Repetir desativado</string>

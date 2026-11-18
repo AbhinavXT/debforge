@@ -867,6 +867,8 @@
     <string name="audio_pause">Jeda</string>
     <string name="audio_next">Berikutnya</string>
     <string name="audio_previous">Sebelumnya</string>
+    <string name="audio_back_10">Mundur 10 detik</string>
+    <string name="audio_forward_10">Maju 10 detik</string>
     <string name="audio_shuffle_on">Acak aktif</string>
     <string name="audio_shuffle_off">Acak nonaktif</string>
     <string name="audio_repeat_off">Ulangi nonaktif</string>

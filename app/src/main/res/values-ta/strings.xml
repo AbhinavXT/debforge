@@ -912,6 +912,8 @@
     <string name="audio_pause">இடைநிறுத்து</string>
     <string name="audio_next">அடுத்தது</string>
     <string name="audio_previous">முந்தையது</string>
+    <string name="audio_back_10">10 வினாடி பின்னோக்கி</string>
+    <string name="audio_forward_10">10 வினாடி முன்னோக்கி</string>
     <string name="audio_shuffle_on">ஷஃபிள் இயக்கத்தில்</string>
     <string name="audio_shuffle_off">ஷஃபிள் முடக்கம்</string>
     <string name="audio_repeat_off">மீண்டும் இயக்கம் முடக்கம்</string>

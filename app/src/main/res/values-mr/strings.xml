@@ -912,6 +912,8 @@
     <string name="audio_pause">थांबवा</string>
     <string name="audio_next">पुढील</string>
     <string name="audio_previous">मागील</string>
+    <string name="audio_back_10">१० सेकंद मागे</string>
+    <string name="audio_forward_10">१० सेकंद पुढे</string>
     <string name="audio_shuffle_on">शफल चालू</string>
     <string name="audio_shuffle_off">शफल बंद</string>
     <string name="audio_repeat_off">रिपीट बंद</string>

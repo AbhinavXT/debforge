@@ -912,6 +912,8 @@
     <string name="audio_pause">Pause</string>
     <string name="audio_next">Weiter</string>
     <string name="audio_previous">Zurück</string>
+    <string name="audio_back_10">10 Sekunden zurück</string>
+    <string name="audio_forward_10">10 Sekunden vor</string>
     <string name="audio_shuffle_on">Zufallswiedergabe an</string>
     <string name="audio_shuffle_off">Zufallswiedergabe aus</string>
     <string name="audio_repeat_off">Wiederholen aus</string>

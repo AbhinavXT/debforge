@@ -867,6 +867,8 @@
     <string name="audio_pause">暂停</string>
     <string name="audio_next">下一首</string>
     <string name="audio_previous">上一首</string>
+    <string name="audio_back_10">后退 10 秒</string>
+    <string name="audio_forward_10">快进 10 秒</string>
     <string name="audio_shuffle_on">随机播放已开启</string>
     <string name="audio_shuffle_off">随机播放已关闭</string>
     <string name="audio_repeat_off">循环已关闭</string>

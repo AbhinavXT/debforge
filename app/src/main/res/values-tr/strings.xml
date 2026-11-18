@@ -912,6 +912,8 @@
     <string name="audio_pause">Duraklat</string>
     <string name="audio_next">Sonraki</string>
     <string name="audio_previous">Önceki</string>
+    <string name="audio_back_10">10 saniye geri</string>
+    <string name="audio_forward_10">10 saniye ileri</string>
     <string name="audio_shuffle_on">Karıştır açık</string>
     <string name="audio_shuffle_off">Karıştır kapalı</string>
     <string name="audio_repeat_off">Tekrar kapalı</string>

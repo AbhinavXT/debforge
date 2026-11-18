@@ -912,6 +912,8 @@
     <string name="audio_pause">పాజ్ చేయి</string>
     <string name="audio_next">తదుపరి</string>
     <string name="audio_previous">మునుపటి</string>
+    <string name="audio_back_10">10 సెకన్లు వెనక్కి</string>
+    <string name="audio_forward_10">10 సెకన్లు ముందుకు</string>
     <string name="audio_shuffle_on">షఫుల్ ఆన్</string>
     <string name="audio_shuffle_off">షఫుల్ ఆఫ్</string>
     <string name="audio_repeat_off">రిపీట్ ఆఫ్</string>

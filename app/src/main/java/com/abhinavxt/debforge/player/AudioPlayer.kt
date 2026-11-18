@@ -172,6 +172,12 @@ fun resumeActionFor(positionMs: Long, durationMs: Long): ResumeAction = when {
     else -> ResumeAction.FORGET
 }
 
+/** Position after skipping [deltaMs]: never below 0, and never past [durationMs] when it is known. */
+fun skipTarget(positionMs: Long, deltaMs: Long, durationMs: Long): Long {
+    val t = (positionMs + deltaMs).coerceAtLeast(0)
+    return if (durationMs == androidx.media3.common.C.TIME_UNSET || durationMs < 0) t else t.coerceAtMost(durationMs)
+}
+
 /** A deliberate seek (or restart) to the start of a long track drops its saved spot; a save at ~0 after a track change is not one. */
 fun seekForgetsSpot(targetMs: Long): Boolean = targetMs < AUDIO_RESUME_EDGE_MS
 
@@ -420,6 +426,11 @@ class AudioPlayer @Inject constructor(
     fun seekTo(ms: Long) {
         if (seekForgetsSpot(ms)) forgetCurrentSpot()
         player?.seekTo(ms); publish()
+    }
+    /** Skips [deltaMs] from the current position, staying inside the track. */
+    fun seekBy(deltaMs: Long) {
+        val p = player ?: return
+        seekTo(skipTarget(p.currentPosition, deltaMs, p.duration))
     }
 
     /** The user went back to the start of this track on purpose, so a pause within the first seconds must not bring the old spot back. */

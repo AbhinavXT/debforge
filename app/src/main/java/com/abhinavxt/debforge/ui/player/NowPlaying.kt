@@ -36,7 +36,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Bedtime
 import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.Forward10
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
+import androidx.compose.material.icons.rounded.Replay10
 import androidx.compose.material.icons.rounded.Repeat
 import androidx.compose.material.icons.rounded.RepeatOne
 import androidx.compose.material.icons.rounded.Shuffle
@@ -112,6 +114,7 @@ fun NowPlaying(
     onNext: () -> Unit,
     onPrevious: () -> Unit,
     onSeek: (Long) -> Unit,
+    onSkip: (Long) -> Unit,
     onShuffle: (Boolean) -> Unit,
     onRepeat: () -> Unit,
     onSpeed: (Float) -> Unit,
@@ -152,7 +155,7 @@ fun NowPlaying(
                             Artwork(state, share, Modifier.fillMaxWidth(0.7f).widthIn(max = 360.dp))
                         }
                         Column(Modifier.weight(1f).fillMaxHeight(), verticalArrangement = Arrangement.Center) {
-                            Controls(state, onToggle, onNext, onPrevious, onSeek, onShuffle, onRepeat, onSpeed, onSleep, playFocus = playFocus, onChannel = onChannel)
+                            Controls(state, onToggle, onNext, onPrevious, onSeek, onSkip, onShuffle, onRepeat, onSpeed, onSleep, playFocus = playFocus, onChannel = onChannel)
                             Queue(state, onSkipTo, Modifier.weight(1f, fill = false).heightIn(max = 220.dp))
                         }
                     }
@@ -169,7 +172,7 @@ fun NowPlaying(
                             ) {
                                 // Capped by the screen height so tall tablets keep the controls and Up next on screen.
                                 Artwork(state, share, Modifier.widthIn(max = this@BoxWithConstraints.maxHeight * 0.4f / 0.85f).fillMaxWidth(0.85f))
-                                Controls(state, onToggle, onNext, onPrevious, onSeek, onShuffle, onRepeat, onSpeed, onSleep, Modifier.padding(top = 24.dp), playFocus, onChannel)
+                                Controls(state, onToggle, onNext, onPrevious, onSeek, onSkip, onShuffle, onRepeat, onSpeed, onSleep, Modifier.padding(top = 24.dp), playFocus, onChannel)
                             }
                         }
                     )
@@ -211,6 +214,7 @@ private fun Controls(
     onNext: () -> Unit,
     onPrevious: () -> Unit,
     onSeek: (Long) -> Unit,
+    onSkip: (Long) -> Unit,
     onShuffle: (Boolean) -> Unit,
     onRepeat: () -> Unit,
     onSpeed: (Float) -> Unit,
@@ -247,12 +251,12 @@ private fun Controls(
         SeekBar(state.positionMs, state.durationMs, onSeek)
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically) {
             val cs = MaterialTheme.colorScheme
-            ToggleButton(
-                Icons.Rounded.Shuffle, state.shuffle,
-                stringResource(if (state.shuffle) R.string.audio_shuffle_on else R.string.audio_shuffle_off)
-            ) { onShuffle(!state.shuffle) }
+            val s0 = remember { MutableInteractionSource() }
+            IconButton({ onSkip(-SKIP_STEP_MS) }, Modifier.size(48.dp).focusRing(s0, CircleShape), interactionSource = s0) {
+                Icon(Icons.Rounded.Replay10, stringResource(R.string.audio_back_10), Modifier.size(28.dp))
+            }
             val s1 = remember { MutableInteractionSource() }
-            IconButton(onPrevious, Modifier.size(56.dp).focusRing(s1, CircleShape), interactionSource = s1) {
+            IconButton(onPrevious, Modifier.size(52.dp).focusRing(s1, CircleShape), interactionSource = s1) {
                 Icon(Icons.Rounded.SkipPrevious, stringResource(R.string.audio_previous), Modifier.size(32.dp))
             }
             val s2 = remember { MutableInteractionSource() }
@@ -261,9 +265,21 @@ private fun Controls(
                 colors = IconButtonDefaults.filledIconButtonColors(containerColor = cs.primary, contentColor = cs.onPrimary)
             ) { PlayPauseIcon(state.isPlaying, Modifier.size(36.dp)) }
             val s3 = remember { MutableInteractionSource() }
-            IconButton(onNext, Modifier.size(56.dp).focusRing(s3, CircleShape), enabled = state.hasNext, interactionSource = s3) {
+            IconButton(onNext, Modifier.size(52.dp).focusRing(s3, CircleShape), enabled = state.hasNext, interactionSource = s3) {
                 Icon(Icons.Rounded.SkipNext, stringResource(R.string.audio_next), Modifier.size(32.dp))
             }
+            val s4 = remember { MutableInteractionSource() }
+            IconButton({ onSkip(SKIP_STEP_MS) }, Modifier.size(48.dp).focusRing(s4, CircleShape), interactionSource = s4) {
+                Icon(Icons.Rounded.Forward10, stringResource(R.string.audio_forward_10), Modifier.size(28.dp))
+            }
+        }
+        Row(Modifier.fillMaxWidth().padding(top = 8.dp), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically) {
+            ToggleButton(
+                Icons.Rounded.Shuffle, state.shuffle,
+                stringResource(if (state.shuffle) R.string.audio_shuffle_on else R.string.audio_shuffle_off)
+            ) { onShuffle(!state.shuffle) }
+            SpeedButton(state.speed, onSpeed)
+            SleepButton(state, onSleep)
             ToggleButton(
                 if (state.repeat == AudioRepeat.ONE) Icons.Rounded.RepeatOne else Icons.Rounded.Repeat,
                 state.repeat != AudioRepeat.OFF,
@@ -276,10 +292,6 @@ private fun Controls(
                 ),
                 onRepeat
             )
-        }
-        Row(Modifier.fillMaxWidth().padding(top = 8.dp), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically) {
-            SpeedButton(state.speed, onSpeed)
-            SleepButton(state, onSleep)
         }
     }
 }
@@ -405,6 +417,7 @@ private fun SeekBar(positionMs: Long, durationMs: Long, onSeek: (Long) -> Unit) 
 }
 
 private const val SEEK_STEP_MS = 10_000L
+private const val SKIP_STEP_MS = 10_000L
 
 /** Next position for a D-pad step: continues from [pending] while a key is held, else from [positionMs]. */
 internal fun nextSeekTarget(pending: Long?, positionMs: Long, step: Long, durationMs: Long): Long =
@@ -464,11 +477,11 @@ private fun Queue(state: AudioState, onSkipTo: (Int) -> Unit, modifier: Modifier
 @Preview(showBackground = true, heightDp = 780)
 @Composable
 private fun NowPlayingPreview() = DebforgeTheme {
-    NowPlaying(previewState, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})
+    NowPlaying(previewState, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})
 }
 
 @Preview(showBackground = true, widthDp = 900, heightDp = 480)
 @Composable
 private fun NowPlayingWidePreview() = DebforgeTheme {
-    NowPlaying(previewState.copy(shuffle = true, repeat = AudioRepeat.ONE), {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})
+    NowPlaying(previewState.copy(shuffle = true, repeat = AudioRepeat.ONE), {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})
 }
