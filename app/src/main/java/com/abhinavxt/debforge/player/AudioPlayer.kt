@@ -394,6 +394,7 @@ class AudioPlayer @Inject constructor(
         recoverJob?.cancel()
         recoverAttempts.clear()
         activateJob?.cancel()
+        pendingAction = null
         restoredPending = false
         activating = false
         pauseBackgroundedVideo()
@@ -428,8 +429,8 @@ class AudioPlayer @Inject constructor(
             }.toMap()
         }
         val plan = restorePlan(snap) { it in local }
-        if (plan == null) { queueStore.forget(); return@withLock false }
         if (player != null) return@withLock false // play() got in while we were reading
+        if (plan == null) { queueStore.forget(); return@withLock false }
         val restored = plan.tracks.mapNotNull { t ->
             if (t.local) local[t.id] else {
                 val video = t.videoId
@@ -442,13 +443,16 @@ class AudioPlayer @Inject constructor(
         if (restored.size != plan.tracks.size) return@withLock false
         val p = exo()
         tracks = restored
+        // Before setMediaItems: its transition saves the position, which must already know the duration.
+        restoredPending = true
+        restoredDurationId = null
+        restoredDurationMs = 0L
+        if (restored[plan.index].id == snap.position.curId) { restoredDurationId = snap.position.curId; restoredDurationMs = snap.position.durationMs }
         p.setMediaItems(restored.map { it.toMediaItem() }, plan.index, plan.posMs)
         p.shuffleModeEnabled = snap.queue.shuffle
         p.repeatMode = snap.queue.repeat.toPlayerMode()
         p.setPlaybackSpeed(snap.queue.speed)
         p.playWhenReady = false
-        restoredPending = true
-        if (restored[plan.index].id == snap.position.curId) { restoredDurationId = snap.position.curId; restoredDurationMs = snap.position.durationMs }
         publish()
         true
     }
@@ -472,8 +476,9 @@ class AudioPlayer @Inject constructor(
                 if (fresh == null) failed = true
                 else if (tracks.getOrNull(at)?.id == track.id) {
                     tracks = tracks.toMutableList().also { it[at] = fresh }
+                    val pos = p.currentPosition // the replace resets it when the item cannot update in place
                     p.replaceMediaItem(at, fresh.toMediaItem())
-                    p.seekTo(at, p.currentPosition)
+                    p.seekTo(at, pos)
                     queueChanged.value++
                 }
             }
@@ -504,9 +509,17 @@ class AudioPlayer @Inject constructor(
     private fun whenActive(block: (ExoPlayer) -> Unit) {
         val p = player ?: return
         if (!restoredPending) { block(p); return }
+        pendingAction = block // taps while activating: the latest one wins and runs once it is done
         if (activateJob?.isActive == true) return
-        activateJob = scope.launch { if (activate()) player?.let(block) }
+        activateJob = scope.launch {
+            val ok = activate()
+            val action = pendingAction
+            pendingAction = null
+            if (ok && action != null) player?.let(action)
+        }
     }
+
+    private var pendingAction: ((ExoPlayer) -> Unit)? = null
 
     private var tracks: List<AudioTrack> = emptyList()
 
@@ -551,7 +564,10 @@ class AudioPlayer @Inject constructor(
     }
 
     fun toggle() {
-        if (restoredPending) { whenActive { }; return } // activating already starts playback
+        if (restoredPending) { // activating starts playback, so a tap while it does means pause
+            if (activating) whenActive { it.pause() } else whenActive { }
+            return
+        }
         player?.let { if (wantsToPlay(it.playWhenReady, it.playbackState)) it.pause() else it.play() }
     }
     fun next() { whenActive { it.seekToNextMediaItem() } }
@@ -653,6 +669,7 @@ class AudioPlayer @Inject constructor(
         saveCurrent()
         recoverJob?.cancel()
         activateJob?.cancel()
+        pendingAction = null
         restoredPending = false
         activating = false
         scope.launch { queueStore.forget() } // closing the queue (or a video taking over) forgets it

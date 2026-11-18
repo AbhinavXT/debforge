@@ -1,7 +1,8 @@
 package com.abhinavxt.debforge.data.playback
 
 import android.content.Context
-import androidx.datastore.preferences.core.MutablePreferences
+import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
+import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
@@ -14,7 +15,16 @@ import org.json.JSONObject
 import javax.inject.Inject
 import javax.inject.Singleton
 
-private val Context.audioQueueStore by preferencesDataStore(name = "debforge_audio_queue")
+private val Context.audioQueueStore by preferencesDataStore(
+    name = "debforge_audio_queue",
+    corruptionHandler = ReplaceFileCorruptionHandler { emptyPreferences() }
+)
+
+/** The current spot lives in its own small file: it is rewritten every few seconds, the queue rarely. */
+private val Context.audioPositionStore by preferencesDataStore(
+    name = "debforge_audio_position",
+    corruptionHandler = ReplaceFileCorruptionHandler { emptyPreferences() }
+)
 
 /**
  * One queued track as saved. A local download ([local]) needs only its id: the uri and artwork are rebuilt
@@ -143,7 +153,6 @@ class AudioQueueStore @Inject constructor(@ApplicationContext private val contex
     private val curKey = stringPreferencesKey("cur")
     private val posKey = longPreferencesKey("pos")
     private val durKey = longPreferencesKey("dur")
-    private val atKey = longPreferencesKey("at")
 
     /** Null when nothing is saved; a corrupt or too-new snapshot is forgotten. */
     suspend fun load(): Snapshot? {
@@ -151,28 +160,27 @@ class AudioQueueStore @Inject constructor(@ApplicationContext private val contex
         val raw = prefs[queueKey] ?: return null
         val q = AudioQueueCodec.decode(raw)
         if (q == null) { forget(); return null }
-        return Snapshot(q, SavedPosition(prefs[curKey], prefs[posKey] ?: 0L, prefs[durKey] ?: 0L))
+        val pos = runCatching { context.audioPositionStore.data.first() }.getOrNull()
+        return Snapshot(q, SavedPosition(pos?.get(curKey), pos?.get(posKey) ?: 0L, pos?.get(durKey) ?: 0L))
     }
 
     suspend fun saveQueue(s: Snapshot) {
+        runCatching { context.audioQueueStore.edit { it[queueKey] = AudioQueueCodec.encode(s.queue, s.position.curId) } }
+        savePosition(s.position.curId, s.position.positionMs, s.position.durationMs)
+    }
+
+    suspend fun savePosition(curId: String?, positionMs: Long, durationMs: Long) {
         runCatching {
-            context.audioQueueStore.edit { p ->
-                p[queueKey] = AudioQueueCodec.encode(s.queue, s.position.curId)
-                write(p, s.position)
+            context.audioPositionStore.edit { p ->
+                if (curId != null) p[curKey] = curId else p.remove(curKey)
+                p[posKey] = positionMs
+                p[durKey] = durationMs
             }
         }
     }
 
-    suspend fun savePosition(curId: String?, positionMs: Long, durationMs: Long) {
-        runCatching { context.audioQueueStore.edit { write(it, SavedPosition(curId, positionMs, durationMs)) } }
-    }
-
-    suspend fun forget() { runCatching { context.audioQueueStore.edit { it.clear() } } }
-
-    private fun write(p: MutablePreferences, pos: SavedPosition) {
-        if (pos.curId != null) p[curKey] = pos.curId else p.remove(curKey)
-        p[posKey] = pos.positionMs
-        p[durKey] = pos.durationMs
-        p[atKey] = System.currentTimeMillis()
+    suspend fun forget() {
+        runCatching { context.audioQueueStore.edit { it.clear() } }
+        runCatching { context.audioPositionStore.edit { it.clear() } }
     }
 }
