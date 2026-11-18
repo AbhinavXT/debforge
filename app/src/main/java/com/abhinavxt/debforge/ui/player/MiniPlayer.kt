@@ -218,6 +218,8 @@ fun MiniPlayer(
     // The row is a focus target around the buttons; arrows do not enter it on their own, so route them.
     val rowFocus = expandFocus ?: remember { FocusRequester() }
     val toggleFocus = remember { FocusRequester() }
+    val linkFocus = remember { FocusRequester() }
+    val hasLink = !track.artist.isNullOrBlank() && track.artistUrl != null
     // Swiping the bar away to either side stops playback and clears the queue.
     // Keyed on the track so a new track always shows the bar again; the close fires once the swipe has settled.
     val dismissState = key(track.id) { rememberSwipeToDismissBoxState() }
@@ -235,7 +237,7 @@ fun MiniPlayer(
             Row(
                 Modifier.fillMaxWidth().height(60.dp)
                     .focusRequester(rowFocus)
-                    .focusProperties { right = toggleFocus }
+                    .focusProperties { right = if (hasLink) linkFocus else toggleFocus }
                     .clickable(interactionSource = barSource, indication = androidx.compose.material3.ripple(), onClickLabel = expandLabel, onClick = onExpand)
                     .padding(start = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
@@ -255,12 +257,12 @@ fun MiniPlayer(
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             maxLines = 1, overflow = TextOverflow.Ellipsis,
-                            modifier = if (artistUrl != null && t.artist != null) Modifier.channelLink(stringResource(R.string.yt_open_channel, t.artist)) { onChannel(t.artist, artistUrl) } else Modifier
+                            modifier = if (artistUrl != null && t.artist != null) Modifier.channelLink(stringResource(R.string.yt_open_channel, t.artist), focusRequester = linkFocus, focusOrder = { left = rowFocus; right = toggleFocus }) { onChannel(t.artist, artistUrl) } else Modifier
                         )
                     }
                 }
                 val s1 = remember { MutableInteractionSource() }
-                IconButton(onToggle, Modifier.size(48.dp).focusRequester(toggleFocus).focusProperties { left = rowFocus }.focusRing(s1, RoundedCornerShape(24.dp)), interactionSource = s1) {
+                IconButton(onToggle, Modifier.size(48.dp).focusRequester(toggleFocus).focusProperties { left = if (hasLink) linkFocus else rowFocus }.focusRing(s1, RoundedCornerShape(24.dp)), interactionSource = s1) {
                     PlayPauseIcon(state.isPlaying)
                 }
                 val s2 = remember { MutableInteractionSource() }

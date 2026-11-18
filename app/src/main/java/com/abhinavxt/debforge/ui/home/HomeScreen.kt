@@ -212,10 +212,16 @@ fun HomeScreen(signedIn: Boolean) {
     BackHandler(enabled = current?.route == HomeTab.Active.route || current?.route == HomeTab.Settings.route) { backFromPushed() }
 
     // A channel name tapped outside the YouTube tab (the audio player): minimise the full player and show the channel page there.
+    // Ignored while a playlist download runs on the YouTube tab. Back from the page returns to the tab it was opened from.
     val openChannel: (String, String) -> Unit = { name, url ->
-        nowPlaying = false
-        go(HomeTab.YouTube)
-        youtubeViewModel.openChannel(name, url)
+        val origin = navController.currentDestination?.route?.takeIf { it != HomeTab.YouTube.route }
+        if (youtubeViewModel.openChannel(name, url, origin)) {
+            nowPlaying = false
+            go(HomeTab.YouTube)
+        }
+    }
+    LaunchedEffect(Unit) {
+        youtubeViewModel.returnTo.collect { route -> HomeTab.entries.firstOrNull { it.route == route }?.let { go(it) } }
     }
 
     // A YouTube link shared into the app (cold start or already open).

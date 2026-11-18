@@ -707,7 +707,7 @@ private fun PlaylistRow(r: YouTubeSearchResult, checked: Boolean, enabled: Boole
                 val channelUrl = r.channelUrl?.takeIf { onChannel != null }
                 Text(
                     r.channel, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis,
-                    modifier = if (channelUrl != null) Modifier.channelLink(stringResource(R.string.yt_open_channel, r.channel)) { onChannel?.invoke(r.channel, channelUrl) } else Modifier,
+                    modifier = if (channelUrl != null) Modifier.channelLink(stringResource(R.string.yt_open_channel, r.channel), focusable = false) { onChannel?.invoke(r.channel, channelUrl) } else Modifier,
                 )
             }
         }
