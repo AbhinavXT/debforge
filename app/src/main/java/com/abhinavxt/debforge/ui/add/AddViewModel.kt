@@ -463,7 +463,7 @@ class AddViewModel @Inject constructor(
                 _state.update { it.copy(submitting = false, error = context.getString(R.string.add_needs_storage)) }
                 return@launch
             }
-            picked.forEach { controller.enqueue(it) }
+            picked.forEach { controller.enqueue(it, foreground = true) }
             events.notifyListChanged(context.resources.getQuantityString(R.plurals.direct_added, picked.size, picked.size))
             resetForm()
         }
@@ -542,7 +542,7 @@ class AddViewModel @Inject constructor(
                             // Ready now (e.g. RD link): queue immediately.
                             // Minus the torrent's .txt/covers/samples unless wanted.
                             val ready = r.data.readyFiles
-                            (if (keepExtras) ready else ExtraFiles.hide(ready)).forEach { controller.enqueue(it) }
+                            (if (keepExtras) ready else ExtraFiles.hide(ready)).forEach { controller.enqueue(it, foreground = true) }
                             // Still fetching (TorBox torrent): watch it.
                             r.data.jobRef?.let { ref -> watcher.watch(p, ref, displayNameFor(req)) }
                         }

@@ -236,18 +236,18 @@ class SettingsViewModel @Inject constructor(
     // (re)start the download job.
     fun setWifiOnly(v: Boolean) = viewModelScope.launch {
         settingsStore.setWifiOnly(v)
-        downloadScheduler.ensureRunning()
+        downloadScheduler.ensureRunning(foreground = true)
     }
     fun setChargingOnly(v: Boolean) = viewModelScope.launch {
         settingsStore.setChargingOnly(v)
-        downloadScheduler.ensureRunning()
+        downloadScheduler.ensureRunning(foreground = true)
     }
     // Turning the schedule off, or moving the window over "now", starts
     // queued downloads at once; otherwise the wake-up alarm moves to the new
     // start time.
     fun setSchedule(enabled: Boolean, start: Int, end: Int) = viewModelScope.launch {
         settingsStore.setSchedule(enabled, start, end)
-        downloadScheduler.ensureRunning()
+        downloadScheduler.ensureRunning(foreground = true)
     }
     fun setSpeedLimit(kbps: Int) = viewModelScope.launch { settingsStore.setSpeedLimitKbps(kbps) }
 

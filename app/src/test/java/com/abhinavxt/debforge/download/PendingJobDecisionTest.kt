@@ -23,7 +23,8 @@ class PendingJobDecisionTest {
         assertFalse(shouldReplacePending(backoff, sessionLive = true, block = null, foreground = true))
         assertFalse(shouldReplacePending(backoff, false, null, foreground = false))
         assertFalse(shouldReplacePending(backoff, false, Block.NO_NETWORK, true))
-        assertFalse(shouldReplacePending(backoff, false, null, true, recentlyScheduled = true))
+        // Pause then resume within 15 s of scheduling: the backoff must not be waited out.
+        assertTrue(shouldReplacePending(backoff, false, null, true, recentlyScheduled = true))
     }
 
     @Test fun neverReplacesExecutingOrLiveJob() {

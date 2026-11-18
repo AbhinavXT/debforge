@@ -1018,7 +1018,7 @@ class BrowseViewModel @Inject constructor(
     }
 
     private suspend fun enqueueNow(items: List<DownloadItem>) {
-        items.forEach { downloadController.enqueue(it) }
+        items.forEach { downloadController.enqueue(it, foreground = true) }
         // BUFFERED channel; send() suspends only if the buffer is full, which
         // is effectively never for a snackbar pipe.
         _events.send(

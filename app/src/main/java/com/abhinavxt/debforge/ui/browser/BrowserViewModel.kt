@@ -218,7 +218,7 @@ class BrowserViewModel @Inject constructor(
             _messages.send(context.getString(R.string.add_needs_storage))
             return
         }
-        files.forEach { controller.enqueue(it) }
+        files.forEach { controller.enqueue(it, foreground = true) }
         files.singleOrNull()?.let { _messages.send(context.getString(R.string.browser_queued, it.filename)) }
             ?: _messages.send(context.resources.getQuantityString(R.plurals.direct_added, files.size, files.size))
     }

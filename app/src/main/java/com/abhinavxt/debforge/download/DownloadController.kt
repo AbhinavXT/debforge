@@ -45,13 +45,15 @@ class DownloadController @Inject constructor(
     /**
      * Queues an item for download. Resolves the destination path now (so it's
      * stable even if the user later changes the folder setting) and starts the
-     * service. No-op if this id is already present.
+     * service. No-op if this id is already present. [foreground] = the call
+     * comes from a visible UI action (see [DownloadScheduler.ensureRunning]);
+     * watchers and other background callers leave it false.
      */
-    suspend fun enqueue(item: DownloadItem) {
+    suspend fun enqueue(item: DownloadItem, foreground: Boolean = false) {
         enqueueLock.withLock {
             if (downloadDao.getById(item.id) != null) {
                 // Already tracked — just make sure the engine is running.
-                scheduler.ensureRunning()
+                scheduler.ensureRunning(foreground)
                 return
             }
             val root = settingsStore.downloadDirFlow.first()
@@ -83,7 +85,7 @@ class DownloadController @Inject constructor(
                 )
             )
         }
-        scheduler.ensureRunning()
+        scheduler.ensureRunning(foreground)
     }
 
     /** Starts the queue if work is pending and nothing runs (Downloads screen opened). */
@@ -132,19 +134,19 @@ class DownloadController @Inject constructor(
      */
     suspend fun resumeAll(): Int {
         val n = downloadDao.requeuePaused()
-        if (n > 0) scheduler.ensureRunning()
+        if (n > 0) scheduler.ensureRunning(foreground = true)
         return n
     }
 
     suspend fun resume(id: String) {
         downloadDao.updateState(id, DownloadState.QUEUED)
-        scheduler.ensureRunning()
+        scheduler.ensureRunning(foreground = true)
     }
 
     /** Retry a FAILED download: clear the error, re-queue, kick the engine. */
     suspend fun retry(id: String) {
         downloadDao.setFailed(id, message = null, state = DownloadState.QUEUED)
-        scheduler.ensureRunning()
+        scheduler.ensureRunning(foreground = true)
     }
 
     // --- helpers -----------------------------------------------------------

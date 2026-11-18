@@ -147,7 +147,7 @@ class BackupViewModel @Inject constructor(
         viewModelScope.launch {
             _ui.value = try {
                 val r = withContext(Dispatchers.Default) { backup.restore(read(uri), password) }
-                scheduler.ensureRunning() // download rules may have changed
+                scheduler.ensureRunning(foreground = true) // download rules may have changed
                 val parts = mutableListOf(context.resources.getQuantityString(
                     R.plurals.restore_settings_n, r.settingsApplied, r.settingsApplied
                 ))

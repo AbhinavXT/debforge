@@ -220,20 +220,23 @@ class DownloadScheduler @Inject constructor(
         /**
          * Whether a pending job should be replaced by a fresh one so it starts
          * now. Only for a visible app, with nothing blocking, no live session,
-         * a job we did not just schedule ourselves, and a pending reason that
-         * means "waiting for the system's retry / optimisation". Constraint,
+         * and a pending reason that means "waiting for the system's retry /
+         * optimisation". A job we scheduled in the last 15 s is left alone
+         * unless it is in backoff (MINIMUM_LATENCY: JobScheduler reports backoff
+         * after a stop as an earliest-run time; job 4201 never sets a minimum
+         * latency itself, so that reason always means backoff). Constraint,
          * quota, thermal, device-state and executing reasons are left alone,
          * and so is any job when the reason is unknown (below API 34).
          */
         fun shouldReplacePending(reason: Int?, sessionLive: Boolean, block: Block?, foreground: Boolean, recentlyScheduled: Boolean = false): Boolean {
-            if (!foreground || sessionLive || block != null || recentlyScheduled || reason == null) return false
+            if (!foreground || sessionLive || block != null || reason == null) return false
+            // Backoff after a stop is an earliest-run time the system keeps even
+            // though we scheduled the job moments ago (pause, then resume), so the
+            // recent-schedule guard does not apply to it.
+            if (reason == JobScheduler.PENDING_JOB_REASON_CONSTRAINT_MINIMUM_LATENCY) return true
+            if (recentlyScheduled) return false
             return reason == JobScheduler.PENDING_JOB_REASON_UNDEFINED ||
-                reason == JobScheduler.PENDING_JOB_REASON_JOB_SCHEDULER_OPTIMIZATION ||
-                // JobScheduler implements backoff after a stop as an earliest-run
-                // time, reported as MINIMUM_LATENCY (there is no BACKOFF reason).
-                // Safe: job 4201 never sets a minimum latency (the schedule
-                // window uses ScheduleAlarm, not the job), so here it means backoff.
-                reason == JobScheduler.PENDING_JOB_REASON_CONSTRAINT_MINIMUM_LATENCY
+                reason == JobScheduler.PENDING_JOB_REASON_JOB_SCHEDULER_OPTIMIZATION
         }
     }
 }

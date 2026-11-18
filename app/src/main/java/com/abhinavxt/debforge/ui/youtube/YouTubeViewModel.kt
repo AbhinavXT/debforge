@@ -505,7 +505,7 @@ class YouTubeViewModel @Inject constructor(
         try {
             // enqueue ignores an id it already has, so ask first and report what really happens.
             if (dao.getById(item.id) != null) return YouTubeEvent.ALREADY_QUEUED
-            downloads.enqueue(item)
+            downloads.enqueue(item, foreground = true)
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
