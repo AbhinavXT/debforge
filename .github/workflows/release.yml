@@ -120,6 +120,15 @@ jobs:
                   sha256sum "$out" > "$out.sha256"
                   echo "APK=$out" >> "$GITHUB_ENV"
 
+                  # R8 mapping, so crash reports from this release can be retraced.
+                  mapping="DebForge-${TAG}-mapping.txt"
+                  if [ -f app/build/outputs/mapping/release/mapping.txt ]; then
+                    cp app/build/outputs/mapping/release/mapping.txt "$mapping"
+                    echo "MAPPING=$mapping" >> "$GITHUB_ENV"
+                  else
+                    echo "::warning::no R8 mapping.txt found; release will not include it"
+                  fi
+
                   apksigner=$(ls -d "$ANDROID_HOME"/build-tools/*/ | sort -V | tail -n1)apksigner
                   "$apksigner" verify "$out"
                   cert=$("$apksigner" verify --print-certs "$out" | sed -nE 's/.*certificate SHA-256 digest: ([0-9a-f]+).*/\1/p' | head -n1)
@@ -134,15 +143,17 @@ jobs:
               env:
                   GH_TOKEN: ${{ github.token }}
               run: |
+                  extra=()
+                  [ -n "${MAPPING:-}" ] && extra=("$MAPPING")
                   if gh release view "$TAG" >/dev/null 2>&1; then
-                    gh release upload "$TAG" "$APK" "$APK.sha256" --clobber
+                    gh release upload "$TAG" "$APK" "$APK.sha256" "${extra[@]}" --clobber
                     exit 0
                   fi
                   notes_args=(--generate-notes)
                   [ -n "$NOTES_FILE" ] && notes_args=(--notes-file "$NOTES_FILE")
                   pre=()
                   [[ "$TAG" == *-* ]] && pre=(--prerelease)
-                  gh release create "$TAG" "$APK" "$APK.sha256" --title "DebForge $TAG" "${notes_args[@]}" "${pre[@]}"
+                  gh release create "$TAG" "$APK" "$APK.sha256" "${extra[@]}" --title "DebForge $TAG" "${notes_args[@]}" "${pre[@]}"
 
             - name: Remove keystore
               if: always()
