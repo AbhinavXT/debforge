@@ -19,6 +19,7 @@ import coil.request.SuccessResult
 import com.abhinavxt.debforge.player.AudioTrack
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlin.coroutines.cancellation.CancellationException
 import kotlin.math.pow
 
 private const val MIN_CONTRAST = 4.5
@@ -88,18 +89,27 @@ internal fun rememberArtColor(track: AudioTrack, enabled: Boolean): Color? {
         } ?: artUrl?.let { it to "art:$it" } ?: run { result = null; return@LaunchedEffect }
         val cached = colorCache.get(key)
         if (cached != null) { result = if (cached == NONE) null else Color(cached); return@LaunchedEffect }
-        val argb = withContext(Dispatchers.Default) {
-            runCatching {
+        // loaded is false only when the image could not be fetched/decoded, so a transient failure is not cached.
+        val (loaded, argb) = withContext(Dispatchers.Default) {
+            try {
                 val mem = context.imageLoader.memoryCache?.get(MemoryCache.Key(key))?.bitmap
                     ?.takeIf { it.config != Bitmap.Config.HARDWARE }
+                var ok = mem != null
                 val bmp = mem ?: (context.imageLoader.execute(
                     ImageRequest.Builder(context).data(data).size(96, 96).allowHardware(false)
                         .memoryCachePolicy(CachePolicy.DISABLED).build()
-                ) as? SuccessResult)?.drawable?.let { (it as? android.graphics.drawable.BitmapDrawable)?.bitmap }
-                bmp?.let(::pickSwatch)
-            }.getOrNull()
+                ) as? SuccessResult)?.drawable?.let {
+                    ok = true
+                    (it as? android.graphics.drawable.BitmapDrawable)?.bitmap
+                }
+                ok to bmp?.let(::pickSwatch)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                false to null
+            }
         }
-        colorCache.put(key, argb ?: NONE)
+        if (loaded) colorCache.put(key, argb ?: NONE)
         result = argb?.let { Color(it) }
     }
     return result

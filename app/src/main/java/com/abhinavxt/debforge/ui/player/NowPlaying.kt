@@ -135,7 +135,7 @@ fun NowPlaying(
     /** Pads the content for the system bars while the sheet itself stays full-bleed (so it slides over the screen below). */
     padSystemBars: Boolean = false,
     /** Tints the background from the track's artwork. */
-    artColor: Boolean = false
+    artColor: Boolean = true
 ) {
     val track = state.track ?: return
     val surface = MaterialTheme.colorScheme.surface

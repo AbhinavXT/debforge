@@ -169,10 +169,12 @@ class SettingsStore @Inject constructor(
     suspend fun setNightMode(v: Boolean) = context.settingsDataStore.edit { it[keyNightMode] = v }
 
     /** Player: double-tap seek, swipe brightness/volume, scrub, hold for speed, pinch zoom. */
-    val playerArtColorFlow: Flow<Boolean> = context.settingsDataStore.data.map { it[keyPlayerArtColor] ?: true }
-    suspend fun setPlayerArtColor(v: Boolean) = context.settingsDataStore.edit { it[keyPlayerArtColor] = v }
     val playerGesturesFlow: Flow<Boolean> = context.settingsDataStore.data.map { it[keyPlayerGestures] ?: true }
     suspend fun setPlayerGestures(v: Boolean) = context.settingsDataStore.edit { it[keyPlayerGestures] = v }
+
+    /** Player: audio player background tinted from the track artwork. On by default. */
+    val playerArtColorFlow: Flow<Boolean> = context.settingsDataStore.data.map { it[keyPlayerArtColor] ?: true }
+    suspend fun setPlayerArtColor(v: Boolean) = context.settingsDataStore.edit { it[keyPlayerArtColor] = v }
 
     /** Player: the right-hand time shows what's left instead of the length (tap it to switch). */
     val playerShowRemainingFlow: Flow<Boolean> = context.settingsDataStore.data.map { it[keyPlayerShowRemaining] ?: false }
