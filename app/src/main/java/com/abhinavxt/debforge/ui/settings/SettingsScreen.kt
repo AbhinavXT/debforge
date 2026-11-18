@@ -103,6 +103,7 @@ import com.abhinavxt.debforge.data.provider.AccountInfo
 import com.abhinavxt.debforge.domain.SortOrder
 import com.abhinavxt.debforge.download.SafPaths
 import com.abhinavxt.debforge.download.ScheduleAlarm
+import com.abhinavxt.debforge.data.prefs.STORAGE_LIMITS_GB
 import com.abhinavxt.debforge.download.StorageAccess
 import com.abhinavxt.debforge.ui.components.RowDivider
 import com.abhinavxt.debforge.domain.DefaultQuality
@@ -385,6 +386,9 @@ fun SettingsScreen(onConnect: () -> Unit, onBack: (() -> Unit)? = null, viewMode
                     }
                     RowDivider()
                     SpeedLimitRow(current = rules.speedLimitKbps, onPick = viewModel::setSpeedLimit)
+                    RowDivider()
+                    val storageUsed by viewModel.storageUsedBytes.collectAsStateWithLifecycle()
+                    StorageLimitRow(current = rules.storageLimitGb, usedBytes = storageUsed, onPick = viewModel::setStorageLimit)
                 }
             }
 
@@ -1090,6 +1094,41 @@ private val SPEED_OPTIONS = listOf(0, 1024, 2 * 1024, 5 * 1024, 10 * 1024, 25 * 
 @Composable
 private fun speedLabel(kbps: Int) =
     if (kbps <= 0) stringResource(R.string.speed_unlimited) else stringResource(R.string.speed_mbps, kbps / 1024)
+
+@Composable
+private fun storageLimitLabel(gb: Int) =
+    if (gb <= 0) stringResource(R.string.set_storage_limit_off) else stringResource(R.string.set_storage_limit_gb, gb)
+
+@Composable
+private fun StorageLimitRow(current: Int, usedBytes: Long, onPick: (Int) -> Unit) {
+    var open by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    Box {
+        SettingRow(
+            icon = Icons.Rounded.Storage,
+            title = stringResource(R.string.set_storage_limit),
+            subtitle = stringResource(R.string.set_storage_limit_detail) + "\n" +
+                stringResource(R.string.set_storage_used, android.text.format.Formatter.formatShortFileSize(context, usedBytes)),
+            onClick = { open = true },
+            trailing = {
+                Text(
+                    storageLimitLabel(current),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+        )
+        DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
+            STORAGE_LIMITS_GB.forEach { g ->
+                DropdownMenuItem(
+                    text = { Text(storageLimitLabel(g)) },
+                    leadingIcon = { if (g == current) Icon(Icons.Rounded.Check, contentDescription = null) },
+                    onClick = { onPick(g); open = false }
+                )
+            }
+        }
+    }
+}
 
 @Composable
 private fun SpeedLimitRow(current: Int, onPick: (Int) -> Unit) {

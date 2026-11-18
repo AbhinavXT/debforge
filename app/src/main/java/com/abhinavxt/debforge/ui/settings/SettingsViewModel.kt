@@ -261,6 +261,17 @@ class SettingsViewModel @Inject constructor(
     }
     fun setSpeedLimit(kbps: Int) = viewModelScope.launch { settingsStore.setSpeedLimitKbps(kbps) }
 
+    /** Raising the limit (or turning it off) lets waiting downloads start at once. */
+    fun setStorageLimit(gb: Int) = viewModelScope.launch {
+        settingsStore.setStorageLimitGb(gb)
+        downloadScheduler.ensureRunning(foreground = true)
+    }
+
+    /** What DebForge's downloads occupy, as the storage limit counts it. */
+    val storageUsedBytes: StateFlow<Long> = downloadDao.observeReservedBytes().stateIn(
+        viewModelScope, SharingStarted.WhileSubscribed(5_000), 0L
+    )
+
     fun setDynamicColor(enabled: Boolean) = viewModelScope.launch { settingsStore.setDynamicColor(enabled) }
 
     /** New key -> drop cached misses so posters are looked up again. */
