@@ -18,7 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Delete
@@ -45,6 +45,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -88,34 +91,43 @@ fun HistoryScreen(
     val removeLabel = stringResource(R.string.history_remove)
     val noPlayer = stringResource(R.string.msg_no_player)
     var confirmClear by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+    val menuFocus = remember { FocusRequester() }
+    val keys = LocalInputModeManager.current.inputMode == InputMode.Keyboard
 
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
                 is HistoryEvent.Play ->
                     if (viewModel.useInternalPlayer.value) runCatching { context.startActivity(PlayerActivity.intent(context, event.request)) }
-                    else if (!context.playExternally(event.request)) snackbar.showSnackbar(noPlayer)
+                    else if (!context.playExternally(event.request)) scope.launch { snackbar.showSnackbar(noPlayer) }
                 is HistoryEvent.OpenYouTube -> onOpenYouTube(event.url)
                 is HistoryEvent.Unplayable -> {
                     snackbar.currentSnackbarData?.dismiss()
-                    val result = snackbar.showSnackbar(
-                        message = event.text,
-                        actionLabel = removeLabel,
-                        withDismissAction = true,
-                        duration = SnackbarDuration.Long
-                    )
-                    if (result == SnackbarResult.ActionPerformed) viewModel.remove(event.itemId)
+                    // Its own coroutine: showSnackbar suspends until dismissed, and later events must not wait for it.
+                    scope.launch {
+                        val result = snackbar.showSnackbar(
+                            message = event.text,
+                            actionLabel = removeLabel,
+                            withDismissAction = true,
+                            duration = SnackbarDuration.Long
+                        )
+                        if (result == SnackbarResult.ActionPerformed) viewModel.remove(event.itemId)
+                    }
                 }
             }
         }
     }
+
+    // The last row was removed while it had focus: the menu button is the next sensible stop.
+    LaunchedEffect(state.loaded && state.items.isEmpty()) { if (keys && state.loaded && state.items.isEmpty()) runCatching { menuFocus.requestFocus() } }
 
     Box(Modifier.fillMaxSize()) {
         Column(Modifier.fillMaxSize()) {
             ScreenHeader(stringResource(R.string.history_title)) {
                 var menu by remember { mutableStateOf(false) }
                 Box {
-                    IconButton(onClick = { menu = true }) { Icon(Icons.Rounded.MoreVert, stringResource(R.string.media_more)) }
+                    IconButton(onClick = { menu = true }, modifier = Modifier.focusRequester(menuFocus)) { Icon(Icons.Rounded.MoreVert, stringResource(R.string.media_more)) }
                     DropdownMenu(menu, { menu = false }) {
                         DropdownMenuItem(
                             text = { Text(stringResource(R.string.history_pause)) },
@@ -165,20 +177,31 @@ fun HistoryScreen(
 @Composable
 private fun HistoryList(items: List<HistoryEntity>, onReplay: (HistoryEntity) -> Unit, onRemove: (String) -> Unit) {
     // D-pad / keyboard: start on the newest row, so the first arrow key or Select works at once. Not on touch: it would show a focus ring.
-    val first = remember { FocusRequester() }
+    val requesters = remember { HashMap<String, FocusRequester>() }
+    fun requesterFor(id: String) = requesters.getOrPut(id) { FocusRequester() }
     val keys = LocalInputModeManager.current.inputMode == InputMode.Keyboard
-    LaunchedEffect(Unit) { if (keys) runCatching { first.requestFocus() } }
+    LaunchedEffect(Unit) { if (keys) runCatching { requesterFor(items.first().itemId).requestFocus() } }
+    // After a row is removed, focus moves to the row that took its place (the previous one when it was last).
+    var focusAfter by remember { mutableStateOf<Int?>(null) }
+    LaunchedEffect(items) {
+        val at = focusAfter ?: return@LaunchedEffect
+        focusAfter = null
+        requesters.keys.retainAll(items.map { it.itemId }.toSet())
+        val target = items.getOrNull(at.coerceAtMost(items.lastIndex)) ?: return@LaunchedEffect
+        withFrameNanos { }
+        if (keys) runCatching { requesterFor(target.itemId).requestFocus() }
+    }
     LazyColumn(
         Modifier.fillMaxSize(),
         contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        items(items, key = { it.itemId }, contentType = { it.kind }) { e ->
+        itemsIndexed(items, key = { _, it -> it.itemId }, contentType = { _, it -> it.kind }) { index, e ->
             HistoryRow(
                 e,
                 onClick = { onReplay(e) },
-                onRemove = { onRemove(e.itemId) },
-                modifier = if (e === items.first()) Modifier.focusRequester(first) else Modifier
+                onRemove = { focusAfter = index; onRemove(e.itemId) },
+                modifier = Modifier.focusRequester(requesterFor(e.itemId))
             )
         }
     }

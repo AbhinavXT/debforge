@@ -753,7 +753,8 @@ class AudioPlayer @Inject constructor(
 
     private fun saveSpot() { player?.let { save(it, it.currentMediaItemIndex, it.currentPosition) } }
 
-    private fun recordCurrent() { player?.let { recordHistory(it, it.currentMediaItemIndex, it.currentPosition) } }
+    /** Only a track that played this session: a restored queue nobody has started is not history. */
+    private fun recordCurrent() { if (restoredPending) return; player?.let { recordHistory(it, it.currentMediaItemIndex, it.currentPosition) } }
 
     /** Adds the track at [index] to the play history (skipped under 5 s unless [ended]; nothing while history is paused). */
     private fun recordHistory(p: Player, index: Int, positionMs: Long, ended: Boolean = false) {

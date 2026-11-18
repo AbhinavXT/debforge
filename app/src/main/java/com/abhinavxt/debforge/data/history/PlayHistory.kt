@@ -11,6 +11,7 @@ import com.abhinavxt.debforge.data.prefs.SettingsStore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -135,12 +136,19 @@ class PlayHistory internal constructor(
     constructor(dao: HistoryDao, settings: SettingsStore) :
         this(dao, settings.historyPausedFlow, CoroutineScope(SupervisorJob() + Dispatchers.IO))
 
-    fun record(entry: HistoryEntity) {
+    /** Writes go through one queue, so two records of the same item land in the order they were made. */
+    private val pending = Channel<HistoryEntity>(Channel.UNLIMITED)
+
+    init {
         scope.launch {
-            runCatching {
-                if (!paused.first()) dao.record(entry)
+            for (entry in pending) {
+                runCatching { if (!paused.first()) dao.record(entry) }
             }
         }
+    }
+
+    fun record(entry: HistoryEntity) {
+        pending.trySend(entry)
     }
 
     fun observe(): Flow<List<HistoryEntity>> = dao.observeAll()

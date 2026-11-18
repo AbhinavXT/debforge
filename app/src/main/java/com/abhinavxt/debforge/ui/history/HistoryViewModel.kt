@@ -16,6 +16,10 @@ import com.abhinavxt.debforge.domain.DownloadState
 import com.abhinavxt.debforge.download.LocalFiles
 import com.abhinavxt.debforge.player.AudioPlayer
 import com.abhinavxt.debforge.player.LocalPlayback
+import com.abhinavxt.debforge.player.SubtitleResolver
+import com.abhinavxt.debforge.player.UpNext
+import com.abhinavxt.debforge.domain.Subtitles
+import com.abhinavxt.debforge.ui.browse.upNextFor
 import com.abhinavxt.debforge.player.audioTrackFor
 import com.abhinavxt.debforge.ui.browse.PlayRequest
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -48,7 +52,9 @@ class HistoryViewModel @Inject constructor(
     private val downloads: DownloadDao,
     private val localPlayback: LocalPlayback,
     private val repository: DownloadsRepository,
-    private val audio: AudioPlayer
+    private val audio: AudioPlayer,
+    private val subtitleResolver: SubtitleResolver,
+    private val upNext: UpNext
 ) : ViewModel() {
 
     /** From Room's Flow, so the read and every change run off the main thread. */
@@ -113,7 +119,19 @@ class HistoryViewModel @Inject constructor(
             host = "", filesize = 0, maxConnections = 1, addedAt = null, parentRef = e.parentRef
         )
         when (val r = repository.resolveLink(provider, e.sourceRef)) {
-            is DataResult.Success -> _events.send(HistoryEvent.Play(PlayRequest(Uri.parse(r.data.url), e.title, item, e.showKey)))
+            is DataResult.Success -> {
+                // As Continue watching: the torrent's files give subtitles and the next episodes.
+                val pool = e.parentRef
+                    ?.let { ref -> (repository.filesForJob(provider, ref) as? DataResult.Success)?.data }
+                    .orEmpty()
+                val known = pool.firstOrNull { it.id == e.itemId } ?: item
+                upNext.set(known.id, upNextFor(known, pool))
+                _events.send(
+                    HistoryEvent.Play(
+                        PlayRequest(Uri.parse(r.data.url), e.title, known, e.showKey, subtitleResolver.resolve(Subtitles.forVideo(known, pool)))
+                    )
+                )
+            }
             is DataResult.Error -> unplayable(e, context.getString(R.string.continue_unavailable, e.title, r.message))
         }
     }

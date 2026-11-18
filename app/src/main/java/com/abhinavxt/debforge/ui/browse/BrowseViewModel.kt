@@ -741,28 +741,6 @@ class BrowseViewModel @Inject constructor(
     }
 
     /**
-     * Episodes after [video] from [pool] (same show and service), best copy
-     * of each, with their subtitle files, for the player's "Next episode".
-     */
-    private fun upNextFor(video: DownloadItem, pool: List<DownloadItem>): com.abhinavxt.debforge.player.UpNext.Queue {
-        val parse = com.abhinavxt.debforge.domain.ReleaseNameParser::parse
-        val info = parse(video.filename)
-        val candidates = com.abhinavxt.debforge.domain.ExtraFiles.hide(pool)
-            .map { com.abhinavxt.debforge.domain.NextEpisode.Candidate(it, parse(it.filename)) }
-        fun queued(item: DownloadItem, i: ReleaseInfo) = com.abhinavxt.debforge.player.QueuedEpisode(
-            item = item,
-            title = i.displayTitle,
-            showKey = i.groupKey.takeIf { i.kind == MediaKind.SHOW },
-            subtitles = com.abhinavxt.debforge.domain.Subtitles.forVideo(item, pool)
-        )
-        return com.abhinavxt.debforge.player.UpNext.Queue(
-            current = queued(video, info),
-            next = com.abhinavxt.debforge.domain.NextEpisode.upcoming(video, info, candidates).map { queued(it.item, it.info) },
-            previous = com.abhinavxt.debforge.domain.NextEpisode.previous(video, info, candidates).map { queued(it.item, it.info) }
-        )
-    }
-
-    /**
      * Library → select → Mark watched / unwatched. Saved like a finished play
      * in DebForge's player (so "✓ Watched" and Continue watching agree), and
      * sent to Trakt when signed in. Unwatched also forgets where you were.
@@ -1044,3 +1022,25 @@ class BrowseViewModel @Inject constructor(
 
 /** Positions saved by YouTube streams (`ytstream:`/`ytaudio:`): they cannot be replayed from a saved link, so they stay out of Continue watching. */
 internal fun isYouTubeStreamPosition(itemId: String) = itemId.startsWith("ytstream:") || itemId.startsWith("ytaudio:")
+
+/**
+ * Episodes after [video] from [pool] (same show and service), best copy
+ * of each, with their subtitle files, for the player's "Next episode".
+ */
+internal fun upNextFor(video: DownloadItem, pool: List<DownloadItem>): com.abhinavxt.debforge.player.UpNext.Queue {
+    val parse = com.abhinavxt.debforge.domain.ReleaseNameParser::parse
+    val info = parse(video.filename)
+    val candidates = com.abhinavxt.debforge.domain.ExtraFiles.hide(pool)
+        .map { com.abhinavxt.debforge.domain.NextEpisode.Candidate(it, parse(it.filename)) }
+    fun queued(item: DownloadItem, i: ReleaseInfo) = com.abhinavxt.debforge.player.QueuedEpisode(
+        item = item,
+        title = i.displayTitle,
+        showKey = i.groupKey.takeIf { i.kind == MediaKind.SHOW },
+        subtitles = com.abhinavxt.debforge.domain.Subtitles.forVideo(item, pool)
+    )
+    return com.abhinavxt.debforge.player.UpNext.Queue(
+        current = queued(video, info),
+        next = com.abhinavxt.debforge.domain.NextEpisode.upcoming(video, info, candidates).map { queued(it.item, it.info) },
+        previous = com.abhinavxt.debforge.domain.NextEpisode.previous(video, info, candidates).map { queued(it.item, it.info) }
+    )
+}
