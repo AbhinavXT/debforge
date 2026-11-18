@@ -161,7 +161,9 @@ class DownloadScheduler @Inject constructor(
         // here (not starting a host) is what stops a STORAGE_FULL host stop
         // from looping through onIdle -> ensureRunning -> start -> stop.
         if (conditions.freshStorageBlocked()) {
-            if (!isAppInForeground()) DownloadNotifications.notifyStorageLimit(context)
+            // Posted in the foreground too: same id + only-alert-once means no duplicates,
+            // and it is already there when the user leaves the app.
+            DownloadNotifications.notifyStorageLimit(context)
             return@withLock true
         }
         DownloadNotifications.cancelStorageLimit(context)

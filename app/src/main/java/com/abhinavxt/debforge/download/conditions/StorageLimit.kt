@@ -2,7 +2,8 @@ package com.abhinavxt.debforge.download.conditions
 
 import com.abhinavxt.debforge.data.local.DownloadEntity
 
-private const val BYTES_PER_GB = 1024L * 1024L * 1024L
+// Decimal, like Android's own storage display and the "Used" figure in Settings.
+private const val BYTES_PER_GB = 1_000_000_000L
 
 fun storageLimitBytes(gb: Int): Long = if (gb > 0) gb * BYTES_PER_GB else 0L
 

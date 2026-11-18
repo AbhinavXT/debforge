@@ -53,8 +53,8 @@ class StorageLimitTest {
 
     @Test fun gigabytesToBytes() {
         assertEquals(0L, storageLimitBytes(0))
-        assertEquals(1_073_741_824L, storageLimitBytes(1))
-        assertEquals(500L * 1_073_741_824L, storageLimitBytes(500))
+        assertEquals(1_000_000_000L, storageLimitBytes(1))
+        assertEquals(500L * 1_000_000_000L, storageLimitBytes(500))
     }
 
     @Test fun restartsOnlyWhenTheLimitClears() {
