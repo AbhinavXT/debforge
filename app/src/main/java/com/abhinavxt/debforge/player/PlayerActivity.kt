@@ -2123,7 +2123,7 @@ class PlayerActivity : ComponentActivity() {
             // The service's session takes over (notification, lock screen).
             closeSession()
             BackgroundPlayback.player = episodePlayer ?: player
-            startService(Intent(this, BackgroundPlaybackService::class.java))
+            BackgroundPlayback.start(this)
             inBackground = true
         }
     }
@@ -2150,7 +2150,7 @@ class PlayerActivity : ComponentActivity() {
     private fun takeBackFromBackground() {
         inBackground = false
         audioPlayer.stopForVideo() // audio may have taken the service over meanwhile; video and audio never overlap
-        stopService(Intent(this, BackgroundPlaybackService::class.java))
+        BackgroundPlayback.stop(this)
         BackgroundPlayback.player = null
         openSession()
         player?.let { it.trackSelectionParameters = it.trackSelectionParameters.buildUpon().setTrackTypeDisabled(C.TRACK_TYPE_VIDEO, false).build() }

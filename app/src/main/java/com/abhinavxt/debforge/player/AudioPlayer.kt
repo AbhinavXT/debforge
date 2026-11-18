@@ -443,7 +443,7 @@ class AudioPlayer @Inject constructor(
             .putExtra(BackgroundPlayback.EXTRA_EXPAND_NOW_PLAYING, true)
         BackgroundPlayback.player = p
         // Always: the service may have stopped itself (task removed) while the player lived on.
-        context.startService(Intent(context, BackgroundPlaybackService::class.java))
+        startPlaybackService()
         publish()
         queueChanged.value++
     }
@@ -501,7 +501,7 @@ class AudioPlayer @Inject constructor(
      * First user action on a restored queue: re-resolve a streamed current track (its link has expired), hand the player
      * to the service and start. False when it could not start (the app may not start a service from the background).
      */
-    private suspend fun activate(): Boolean {
+    private suspend fun activate(fromWidget: Boolean = false): Boolean {
         val p = player ?: return false
         if (!restoredPending) return true
         activating = true // the play button flips at once, even while the link is looked up
@@ -521,6 +521,12 @@ class AudioPlayer @Inject constructor(
                     p.seekTo(at, pos)
                     queueChanged.value++
                 }
+            }
+            if (failed && track != null) {
+                // No service for a track that cannot play (from a widget it would be a foreground start, owed a
+                // notification). The widget keeps the queue and offers to open the app; in the app it is dropped.
+                if (fromWidget) return false
+                if (p.mediaItemCount <= 1) { clear(); return false }
             }
             pauseBackgroundedVideo()
             BackgroundPlayback.openIntent = Intent(context, MainActivity::class.java)
@@ -547,17 +553,14 @@ class AudioPlayer @Inject constructor(
      * Starts the playback service. A plain start is refused from the background (a cold process answering a widget
      * tap), but a foreground start is exempt when the user tapped a widget; the service then promotes itself once playing.
      */
-    private fun startPlaybackService(): Boolean {
-        val intent = Intent(context, BackgroundPlaybackService::class.java)
-        return try {
-            context.startService(intent)
+    private fun startPlaybackService(): Boolean = try {
+        BackgroundPlayback.start(context)
+        true
+    } catch (e: IllegalStateException) {
+        try {
+            BackgroundPlayback.startForeground(context)
             true
-        } catch (e: IllegalStateException) {
-            try {
-                context.startForegroundService(Intent(intent).putExtra(BackgroundPlayback.EXTRA_FOREGROUND_REQUIRED, true))
-                true
-            } catch (e: IllegalStateException) { false } // not allowed from the background at all
-        }
+        } catch (e: IllegalStateException) { false } // not allowed from the background at all
     }
 
     /** Runs [block] on the player; the first action on a restored queue starts it first (see [activate]). */
@@ -636,7 +639,7 @@ class AudioPlayer @Inject constructor(
             val running = activateJob?.takeIf { it.isActive }
             if (running != null) running.join()
             if (restoredPending) {
-                if (!activate()) return@withContext false
+                if (!activate(fromWidget = true)) return@withContext false
                 activated = true
             } else if (action == WidgetAction.TOGGLE) {
                 // An in-app tap was already activating: that started playback, toggling again would pause it.
@@ -813,7 +816,7 @@ class AudioPlayer @Inject constructor(
         player = null
         if (BackgroundPlayback.player === p) {
             BackgroundPlayback.player = null
-            context.stopService(Intent(context, BackgroundPlaybackService::class.java))
+            BackgroundPlayback.stop(context)
         }
         p.removeListener(listener)
         p.release()
@@ -830,7 +833,7 @@ class AudioPlayer @Inject constructor(
         if (other != null && other !== player) {
             other.pause()
             BackgroundPlayback.player = null
-            context.stopService(Intent(context, BackgroundPlaybackService::class.java))
+            BackgroundPlayback.stop(context)
         }
     }
 

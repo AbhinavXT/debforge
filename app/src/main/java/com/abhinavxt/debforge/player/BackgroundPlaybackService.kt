@@ -1,6 +1,7 @@
 package com.abhinavxt.debforge.player
 
 import android.app.PendingIntent
+import android.content.Context
 import android.content.Intent
 import android.content.pm.ServiceInfo
 import androidx.core.app.NotificationChannelCompat
@@ -78,23 +79,27 @@ class BackgroundPlaybackService : MediaSessionService() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         // startForegroundService() obliges startForeground() within seconds, whatever happens next (player
         // gone, playback failed). Post a placeholder on Media3's own channel and id; its notification replaces it.
-        if (intent?.getBooleanExtra(BackgroundPlayback.EXTRA_FOREGROUND_REQUIRED, false) == true) {
+        val foregroundRequired = intent?.getBooleanExtra(BackgroundPlayback.EXTRA_FOREGROUND_REQUIRED, false) == true
+        // A stop asked for before this point was held back (stopping first would crash the app): do it now.
+        val stopRequested = foregroundRequired && run {
             startForegroundPlaceholder()
+            BackgroundPlayback.foregroundStart.onForeground()
         }
-        if (session == null) { // no player was handed over (cleared meanwhile)
+        if (session == null || stopRequested) { // no player was handed over, or it was cleared meanwhile
             stopForeground(STOP_FOREGROUND_REMOVE)
             stopSelf()
             return START_NOT_STICKY
         }
-        val result = super.onStartCommand(intent, flags, startId)
-        if (intent?.getBooleanExtra(BackgroundPlayback.EXTRA_FOREGROUND_REQUIRED, false) == true) {
+        super.onStartCommand(intent, flags, startId)
+        if (foregroundRequired) {
             scope.launch { // playback that never began leaves no media notification to take its place
                 delay(PLACEHOLDER_GRACE_MS)
                 val state = session?.player?.playbackState
                 if (state == null || state == Player.STATE_IDLE) stopForeground(STOP_FOREGROUND_REMOVE)
             }
         }
-        return result
+        // The player lives in the app process, so a service restarted after the process died has nothing to play.
+        return START_NOT_STICKY
     }
 
     private fun startForegroundPlaceholder() {
@@ -133,6 +138,7 @@ class BackgroundPlaybackService : MediaSessionService() {
             it.release()
         }
         session = null
+        BackgroundPlayback.foregroundStart.reset()
         scope.cancel()
         super.onDestroy()
     }
@@ -208,4 +214,24 @@ object BackgroundPlayback {
 
     /** Boolean extra on the service intent: started with startForegroundService, so it must call startForeground at once. */
     const val EXTRA_FOREGROUND_REQUIRED = "com.abhinavxt.debforge.FOREGROUND_REQUIRED"
+
+    /** Whether a foreground start is still owed a startForeground(), and a stop held back until then. */
+    val foregroundStart = ForegroundStartGate()
+
+    /** Starts the service from the foreground (a plain start). */
+    fun start(context: Context) {
+        context.startService(Intent(context, BackgroundPlaybackService::class.java))
+        foregroundStart.plainStartRequested()
+    }
+
+    /** Starts the service from the background: it must post a notification at once ([EXTRA_FOREGROUND_REQUIRED]). */
+    fun startForeground(context: Context) {
+        context.startForegroundService(Intent(context, BackgroundPlaybackService::class.java).putExtra(EXTRA_FOREGROUND_REQUIRED, true))
+        foregroundStart.foregroundStartRequested()
+    }
+
+    /** Stops the service, or, while its foreground start is still pending, has it stop itself right after. */
+    fun stop(context: Context) {
+        if (foregroundStart.requestStop()) context.stopService(Intent(context, BackgroundPlaybackService::class.java))
+    }
 }
