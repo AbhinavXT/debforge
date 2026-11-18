@@ -41,9 +41,11 @@ class MainActivity : ComponentActivity() {
         if (savedInstanceState == null) {
             pendingAdds.offerFromIntent(intent)
             handleAppAction(intent)
+            // Reopened from recents (even after the process died), the launch intent comes back with the
+            // widget's request in it: only a real tap plays.
+            if (intent.flags and Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY == 0) takePlayRestored(intent)
         }
         takeExpandRequest(intent)
-        takePlayRestored(intent)
         setContent {
             val appVm: AppViewModel = hiltViewModel()
             val mode by appVm.themeMode.collectAsStateWithLifecycle()
@@ -75,7 +77,8 @@ class MainActivity : ComponentActivity() {
     /** singleTop: a magnet tapped while DebForge is already open lands here. */
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        setIntent(intent)
+        // Kept as the activity's intent: without the one-shot play request, so nothing later replays it.
+        setIntent(Intent(intent).apply { removeExtra(com.abhinavxt.debforge.widget.PlayerWidget.EXTRA_PLAY_RESTORED) })
         pendingAdds.offerFromIntent(intent)
         handleAppAction(intent)
         takeExpandRequest(intent)
