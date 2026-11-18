@@ -120,6 +120,7 @@
     <string name="dl_finishing">पूर्ण होत आहे…</string>
     <string name="dl_so_far">आतापर्यंत</string>
     <string name="dl_waiting_size">प्रतीक्षेत · %1$s</string>
+    <string name="dl_waiting_reason_size">%1$s · %2$s</string>
     <string name="dl_paused_status">थांबवले · %1$s · %2$s</string>
     <string name="dl_failed">डाउनलोड अयशस्वी</string>
     <string name="dl_done_at">पूर्ण · %1$s · %2$s</string>
@@ -209,6 +210,8 @@
     <string name="notif_paused_body">Android ची बॅकग्राउंड वेळ मर्यादा संपली. सुरू ठेवण्यासाठी टॅप करा.</string>
     <string name="notif_sched_title">ठरवलेले डाउनलोड सुरू होण्यासाठी तयार आहेत</string>
     <string name="notif_sched_body">सुरू करण्यासाठी टॅप करा. आपोआप सुरू होण्यासाठी \"अलार्म आणि रिमाइंडर\" ला परवानगी द्या.</string>
+    <string name="notif_stopped_title">सिस्टमने डाउनलोड थांबवले</string>
+    <string name="notif_stopped_body">पुन्हा सुरू करण्यासाठी टॅप करा.</string>
     <string name="notif_ready_one">तयार: %1$s</string>
     <string name="notif_ready_body">डाउनलोडसाठी रांगेत. सुरू करण्यासाठी टॅप करा.</string>
     <string name="notif_downloaded">डाउनलोड झाले</string>

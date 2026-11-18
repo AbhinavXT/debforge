@@ -258,7 +258,7 @@ private fun QueuedRow(row: ActiveRow, vm: ActiveDownloadsViewModel, modifier: Mo
         labels = labels,
         filename = row.entity.filename,
         statusOptions = reason?.let {
-            listOf("${stringResource(it)} · ${formatBytes(row.entity.filesize)}")
+            listOf(stringResource(R.string.dl_waiting_reason_size, stringResource(it), formatBytes(row.entity.filesize)))
         } ?: listOf(stringResource(R.string.dl_waiting_size, formatBytes(row.entity.filesize))),
         icon = Icons.Rounded.Schedule,
         iconContainer = cs.secondaryContainer,

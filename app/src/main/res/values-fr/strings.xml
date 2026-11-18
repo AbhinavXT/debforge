@@ -122,6 +122,7 @@
     <string name="dl_finishing">Finalisation…</string>
     <string name="dl_so_far">jusqu\'ici</string>
     <string name="dl_waiting_size">En attente · %1$s</string>
+    <string name="dl_waiting_reason_size">%1$s · %2$s</string>
     <string name="dl_paused_status">En pause · %1$s · %2$s</string>
     <string name="dl_failed">Échec du téléchargement</string>
     <string name="dl_done_at">Terminé · %1$s · %2$s</string>
@@ -211,6 +212,8 @@
     <string name="notif_paused_body">La limite de temps en arrière-plan d\'Android a été atteinte. Appuyez pour continuer.</string>
     <string name="notif_sched_title">Les téléchargements programmés peuvent démarrer</string>
     <string name="notif_sched_body">Appuyez pour démarrer. Autorisez \"Alarmes et rappels\" pour démarrer automatiquement.</string>
+    <string name="notif_stopped_title">Téléchargements suspendus par le système</string>
+    <string name="notif_stopped_body">Touchez pour reprendre.</string>
     <string name="notif_ready_one">Prêt : %1$s</string>
     <string name="notif_ready_body">En file d\'attente. Appuyez pour démarrer.</string>
     <string name="notif_downloaded">Téléchargé</string>

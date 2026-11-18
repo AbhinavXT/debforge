@@ -120,6 +120,7 @@
     <string name="dl_finishing">Tamamlanıyor…</string>
     <string name="dl_so_far">şu ana kadar</string>
     <string name="dl_waiting_size">Bekliyor · %1$s</string>
+    <string name="dl_waiting_reason_size">%1$s · %2$s</string>
     <string name="dl_paused_status">Duraklatıldı · %1$s · %2$s</string>
     <string name="dl_failed">İndirme başarısız oldu</string>
     <string name="dl_done_at">Tamamlandı · %1$s · %2$s</string>
@@ -209,6 +210,8 @@
     <string name="notif_paused_body">Android\'in arka plan süre sınırına ulaşıldı. Devam etmek için dokunun.</string>
     <string name="notif_sched_title">Planlanan indirmeler başlamaya hazır</string>
     <string name="notif_sched_body">Başlatmak için dokunun. Otomatik başlaması için \"Alarmlar ve hatırlatıcılar\" izni verin.</string>
+    <string name="notif_stopped_title">İndirmeler sistem tarafından duraklatıldı</string>
+    <string name="notif_stopped_body">Devam etmek için dokunun.</string>
     <string name="notif_ready_one">Hazır: %1$s</string>
     <string name="notif_ready_body">İndirme sırasına eklendi. Başlatmak için dokunun.</string>
     <string name="notif_downloaded">İndirildi</string>

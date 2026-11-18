@@ -120,6 +120,7 @@
     <string name="dl_finishing">ముగుస్తోంది…</string>
     <string name="dl_so_far">ఇప్పటివరకు</string>
     <string name="dl_waiting_size">వేచి ఉంది · %1$s</string>
+    <string name="dl_waiting_reason_size">%1$s · %2$s</string>
     <string name="dl_paused_status">పాజ్ చేయబడింది · %1$s · %2$s</string>
     <string name="dl_failed">డౌన్‌లోడ్ విఫలమైంది</string>
     <string name="dl_done_at">పూర్తయింది · %1$s · %2$s</string>
@@ -209,6 +210,8 @@
     <string name="notif_paused_body">Android బ్యాక్‌గ్రౌండ్ సమయ పరిమితి ముగిసింది. కొనసాగించడానికి నొక్కండి.</string>
     <string name="notif_sched_title">షెడ్యూల్ చేసిన డౌన్‌లోడ్‌లు మొదలవ్వడానికి సిద్ధంగా ఉన్నాయి</string>
     <string name="notif_sched_body">మొదలుపెట్టడానికి నొక్కండి. ఆటోమేటిక్‌గా మొదలవ్వాలంటే \"అలారాలు &amp; రిమైండర్‌లు\" అనుమతి ఇవ్వండి.</string>
+    <string name="notif_stopped_title">సిస్టమ్ డౌన్‌లోడ్‌లను ఆపేసింది</string>
+    <string name="notif_stopped_body">మళ్లీ కొనసాగించడానికి ట్యాప్ చేయండి.</string>
     <string name="notif_ready_one">సిద్ధం: %1$s</string>
     <string name="notif_ready_body">డౌన్‌లోడ్ క్యూలో ఉంది. మొదలుపెట్టడానికి నొక్కండి.</string>
     <string name="notif_downloaded">డౌన్‌లోడ్ అయింది</string>

@@ -27,6 +27,7 @@ object DownloadNotifications {
     private const val INFO_ID = 1002
     private const val READY_ID = 1003
     private const val FOLLOW_ID = 1004
+    private const val STOPPED_ID = 1005
 
     fun ensureChannel(context: Context) {
         val nm = context.getSystemService(NotificationManager::class.java)
@@ -87,6 +88,28 @@ object DownloadNotifications {
             .setContentIntent(openAppIntent(context))
             .build()
         runCatching { context.getSystemService(NotificationManager::class.java).notify(INFO_ID, n) }
+    }
+
+    /**
+     * Android stopped the downloads and nothing could restart them from the
+     * background. One notification, updated in place; cancelled when the queue
+     * runs again. Tapping opens the app, which resumes the queue.
+     */
+    fun notifyStoppedBySystem(context: Context) {
+        ensureChannel(context)
+        val n = NotificationCompat.Builder(context, CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_notification_download)
+            .setContentTitle(context.getString(R.string.notif_stopped_title))
+            .setContentText(context.getString(R.string.notif_stopped_body))
+            .setOnlyAlertOnce(true)
+            .setAutoCancel(true)
+            .setContentIntent(openAppIntent(context))
+            .build()
+        runCatching { context.getSystemService(NotificationManager::class.java).notify(STOPPED_ID, n) }
+    }
+
+    fun cancelStoppedBySystem(context: Context) {
+        runCatching { context.getSystemService(NotificationManager::class.java).cancel(STOPPED_ID) }
     }
 
     /** Schedule window opened but Android didn't let us start in the background. */

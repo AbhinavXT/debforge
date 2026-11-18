@@ -120,6 +120,7 @@
     <string name="dl_finishing">শেষ হচ্ছে…</string>
     <string name="dl_so_far">এ পর্যন্ত</string>
     <string name="dl_waiting_size">অপেক্ষমাণ · %1$s</string>
+    <string name="dl_waiting_reason_size">%1$s · %2$s</string>
     <string name="dl_paused_status">থামানো · %1$s · %2$s</string>
     <string name="dl_failed">ডাউনলোড ব্যর্থ হয়েছে</string>
     <string name="dl_done_at">সম্পূর্ণ · %1$s · %2$s</string>
@@ -209,6 +210,8 @@
     <string name="notif_paused_body">Android-এর ব্যাকগ্রাউন্ড সময়সীমা পূর্ণ হয়েছে। চালিয়ে যেতে ট্যাপ করুন।</string>
     <string name="notif_sched_title">নির্ধারিত ডাউনলোড শুরু হওয়ার জন্য তৈরি</string>
     <string name="notif_sched_body">শুরু করতে ট্যাপ করুন। নিজে থেকে শুরু করতে \"অ্যালার্ম ও রিমাইন্ডার\"-এর অনুমতি দিন।</string>
+    <string name="notif_stopped_title">সিস্টেম ডাউনলোড থামিয়ে দিয়েছে</string>
+    <string name="notif_stopped_body">আবার শুরু করতে ট্যাপ করুন।</string>
     <string name="notif_ready_one">তৈরি: %1$s</string>
     <string name="notif_ready_body">ডাউনলোডের সারিতে আছে। শুরু করতে ট্যাপ করুন।</string>
     <string name="notif_downloaded">ডাউনলোড হয়েছে</string>

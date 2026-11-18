@@ -17,6 +17,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.util.concurrent.atomic.AtomicBoolean
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
@@ -44,6 +46,11 @@ class DownloadScheduler @Inject constructor(
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private val recoveryPending = AtomicBoolean(false)
+    // Serialises ensureRunning: its checks span suspending calls, so two callers
+    // (app start + kick, alarm + unblock) could otherwise both schedule, and the
+    // second would cancel the job the first just started.
+    private val ensureLock = Mutex()
+    @Volatile private var lastScheduledAt = 0L
 
     init {
         // Pending work must not sit idle after a condition clears (network
@@ -74,13 +81,12 @@ class DownloadScheduler @Inject constructor(
         scope.launch {
             try {
                 delay(RECOVERY_DELAY_MS)
-                if (runner.offerWork() || !downloadDao.hasPendingWork()) return@launch
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                    val js = context.getSystemService(JobScheduler::class.java)
-                    if (js?.getPendingJob(JOB_ID) != null) return@launch // system retry is queued
-                }
-                Log.i(TAG, "No job pending after a stop; rescheduling")
-                ensureRunning()
+                if (!shouldRecover(runner.offerWork(), downloadDao.hasPendingWork())) return@launch
+                // A pending system retry is left alone by ensureRunning. When
+                // nothing can start from the background, say so and let the
+                // user resume with a tap.
+                Log.i(TAG, "No job running after a stop; rescheduling")
+                if (!ensureRunning()) DownloadNotifications.notifyStoppedBySystem(context)
             } catch (e: Exception) {
                 Log.w(TAG, "recoverAfterStop failed", e)
             } finally {
@@ -89,11 +95,6 @@ class DownloadScheduler @Inject constructor(
         }
     }
 
-    /**
-     * Safe to call any time; no-op if nothing is queued or the queue already
-     * runs. Returns false only when there IS work but Android wouldn't let us
-     * start it right now (it stays queued and starts when the app opens).
-     */
     /**
      * Re-arms the window alarm after Android dropped it (reboot, time or
      * time-zone change). Starting a download from a boot broadcast isn't
@@ -109,13 +110,20 @@ class DownloadScheduler @Inject constructor(
     }
 
     /**
+     * Safe to call any time; no-op if nothing is queued or the queue already
+     * runs. Returns false only when there IS work but Android wouldn't let us
+     * start it right now (it stays queued and starts when the app opens).
+     *
      * [foreground] = the app is visible (UIDT scheduling allowed) and the user
-     * can see the queue: a job already pending (waiting out the system's
-     * backoff) is replaced by a fresh one, provided nothing blocks downloads.
+     * can see the queue: a job pending for the system's own retry or
+     * optimisation is replaced by a fresh one, provided nothing blocks downloads.
      */
-    suspend fun ensureRunning(foreground: Boolean = false): Boolean {
-        if (runner.offerWork()) return true
-        if (!downloadDao.hasPendingWork()) return true
+    suspend fun ensureRunning(foreground: Boolean = false): Boolean = ensureLock.withLock {
+        if (runner.offerWork()) return@withLock true
+        if (!downloadDao.hasPendingWork()) {
+            DownloadNotifications.cancelStoppedBySystem(context)
+            return@withLock true
+        }
 
         // Outside the download schedule: don't start, wake up at window start.
         // Fresh evaluation, not the once-a-minute snapshot: when the window
@@ -126,31 +134,36 @@ class DownloadScheduler @Inject constructor(
         val block = conditions.freshBlock()
         if (block != null && !block.waitInPlace) {
             ScheduleAlarm.set(context, conditions.nextWindowStart(rules))
-            return true
+            return@withLock true
         }
         // Allowed to run now: a pending window alarm has nothing left to do.
         if (!rules.scheduleEnabled) ScheduleAlarm.cancel(context)
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE && scheduleJob(replacePending = foreground && block == null)) return true
-        return startForegroundService()
+        // The suspending calls above left a gap in which a host may have started.
+        if (runner.offerWork()) return@withLock true
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE && scheduleJob(foreground, block)) return@withLock true
+        startForegroundService()
     }
 
     @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
-    private suspend fun scheduleJob(replacePending: Boolean): Boolean {
+    private suspend fun scheduleJob(foreground: Boolean, block: Block?): Boolean {
         val js = context.getSystemService(JobScheduler::class.java) ?: return false
         if (!js.canRunUserInitiatedJobs()) return false
         // Already scheduled or running: scheduling again with the same id
-        // would STOP a running job, so leave it alone. (It isn't running here:
-        // offerWork() would have returned true.)
+        // would STOP a running job, so only a job that is demonstrably waiting
+        // on the system's retry is replaced.
         val pending = js.getPendingJob(JOB_ID)
         if (pending != null) {
-            // offerWork() was false, so no session is live: this job is waiting
-            // (backoff), not running. Replace it so it starts now.
-            if (!pending.requiresUnmetered() && !replacePending) return true
-            if (replacePending) Log.i(TAG, "Replacing pending job so it starts now")
+            val reason = js.getPendingJobReason(JOB_ID)
+            val recent = System.currentTimeMillis() - lastScheduledAt < RECENT_SCHEDULE_MS
+            val replace = shouldReplacePending(reason, runner.hasLiveSession(), block, foreground, recent)
             // Left over from builds that made JobScheduler enforce Wi-Fi-only:
             // it never starts on mobile data, even after the user turns the
             // rule off, and it made every new download wait behind it.
+            val stale = pending.requiresUnmetered() && reason != JobScheduler.PENDING_JOB_REASON_EXECUTING && !runner.hasLiveSession()
+            if (!replace && !stale) return true
+            if (replace) Log.i(TAG, "Replacing pending job (reason $reason) so it starts now")
             js.cancel(JOB_ID)
         }
 
@@ -170,7 +183,7 @@ class DownloadScheduler @Inject constructor(
             )
             .build()
         return try {
-            js.schedule(job) == JobScheduler.RESULT_SUCCESS
+            (js.schedule(job) == JobScheduler.RESULT_SUCCESS).also { if (it) lastScheduledAt = System.currentTimeMillis() }
         } catch (e: RuntimeException) {
             // Not visible / not allowed right now — fall back to the service.
             Log.w(TAG, "User-initiated job not scheduled", e)
@@ -196,8 +209,26 @@ class DownloadScheduler @Inject constructor(
         private const val TAG = "DownloadScheduler"
         private const val JOB_ID = 4201
         private const val RECOVERY_DELAY_MS = 30_000L
+        private const val RECENT_SCHEDULE_MS = 15_000L
 
         /** True when a blocker just cleared (was set, now none). */
         fun shouldRestartOnUnblock(previous: Block?, now: Block?): Boolean = previous != null && now == null
+
+        /** After a stop: act only when no host runs and there is work left. */
+        fun shouldRecover(hostRunning: Boolean, hasPendingWork: Boolean): Boolean = !hostRunning && hasPendingWork
+
+        /**
+         * Whether a pending job should be replaced by a fresh one so it starts
+         * now. Only for a visible app, with nothing blocking, no live session,
+         * a job we did not just schedule ourselves, and a pending reason that
+         * means "waiting for the system's retry / optimisation". Constraint,
+         * quota, thermal, device-state and executing reasons are left alone,
+         * and so is any job when the reason is unknown (below API 34).
+         */
+        fun shouldReplacePending(reason: Int?, sessionLive: Boolean, block: Block?, foreground: Boolean, recentlyScheduled: Boolean = false): Boolean {
+            if (!foreground || sessionLive || block != null || recentlyScheduled || reason == null) return false
+            return reason == JobScheduler.PENDING_JOB_REASON_UNDEFINED ||
+                reason == JobScheduler.PENDING_JOB_REASON_JOB_SCHEDULER_OPTIMIZATION
+        }
     }
 }

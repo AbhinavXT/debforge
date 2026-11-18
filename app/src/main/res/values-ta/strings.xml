@@ -120,6 +120,7 @@
     <string name="dl_finishing">முடிக்கிறது…</string>
     <string name="dl_so_far">இதுவரை</string>
     <string name="dl_waiting_size">காத்திருக்கிறது · %1$s</string>
+    <string name="dl_waiting_reason_size">%1$s · %2$s</string>
     <string name="dl_paused_status">இடைநிறுத்தப்பட்டது · %1$s · %2$s</string>
     <string name="dl_failed">பதிவிறக்கம் தோல்வியடைந்தது</string>
     <string name="dl_done_at">முடிந்தது · %1$s · %2$s</string>
@@ -209,6 +210,8 @@
     <string name="notif_paused_body">Android-இன் பின்னணி நேர வரம்பு எட்டப்பட்டது. தொடர தட்டவும்.</string>
     <string name="notif_sched_title">திட்டமிட்ட பதிவிறக்கங்கள் தொடங்கத் தயார்</string>
     <string name="notif_sched_body">தொடங்க தட்டவும். தானாகத் தொடங்க \"அலாரங்கள் &amp; நினைவூட்டல்கள்\" அனுமதியை வழங்கவும்.</string>
+    <string name="notif_stopped_title">கணினி பதிவிறக்கங்களை நிறுத்தியது</string>
+    <string name="notif_stopped_body">மீண்டும் தொடங்க தட்டவும்.</string>
     <string name="notif_ready_one">தயார்: %1$s</string>
     <string name="notif_ready_body">பதிவிறக்க வரிசையில் உள்ளது. தொடங்க தட்டவும்.</string>
     <string name="notif_downloaded">பதிவிறக்கப்பட்டது</string>

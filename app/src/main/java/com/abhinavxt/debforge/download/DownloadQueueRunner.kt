@@ -100,6 +100,7 @@ class DownloadQueueRunner @Inject constructor(
         if (prev != null && !prev.stopRequested) return null
         val s = Session(onIdle)
         session = s
+        DownloadNotifications.cancelStoppedBySystem(context)
         kicked = false
         s.loop = scope.launch {
             prev?.loop?.join()
@@ -123,6 +124,9 @@ class DownloadQueueRunner @Inject constructor(
         }
     }
 
+    /** True while a session exists that has not been asked to stop. */
+    fun hasLiveSession(): Boolean = synchronized(lock) { session?.let { !it.stopRequested } == true }
+
     /**
      * Host is going away. The active file is interrupted with progress saved
      * and left QUEUED; the loop exits and calls onIdle(HOST_STOPPED). Returns
@@ -134,7 +138,9 @@ class DownloadQueueRunner @Inject constructor(
             s.stopRequested = true
         }
         if (currentId != null) {
-            interrupt = Interrupt.YIELD
+            // A user's PAUSE / CANCEL that just landed must survive: YIELD
+            // would send a paused file back to QUEUED.
+            if (interrupt == null) interrupt = Interrupt.YIELD
             currentJob?.cancel()
         }
     }

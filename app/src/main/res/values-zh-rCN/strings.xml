@@ -118,6 +118,7 @@
     <string name="dl_finishing">正在完成…</string>
     <string name="dl_so_far">已下载</string>
     <string name="dl_waiting_size">等待中 · %1$s</string>
+    <string name="dl_waiting_reason_size">%1$s · %2$s</string>
     <string name="dl_paused_status">已暂停 · %1$s · %2$s</string>
     <string name="dl_failed">下载失败</string>
     <string name="dl_done_at">已完成 · %1$s · %2$s</string>
@@ -207,6 +208,8 @@
     <string name="notif_paused_body">已达到 Android 的后台运行时间限制。点按即可继续。</string>
     <string name="notif_sched_title">计划下载已可开始</string>
     <string name="notif_sched_body">点按即可开始。允许“闹钟和提醒”权限可自动开始。</string>
+    <string name="notif_stopped_title">系统已暂停下载</string>
+    <string name="notif_stopped_body">点按即可继续。</string>
     <string name="notif_ready_one">已就绪：%1$s</string>
     <string name="notif_ready_body">已加入下载队列。点按即可开始。</string>
     <string name="notif_downloaded">已下载</string>

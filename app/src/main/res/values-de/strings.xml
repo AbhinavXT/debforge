@@ -120,6 +120,7 @@
     <string name="dl_finishing">Wird abgeschlossen…</string>
     <string name="dl_so_far">bisher</string>
     <string name="dl_waiting_size">Wartet · %1$s</string>
+    <string name="dl_waiting_reason_size">%1$s · %2$s</string>
     <string name="dl_paused_status">Pausiert · %1$s · %2$s</string>
     <string name="dl_failed">Download fehlgeschlagen</string>
     <string name="dl_done_at">Fertig · %1$s · %2$s</string>
@@ -209,6 +210,8 @@
     <string name="notif_paused_body">Das Hintergrund-Zeitlimit von Android wurde erreicht. Tippe, um fortzufahren.</string>
     <string name="notif_sched_title">Geplante Downloads können starten</string>
     <string name="notif_sched_body">Tippe zum Starten. Erlaube \"Wecker &amp; Erinnerungen\", damit sie automatisch starten.</string>
+    <string name="notif_stopped_title">Downloads vom System pausiert</string>
+    <string name="notif_stopped_body">Zum Fortsetzen tippen.</string>
     <string name="notif_ready_one">Bereit: %1$s</string>
     <string name="notif_ready_body">Zum Download eingereiht. Tippe zum Starten.</string>
     <string name="notif_downloaded">Heruntergeladen</string>

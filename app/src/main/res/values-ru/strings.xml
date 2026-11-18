@@ -124,6 +124,7 @@
     <string name="dl_finishing">Завершение…</string>
     <string name="dl_so_far">пока</string>
     <string name="dl_waiting_size">Ожидание · %1$s</string>
+    <string name="dl_waiting_reason_size">%1$s · %2$s</string>
     <string name="dl_paused_status">Приостановлено · %1$s · %2$s</string>
     <string name="dl_failed">Ошибка загрузки</string>
     <string name="dl_done_at">Готово · %1$s · %2$s</string>
@@ -213,6 +214,8 @@
     <string name="notif_paused_body">Достигнут лимит фоновой работы Android. Нажмите, чтобы продолжить.</string>
     <string name="notif_sched_title">Запланированные загрузки готовы к запуску</string>
     <string name="notif_sched_body">Нажмите, чтобы начать. Разрешите \"Будильники и напоминания\" для автоматического запуска.</string>
+    <string name="notif_stopped_title">Система приостановила загрузки</string>
+    <string name="notif_stopped_body">Нажмите, чтобы продолжить.</string>
     <string name="notif_ready_one">Готово: %1$s</string>
     <string name="notif_ready_body">Добавлено в очередь загрузок. Нажмите, чтобы начать.</string>
     <string name="notif_downloaded">Скачано</string>

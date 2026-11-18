@@ -121,6 +121,7 @@
     <string name="dl_finishing">Finishing…</string>
     <string name="dl_so_far">so far</string>
     <string name="dl_waiting_size">Waiting · %1$s</string>
+    <string name="dl_waiting_reason_size">%1$s · %2$s</string>
     <string name="dl_paused_status">Paused · %1$s · %2$s</string>
     <string name="dl_failed">Download failed</string>
     <string name="dl_done_at">Done · %1$s · %2$s</string>
@@ -210,6 +211,8 @@
     <string name="notif_paused_body">Android\'s background time limit was reached. Tap to continue.</string>
     <string name="notif_sched_title">Scheduled downloads are ready to start</string>
     <string name="notif_sched_body">Tap to start. Allow \"Alarms &amp; reminders\" to start automatically.</string>
+    <string name="notif_stopped_title">Downloads paused by the system</string>
+    <string name="notif_stopped_body">Tap to resume.</string>
     <string name="notif_ready_one">Ready: %1$s</string>
     <string name="notif_ready_body">Queued for download. Tap to start.</string>
     <string name="notif_downloaded">Downloaded</string>
