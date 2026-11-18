@@ -562,6 +562,8 @@
     <!-- Player gestures -->
     <string name="set_player_gestures">Dokunma hareketleri</string>
     <string name="set_player_gestures_detail">Atlamak için kenarlara çift dokunun, parlaklık, ses veya sarma için kaydırın, hızlı oynatma için basılı tutun, yakınlaştırmak için sıkıştırın.</string>
+    <string name="set_player_art_color">Kapaktan renk</string>
+    <string name="set_player_art_color_detail">Ses oynatıcıyı parçanın kapak görselinin rengiyle renklendir.</string>
     <plurals name="player_gesture_seek_n">
         <item quantity="one">%d saniye</item>
         <item quantity="other">%d saniye</item>

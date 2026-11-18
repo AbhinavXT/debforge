@@ -562,6 +562,8 @@
     <!-- Player gestures -->
     <string name="set_player_gestures">தொடு சைகைகள்</string>
     <string name="set_player_gestures_detail">ஓரங்களில் இருமுறை தட்டித் தாவலாம், தேய்த்து ஒளிர்வு, ஒலி அல்லது முன்-பின் நகர்த்தலாம், அழுத்திப் பிடித்தால் வேகமாக ஓடும், கிள்ளி பெரிதாக்கலாம்.</string>
+    <string name="set_player_art_color">ஆர்ட்வொர்க்கிலிருந்து நிறம்</string>
+    <string name="set_player_art_color_detail">ஆடியோ பிளேயரை டிராக்கின் ஆர்ட்வொர்க் நிறத்தில் வண்ணமாக்கவும்.</string>
     <plurals name="player_gesture_seek_n">
         <item quantity="one">%d விநாடி</item>
         <item quantity="other">%d விநாடிகள்</item>

@@ -562,6 +562,8 @@
     <!-- Player gestures -->
     <string name="set_player_gestures">टच जेस्चर</string>
     <string name="set_player_gestures_detail">किनारों पर दो बार टैप करके आगे-पीछे करें, स्वाइप करके चमक, आवाज़ या वीडियो आगे-पीछे करें, दबाकर रखें तो तेज़ चलेगा, पिंच करके ज़ूम करें।</string>
+    <string name="set_player_art_color">आर्टवर्क से रंग</string>
+    <string name="set_player_art_color_detail">ऑडियो प्लेयर को ट्रैक के आर्टवर्क के रंग में रंगें।</string>
     <plurals name="player_gesture_seek_n">
         <item quantity="one">%d सेकंड</item>
         <item quantity="other">%d सेकंड</item>

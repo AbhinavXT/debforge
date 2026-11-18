@@ -4,7 +4,11 @@ import android.provider.Settings
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -129,14 +133,22 @@ fun NowPlaying(
     /** Opens the artist's channel page: (name, url). Only offered for a track that has a channel url. */
     onChannel: (String, String) -> Unit = { _, _ -> },
     /** Pads the content for the system bars while the sheet itself stays full-bleed (so it slides over the screen below). */
-    padSystemBars: Boolean = false
+    padSystemBars: Boolean = false,
+    /** Tints the background from the track's artwork. */
+    artColor: Boolean = false
 ) {
     val track = state.track ?: return
+    val surface = MaterialTheme.colorScheme.surface
+    val art = rememberArtColor(track, artColor)
+    val top by animateColorAsState(
+        art?.let { Color(artBackground(it.toArgb(), surface.toArgb(), MaterialTheme.colorScheme.onSurface.toArgb())) } ?: surface,
+        tween(400), label = "artTint"
+    )
     // Trap D-pad focus inside the player: focusProperties on a wrapper does not reach focusables nested in
     // another focusable behind it, so the player itself refuses to let focus leave.
     val dismiss = rememberSwipeDown(onClose)
     Surface(modifier.fillMaxSize().swipeDownToDismiss(dismiss).focusProperties { exit = { FocusRequester.Cancel } }.focusGroup(), color = MaterialTheme.colorScheme.surface) {
-        BoxWithConstraints(Modifier.fillMaxSize().then(if (padSystemBars) Modifier.windowInsetsPadding(WindowInsets.systemBars) else Modifier)) {
+        BoxWithConstraints(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(top, surface))).then(if (padSystemBars) Modifier.windowInsetsPadding(WindowInsets.systemBars) else Modifier)) {
             val wide = maxWidth > maxHeight && maxWidth >= 600.dp
             Column(Modifier.fillMaxSize().padding(horizontal = 24.dp)) {
                 val s = remember { MutableInteractionSource() }

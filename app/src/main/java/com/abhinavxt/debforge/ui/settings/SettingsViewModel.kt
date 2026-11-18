@@ -207,6 +207,11 @@ class SettingsViewModel @Inject constructor(
     )
     fun setStreamPreviews(v: Boolean) = viewModelScope.launch { settingsStore.setStreamPreviews(v) }
 
+    val playerArtColor: StateFlow<Boolean> = settingsStore.playerArtColorFlow.stateIn(
+        viewModelScope, SharingStarted.WhileSubscribed(5_000), true
+    )
+    fun setPlayerArtColor(v: Boolean) = viewModelScope.launch { settingsStore.setPlayerArtColor(v) }
+
     val playerGestures: StateFlow<Boolean> = settingsStore.playerGesturesFlow.stateIn(
         viewModelScope, SharingStarted.WhileSubscribed(5_000), true
     )

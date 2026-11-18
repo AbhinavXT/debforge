@@ -3,6 +3,7 @@ package com.abhinavxt.debforge.ui.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.abhinavxt.debforge.data.local.DownloadDao
+import com.abhinavxt.debforge.data.prefs.SettingsStore
 import com.abhinavxt.debforge.domain.DownloadState
 import com.abhinavxt.debforge.player.AudioPlayer
 import com.abhinavxt.debforge.ui.add.PendingAddStore
@@ -24,8 +25,11 @@ object NowPlayingRequest {
 class ShellViewModel @Inject constructor(
     val audio: AudioPlayer,
     val pending: PendingAddStore,
-    dao: DownloadDao
+    dao: DownloadDao,
+    settings: SettingsStore
 ) : ViewModel() {
+    val playerArtColor: StateFlow<Boolean> = settings.playerArtColorFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), true)
     val activeCount: StateFlow<Int> = dao.observeAll()
         .map { rows -> rows.count { it.state == DownloadState.DOWNLOADING || it.state == DownloadState.QUEUED } }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0)

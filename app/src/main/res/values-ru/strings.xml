@@ -618,6 +618,8 @@
     <!-- Player gestures -->
     <string name="set_player_gestures">Жесты</string>
     <string name="set_player_gestures_detail">Двойное касание по краям — перемотка, свайп — яркость, громкость или перемотка, удержание — быстрое воспроизведение, щипок — масштаб.</string>
+    <string name="set_player_art_color">Цвет из обложки</string>
+    <string name="set_player_art_color_detail">Окрашивать аудиоплеер в цвета обложки трека.</string>
     <plurals name="player_gesture_seek_n">
         <item quantity="one">%d секунда</item>
         <item quantity="few">%d секунды</item>

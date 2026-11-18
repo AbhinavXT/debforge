@@ -182,6 +182,7 @@ dependencies {
 
     // Images (posters)
     implementation(libs.coil.compose)
+    implementation(libs.androidx.palette.ktx)
 
     // In-app video player (PlayerView: controls, track pickers, TV D-pad).
     implementation(libs.androidx.media3.exoplayer)

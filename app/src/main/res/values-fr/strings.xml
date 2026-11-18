@@ -590,6 +590,8 @@
     <!-- Player gestures -->
     <string name="set_player_gestures">Gestes tactiles</string>
     <string name="set_player_gestures_detail">Touchez deux fois les côtés pour sauter, glissez pour la luminosité, le volume ou avancer, maintenez pour accélérer, pincez pour zoomer.</string>
+    <string name="set_player_art_color">Couleur de la pochette</string>
+    <string name="set_player_art_color_detail">Teinter le lecteur audio avec les couleurs de la pochette.</string>
     <plurals name="player_gesture_seek_n">
         <item quantity="one">%d seconde</item>
         <item quantity="many">%d secondes</item>

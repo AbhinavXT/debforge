@@ -562,6 +562,8 @@
     <!-- Player gestures -->
     <string name="set_player_gestures">టచ్ సంజ్ఞలు</string>
     <string name="set_player_gestures_detail">అంచులపై రెండుసార్లు తట్టి ముందుకు-వెనక్కు వెళ్లండి, స్వైప్‌తో ప్రకాశం, వాల్యూమ్ లేదా వీడియో జరపండి, నొక్కి పట్టుకుంటే వేగంగా ప్లే అవుతుంది, పించ్‌తో జూమ్ చేయండి.</string>
+    <string name="set_player_art_color">ఆర్ట్‌వర్క్ నుండి రంగు</string>
+    <string name="set_player_art_color_detail">ఆడియో ప్లేయర్‌కు ట్రాక్ ఆర్ట్‌వర్క్ రంగును ఇవ్వండి.</string>
     <plurals name="player_gesture_seek_n">
         <item quantity="one">%d సెకను</item>
         <item quantity="other">%d సెకన్లు</item>

@@ -55,6 +55,7 @@ class SettingsStore @Inject constructor(
     private val keyAutoSkipIntro = booleanPreferencesKey("auto_skip_intro")
     private val keyNightMode = booleanPreferencesKey("player_night_mode")
     private val keyStreamPreviews = booleanPreferencesKey("player_stream_previews")
+    private val keyPlayerArtColor = booleanPreferencesKey("player_art_color")
     private val keyPlayerGestures = booleanPreferencesKey("player_gestures")
     private val keyPlayerShowRemaining = booleanPreferencesKey("player_show_remaining")
     private val keyAudioLanguage = stringPreferencesKey("player_audio_language")
@@ -168,6 +169,8 @@ class SettingsStore @Inject constructor(
     suspend fun setNightMode(v: Boolean) = context.settingsDataStore.edit { it[keyNightMode] = v }
 
     /** Player: double-tap seek, swipe brightness/volume, scrub, hold for speed, pinch zoom. */
+    val playerArtColorFlow: Flow<Boolean> = context.settingsDataStore.data.map { it[keyPlayerArtColor] ?: true }
+    suspend fun setPlayerArtColor(v: Boolean) = context.settingsDataStore.edit { it[keyPlayerArtColor] = v }
     val playerGesturesFlow: Flow<Boolean> = context.settingsDataStore.data.map { it[keyPlayerGestures] ?: true }
     suspend fun setPlayerGestures(v: Boolean) = context.settingsDataStore.edit { it[keyPlayerGestures] = v }
 

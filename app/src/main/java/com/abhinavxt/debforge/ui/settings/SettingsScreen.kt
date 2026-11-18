@@ -37,6 +37,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.Logout
 import androidx.compose.material.icons.automirrored.rounded.Sort
 import androidx.compose.material.icons.rounded.AutoDelete
+import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material.icons.rounded.TouchApp
 import androidx.compose.material.icons.rounded.FastForward
 import androidx.compose.material.icons.rounded.HighQuality
@@ -141,6 +142,7 @@ fun SettingsScreen(onConnect: () -> Unit, onBack: (() -> Unit)? = null, viewMode
     val pip by viewModel.pip.collectAsStateWithLifecycle()
     val autoSkipIntro by viewModel.autoSkipIntro.collectAsStateWithLifecycle()
     val streamPreviews by viewModel.streamPreviews.collectAsStateWithLifecycle()
+    val playerArtColor by viewModel.playerArtColor.collectAsStateWithLifecycle()
     val playerGestures by viewModel.playerGestures.collectAsStateWithLifecycle()
     val audioLanguage by viewModel.audioLanguage.collectAsStateWithLifecycle()
     val subtitleLanguage by viewModel.subtitleLanguage.collectAsStateWithLifecycle()
@@ -422,6 +424,14 @@ fun SettingsScreen(onConnect: () -> Unit, onBack: (() -> Unit)? = null, viewMode
                             subtitle = stringResource(R.string.set_player_gestures_detail),
                             checked = playerGestures,
                             onChange = viewModel::setPlayerGestures
+                        )
+                        RowDivider()
+                        SwitchSettingRow(
+                            icon = Icons.Rounded.Palette,
+                            title = stringResource(R.string.set_player_art_color),
+                            subtitle = stringResource(R.string.set_player_art_color_detail),
+                            checked = playerArtColor,
+                            onChange = viewModel::setPlayerArtColor
                         )
                         RowDivider()
                         LanguageRow(

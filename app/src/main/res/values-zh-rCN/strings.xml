@@ -534,6 +534,8 @@
     <!-- Player gestures -->
     <string name="set_player_gestures">触摸手势</string>
     <string name="set_player_gestures_detail">双击两侧快进/快退，滑动调节亮度、音量或拖动进度，长按倍速播放，双指缩放画面。</string>
+    <string name="set_player_art_color">封面取色</string>
+    <string name="set_player_art_color_detail">用曲目封面的颜色为音频播放器着色。</string>
     <plurals name="player_gesture_seek_n">
         <item quantity="other">%d 秒</item>
     </plurals>

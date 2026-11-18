@@ -564,6 +564,8 @@
     <!-- Player gestures -->
     <string name="set_player_gestures">Touch gestures</string>
     <string name="set_player_gestures_detail">Double-tap the sides to skip, swipe for brightness and volume or to scrub, hold for fast playback, pinch to zoom.</string>
+    <string name="set_player_art_color">Colour from artwork</string>
+    <string name="set_player_art_color_detail">Tint the audio player with the track\'s artwork.</string>
     <plurals name="player_gesture_seek_n">
         <item quantity="one">%d second</item>
         <item quantity="other">%d seconds</item>

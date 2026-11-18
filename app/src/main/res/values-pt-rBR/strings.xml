@@ -590,6 +590,8 @@
     <!-- Player gestures -->
     <string name="set_player_gestures">Gestos de toque</string>
     <string name="set_player_gestures_detail">Toque duas vezes nas laterais para pular, deslize para brilho, volume ou avançar, segure para reproduzir rápido, pince para dar zoom.</string>
+    <string name="set_player_art_color">Cor da capa</string>
+    <string name="set_player_art_color_detail">Colorir o player de áudio com as cores da capa da faixa.</string>
     <plurals name="player_gesture_seek_n">
         <item quantity="one">%d segundo</item>
         <item quantity="many">%d segundos</item>

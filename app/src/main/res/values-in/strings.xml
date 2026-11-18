@@ -534,6 +534,8 @@
     <!-- Player gestures -->
     <string name="set_player_gestures">Gestur sentuh</string>
     <string name="set_player_gestures_detail">Ketuk dua kali di sisi untuk melompat, geser untuk kecerahan, volume, atau memajukan, tahan untuk putar cepat, cubit untuk zoom.</string>
+    <string name="set_player_art_color">Warna dari sampul</string>
+    <string name="set_player_art_color_detail">Warnai pemutar audio dengan warna sampul lagu.</string>
     <plurals name="player_gesture_seek_n">
         <item quantity="other">%d detik</item>
     </plurals>
