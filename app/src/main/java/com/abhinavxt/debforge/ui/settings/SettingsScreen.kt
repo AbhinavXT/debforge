@@ -322,7 +322,7 @@ fun SettingsScreen(onConnect: () -> Unit, onBack: (() -> Unit)? = null, viewMode
                                 pluralRes(
                                     R.plurals.set_storage_downloaded,
                                     info.downloadedFiles,
-                                    formatSize(info.downloadedBytes),
+                                    android.text.format.Formatter.formatShortFileSize(context, info.downloadedBytes),
                                     info.downloadedFiles
                                 )
                             } else null
