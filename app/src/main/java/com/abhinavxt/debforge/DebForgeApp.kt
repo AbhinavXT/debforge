@@ -15,6 +15,7 @@ class DebForgeApp : Application() {
 
     @Inject lateinit var tokenStore: TokenStore
     @Inject lateinit var widgetSync: com.abhinavxt.debforge.widget.WidgetSync
+    @Inject lateinit var playerWidgetSync: com.abhinavxt.debforge.widget.PlayerWidgetSync
     @Inject lateinit var followStore: com.abhinavxt.debforge.data.follow.FollowStore
 
     private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -29,6 +30,8 @@ class DebForgeApp : Application() {
         appScope.launch { runCatching { tokenStore.encryptLegacyValues() } }
         // Home-screen widget follows the queue while the process is alive.
         widgetSync.start(appScope)
+        // Player widget: restores the saved queue for it and follows the player.
+        playerWidgetSync.start(appScope)
         // Follows restored from a backup (or after "clear data" of the job
         // store): make sure the episode check is scheduled exactly when needed.
         appScope.launch {

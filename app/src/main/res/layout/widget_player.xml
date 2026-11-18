@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Home-screen player widget (RemoteViews). Filled in by widget/PlayerWidgetRenderer.kt.
+     The default text and icons are what the widget picker previews. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_bg"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:padding="8dp">
+
+    <!-- Placeholder is the FrameLayout's background; the artwork covers it when there is one. -->
+    <FrameLayout
+        android:id="@+id/widget_art_frame"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:background="@drawable/widget_art_bg">
+
+        <ImageView
+            android:id="@+id/widget_art"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:importantForAccessibility="no"
+            android:scaleType="centerCrop"
+            android:visibility="gone" />
+    </FrameLayout>
+
+    <LinearLayout
+        android:id="@+id/widget_text"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="4dp"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/widget_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="@string/widget_player_idle"
+            android:textColor="@color/widget_fg"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/widget_artist"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="@string/widget_player_idle_hint"
+            android:textColor="@color/widget_fg_dim"
+            android:textSize="12sp" />
+    </LinearLayout>
+
+    <ImageButton
+        android:id="@+id/widget_prev"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:background="@null"
+        android:contentDescription="@string/audio_previous"
+        android:padding="8dp"
+        android:src="@drawable/ic_action_previous"
+        android:tint="@color/widget_fg" />
+
+    <ImageButton
+        android:id="@+id/widget_play"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        android:background="@drawable/widget_circle"
+        android:contentDescription="@string/audio_play"
+        android:padding="10dp"
+        android:src="@drawable/ic_action_play"
+        android:tint="@color/widget_pill_fg" />
+
+    <ImageButton
+        android:id="@+id/widget_next"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:background="@null"
+        android:contentDescription="@string/audio_next"
+        android:padding="8dp"
+        android:src="@drawable/ic_action_next"
+        android:tint="@color/widget_fg" />
+</LinearLayout>

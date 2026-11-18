@@ -31,6 +31,7 @@ class MainActivity : ComponentActivity() {
     @Inject lateinit var downloadScheduler: DownloadScheduler
     @Inject lateinit var downloadController: DownloadController
     @Inject lateinit var housekeeper: com.abhinavxt.debforge.download.Housekeeper
+    @Inject lateinit var audioPlayer: com.abhinavxt.debforge.player.AudioPlayer
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,6 +43,7 @@ class MainActivity : ComponentActivity() {
             handleAppAction(intent)
         }
         takeExpandRequest(intent)
+        takePlayRestored(intent)
         setContent {
             val appVm: AppViewModel = hiltViewModel()
             val mode by appVm.themeMode.collectAsStateWithLifecycle()
@@ -77,6 +79,17 @@ class MainActivity : ComponentActivity() {
         pendingAdds.offerFromIntent(intent)
         handleAppAction(intent)
         takeExpandRequest(intent)
+        takePlayRestored(intent)
+    }
+
+    /** The player widget's Play button when it cannot start playback itself: the app is in front now, so it may. */
+    private fun takePlayRestored(intent: Intent?) {
+        if (intent?.getBooleanExtra(com.abhinavxt.debforge.widget.PlayerWidget.EXTRA_PLAY_RESTORED, false) != true) return
+        intent.removeExtra(com.abhinavxt.debforge.widget.PlayerWidget.EXTRA_PLAY_RESTORED)
+        lifecycleScope.launch {
+            audioPlayer.restore()
+            if (audioPlayer.isActive && !audioPlayer.state.value.isPlaying) audioPlayer.toggle()
+        }
     }
 
     /** The audio notification asks for "now playing"; clear it so rotation does not reopen it. */

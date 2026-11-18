@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- updatePeriodMillis = 0: the app pushes updates itself (PlayerWidgetSync)
+     when the track or play state changes; the launcher never polls. -->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:description="@string/widget_player_description"
+    android:initialLayout="@layout/widget_player"
+    android:minWidth="250dp"
+    android:minHeight="70dp"
+    android:minResizeWidth="180dp"
+    android:minResizeHeight="70dp"
+    android:previewLayout="@layout/widget_player"
+    android:resizeMode="horizontal|vertical"
+    android:targetCellWidth="4"
+    android:targetCellHeight="1"
+    android:updatePeriodMillis="0"
+    android:widgetCategory="home_screen" />

@@ -100,6 +100,9 @@ fun mayRecoverLink(lastAttemptAtMs: Long?, nowMs: Long): Boolean = lastAttemptAt
 
 enum class AudioRepeat { OFF, ALL, ONE }
 
+/** What a home-screen widget button asks of the player. */
+enum class WidgetAction { TOGGLE, NEXT, PREVIOUS }
+
 data class AudioState(
     val queue: List<AudioTrack> = emptyList(),
     val index: Int = 0,
@@ -561,6 +564,29 @@ class AudioPlayer @Inject constructor(
         sleepItemId = null
         player?.pauseAtEndOfMediaItems = false
         publish()
+    }
+
+    /** True when this process has a player (playing, or a restored queue waiting for a tap). */
+    val isActive: Boolean get() = player != null
+
+    /**
+     * A home-screen widget button: restores the saved queue when the process is new, then does [action].
+     * False when nothing could be played (no saved queue, or Android refused the service start, see [activate]).
+     */
+    suspend fun playFromWidget(action: WidgetAction): Boolean = withContext(Dispatchers.Main.immediate) {
+        restore()
+        if (player == null) return@withContext false
+        if (restoredPending) {
+            activateJob?.takeIf { it.isActive }?.join()
+            if (restoredPending && !activate()) return@withContext false
+            if (action == WidgetAction.TOGGLE) return@withContext true // activating started playback
+        }
+        when (action) {
+            WidgetAction.TOGGLE -> toggle()
+            WidgetAction.NEXT -> next()
+            WidgetAction.PREVIOUS -> previous()
+        }
+        true
     }
 
     fun toggle() {
