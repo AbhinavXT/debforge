@@ -45,8 +45,8 @@ android {
         // and never runs Gradle, so they must not be computed. Bump them with
         // `scripts/release.sh X.Y.Z` (also writes the changelog and the tag).
         // Code scheme: major*10000 + minor*100 + patch, so 1.1.2 is 10102.
-        versionCode = 11101
-        versionName = "1.11.1"
+        versionCode = 11102
+        versionName = "1.11.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
