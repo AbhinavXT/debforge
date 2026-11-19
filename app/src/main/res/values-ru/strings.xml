@@ -956,6 +956,7 @@
     <string name="yt_err_unavailable">Это видео недоступно или закрыто.</string>
     <string name="yt_err_network">Проверьте подключение и повторите попытку.</string>
     <string name="yt_skipped_unavailable">Недоступное видео пропущено</string>
+    <string name="yt_not_responding">YouTube не отвечает, воспроизведение приостановлено</string>
     <string name="yt_err_generic">Не удалось прочитать это видео. Повторите попытку чуть позже.</string>
     <string name="yt_err_queue">Не удалось добавить загрузку. Повторите попытку.</string>
     <string name="yt_playlist">Плейлист</string>

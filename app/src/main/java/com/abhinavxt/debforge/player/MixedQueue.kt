@@ -6,6 +6,7 @@ import com.abhinavxt.debforge.data.playback.YouTubeMeta
 import com.abhinavxt.debforge.domain.YouTubeLinks
 import com.abhinavxt.debforge.domain.YouTubeSearchResult
 import com.abhinavxt.debforge.player.youtube.YouTubeStreaming
+import kotlinx.coroutines.async
 
 /** One item of a mixed queue: a downloaded track, or a YouTube video that streams (unless a download of it is found). */
 sealed interface MixedEntry {
@@ -56,4 +57,67 @@ class RelatedCache(private val max: Int = 20) {
 
     @Synchronized fun put(videoId: String, related: List<YouTubeSearchResult>) { map[videoId] = related }
     @Synchronized fun get(videoId: String): List<YouTubeSearchResult>? = map[videoId]
+}
+
+/**
+ * Counts YouTube lookups that failed for good ([recordBroken]) in a row. After [limit] of them YouTube is likely
+ * blocking requests (bot check) rather than every video being gone, so the caller stops dropping items.
+ */
+class BrokenBreaker(private val limit: Int = 3) {
+    private var count = 0
+
+    /** Records one failure; true when this one trips the breaker (the count then starts over). */
+    fun recordBroken(): Boolean {
+        count++
+        if (count < limit) return false
+        count = 0
+        return true
+    }
+
+    fun reset() { count = 0 }
+}
+
+/** Lets a message through at most once per [windowMs]; repeats inside the window are swallowed. */
+class ToastCollapser(private val windowMs: Long = 4_000L) {
+    private var lastAt: Long? = null
+
+    fun shouldShow(nowMs: Long): Boolean {
+        val last = lastAt
+        if (last != null && nowMs - last in 0 until windowMs) return false
+        lastAt = nowMs
+        return true
+    }
+}
+
+/**
+ * The shuffle order after a new item is inserted at queue index [at] to play right after [current]: [order] lists the
+ * queue indices in playing order before the insert; indices from [at] up shift by one.
+ */
+fun orderWithPlayNext(order: List<Int>, current: Int, at: Int): List<Int> {
+    val shifted = order.map { if (it >= at) it + 1 else it }
+    val pos = shifted.indexOf(current)
+    return shifted.toMutableList().also { it.add(if (pos < 0) 0 else pos + 1, at) }
+}
+
+/** True when a YouTube video is already queued, as a stream ([ytaudio] id) or as its download, whichever [builtId] is. */
+fun youTubeAlreadyQueued(queueIds: Collection<String>, videoId: String, builtId: String): Boolean =
+    builtId in queueIds || YouTubeStreaming.streamPositionKey(videoId, audioOnly = true) in queueIds
+
+/** Runs one computation per key at a time: a second caller for a key already running awaits the same result. */
+class InFlight<K : Any, V> {
+    private val map = java.util.concurrent.ConcurrentHashMap<K, kotlinx.coroutines.Deferred<V>>()
+
+    fun isRunning(key: K) = map[key]?.isActive == true
+
+    suspend fun run(key: K, scope: kotlinx.coroutines.CoroutineScope, block: suspend () -> V): V {
+        val existing = map[key]
+        if (existing != null) return existing.await()
+        val d = scope.async(start = kotlinx.coroutines.CoroutineStart.LAZY) { block() }
+        map[key] = d
+        d.invokeOnCompletion { map.remove(key, d) }
+        d.start()
+        return d.await()
+    }
+
+    fun cancelAll() { map.values.forEach { it.cancel() }; map.clear() }
 }

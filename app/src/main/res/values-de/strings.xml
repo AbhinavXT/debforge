@@ -876,6 +876,7 @@
     <string name="yt_err_unavailable">Dieses Video ist nicht verfügbar oder privat.</string>
     <string name="yt_err_network">Prüfe deine Verbindung und versuche es erneut.</string>
     <string name="yt_skipped_unavailable">Nicht verfügbares Video übersprungen</string>
+    <string name="yt_not_responding">YouTube antwortet nicht, Wiedergabe pausiert</string>
     <string name="yt_err_generic">Beim Lesen dieses Videos ist etwas schiefgelaufen. Versuche es gleich noch einmal.</string>
     <string name="yt_err_queue">Download konnte nicht hinzugefügt werden. Versuche es erneut.</string>
     <string name="yt_playlist">Playlist</string>

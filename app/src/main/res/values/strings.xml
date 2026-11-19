@@ -878,6 +878,7 @@
     <string name="yt_err_unavailable">This video is unavailable or private.</string>
     <string name="yt_err_network">Check your connection and try again.</string>
     <string name="yt_skipped_unavailable">Skipped unavailable video</string>
+    <string name="yt_not_responding">YouTube isn\'t responding, playback paused</string>
     <string name="yt_err_generic">Something went wrong reading this video. Try again in a moment.</string>
     <string name="yt_err_queue">Couldn\'t add the download. Try again.</string>
     <string name="yt_playlist">Playlist</string>

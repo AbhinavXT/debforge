@@ -876,6 +876,7 @@
     <string name="yt_err_unavailable">हा व्हिडिओ उपलब्ध नाही किंवा खाजगी आहे.</string>
     <string name="yt_err_network">तुमचे कनेक्शन तपासा आणि पुन्हा प्रयत्न करा.</string>
     <string name="yt_skipped_unavailable">अनुपलब्ध व्हिडिओ वगळला</string>
+    <string name="yt_not_responding">YouTube प्रतिसाद देत नाही, प्लेबॅक थांबवले</string>
     <string name="yt_err_generic">हा व्हिडिओ वाचताना काहीतरी चूक झाली. थोड्या वेळाने पुन्हा प्रयत्न करा.</string>
     <string name="yt_err_queue">डाउनलोड जोडता आला नाही. पुन्हा प्रयत्न करा.</string>
     <string name="yt_playlist">प्लेलिस्ट</string>

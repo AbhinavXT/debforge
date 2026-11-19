@@ -876,6 +876,7 @@
     <string name="yt_err_unavailable">இந்த வீடியோ கிடைக்கவில்லை அல்லது தனிப்பட்டது.</string>
     <string name="yt_err_network">இணைப்பைச் சரிபார்த்து மீண்டும் முயலவும்.</string>
     <string name="yt_skipped_unavailable">கிடைக்காத வீடியோ தவிர்க்கப்பட்டது</string>
+    <string name="yt_not_responding">YouTube பதிலளிக்கவில்லை, இயக்கம் இடைநிறுத்தப்பட்டது</string>
     <string name="yt_err_generic">இந்த வீடியோவைப் படிப்பதில் ஏதோ தவறு நேர்ந்தது. சிறிது நேரம் கழித்து மீண்டும் முயலவும்.</string>
     <string name="yt_err_queue">பதிவிறக்கத்தைச் சேர்க்க முடியவில்லை. மீண்டும் முயலவும்.</string>
     <string name="yt_playlist">பிளேலிஸ்ட்</string>

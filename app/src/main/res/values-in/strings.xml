@@ -836,6 +836,7 @@
     <string name="yt_err_unavailable">Video ini tidak tersedia atau bersifat pribadi.</string>
     <string name="yt_err_network">Periksa koneksi Anda lalu coba lagi.</string>
     <string name="yt_skipped_unavailable">Video yang tidak tersedia dilewati</string>
+    <string name="yt_not_responding">YouTube tidak merespons, pemutaran dijeda</string>
     <string name="yt_err_generic">Terjadi masalah saat membaca video ini. Coba lagi sebentar lagi.</string>
     <string name="yt_err_queue">Unduhan tidak bisa ditambahkan. Coba lagi.</string>
     <string name="yt_playlist">Daftar putar</string>

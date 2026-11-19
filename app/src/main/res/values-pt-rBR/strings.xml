@@ -916,6 +916,7 @@
     <string name="yt_err_unavailable">Este vídeo está indisponível ou é privado.</string>
     <string name="yt_err_network">Verifique sua conexão e tente de novo.</string>
     <string name="yt_skipped_unavailable">Vídeo indisponível ignorado</string>
+    <string name="yt_not_responding">O YouTube não está respondendo, reprodução pausada</string>
     <string name="yt_err_generic">Algo deu errado ao ler este vídeo. Tente de novo em instantes.</string>
     <string name="yt_err_queue">Não foi possível adicionar o download. Tente de novo.</string>
     <string name="yt_playlist">Playlist</string>

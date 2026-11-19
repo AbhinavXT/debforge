@@ -876,6 +876,7 @@
     <string name="yt_err_unavailable">ఈ వీడియో అందుబాటులో లేదు లేదా ప్రైవేట్‌గా ఉంది.</string>
     <string name="yt_err_network">మీ కనెక్షన్‌ను తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.</string>
     <string name="yt_skipped_unavailable">అందుబాటులో లేని వీడియో దాటవేయబడింది</string>
+    <string name="yt_not_responding">YouTube స్పందించడం లేదు, ప్లేబ్యాక్ ఆపివేయబడింది</string>
     <string name="yt_err_generic">ఈ వీడియోను చదువుతున్నప్పుడు ఏదో తప్పు జరిగింది. కొద్దిసేపటి తర్వాత మళ్లీ ప్రయత్నించండి.</string>
     <string name="yt_err_queue">డౌన్‌లోడ్‌ను జోడించలేకపోయాం. మళ్లీ ప్రయత్నించండి.</string>
     <string name="yt_playlist">ప్లేలిస్ట్</string>

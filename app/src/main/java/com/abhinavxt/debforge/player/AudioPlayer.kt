@@ -329,7 +329,9 @@ class AudioPlayer @Inject constructor(
             if (playbackState == Player.STATE_ENDED && sleepAtEnd) cancelSleep()
         }
 
-        override fun onIsPlayingChanged(isPlaying: Boolean) { if (!isPlaying) { saveCurrent(); savePositionNow() } }
+        override fun onIsPlayingChanged(isPlaying: Boolean) {
+            if (isPlaying) youtubeBreaker.reset() else { saveCurrent(); savePositionNow() }
+        }
 
         override fun onPositionDiscontinuity(old: Player.PositionInfo, new: Player.PositionInfo, reason: Int) {
             val p = player ?: return
@@ -347,6 +349,10 @@ class AudioPlayer @Inject constructor(
         }
 
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+            // Swapping the current item for its resolved copy fires a transient transition: not a change of track.
+            val sameItem = reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED && mediaItem?.mediaId == lastTransitionId
+            lastTransitionId = mediaItem?.mediaId
+            if (replacing || sameItem) return
             savePositionNow()
             sponsorDone.clear() // a new item or a repeat-one restart skips afresh
             // Repeat-one keeps the same item, so the timer still applies; any other change of item drops it.
@@ -373,7 +379,7 @@ class AudioPlayer @Inject constructor(
                 recoverCounts[yt.id] = burst + 1
                 recoverJob?.cancel()
                 val at = p.currentPosition
-                recoverJob = scope.launch { delay(wait); if (!recover(yt, bad, at)) dropTrack(bad, yt.id) }
+                recoverJob = scope.launch { delay(wait); if (!recover(yt, bad, at)) { dropTrack(bad, yt.id); resolveAhead() } }
                 return
             }
             dropTrack(bad, yt?.id)
@@ -384,6 +390,15 @@ class AudioPlayer @Inject constructor(
 
     /** The related videos of [videoId] from the last time the player resolved it (null if not among the last 20). For autoplay. */
     fun relatedFor(videoId: String): List<YouTubeSearchResult>? = relatedCache.get(videoId)
+
+    /** Lookups that failed for good, in a row: three mean YouTube is refusing us, so stop dropping items. */
+    private val youtubeBreaker = BrokenBreaker()
+    private val skipToast = ToastCollapser()
+    /** One lookup per video at a time, shared by resolve-ahead, error recovery and starting. */
+    private val lookups = InFlight<String, Refresh>()
+    /** True while [replaceKeepingOrder] swaps an item: the transition it fires is not a change of track. */
+    private var replacing = false
+    private var lastTransitionId: String? = null
 
     private val recoverAttempts = HashMap<String, Long>()
     private val recoverCounts = HashMap<String, Int>()
@@ -396,11 +411,34 @@ class AudioPlayer @Inject constructor(
         object Offline : Refresh
         /** The video itself is gone (or has no audio): drop the track. */
         object Broken : Refresh
+        /** Several lookups in a row failed: YouTube is blocking us. Playback is paused; keep everything. */
+        object Blocked : Refresh
     }
 
     /** [track] with a fresh stream URL (and itag, when the old one is gone), or why it could not be looked up. */
     private suspend fun refreshed(track: AudioTrack): Refresh {
         val yt = track.youtube ?: return Refresh.Broken
+        return lookups.run(yt.videoId, scope) { lookUp(track, yt) }
+    }
+
+    private suspend fun lookUp(track: AudioTrack, yt: YouTubeAudio): Refresh {
+        val r = lookUpOnce(track, yt)
+        when (r) {
+            is Refresh.Fresh -> youtubeBreaker.reset()
+            Refresh.Broken -> if (youtubeBreaker.recordBroken()) { blocked(); return Refresh.Blocked }
+            else -> Unit
+        }
+        return r
+    }
+
+    /** YouTube refused several lookups in a row: pause once with one message and keep the queue. */
+    private fun blocked() {
+        player?.pause()
+        publish()
+        Toast.makeText(context, R.string.yt_not_responding, Toast.LENGTH_LONG).show()
+    }
+
+    private suspend fun lookUpOnce(track: AudioTrack, yt: YouTubeAudio): Refresh {
         val video = try {
             youtubeResolver.resolve("https://www.youtube.com/watch?v=${yt.videoId}")
         } catch (e: CancellationException) {
@@ -436,15 +474,20 @@ class AudioPlayer @Inject constructor(
             is Refresh.Fresh -> r.track
             Refresh.Offline -> { if (tracks.getOrNull(index)?.id == track.id) keepOffline(track.id); return true }
             Refresh.Broken -> return false
+            Refresh.Blocked -> return true
         }
         val p = player ?: return true // cleared meanwhile: nothing to drop
-        if (tracks.getOrNull(index)?.id != track.id) return true // the queue changed under us
-        tracks = tracks.toMutableList().also { it[index] = fresh }
-        replaceKeepingOrder(p, index, fresh)
-        p.seekTo(index, positionMs)
+        val at = tracks.indexOfFirst { it.id == track.id }
+        if (at < 0) return true // the queue changed under us
+        // Resolve-ahead may have put the same fresh link in meanwhile: replacing again would restart the track.
+        if (tracks[at].uri != fresh.uri) {
+            tracks = tracks.toMutableList().also { it[at] = fresh }
+            replaceKeepingOrder(p, at, fresh)
+            p.seekTo(at, if (at == index) positionMs else p.currentPosition)
+            queueChanged.value++
+        }
         p.prepare()
         p.play()
-        queueChanged.value++
         return true
     }
 
@@ -459,22 +502,37 @@ class AudioPlayer @Inject constructor(
         val wasCurrent = at == p.currentMediaItemIndex
         tracks = tracks.filterIndexed { i, _ -> i != at }
         p.removeMediaItem(at)
-        if (wasCurrent) { p.prepare(); p.play() }
+        // The user may have moved on during the pause before a retry: an idle player still has to carry on.
+        if (!restoredPending && (wasCurrent || p.playbackState == Player.STATE_IDLE)) {
+            val resume = wasCurrent || p.playWhenReady
+            p.prepare()
+            if (resume) p.play()
+        }
         queueChanged.value++
         if (wasStreamed) showSkipped()
     }
 
-    private fun showSkipped() = Toast.makeText(context, R.string.yt_skipped_unavailable, Toast.LENGTH_SHORT).show()
+    private fun showSkipped() {
+        if (skipToast.shouldShow(SystemClock.uptimeMillis())) Toast.makeText(context, R.string.yt_skipped_unavailable, Toast.LENGTH_SHORT).show()
+    }
 
     /** Swaps the item at [index] for [track]; with shuffle on, the replace would put it at a random spot, so the old order is put back. */
     private fun replaceKeepingOrder(p: ExoPlayer, index: Int, track: AudioTrack) {
         val order = if (p.shuffleModeEnabled && p.mediaItemCount == tracks.size) shuffleOrderOf(p) else null
-        p.replaceMediaItem(index, track.toMediaItem())
-        if (order != null && p.mediaItemCount == order.size) p.setShuffleOrder(DefaultShuffleOrder(order.toIntArray(), System.nanoTime()))
+        replacing = true
+        try {
+            p.replaceMediaItem(index, track.toMediaItem())
+            if (order != null && p.mediaItemCount == order.size) p.setShuffleOrder(DefaultShuffleOrder(order.toIntArray(), System.nanoTime()))
+        } finally { replacing = false }
     }
 
     private var aheadJob: Job? = null
     private var aheadId: String? = null
+
+    private fun cancelLookups() {
+        aheadJob?.cancel(); aheadJob = null; aheadId = null
+        lookups.cancelAll()
+    }
 
     /** Looks up the link of the next streamed item that has none, so it starts without an error; one at a time, as links expire. */
     private fun resolveAhead() {
@@ -497,9 +555,9 @@ class AudioPlayer @Inject constructor(
         val at = tracks.indexOfFirst { it.id == track.id }
         if (at < 0) return
         when (r) {
-            Refresh.Offline -> Unit // the error path keeps it for when the connection is back
-            Refresh.Broken -> dropTrack(at, track.id)
-            is Refresh.Fresh -> {
+            Refresh.Offline, Refresh.Blocked -> Unit // the error path keeps it for when the connection is back
+            Refresh.Broken -> { dropTrack(at, track.id); resolveAhead() }
+            is Refresh.Fresh -> if (tracks[at].uri != r.track.uri) {
                 tracks = tracks.toMutableList().also { it[at] = r.track }
                 if (at == p.currentMediaItemIndex) {
                     val pos = p.currentPosition // it became current while looking up: the replace resets it
@@ -618,6 +676,8 @@ class AudioPlayer @Inject constructor(
         val p = exo()
         cancelSleep() // "End of track" was for a track of the old queue
         recoverJob?.cancel()
+        cancelLookups()
+        lastTransitionId = null
         recoverAttempts.clear(); recoverCounts.clear()
         activateJob?.cancel()
         pendingAction = null
@@ -657,6 +717,7 @@ class AudioPlayer @Inject constructor(
                 when (val r = refreshed(first)) {
                     is Refresh.Fresh -> queue = queue.toMutableList().also { it[at] = r.track }
                     Refresh.Offline -> Unit // starts and keeps itself for later, see onPlayerError
+                    Refresh.Blocked -> return@launch // YouTube is refusing us: said so already, nothing starts
                     Refresh.Broken -> {
                         showSkipped()
                         queue = queue.filterIndexed { i, _ -> i != at }
@@ -701,10 +762,16 @@ class AudioPlayer @Inject constructor(
         return withContext(Dispatchers.Main.immediate) {
             val p = player
             if (p == null || tracks.isEmpty()) { playMixed(listOf(MixedEntry.Local(track)), 0); return@withContext EnqueueOutcome.STARTED }
-            if (tracks.any { it.id == track.id }) return@withContext EnqueueOutcome.ALREADY_QUEUED
+            if (youTubeAlreadyQueued(tracks.map { it.id }, videoId, track.id)) return@withContext EnqueueOutcome.ALREADY_QUEUED
             val at = if (next) (p.currentMediaItemIndex + 1).coerceAtMost(tracks.size) else tracks.size
+            // Under shuffle the insert lands at a random spot in the play order: put it right after the current item.
+            val current = p.currentMediaItemIndex
+            val order = if (next && p.shuffleModeEnabled && p.mediaItemCount == tracks.size) shuffleOrderOf(p) else null
             tracks = tracks.toMutableList().also { it.add(at, track) }
             p.addMediaItem(at, track.toMediaItem())
+            if (order != null && p.mediaItemCount == order.size + 1) {
+                p.setShuffleOrder(DefaultShuffleOrder(orderWithPlayNext(order, current, at).toIntArray(), System.nanoTime()))
+            }
             queueChanged.value++
             publish()
             resolveAhead()
@@ -779,6 +846,7 @@ class AudioPlayer @Inject constructor(
             if (track?.youtube != null) {
                 val r = refreshed(track)
                 if (player !== p) return false
+                if (r === Refresh.Blocked) return false // paused with a message already; the queue stays as it is
                 if (r === Refresh.Offline) {
                     // Keep the restored queue as it is for when the connection is back; the widget opens the app instead.
                     if (!fromWidget) showOffline()
@@ -789,7 +857,7 @@ class AudioPlayer @Inject constructor(
                 else if (tracks.getOrNull(at)?.id == track.id) {
                     tracks = tracks.toMutableList().also { it[at] = fresh }
                     val pos = p.currentPosition // the replace resets it when the item cannot update in place
-                    p.replaceMediaItem(at, fresh.toMediaItem())
+                    replaceKeepingOrder(p, at, fresh)
                     p.seekTo(at, pos)
                     queueChanged.value++
                 }
@@ -814,6 +882,7 @@ class AudioPlayer @Inject constructor(
             if (failed && track != null) { dropTrack(at, track.id); return false }
             p.prepare()
             p.play()
+            resolveAhead()
             return true
         } finally {
             activating = false
@@ -976,8 +1045,8 @@ class AudioPlayer @Inject constructor(
         val id = player?.let { tracks.getOrNull(it.currentMediaItemIndex)?.resumeId } ?: return
         scope.launch { resume.forget(id) }
     }
-    fun setShuffle(on: Boolean) { player?.shuffleModeEnabled = on; queueChanged.value++ }
-    fun cycleRepeat() { player?.let { it.repeatMode = repeatFromPlayerMode(it.repeatMode).next().toPlayerMode(); queueChanged.value++ } }
+    fun setShuffle(on: Boolean) { player?.shuffleModeEnabled = on; queueChanged.value++; resolveAhead() }
+    fun cycleRepeat() { player?.let { it.repeatMode = repeatFromPlayerMode(it.repeatMode).next().toPlayerMode(); queueChanged.value++; resolveAhead() } }
 
     /** Plays [index] of the current queue (tapping "Up next"). */
     fun skipTo(index: Int) = whenActive { it.seekToDefaultPosition(index); it.play() }
@@ -1097,6 +1166,8 @@ class AudioPlayer @Inject constructor(
     fun clear() {
         saveCurrent()
         recoverJob?.cancel()
+        cancelLookups()
+        lastTransitionId = null
         activateJob?.cancel()
         pendingAction = null
         restoredPending = false
