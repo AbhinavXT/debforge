@@ -1024,5 +1024,7 @@
     <string name="podcasts_msg_failed">Tidak dapat memulai unduhan</string>
     <string name="podcasts_msg_no_file">Episode ini tidak punya file audio</string>
     <string name="podcasts_msg_in_queue">Ditambahkan ke antrean</string>
+    <string name="podcasts_msg_in_queue_already">Sudah ada di antrean</string>
+    <string name="podcasts_unfollow_q">Berhenti mengikuti %1$s?</string>
     <string name="set_following_podcasts">Podcast</string>
 </resources>

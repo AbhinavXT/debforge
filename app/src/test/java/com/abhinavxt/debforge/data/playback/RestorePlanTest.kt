@@ -40,4 +40,12 @@ class RestorePlanTest {
         val s = Snapshot(QueueSnapshot(listOf(yt)), SavedPosition("ytaudio:x", 1000, 0))
         assertEquals(0, restorePlan(s) { false }!!.index)
     }
+
+    @Test fun streamedPodcastEpisodeSurvivesWithoutAFile() {
+        val pod = SavedTrack("pod:abc", "Ep", "Show", local = false, streamUrl = "https://cdn/ep.mp3")
+        val s = Snapshot(QueueSnapshot(listOf(SavedTrack("a", "a"), pod)), SavedPosition("pod:abc", 7000, 100_000))
+        val p = restorePlan(s) { false }!!
+        assertEquals(listOf("pod:abc"), p.tracks.map { it.id })
+        assertEquals(RestorePlan(listOf(pod), 0, 7000), p)
+    }
 }

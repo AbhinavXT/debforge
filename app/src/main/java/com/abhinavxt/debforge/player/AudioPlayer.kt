@@ -20,6 +20,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import com.abhinavxt.debforge.MainActivity
 import com.abhinavxt.debforge.R
+import com.abhinavxt.debforge.domain.DirectLinkParser
 import com.abhinavxt.debforge.data.local.DownloadDao
 import com.abhinavxt.debforge.data.history.PlayHistory
 import com.abhinavxt.debforge.data.playback.AudioQueueStore
@@ -87,7 +88,19 @@ data class AudioTrack(
 ) {
     /** A podcast episode streamed from its feed's url: a network [uri] with no YouTube stream behind it. */
     val isRemoteStream: Boolean get() = youtube == null && (uri.scheme == "http" || uri.scheme == "https")
+
+    /**
+     * Where the resume spot is kept. A streamed episode shares the key of its downloaded file (the download id of
+     * its url), so streaming it and later downloading it, or the other way round, keeps the place.
+     */
+    val resumeId: String get() = if (isRemoteStream) DirectLinkParser.itemId(uri.toString()) else id
 }
+
+/** Whether a failed track should stay queued and paused: a stream (YouTube or podcast) that failed with no connection. */
+internal fun keepsOfflineOnError(isStream: Boolean, online: Boolean): Boolean = isStream && !online
+
+/** What [AudioPlayer.enqueue] did with a track. */
+enum class EnqueueOutcome { STARTED, ADDED, ALREADY_QUEUED }
 
 /** Which YouTube audio stream a track plays, enough to re-resolve it when the link expires. */
 data class YouTubeAudio(val videoId: String, val audioItag: Int)
@@ -318,7 +331,7 @@ class AudioPlayer @Inject constructor(
 
         override fun onPositionDiscontinuity(old: Player.PositionInfo, new: Player.PositionInfo, reason: Int) {
             val p = player ?: return
-            val id = tracks.getOrNull(old.mediaItemIndex)?.id ?: return
+            val id = tracks.getOrNull(old.mediaItemIndex)?.resumeId ?: return
             when {
                 reason == Player.DISCONTINUITY_REASON_AUTO_TRANSITION -> {
                     scope.launch { resume.forget(id) } // finished
@@ -346,7 +359,7 @@ class AudioPlayer @Inject constructor(
             val bad = p.currentMediaItemIndex
             val yt = tracks.getOrNull(bad)
             // No connection: the stream did not fail, the network did. Keep it (and what follows) for later.
-            if (yt?.youtube != null && !isOnline()) { keepOffline(yt.id); return }
+            if (yt != null && keepsOfflineOnError(yt.youtube != null || yt.isRemoteStream, isOnline())) { keepOffline(yt.id); return }
             // A streamed link that expired: look it up again once and carry on at the same second.
             val now = SystemClock.uptimeMillis()
             val last = recoverAttempts[yt?.id]
@@ -522,17 +535,19 @@ class AudioPlayer @Inject constructor(
     fun play(queue: List<AudioTrack>, startIndex: Int) {
         if (queue.isEmpty()) return
         playJob?.cancel()
-        playJob = scope.launch { start(queue, startIndex, resumeFor(queue[startIndex.coerceIn(queue.indices)].id)) }
+        playJob = scope.launch { start(queue, startIndex, resumeFor(queue[startIndex.coerceIn(queue.indices)].resumeId)) }
     }
 
     /** Seeks the current item to where it was left, unless playback has already moved on or past the start. */
     private fun applyResume(id: String) {
         scope.launch {
-            val at = resumeFor(id)
+            val at = resumeFor(resumeKeyOf(id))
             val p = player ?: return@launch
             if (at > 0 && p.currentMediaItem?.mediaId == id && p.currentPosition < AUDIO_RESUME_EDGE_MS) p.seekTo(at)
         }
     }
+
+    private fun resumeKeyOf(mediaId: String): String = tracks.firstOrNull { it.id == mediaId }?.resumeId ?: mediaId
 
     private suspend fun resumeFor(id: String): Long =
         resume.get(id)?.let { resumePositionMs(it.positionMs, it.durationMs) } ?: 0L
@@ -824,7 +839,7 @@ class AudioPlayer @Inject constructor(
 
     /** The user went back to the start of this track on purpose, so a pause within the first seconds must not bring the old spot back. */
     private fun forgetCurrentSpot() {
-        val id = player?.let { tracks.getOrNull(it.currentMediaItemIndex)?.id } ?: return
+        val id = player?.let { tracks.getOrNull(it.currentMediaItemIndex)?.resumeId } ?: return
         scope.launch { resume.forget(id) }
     }
     fun setShuffle(on: Boolean) { player?.shuffleModeEnabled = on; queueChanged.value++ }
@@ -835,16 +850,17 @@ class AudioPlayer @Inject constructor(
 
     /**
      * Adds [track] to the end of the queue (starts it when nothing is playing or loaded). A track already queued
-     * is left where it is.
+     * is left where it is. Returns what happened.
      */
-    fun enqueue(track: AudioTrack) {
+    fun enqueue(track: AudioTrack): EnqueueOutcome {
         val p = player
-        if (p == null || tracks.isEmpty()) { play(listOf(track), 0); return }
-        if (tracks.any { it.id == track.id }) return
+        if (p == null || tracks.isEmpty()) { play(listOf(track), 0); return EnqueueOutcome.STARTED }
+        if (tracks.any { it.id == track.id }) return EnqueueOutcome.ALREADY_QUEUED
         tracks = tracks + track
         p.addMediaItem(track.toMediaItem())
         queueChanged.value++
         publish()
+        return EnqueueOutcome.ADDED
     }
 
     /** Files were deleted: take them out of the queue, moving on if the current one went, and forget where they were left. */
@@ -933,7 +949,7 @@ class AudioPlayer @Inject constructor(
 
     /** Remembers a long track's spot; a finished track forgets it, a peek leaves an earlier spot alone. */
     private fun save(p: Player, index: Int, positionMs: Long) {
-        val id = tracks.getOrNull(index)?.id ?: return
+        val id = tracks.getOrNull(index)?.resumeId ?: return
         val duration = if (index < p.currentTimeline.windowCount) p.currentTimeline.getWindow(index, Timeline.Window()).durationMs else C.TIME_UNSET
         if (duration == C.TIME_UNSET || !shouldRemember(duration)) return
         when (resumeActionFor(positionMs, duration)) {

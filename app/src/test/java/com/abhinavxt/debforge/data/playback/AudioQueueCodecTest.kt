@@ -61,4 +61,21 @@ class AudioQueueCodecTest {
         val head = AudioQueueCodec.decode(AudioQueueCodec.encode(QueueSnapshot(many), "t5"))!!
         assertEquals("t0", head.tracks.first().id)
     }
+
+    // The v1.12.0 format: no podcast tracks, a YouTube track keeps videoId, itag, stream url and artwork.
+    @Test fun oldFormatQueueStillDecodes() {
+        val raw = """{"v":1,"t":[{"i":"direct:1","n":"Song","a":"Band","k":"l"},""" +
+            """{"i":"ytaudio:x","n":"Clip","a":"Chan","k":"y","y":"x","q":140,"u":"https://v/x","w":"https://i/x.jpg","c":"https://c/chan"},""" +
+            """{"i":"ytaudio:bad","n":"No itag","k":"y","y":"bad"}],"s":true,"r":"ONE","p":1.5}"""
+        val q = AudioQueueCodec.decode(raw)!!
+        assertEquals(listOf("direct:1", "ytaudio:x"), q.tracks.map { it.id })
+        assertEquals(yt, q.tracks[1])
+        assertTrue(q.shuffle)
+        assertEquals(AudioRepeat.ONE, q.repeat)
+        assertEquals(1.5f, q.speed)
+    }
+
+    @Test fun podcastTrackWithoutStreamUrlIsDropped() {
+        assertTrue(AudioQueueCodec.decode("""{"v":1,"t":[{"i":"pod:abc","n":"E","k":"y"}]}""")!!.tracks.isEmpty())
+    }
 }

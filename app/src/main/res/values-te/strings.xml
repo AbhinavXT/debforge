@@ -1074,5 +1074,7 @@
     <string name="podcasts_msg_failed">డౌన్‌లోడ్ ప్రారంభించలేకపోయాం</string>
     <string name="podcasts_msg_no_file">ఈ ఎపిసోడ్‌కు ఆడియో ఫైల్ లేదు</string>
     <string name="podcasts_msg_in_queue">క్యూలో జోడించబడింది</string>
+    <string name="podcasts_msg_in_queue_already">ఇప్పటికే క్యూలో ఉంది</string>
+    <string name="podcasts_unfollow_q">%1$s ని అనుసరించడం ఆపాలా?</string>
     <string name="set_following_podcasts">పాడ్‌కాస్ట్‌లు</string>
 </resources>

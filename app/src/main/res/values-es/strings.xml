@@ -1124,5 +1124,7 @@
     <string name="podcasts_msg_failed">No se pudo iniciar la descarga</string>
     <string name="podcasts_msg_no_file">Este episodio no tiene archivo de audio</string>
     <string name="podcasts_msg_in_queue">Añadido a la cola</string>
+    <string name="podcasts_msg_in_queue_already">Ya está en la cola</string>
+    <string name="podcasts_unfollow_q">¿Dejar de seguir %1$s?</string>
     <string name="set_following_podcasts">Podcasts</string>
 </resources>

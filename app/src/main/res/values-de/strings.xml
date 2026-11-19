@@ -1074,5 +1074,7 @@
     <string name="podcasts_msg_failed">Download konnte nicht gestartet werden</string>
     <string name="podcasts_msg_no_file">Diese Folge hat keine Audiodatei</string>
     <string name="podcasts_msg_in_queue">Zur Warteschlange hinzugefügt</string>
+    <string name="podcasts_msg_in_queue_already">Bereits in der Warteschlange</string>
+    <string name="podcasts_unfollow_q">%1$s nicht mehr folgen?</string>
     <string name="set_following_podcasts">Podcasts</string>
 </resources>

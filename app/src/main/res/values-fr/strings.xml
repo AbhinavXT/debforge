@@ -1124,5 +1124,7 @@
     <string name="podcasts_msg_failed">Impossible de lancer le téléchargement</string>
     <string name="podcasts_msg_no_file">Cet épisode n\'a pas de fichier audio</string>
     <string name="podcasts_msg_in_queue">Ajouté à la file</string>
+    <string name="podcasts_msg_in_queue_already">Déjà dans la file</string>
+    <string name="podcasts_unfollow_q">Ne plus suivre %1$s ?</string>
     <string name="set_following_podcasts">Podcasts</string>
 </resources>

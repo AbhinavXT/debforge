@@ -18,10 +18,12 @@ import com.abhinavxt.debforge.download.podcast.PodcastEnqueuer
 import com.abhinavxt.debforge.download.youtube.EnqueueResult
 import com.abhinavxt.debforge.player.AudioPlayer
 import com.abhinavxt.debforge.player.AudioTrack
+import com.abhinavxt.debforge.player.EnqueueOutcome
 import com.abhinavxt.debforge.player.audioTrackFor
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,6 +33,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
@@ -53,7 +56,7 @@ sealed interface AddState {
 }
 
 /** One-off feedback for the screen to show. */
-enum class PodcastMessage { QUEUED, ALREADY_QUEUED, DOWNLOAD_FAILED, NO_FILE, ADDED_TO_QUEUE }
+enum class PodcastMessage { QUEUED, ALREADY_QUEUED, DOWNLOAD_FAILED, NO_FILE, ADDED_TO_QUEUE, ALREADY_IN_QUEUE }
 
 /** Followed podcasts, one podcast's episodes, and what a tap on an episode does. */
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -81,7 +84,7 @@ class PodcastsViewModel @Inject constructor(
     /** Download id -> state, only for completed or running rows. */
     private val downloadStates = downloadDao.observeAll().map { rows ->
         rows.filter { it.id.startsWith("direct:") }.associate { it.id to it.state }
-    }.distinctUntilChanged()
+    }.distinctUntilChanged().flowOn(Dispatchers.Default)
 
     val detail: StateFlow<PodcastDetail?> = _openId.flatMapLatest { id ->
         if (id == null) flowOf(null)
@@ -154,7 +157,7 @@ class PodcastsViewModel @Inject constructor(
         )
     }
 
-    /** Streams (or plays the downloaded file of) [item], replacing the queue with the episodes from it down the list. */
+    /** Streams (or plays the downloaded file of) [item], replacing the queue with just that episode. */
     fun play(sub: SubscriptionEntity, item: FeedItemEntity) {
         viewModelScope.launch {
             repo.markSeen(sub.id, item.itemKey)
@@ -169,8 +172,12 @@ class PodcastsViewModel @Inject constructor(
             repo.markSeen(sub.id, item.itemKey)
             val track = trackFor(sub, item)
             if (track == null) { _messages.send(PodcastMessage.NO_FILE); return@launch }
-            audioPlayer.enqueue(track)
-            _messages.send(PodcastMessage.ADDED_TO_QUEUE)
+            _messages.send(
+                when (audioPlayer.enqueue(track)) {
+                    EnqueueOutcome.ALREADY_QUEUED -> PodcastMessage.ALREADY_IN_QUEUE
+                    else -> PodcastMessage.ADDED_TO_QUEUE
+                }
+            )
         }
     }
 

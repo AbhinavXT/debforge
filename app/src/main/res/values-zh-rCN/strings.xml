@@ -1024,5 +1024,7 @@
     <string name="podcasts_msg_failed">无法开始下载</string>
     <string name="podcasts_msg_no_file">此节目没有音频文件</string>
     <string name="podcasts_msg_in_queue">已加入队列</string>
+    <string name="podcasts_msg_in_queue_already">已在队列中</string>
+    <string name="podcasts_unfollow_q">取消关注 %1$s？</string>
     <string name="set_following_podcasts">播客</string>
 </resources>

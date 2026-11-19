@@ -1074,5 +1074,7 @@
     <string name="podcasts_msg_failed">डाउनलोड सुरू करता आले नाही</string>
     <string name="podcasts_msg_no_file">या भागाची ऑडिओ फाइल नाही</string>
     <string name="podcasts_msg_in_queue">रांगेत जोडले</string>
+    <string name="podcasts_msg_in_queue_already">आधीच रांगेत आहे</string>
+    <string name="podcasts_unfollow_q">%1$s अनफॉलो करायचे?</string>
     <string name="set_following_podcasts">पॉडकास्ट</string>
 </resources>

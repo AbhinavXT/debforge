@@ -34,6 +34,9 @@ import androidx.compose.material.icons.rounded.Podcasts
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.PlaylistAdd
 import androidx.compose.material3.AlertDialog
+import com.abhinavxt.debforge.data.podcast.podcastTrackId
+import com.abhinavxt.debforge.data.subscriptions.FeedItemEntity
+import com.abhinavxt.debforge.domain.DirectLinkParser
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
@@ -94,6 +97,7 @@ internal fun PodcastsPane(
     val msgFailed = stringResource(R.string.podcasts_msg_failed)
     val msgNoFile = stringResource(R.string.podcasts_msg_no_file)
     val msgInQueue = stringResource(R.string.podcasts_msg_in_queue)
+    val msgInQueueAlready = stringResource(R.string.podcasts_msg_in_queue_already)
     LaunchedEffect(Unit) {
         viewModel.messages.collect {
             tell(
@@ -103,6 +107,7 @@ internal fun PodcastsPane(
                     PodcastMessage.DOWNLOAD_FAILED -> msgFailed
                     PodcastMessage.NO_FILE -> msgNoFile
                     PodcastMessage.ADDED_TO_QUEUE -> msgInQueue
+                    PodcastMessage.ALREADY_IN_QUEUE -> msgInQueueAlready
                 }
             )
         }
@@ -184,6 +189,19 @@ private fun PodcastListRow(row: PodcastRow, onClick: () -> Unit) {
 private fun PodcastDetailView(d: PodcastDetail, playingId: String?, vm: PodcastsViewModel) {
     val cs = MaterialTheme.colorScheme
     val sub = d.sub
+    var confirmUnfollow by remember { mutableStateOf(false) }
+    if (confirmUnfollow) {
+        AlertDialog(
+            onDismissRequest = { confirmUnfollow = false },
+            title = { Text(stringResource(R.string.podcasts_unfollow_q, sub.title)) },
+            confirmButton = {
+                TextButton(onClick = { confirmUnfollow = false; vm.unfollow(sub.id) }) {
+                    Text(stringResource(R.string.follow_unfollow), color = cs.error)
+                }
+            },
+            dismissButton = { TextButton(onClick = { confirmUnfollow = false }) { Text(stringResource(R.string.action_cancel)) } }
+        )
+    }
     LazyColumn(
         Modifier.fillMaxSize(),
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 16.dp),
@@ -215,7 +233,7 @@ private fun PodcastDetailView(d: PodcastDetail, playingId: String?, vm: Podcasts
                         Spacer(Modifier.width(8.dp))
                         Text(stringResource(R.string.podcasts_mark_seen))
                     }
-                    TextButton(onClick = { vm.unfollow(sub.id) }, modifier = Modifier.heightIn(min = 48.dp)) {
+                    TextButton(onClick = { confirmUnfollow = true }, modifier = Modifier.heightIn(min = 48.dp)) {
                         Text(stringResource(R.string.follow_unfollow), color = cs.error)
                     }
                 }
@@ -230,7 +248,7 @@ private fun PodcastDetailView(d: PodcastDetail, playingId: String?, vm: Podcasts
         items(d.episodes, key = { it.item.itemKey }) { ep ->
             EpisodeRowView(
                 sub.title, ep,
-                playing = playingId == com.abhinavxt.debforge.data.podcast.podcastTrackId(sub.url, ep.item.itemKey),
+                playing = playingId != null && playingId in episodeTrackIds(sub.url, ep.item),
                 onPlay = { vm.play(sub, ep.item) },
                 onQueue = { vm.addToQueue(sub, ep.item) },
                 onDownload = { vm.download(sub, ep.item) }
@@ -361,3 +379,7 @@ private fun AddPodcastDialog(state: AddState, onFollow: (String) -> Unit, onDism
         dismissButton = { TextButton(onClick = onDismiss, enabled = !loading) { Text(stringResource(R.string.action_cancel)) } }
     )
 }
+
+/** The ids an episode plays under: its stream id, or the download id once it is a file on the device. */
+private fun episodeTrackIds(feedUrl: String, item: FeedItemEntity): List<String> =
+    listOfNotNull(podcastTrackId(feedUrl, item.itemKey), item.mediaUrl?.let { DirectLinkParser.itemId(it) })

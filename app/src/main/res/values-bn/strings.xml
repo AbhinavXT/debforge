@@ -1074,5 +1074,7 @@
     <string name="podcasts_msg_failed">ডাউনলোড শুরু করা যায়নি</string>
     <string name="podcasts_msg_no_file">এই এপিসোডে কোনো অডিও ফাইল নেই</string>
     <string name="podcasts_msg_in_queue">সারিতে যোগ করা হয়েছে</string>
+    <string name="podcasts_msg_in_queue_already">ইতিমধ্যে সারিতে আছে</string>
+    <string name="podcasts_unfollow_q">%1$s আনফলো করবেন?</string>
     <string name="set_following_podcasts">পডকাস্ট</string>
 </resources>
