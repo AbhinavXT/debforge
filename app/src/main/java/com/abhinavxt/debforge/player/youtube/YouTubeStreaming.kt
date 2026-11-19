@@ -240,7 +240,11 @@ class YouTubeMediaSourceFactory(context: Context, chunk: Long = YouTubeStreaming
 
     override fun createMediaSource(mediaItem: MediaItem): MediaSource {
         val tag = mediaItem.localConfiguration?.tag as? YouTubeStreamTag ?: return default.createMediaSource(mediaItem)
-        val main = progressive.createMediaSource(MediaItem.fromUri(mediaItem.localConfiguration!!.uri))
+        // Keep the caller's id and metadata: the timeline reports the first source's item, and the audio player
+        // finds its track (SponsorBlock, resume, sleep timer) by that media id.
+        val main = progressive.createMediaSource(
+            MediaItem.Builder().setUri(mediaItem.localConfiguration!!.uri).setMediaId(mediaItem.mediaId).setMediaMetadata(mediaItem.mediaMetadata).build()
+        )
         val sources = ArrayList<MediaSource>()
         sources += main
         if (tag.hasVideo) sources += progressive.createMediaSource(MediaItem.fromUri(tag.audioUrl))
