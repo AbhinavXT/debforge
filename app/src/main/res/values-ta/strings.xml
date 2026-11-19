@@ -478,11 +478,12 @@
         <item quantity="one">%d புதிய எபிசோட்</item>
         <item quantity="other">%d புதிய எபிசோடுகள்</item>
     </plurals>
-    <string name="notif_sub_one">புதிய பதிவேற்றம்: %1$s</string>
+    <string name="notif_sub_one">புதிய உருப்படி: %1$s</string>
+    <string name="notif_feed_gone">பாட்காஸ்ட் ஃபீட் %1$s இனி கிடைக்கவில்லை</string>
     <string name="notif_sub_body">நீங்கள் பின்தொடரும் சேனல்கள் மற்றும் பாட்காஸ்ட்களிலிருந்து.</string>
     <plurals name="notif_sub_many">
-        <item quantity="one">%d புதிய பதிவேற்றம்</item>
-        <item quantity="other">%d புதிய பதிவேற்றங்கள்</item>
+        <item quantity="one">%d புதிய உருப்படி</item>
+        <item quantity="other">%d புதிய உருப்படிகள்</item>
     </plurals>
 
     <!-- In-app player -->

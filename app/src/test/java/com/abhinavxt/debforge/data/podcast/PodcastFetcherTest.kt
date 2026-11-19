@@ -97,4 +97,13 @@ class PodcastFetcherTest {
     @Test fun invalidUrlIsNotAFeed() {
         assertEquals(PodcastFetchException.Kind.NOT_A_FEED, failure { fetcher().fetch("not a url") }.kind)
     }
+
+    @Test fun httpsToHttpRedirectIsRefused() {
+        val client = OkHttpClient.Builder().addInterceptor(Interceptor { chain ->
+            Response.Builder().request(chain.request().newBuilder().url("http://x.test/feed").build()).protocol(Protocol.HTTP_1_1)
+                .code(200).message("m").body(rss.toResponseBody("application/rss+xml".toMediaType())).build()
+        }).build()
+        val e = failure { PodcastFetcher(client).fetch("https://x.test/feed") }
+        assertEquals(PodcastFetchException.Kind.NETWORK, e.kind)
+    }
 }

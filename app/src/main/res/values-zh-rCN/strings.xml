@@ -455,10 +455,11 @@
     <plurals name="notif_follow_many">
         <item quantity="other">%d 集新剧集</item>
     </plurals>
-    <string name="notif_sub_one">新上传：%1$s</string>
+    <string name="notif_sub_one">新内容：%1$s</string>
+    <string name="notif_feed_gone">播客源 %1$s 已找不到</string>
     <string name="notif_sub_body">来自你关注的频道和播客。</string>
     <plurals name="notif_sub_many">
-        <item quantity="other">%d 个新上传</item>
+        <item quantity="other">%d 个新内容</item>
     </plurals>
 
     <!-- In-app player -->

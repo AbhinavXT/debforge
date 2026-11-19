@@ -478,11 +478,12 @@
         <item quantity="one">%dটি নতুন এপিসোড</item>
         <item quantity="other">%dটি নতুন এপিসোড</item>
     </plurals>
-    <string name="notif_sub_one">নতুন আপলোড: %1$s</string>
+    <string name="notif_sub_one">নতুন আইটেম: %1$s</string>
+    <string name="notif_feed_gone">পডকাস্ট ফিড %1$s আর খুঁজে পাওয়া যাচ্ছে না</string>
     <string name="notif_sub_body">আপনি যেসব চ্যানেল ও পডকাস্ট অনুসরণ করেন তার থেকে।</string>
     <plurals name="notif_sub_many">
-        <item quantity="one">%dটি নতুন আপলোড</item>
-        <item quantity="other">%dটি নতুন আপলোড</item>
+        <item quantity="one">%dটি নতুন আইটেম</item>
+        <item quantity="other">%dটি নতুন আইটেম</item>
     </plurals>
 
     <!-- In-app player -->

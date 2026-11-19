@@ -501,12 +501,13 @@
         <item quantity="many">%d episódios novos</item>
         <item quantity="other">%d episódios novos</item>
     </plurals>
-    <string name="notif_sub_one">Envio novo: %1$s</string>
+    <string name="notif_sub_one">Item novo: %1$s</string>
+    <string name="notif_feed_gone">O feed de podcast %1$s não foi mais encontrado</string>
     <string name="notif_sub_body">De canais e podcasts que você segue.</string>
     <plurals name="notif_sub_many">
-        <item quantity="one">%d envio novo</item>
-        <item quantity="many">%d envios novos</item>
-        <item quantity="other">%d envios novos</item>
+        <item quantity="one">%d item novo</item>
+        <item quantity="many">%d itens novos</item>
+        <item quantity="other">%d itens novos</item>
     </plurals>
 
     <!-- In-app player -->

@@ -34,7 +34,9 @@ sealed interface PodcastFetchResult {
 
 /** Downloads and parses a podcast RSS feed, with a conditional GET and a size cap. */
 @Singleton
-class PodcastFetcher @Inject constructor(@ApiHttpClient private val http: OkHttpClient) {
+class PodcastFetcher @Inject constructor(@ApiHttpClient http: OkHttpClient) {
+    /** Shares the pool and dispatcher of [http], adds a whole-call timeout. */
+    private val client: OkHttpClient = http.newBuilder().callTimeout(CALL_TIMEOUT_SEC, java.util.concurrent.TimeUnit.SECONDS).build()
 
     /** Throws [PodcastFetchException]; cancellation propagates. */
     suspend fun fetch(url: String, etag: String? = null, lastModified: String? = null): PodcastFetchResult = runInterruptible(Dispatchers.IO) {
@@ -45,9 +47,11 @@ class PodcastFetcher @Inject constructor(@ApiHttpClient private val http: OkHttp
         } catch (e: IllegalArgumentException) {
             throw PodcastFetchException(PodcastFetchException.Kind.NOT_A_FEED, cause = e)
         }
-        val call = http.newCall(request)
+        val call = client.newCall(request)
         try {
             call.execute().use { resp ->
+                // A feed may not send us from https to plain http.
+                if (request.isHttps && !resp.request.isHttps) throw PodcastFetchException(PodcastFetchException.Kind.NETWORK)
                 if (resp.code == 304) return@runInterruptible PodcastFetchResult.NotModified
                 if (!resp.isSuccessful) throw PodcastFetchException(PodcastFetchException.Kind.HTTP, resp.code)
                 val body = resp.body ?: throw PodcastFetchException(PodcastFetchException.Kind.NOT_A_FEED)
@@ -87,6 +91,7 @@ class PodcastFetcher @Inject constructor(@ApiHttpClient private val http: OkHttp
     }
 
     companion object {
+        const val CALL_TIMEOUT_SEC = 60L
         const val MAX_BYTES = 15L * 1024 * 1024
     }
 }

@@ -2,6 +2,8 @@ package com.abhinavxt.debforge.data.podcast
 
 import com.abhinavxt.debforge.download.podcast.PodcastFiles
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
@@ -46,10 +48,31 @@ class PodcastFeedsTest {
         assertEquals("https://img/feed.jpg", e[1].thumbUrl)
     }
 
-    @Test fun trackIdIsStableSha1() {
-        assertEquals("pod:da39a3ee5e6b4b0d3255bfef95601890afd80709", podcastTrackId(""))
-        assertEquals(podcastTrackId("abc"), podcastTrackId("abc"))
-        assertNotEquals(podcastTrackId("abc"), podcastTrackId("abd"))
+    @Test fun trackIdIsStableSha1OfFeedAndGuid() {
+        assertEquals("pod:" + java.security.MessageDigest.getInstance("SHA-1").digest("f\ng".toByteArray()).joinToString("") { "%02x".format(it) }, podcastTrackId("f", "g"))
+        assertEquals(podcastTrackId("f", "abc"), podcastTrackId("f", "abc"))
+        assertNotEquals(podcastTrackId("f", "abc"), podcastTrackId("f", "abd"))
+        assertNotEquals(podcastTrackId("https://a.test/feed", "1"), podcastTrackId("https://b.test/feed", "1"))
+    }
+
+    @Test fun fileNameIsCappedInUtf8BytesWithoutSplittingCodePoints() {
+        for (title in listOf("日本語のタイトル".repeat(40), "😀".repeat(200), "é".repeat(300), "a".repeat(400))) {
+            val name = PodcastFiles.fileName(title, "https://cdn.test/a.mp3")
+            assertTrue(name.toByteArray(Charsets.UTF_8).size <= PodcastFiles.MAX_NAME_BYTES)
+            assertTrue(name.endsWith(".mp3"))
+            assertFalse(name.contains('\uFFFD'))
+            assertEquals(name, String(name.toByteArray(Charsets.UTF_8), Charsets.UTF_8))
+        }
+        assertEquals("😀".repeat(49) + ".mp3", PodcastFiles.fileName("😀".repeat(200), "https://cdn.test/a.mp3"))
+    }
+
+    @Test fun fileNameStripsControlCharacters() {
+        assertEquals("a b.mp3", PodcastFiles.fileName("a\u0000\u0007\nb", "https://cdn.test/a.mp3"))
+    }
+
+    @Test fun fileNameUsesMimeTypeWhenUrlHasNoExtension() {
+        assertEquals("T.m4a", PodcastFiles.fileName("T", "https://cdn.test/s/1", "audio/x-m4a"))
+        assertEquals("T.mp4", PodcastFiles.fileName("T", "https://cdn.test/s/1", "video/mp4"))
     }
 
     @Test fun fileNameUsesUrlExtension() {
@@ -64,6 +87,6 @@ class PodcastFeedsTest {
 
     @Test fun fileNameCapsLongTitles() {
         val n = PodcastFiles.fileName("a".repeat(300), "https://cdn.test/x.mp3")
-        assertEquals(124, n.length)
+        assertEquals(200, n.length)
     }
 }

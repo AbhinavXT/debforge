@@ -51,23 +51,18 @@ class SubscriptionChecker @Inject constructor(
         if (subs.isEmpty()) return 0
         // Validators of the feeds fetched in this check, stored with markChecked.
         val validators = HashMap<Long, Pair<String?, String?>>()
+        // Enclosure MIME types of the feeds fetched in this check, by subscription id and guid, for the file extension.
+        val mimeTypes = HashMap<Pair<Long, String>, String>()
         val run = SubscriptionRun(
             store = DaoFeedStore(dao, validators),
             fetch = { sub ->
                 when (sub.kind) {
                     SubscriptionKind.YT_CHANNEL -> resolver.channelFeed(sub.url)
-                    SubscriptionKind.PODCAST -> when (val r = podcastFetcher.fetch(sub.url, sub.etag, sub.lastModified)) {
-                        // Unchanged: nothing new, but earlier failed enqueues are still retried.
-                        PodcastFetchResult.NotModified -> emptyList()
-                        is PodcastFetchResult.Fresh -> {
-                            validators[sub.id] = r.etag to r.lastModified
-                            PodcastFeeds.entries(r.feed)
-                        }
-                    }
+                    SubscriptionKind.PODCAST -> fetchPodcast(sub, validators, mimeTypes)
                 }
             },
             enqueue = { sub, item ->
-                if (sub.kind == SubscriptionKind.PODCAST) podcastEnqueuer.enqueue(sub, item)
+                if (sub.kind == SubscriptionKind.PODCAST) podcastEnqueuer.enqueue(sub, item, mimeTypes[sub.id to item.itemKey])
                 else enqueuer.enqueue(item.itemKey, modeFor(sub), foreground = false)
             },
             onError = { sub, e -> Log.w("SubscriptionCheck", "Check of ${sub.url} failed", e) },
@@ -79,6 +74,41 @@ class SubscriptionChecker @Inject constructor(
         result.newLabels.size
     }
 
+    /**
+     * Failures that can never fix themselves (404 / 410 / not a feed) are counted per subscription in a small
+     * SharedPreferences file (no database change). After [GONE_AFTER] in a row the user is told once, and the feed is
+     * then retried at most daily. A success clears the count. Null means skipped this time, not marked checked.
+     */
+    private suspend fun fetchPodcast(
+        sub: SubscriptionEntity,
+        validators: MutableMap<Long, Pair<String?, String?>>,
+        mimeTypes: MutableMap<Pair<Long, String>, String>,
+    ): List<com.abhinavxt.debforge.domain.FeedEntry>? {
+        val prefs = context.getSharedPreferences(FAILURE_PREFS, Context.MODE_PRIVATE)
+        val count = prefs.getInt("n${sub.id}", 0)
+        val now = System.currentTimeMillis()
+        if (count >= GONE_AFTER && now - prefs.getLong("t${sub.id}", 0L) < DAY_MS) return null
+        try {
+            val r = podcastFetcher.fetch(sub.url, sub.etag, sub.lastModified)
+            if (count > 0) prefs.edit().remove("n${sub.id}").remove("t${sub.id}").apply()
+            return when (r) {
+                // Unchanged: nothing new, but earlier failed enqueues are still retried.
+                PodcastFetchResult.NotModified -> emptyList()
+                is PodcastFetchResult.Fresh -> {
+                    validators[sub.id] = r.etag to r.lastModified
+                    r.feed.episodes.forEach { e -> e.enclosureType?.let { mimeTypes[sub.id to e.guid] = it } }
+                    PodcastFeeds.entries(r.feed)
+                }
+            }
+        } catch (e: PodcastFetchException) {
+            if (e.permanent) {
+                prefs.edit().putInt("n${sub.id}", count + 1).putLong("t${sub.id}", now).apply()
+                if (count + 1 == GONE_AFTER) DownloadNotifications.notifyFeedGone(context, sub.title)
+            }
+            throw e
+        }
+    }
+
     private fun isAppInForeground(): Boolean {
         val info = android.app.ActivityManager.RunningAppProcessInfo()
         android.app.ActivityManager.getMyMemoryState(info)
@@ -87,6 +117,12 @@ class SubscriptionChecker @Inject constructor(
 
     /** Run a short database [block] with the lock held, so a check never sees a half-written follow. No network inside. */
     suspend fun <T> exclusive(block: suspend () -> T): T = dbLock.withLock { block() }
+
+    private companion object {
+        const val FAILURE_PREFS = "podcast_feed_failures"
+        const val GONE_AFTER = 3
+        const val DAY_MS = 24L * 60 * 60 * 1000
+    }
 
     private fun modeFor(sub: SubscriptionEntity) = if (sub.autoDownload == AutoDownload.VIDEO) EnqueueMode.VIDEO else EnqueueMode.AUDIO
 }

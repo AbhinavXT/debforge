@@ -28,6 +28,7 @@ object DownloadNotifications {
     private const val READY_ID = 1003
     private const val FOLLOW_ID = 1004
     private const val SUBSCRIPTION_ID = 1010
+    private const val FEED_GONE_BASE = 20000
     private const val STOPPED_ID = 1005
     private const val STORAGE_ID = 1006
 
@@ -181,6 +182,18 @@ object DownloadNotifications {
             .setContentIntent(openAppIntent(context))
             .build()
         runCatching { context.getSystemService(NotificationManager::class.java).notify(FOLLOW_ID, n) }
+    }
+
+    /** A followed podcast feed keeps failing for good (gone or not a feed any more). */
+    fun notifyFeedGone(context: Context, title: String) {
+        ensureChannel(context)
+        val n = NotificationCompat.Builder(context, CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_notification_download)
+            .setContentTitle(context.getString(R.string.notif_feed_gone, title))
+            .setAutoCancel(true)
+            .setContentIntent(openAppIntent(context))
+            .build()
+        runCatching { context.getSystemService(NotificationManager::class.java).notify(FEED_GONE_BASE + (title.hashCode() and 0xFFFF), n) }
     }
 
     /** New uploads from followed channels were found in the background. */

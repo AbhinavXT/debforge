@@ -455,10 +455,11 @@
     <plurals name="notif_follow_many">
         <item quantity="other">%d episode baru</item>
     </plurals>
-    <string name="notif_sub_one">Unggahan baru: %1$s</string>
+    <string name="notif_sub_one">Item baru: %1$s</string>
+    <string name="notif_feed_gone">Feed podcast %1$s tidak ditemukan lagi</string>
     <string name="notif_sub_body">Dari kanal dan podcast yang Anda ikuti.</string>
     <plurals name="notif_sub_many">
-        <item quantity="other">%d unggahan baru</item>
+        <item quantity="other">%d item baru</item>
     </plurals>
 
     <!-- In-app player -->

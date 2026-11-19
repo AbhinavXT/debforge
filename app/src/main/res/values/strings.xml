@@ -479,11 +479,12 @@
         <item quantity="one">%d new episode</item>
         <item quantity="other">%d new episodes</item>
     </plurals>
-    <string name="notif_sub_one">New upload: %1$s</string>
+    <string name="notif_sub_one">New item: %1$s</string>
+    <string name="notif_feed_gone">Podcast feed %1$s can\'t be found any more</string>
     <string name="notif_sub_body">From channels and podcasts you follow.</string>
     <plurals name="notif_sub_many">
-        <item quantity="one">%d new upload</item>
-        <item quantity="other">%d new uploads</item>
+        <item quantity="one">%d new item</item>
+        <item quantity="other">%d new items</item>
     </plurals>
 
     <!-- In-app player -->

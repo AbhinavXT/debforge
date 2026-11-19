@@ -3,6 +3,7 @@ package com.abhinavxt.debforge.domain
 import com.abhinavxt.debforge.data.subscriptions.AutoDownload
 import com.abhinavxt.debforge.data.subscriptions.FeedItemEntity
 import com.abhinavxt.debforge.data.subscriptions.SubscriptionEntity
+import com.abhinavxt.debforge.data.subscriptions.SubscriptionKind
 import com.abhinavxt.debforge.download.youtube.EnqueueResult
 import kotlinx.coroutines.CancellationException
 
@@ -112,7 +113,8 @@ class SubscriptionRun(
                 }
                 guard {
                     store.markChecked(sub, t)
-                    store.trim(sub.id, keep)
+                    // Podcasts keep (almost) everything: a trimmed old episode that is still in the feed would come back as new.
+                    store.trim(sub.id, if (sub.kind == SubscriptionKind.PODCAST) maxOf(keep, PODCAST_KEEP_ITEMS) else keep)
                 }
             } catch (e: CancellationException) {
                 throw e
@@ -125,5 +127,6 @@ class SubscriptionRun(
 
     companion object {
         const val KEEP_ITEMS = 100
+        const val PODCAST_KEEP_ITEMS = 5000
     }
 }

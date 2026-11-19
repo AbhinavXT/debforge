@@ -478,11 +478,12 @@
         <item quantity="one">%d కొత్త ఎపిసోడ్</item>
         <item quantity="other">%d కొత్త ఎపిసోడ్‌లు</item>
     </plurals>
-    <string name="notif_sub_one">కొత్త అప్‌లోడ్: %1$s</string>
+    <string name="notif_sub_one">కొత్త అంశం: %1$s</string>
+    <string name="notif_feed_gone">పాడ్‌కాస్ట్ ఫీడ్ %1$s ఇకపై కనుగొనబడలేదు</string>
     <string name="notif_sub_body">మీరు ఫాలో అయ్యే ఛానెల్‌లు మరియు పాడ్‌కాస్ట్‌ల నుండి.</string>
     <plurals name="notif_sub_many">
-        <item quantity="one">%d కొత్త అప్‌లోడ్</item>
-        <item quantity="other">%d కొత్త అప్‌లోడ్‌లు</item>
+        <item quantity="one">%d కొత్త అంశం</item>
+        <item quantity="other">%d కొత్త అంశాలు</item>
     </plurals>
 
     <!-- In-app player -->

@@ -30,10 +30,32 @@ object PodcastFiles {
         return BY_TYPE[mimeType?.substringBefore(';')?.trim()?.lowercase()] ?: "mp3"
     }
 
-    /** "Title.ext": characters a file name cannot hold become spaces, the title is capped at 120 chars. */
+    /** Longest file name, in UTF-8 bytes, extension included. Android file systems allow 255; this leaves room for suffixes. */
+    const val MAX_NAME_BYTES = 200
+
+    /**
+     * "Title.ext": characters a file name cannot hold (and control characters) become spaces, and the whole name is
+     * capped at [MAX_NAME_BYTES] UTF-8 bytes without splitting a code point.
+     */
     fun fileName(title: String, url: String, mimeType: String? = null): String {
-        val clean = title.replace(Regex("[/\\\\:*?\"<>|\\p{Cntrl}]"), " ").replace(Regex("\\s+"), " ").trim().take(120).trim().trimEnd('.')
-        return "${clean.ifEmpty { "episode" }}.${extension(url, mimeType)}"
+        val ext = "." + extension(url, mimeType)
+        val clean = title.replace(Regex("[/\\\\:*?\"<>|\\p{Cntrl}]"), " ").replace(Regex("\\s+"), " ").trim()
+        val capped = capBytes(clean, MAX_NAME_BYTES - ext.length).trim().trimEnd('.').trim()
+        return "${capped.ifEmpty { "episode" }}$ext"
+    }
+
+    /** The longest prefix of [s] that is at most [max] UTF-8 bytes, cut on a code point boundary. */
+    internal fun capBytes(s: String, max: Int): String {
+        var bytes = 0
+        var i = 0
+        while (i < s.length) {
+            val cp = s.codePointAt(i)
+            val n = when { cp < 0x80 -> 1; cp < 0x800 -> 2; cp < 0x10000 -> 3; else -> 4 }
+            if (bytes + n > max) break
+            bytes += n
+            i += Character.charCount(cp)
+        }
+        return s.substring(0, i)
     }
 }
 
@@ -47,9 +69,9 @@ class PodcastEnqueuer @Inject constructor(
     private val dao: DownloadDao,
 ) {
     /** QUEUED, ALREADY_QUEUED, FAILED (retry later) or NO_FORMAT (no usable enclosure url; retrying cannot help). */
-    suspend fun enqueue(sub: SubscriptionEntity, item: FeedItemEntity): EnqueueResult {
+    suspend fun enqueue(sub: SubscriptionEntity, item: FeedItemEntity, mimeType: String? = null): EnqueueResult {
         val url = item.mediaUrl?.takeIf { it.toHttpUrlOrNull() != null } ?: return EnqueueResult.NO_FORMAT
-        val dlItem = itemFor(sub, item, url)
+        val dlItem = itemFor(sub, item, url, mimeType)
         return try {
             if (dao.getById(dlItem.id) != null) return EnqueueResult.ALREADY_QUEUED
             downloads.enqueue(dlItem, foreground = false)
@@ -61,9 +83,9 @@ class PodcastEnqueuer @Inject constructor(
         }
     }
 
-    internal fun itemFor(sub: SubscriptionEntity, item: FeedItemEntity, url: String) = DownloadItem(
+    internal fun itemFor(sub: SubscriptionEntity, item: FeedItemEntity, url: String, mimeType: String? = null) = DownloadItem(
         id = DirectLinkParser.itemId(url), provider = ProviderId.DIRECT,
-        filename = PodcastFiles.fileName(item.title, url), sourceRef = url, downloadUrl = url,
+        filename = PodcastFiles.fileName(item.title, url, mimeType), sourceRef = url, downloadUrl = url,
         host = url.toHttpUrlOrNull()?.host ?: "Podcast", filesize = 0, maxConnections = 4,
         addedAt = java.time.Instant.now().toString(), title = item.title, artist = sub.title,
     )

@@ -35,6 +35,6 @@ object PodcastFeeds {
     }
 }
 
-/** Stable track id of an episode, used by the player and the queue: `pod:` + sha1 of its guid. */
-fun podcastTrackId(guid: String): String =
-    "pod:" + MessageDigest.getInstance("SHA-1").digest(guid.toByteArray(Charsets.UTF_8)).joinToString("") { "%02x".format(it) }
+/** Stable track id of an episode, used by the player and the queue: `pod:` + sha1 of its feed url, a newline and its guid. */
+fun podcastTrackId(feedUrl: String, guid: String): String =
+    "pod:" + MessageDigest.getInstance("SHA-1").digest("$feedUrl\n$guid".toByteArray(Charsets.UTF_8)).joinToString("") { "%02x".format(it) }
