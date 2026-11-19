@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 
@@ -68,8 +69,21 @@ interface SubscriptionDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertItems(items: List<FeedItemEntity>)
 
-    @Update
-    suspend fun updateItems(items: List<FeedItemEntity>)
+    /** Refresh an existing item's metadata; isNew / queued are left alone. */
+    @Query(
+        "UPDATE feed_items SET title = :title, mediaUrl = :mediaUrl, thumbUrl = :thumbUrl, " +
+            "durationSec = :durationSec, publishedAt = :publishedAt WHERE subId = :subId AND itemKey = :itemKey"
+    )
+    suspend fun updateItemMetadata(
+        subId: Long, itemKey: String, title: String, mediaUrl: String?, thumbUrl: String?, durationSec: Long?, publishedAt: Long
+    )
+
+    /** Inserts new items and refreshes metadata of existing ones, keeping their isNew / queued flags. */
+    @Transaction
+    suspend fun upsertItems(items: List<FeedItemEntity>) {
+        insertItems(items)
+        items.forEach { updateItemMetadata(it.subId, it.itemKey, it.title, it.mediaUrl, it.thumbUrl, it.durationSec, it.publishedAt) }
+    }
 
     @Query("UPDATE feed_items SET isNew = 0 WHERE subId = :subId AND itemKey = :itemKey")
     suspend fun markSeen(subId: Long, itemKey: String)
@@ -83,9 +97,12 @@ interface SubscriptionDao {
     @Query("UPDATE feed_items SET queued = 1 WHERE subId = :subId AND itemKey = :itemKey")
     suspend fun markQueued(subId: Long, itemKey: String)
 
-    /** Keep the newest [keep] items of a subscription so podcasts with hundreds of episodes stay small. */
+    /**
+     * Keep the newest [keep] items of a subscription so podcasts with hundreds of episodes stay small.
+     * Items still marked new or queued are never deleted.
+     */
     @Query(
-        "DELETE FROM feed_items WHERE subId = :subId AND itemKey NOT IN " +
+        "DELETE FROM feed_items WHERE subId = :subId AND isNew = 0 AND queued = 0 AND itemKey NOT IN " +
             "(SELECT itemKey FROM feed_items WHERE subId = :subId ORDER BY publishedAt DESC LIMIT :keep)"
     )
     suspend fun trimItems(subId: Long, keep: Int)

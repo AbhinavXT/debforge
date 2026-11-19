@@ -6,28 +6,23 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.abhinavxt.debforge.data.local.DownloadDao
 import com.abhinavxt.debforge.data.search.YouTubeSearchHistoryStore
 import com.abhinavxt.debforge.data.youtube.YouTubeResolver
 import com.abhinavxt.debforge.di.ApiHttpClient
 import com.abhinavxt.debforge.domain.DownloadItem
 import com.abhinavxt.debforge.domain.DefaultQuality
 import com.abhinavxt.debforge.domain.FormatChoice
-import com.abhinavxt.debforge.domain.ProviderId
 import com.abhinavxt.debforge.domain.YouTubeFormats
 import com.abhinavxt.debforge.domain.pickDefaultChoice
 import com.abhinavxt.debforge.domain.YouTubeLinks
 import com.abhinavxt.debforge.domain.YouTubeSearchResult
 import com.abhinavxt.debforge.domain.YouTubeSubtitle
 import com.abhinavxt.debforge.domain.YouTubeVideo
-import com.abhinavxt.debforge.domain.subtitleFileName
-import com.abhinavxt.debforge.domain.youTubeSubtitleId
 import com.abhinavxt.debforge.download.DownloadController
 import com.abhinavxt.debforge.download.StorageAccess
 import com.abhinavxt.debforge.download.youtube.EnqueueMode
 import com.abhinavxt.debforge.download.youtube.EnqueueResult
 import com.abhinavxt.debforge.download.youtube.YouTubeEnqueuer
-import com.abhinavxt.debforge.download.artworkFile
 import com.abhinavxt.debforge.player.AudioPlayer
 import com.abhinavxt.debforge.player.youtubeAudioTrack
 import com.abhinavxt.debforge.player.youtube.YouTubeStreaming
@@ -39,7 +34,6 @@ import kotlinx.coroutines.flow.first
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -52,12 +46,8 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
-import okhttp3.Request
 import org.schabi.newpipe.extractor.Page
-import java.io.File
-import java.time.Instant
 import javax.inject.Inject
 
 sealed interface YouTubeUi {

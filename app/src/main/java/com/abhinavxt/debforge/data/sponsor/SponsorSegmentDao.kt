@@ -13,6 +13,7 @@ interface SponsorSegmentDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(entity: SponsorSegmentEntity)
 
-    @Query("DELETE FROM sponsor_segments WHERE fetchedAt < :cutoff")
-    suspend fun deleteOlderThan(cutoff: Long)
+    /** Cached lookups fetched before [cutoff]; refetch these, but keep them until a fresh result replaces them (offline use). */
+    @Query("SELECT * FROM sponsor_segments WHERE fetchedAt < :cutoff")
+    suspend fun stale(cutoff: Long): List<SponsorSegmentEntity>
 }

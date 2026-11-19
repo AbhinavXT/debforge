@@ -240,6 +240,78 @@ class DatabaseMigrationTest {
         }
     }
 
+    @Test
+    fun refreshingAndTrimmingFeedItemsKeepsNewAndQueuedState() {
+        val room = openWithRoom(create(13) {})
+        try {
+            runBlocking {
+                val dao = room.subscriptionDao()
+                val id = dao.insert(SubscriptionEntity(kind = SubscriptionKind.PODCAST, url = "https://x/feed", title = "Pod", since = 5))
+                fun item(key: String, at: Long, isNew: Boolean, queued: Boolean, title: String = key) =
+                    FeedItemEntity(id, key, title, "https://x/$key.mp3", at, null, null, isNew = isNew, queued = queued)
+                dao.insertItems(listOf(item("a", 10, isNew = true, queued = false), item("b", 20, isNew = false, queued = true)))
+
+                // IGNORE insert keeps the flags of existing rows
+                dao.insertItems(listOf(item("a", 10, isNew = false, queued = false), item("b", 20, isNew = true, queued = false)))
+                assertEquals(listOf(true, false), listOf("a", "b").map { k -> dao.items(id).first { it.itemKey == k }.isNew })
+                assertTrue(dao.items(id).first { it.itemKey == "b" }.queued)
+
+                // metadata update leaves the flags alone
+                dao.updateItemMetadata(id, "a", "Renamed", "https://x/new.mp3", "https://x/t.jpg", 99, 11)
+                val a = dao.items(id).first { it.itemKey == "a" }
+                assertEquals("Renamed", a.title)
+                assertEquals("https://x/new.mp3", a.mediaUrl)
+                assertEquals("https://x/t.jpg", a.thumbUrl)
+                assertEquals(99L, a.durationSec)
+                assertEquals(11L, a.publishedAt)
+                assertTrue(a.isNew)
+                assertEquals(false, a.queued)
+
+                // upsert does both
+                dao.upsertItems(listOf(item("a", 12, isNew = false, queued = true, title = "Again"), item("c", 30, isNew = true, queued = false)))
+                val again = dao.items(id).first { it.itemKey == "a" }
+                assertEquals("Again", again.title)
+                assertTrue(again.isNew)
+                assertEquals(false, again.queued)
+                assertEquals(3, dao.items(id).size)
+
+                // trim never deletes new or queued items
+                dao.insertItems(listOf(item("old", 1, isNew = false, queued = false), item("older", 0, isNew = false, queued = false)))
+                dao.trimItems(id, 1)
+                assertEquals(setOf("a", "b", "c"), dao.itemKeys(id).toSet()) // b queued, c new; old ones gone
+                dao.markSeen(id, "a")
+                dao.markSeen(id, "c")
+                dao.trimItems(id, 1)
+                assertEquals(setOf("b", "c"), dao.itemKeys(id).toSet()) // newest (c) kept, b still queued
+
+                // unseen counts
+                dao.insertItems(listOf(item("d", 40, isNew = true, queued = false)))
+                assertEquals(1, dao.observeUnseenCount().first())
+                assertEquals(1, dao.observeUnseenCount(id).first())
+                dao.markAllSeen(id)
+                assertEquals(0, dao.observeUnseenCount().first())
+            }
+        } finally {
+            room.close()
+        }
+    }
+
+    @Test
+    fun staleSponsorSegmentsAreListedNotDeleted() {
+        val room = openWithRoom(create(13) {})
+        try {
+            runBlocking {
+                val dao = room.sponsorSegmentDao()
+                dao.upsert(SponsorSegmentEntity("old", "[]", 1))
+                dao.upsert(SponsorSegmentEntity("fresh", "[]", 100))
+                assertEquals(listOf("old"), dao.stale(50).map { it.videoId })
+                assertNotNull(dao.get("old"))
+            }
+        } finally {
+            room.close()
+        }
+    }
+
     // --- helpers ---------------------------------------------------------------
 
     private fun schemaFile(version: Int) =

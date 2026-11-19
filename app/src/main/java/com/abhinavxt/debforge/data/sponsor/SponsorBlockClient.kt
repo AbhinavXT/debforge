@@ -3,6 +3,8 @@ package com.abhinavxt.debforge.data.sponsor
 import com.abhinavxt.debforge.di.ApiHttpClient
 import com.abhinavxt.debforge.domain.SponsorSegment
 import com.squareup.moshi.JsonClass
+import com.squareup.moshi.JsonDataException
+import com.squareup.moshi.JsonEncodingException
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import okhttp3.OkHttpClient
@@ -55,7 +57,13 @@ class SponsorBlockClient @Inject constructor(
 
     suspend fun segments(videoId: String, categories: Collection<String>): List<SponsorSegment> {
         if (videoId.isBlank() || categories.isEmpty()) return emptyList()
-        val res = api.skipSegments(hashPrefix(videoId), categoriesParam(categories))
+        val res = try {
+            api.skipSegments(hashPrefix(videoId), categoriesParam(categories))
+        } catch (e: JsonDataException) {
+            throw IOException("SponsorBlock sent an unreadable response", e)
+        } catch (e: JsonEncodingException) {
+            throw IOException("SponsorBlock sent an unreadable response", e)
+        }
         if (res.code() == 404) return emptyList()
         if (!res.isSuccessful) throw IOException("SponsorBlock HTTP ${res.code()}")
         return filterFor(videoId, res.body().orEmpty(), categories)

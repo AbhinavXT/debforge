@@ -155,6 +155,15 @@ class RssParserTest {
         }
     }
 
+    @Test fun doctypeWithExternalEntityIsRejected() {
+        try {
+            RssParser.parse(resource("doctype-entity.xml"))
+            fail("expected MalformedFeedException")
+        } catch (e: MalformedFeedException) {
+            assertTrue(e.cause != null)
+        }
+    }
+
     @Test fun plainTextDecodesEntities() {
         assertEquals("a & b < c ’ A", RssParser.plainText("a &amp; b &lt; c &rsquo; &#65;"))
         assertTrue(RssParser.plainText("<b>x</b>&unknown;").contains("&unknown;"))

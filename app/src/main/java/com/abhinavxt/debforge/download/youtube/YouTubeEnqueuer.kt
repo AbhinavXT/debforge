@@ -55,11 +55,13 @@ class YouTubeEnqueuer @Inject constructor(
      * Resolves [videoUrlOrId] and queues it per [mode]. [quality] overrides the default-quality setting.
      * Resolve failures throw (callers map them to messages); queueing failures return [EnqueueResult.FAILED].
      */
-    suspend fun enqueue(videoUrlOrId: String, mode: EnqueueMode = EnqueueMode.DEFAULT, quality: DefaultQuality? = null): EnqueueResult {
+    suspend fun enqueue(videoUrlOrId: String, mode: EnqueueMode = EnqueueMode.DEFAULT, quality: DefaultQuality? = null,
+        foreground: Boolean = true,
+    ): EnqueueResult {
         val video = resolver.resolve(videoUrlOrId)
         val choices = YouTubeFormats.choices(video.streams, Build.VERSION.SDK_INT, video.durationSec)
         val pick = choiceForMode(choices, mode, quality ?: settings.youTubeQualityFlow.first()) ?: return EnqueueResult.FAILED
-        return tryEnqueue(itemFor(video, pick), video.thumbnailUrl)
+        return tryEnqueue(itemFor(video, pick), video.thumbnailUrl, foreground)
     }
 
     fun itemFor(video: YouTubeVideo, c: FormatChoice): DownloadItem = youTubeDownloadItem(
@@ -69,11 +71,11 @@ class YouTubeEnqueuer @Inject constructor(
     )
 
     /** Queues [item] and says what happened: QUEUED, ALREADY_QUEUED or FAILED. */
-    suspend fun tryEnqueue(item: DownloadItem, thumbnailUrl: String?): EnqueueResult {
+    suspend fun tryEnqueue(item: DownloadItem, thumbnailUrl: String?, foreground: Boolean = true): EnqueueResult {
         try {
             // enqueue ignores an id it already has, so ask first and report what really happens.
             if (dao.getById(item.id) != null) return EnqueueResult.ALREADY_QUEUED
-            downloads.enqueue(item, foreground = true)
+            downloads.enqueue(item, foreground = foreground)
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
