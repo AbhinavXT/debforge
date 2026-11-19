@@ -179,6 +179,7 @@ fun MediaScreen(
         onOpenSettings = onOpenSettings,
         onOpenYouTube = onOpenYouTube,
         onOpenHistory = onOpenHistory,
+        tell = tell,
         lists = AudioListActions(
             onPick = viewModel::selectAudioList,
             onToggleFavourite = viewModel::toggleFavourite,
@@ -192,6 +193,9 @@ fun MediaScreen(
     SnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter).padding(bottom = 16.dp))
     }
 }
+
+/** The Audio list pick that shows the followed podcasts instead of downloaded tracks; not a playlist id. */
+internal const val PODCASTS_LIST = "podcasts"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -212,6 +216,7 @@ internal fun MediaContent(
     onOpenSettings: () -> Unit,
     onOpenYouTube: () -> Unit,
     onOpenHistory: () -> Unit = {},
+    tell: (String) -> Unit = {},
     lists: AudioListActions = AudioListActions(),
     watch: Map<String, com.abhinavxt.debforge.data.playback.PlaybackEntity>? = null,
     internalPlayer: Boolean = true
@@ -270,12 +275,19 @@ internal fun MediaContent(
         if (!state.loaded) {
             // First load pending: show nothing rather than a wrong "Nothing downloaded yet".
             Spacer(Modifier.fillMaxSize())
-        } else if (state.totalCount == 0) {
+        } else if (state.totalCount == 0 && !(state.kind == FileKind.Audio && state.audioList == PODCASTS_LIST)) {
             MessageState(
                 icon = Icons.Rounded.Download,
                 title = stringResource(R.string.media_empty_title),
                 body = stringResource(R.string.media_empty_body),
-                action = { Button(onClick = onOpenYouTube) { Text(stringResource(R.string.media_open_youtube)) } }
+                action = {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Button(onClick = onOpenYouTube) { Text(stringResource(R.string.media_open_youtube)) }
+                        TextButton(onClick = { onKind(FileKind.Audio); lists.onPick(PODCASTS_LIST) }, modifier = Modifier.heightIn(min = 48.dp)) {
+                            Text(stringResource(R.string.podcasts_chip))
+                        }
+                    }
+                }
             )
         } else {
             val tabs = listOf(
@@ -293,7 +305,8 @@ internal fun MediaContent(
                     ) { Text(stringResource(label, state.count(kind)), maxLines = 1) }
                 }
             }
-            Row(Modifier.padding(start = 16.dp, end = 8.dp, bottom = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+            val podcastsOpen = state.kind == FileKind.Audio && state.audioList == PODCASTS_LIST
+            if (!podcastsOpen) Row(Modifier.padding(start = 16.dp, end = 8.dp, bottom = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                 SearchPill(
                     query = state.query,
                     onQuery = onQuery,
@@ -314,6 +327,7 @@ internal fun MediaContent(
                 ) {
                     FilterChip(state.audioList == null, { lists.onPick(null) }, { Text(stringResource(R.string.search_kind_all)) })
                     FilterChip(state.audioList == "fav", { lists.onPick("fav") }, { Text(stringResource(R.string.media_list_favourites)) })
+                    FilterChip(state.audioList == PODCASTS_LIST, { lists.onPick(PODCASTS_LIST) }, { Text(stringResource(R.string.podcasts_chip)) })
                     state.lists.playlists.forEach { p ->
                         FilterChip(state.audioList == p.id, { lists.onPick(p.id) }, { Text(p.name, maxLines = 1, overflow = TextOverflow.Ellipsis) })
                     }
@@ -348,7 +362,9 @@ internal fun MediaContent(
             var hadItems by remember { mutableStateOf<Triple<*, *, *>?>(null) }
             val held = hadItems == view
             SideEffect { hadItems = if (items.isNotEmpty()) view else null }
-            if (items.isEmpty() && state.kind == FileKind.Audio && state.audioList != null && state.query.isBlank()) {
+            if (podcastsOpen) {
+                PodcastsPane(playingId, tell)
+            } else if (items.isEmpty() && state.kind == FileKind.Audio && state.audioList != null && state.query.isBlank()) {
                 MessageState(
                     icon = Icons.Rounded.MusicNote,
                     title = stringResource(R.string.media_list_empty_title),

@@ -1152,4 +1152,27 @@
     <string name="podcast_err_too_big">Эта лента слишком большая для подписки (более 15 МБ).</string>
     <string name="podcast_err_network">Не удалось подключиться к ленте. Проверьте соединение и повторите попытку.</string>
     <string name="podcast_err_http">Сервер ленты ответил ошибкой %1$d.</string>
+    <string name="podcasts_chip">Подкасты</string>
+    <string name="podcasts_add">Добавить подкаст</string>
+    <string name="podcasts_add_title">Подписаться на подкаст</string>
+    <string name="podcasts_add_hint">URL ленты подкаста</string>
+    <string name="podcasts_paste">Вставить</string>
+    <string name="podcasts_follow">Подписаться</string>
+    <string name="podcasts_empty_title">Подкастов пока нет</string>
+    <string name="podcasts_empty_body">Вставьте ссылку на ленту подкаста, чтобы подписаться. Слушайте или скачивайте выпуски, а новые будут видны здесь.</string>
+    <string name="podcasts_new_count">Новых: %1$d</string>
+    <string name="podcasts_new">Новое</string>
+    <string name="podcasts_back">Назад</string>
+    <string name="podcasts_mark_seen">Отметить всё как просмотренное</string>
+    <string name="podcasts_add_queue">В очередь</string>
+    <string name="podcasts_download">Скачать</string>
+    <string name="podcasts_downloaded">Скачано</string>
+    <string name="podcasts_downloading">Скачивается</string>
+    <string name="podcasts_no_episodes">В этой ленте нет выпусков</string>
+    <string name="podcasts_msg_queued">Загрузка начата</string>
+    <string name="podcasts_msg_already">Уже скачано или в очереди</string>
+    <string name="podcasts_msg_failed">Не удалось начать загрузку</string>
+    <string name="podcasts_msg_no_file">У этого выпуска нет аудиофайла</string>
+    <string name="podcasts_msg_in_queue">Добавлено в очередь</string>
+    <string name="set_following_podcasts">Подкасты</string>
 </resources>

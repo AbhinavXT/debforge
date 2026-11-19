@@ -73,6 +73,10 @@ interface SubscriptionDao {
     @Query("SELECT COUNT(*) FROM feed_items WHERE isNew = 1")
     fun observeUnseenCount(): Flow<Int>
 
+    /** New-item count per subscription (only subscriptions with some). */
+    @Query("SELECT subId AS subId, COUNT(*) AS count FROM feed_items WHERE isNew = 1 GROUP BY subId")
+    fun observeUnseenBySub(): Flow<List<UnseenCount>>
+
     @Query("SELECT COUNT(*) FROM feed_items WHERE subId = :subId AND isNew = 1")
     fun observeUnseenCount(subId: Long): Flow<Int>
 
@@ -119,3 +123,5 @@ interface SubscriptionDao {
     )
     suspend fun trimItems(subId: Long, keep: Int)
 }
+
+data class UnseenCount(val subId: Long, val count: Int)

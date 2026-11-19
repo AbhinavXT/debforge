@@ -1002,4 +1002,27 @@
     <string name="podcast_err_too_big">此订阅源过大，无法关注（超过 15 MB）。</string>
     <string name="podcast_err_network">无法访问订阅源。请检查网络连接后重试。</string>
     <string name="podcast_err_http">订阅源服务器返回错误 %1$d。</string>
+    <string name="podcasts_chip">播客</string>
+    <string name="podcasts_add">添加播客</string>
+    <string name="podcasts_add_title">关注播客</string>
+    <string name="podcasts_add_hint">播客订阅源网址</string>
+    <string name="podcasts_paste">粘贴</string>
+    <string name="podcasts_follow">关注</string>
+    <string name="podcasts_empty_title">还没有播客</string>
+    <string name="podcasts_empty_body">粘贴播客的订阅源链接即可关注。可在线播放或下载其节目，新节目会显示在这里。</string>
+    <string name="podcasts_new_count">%1$d 个新节目</string>
+    <string name="podcasts_new">新</string>
+    <string name="podcasts_back">返回</string>
+    <string name="podcasts_mark_seen">全部标为已看</string>
+    <string name="podcasts_add_queue">加入队列</string>
+    <string name="podcasts_download">下载</string>
+    <string name="podcasts_downloaded">已下载</string>
+    <string name="podcasts_downloading">正在下载</string>
+    <string name="podcasts_no_episodes">此订阅源没有节目</string>
+    <string name="podcasts_msg_queued">已开始下载</string>
+    <string name="podcasts_msg_already">已下载或已在队列中</string>
+    <string name="podcasts_msg_failed">无法开始下载</string>
+    <string name="podcasts_msg_no_file">此节目没有音频文件</string>
+    <string name="podcasts_msg_in_queue">已加入队列</string>
+    <string name="set_following_podcasts">播客</string>
 </resources>

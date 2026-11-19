@@ -1002,4 +1002,27 @@
     <string name="podcast_err_too_big">Feed ini terlalu besar untuk diikuti (lebih dari 15 MB).</string>
     <string name="podcast_err_network">Tidak dapat menjangkau feed. Periksa koneksi Anda lalu coba lagi.</string>
     <string name="podcast_err_http">Server feed menjawab dengan galat %1$d.</string>
+    <string name="podcasts_chip">Podcast</string>
+    <string name="podcasts_add">Tambah podcast</string>
+    <string name="podcasts_add_title">Ikuti podcast</string>
+    <string name="podcasts_add_hint">URL feed podcast</string>
+    <string name="podcasts_paste">Tempel</string>
+    <string name="podcasts_follow">Ikuti</string>
+    <string name="podcasts_empty_title">Belum ada podcast</string>
+    <string name="podcasts_empty_body">Tempel tautan feed podcast untuk mengikutinya. Streaming atau unduh episodenya dan lihat yang baru di sini.</string>
+    <string name="podcasts_new_count">%1$d baru</string>
+    <string name="podcasts_new">Baru</string>
+    <string name="podcasts_back">Kembali</string>
+    <string name="podcasts_mark_seen">Tandai semua sudah dilihat</string>
+    <string name="podcasts_add_queue">Tambah ke antrean</string>
+    <string name="podcasts_download">Unduh</string>
+    <string name="podcasts_downloaded">Terunduh</string>
+    <string name="podcasts_downloading">Mengunduh</string>
+    <string name="podcasts_no_episodes">Tidak ada episode di feed ini</string>
+    <string name="podcasts_msg_queued">Unduhan dimulai</string>
+    <string name="podcasts_msg_already">Sudah diunduh atau dalam antrean</string>
+    <string name="podcasts_msg_failed">Tidak dapat memulai unduhan</string>
+    <string name="podcasts_msg_no_file">Episode ini tidak punya file audio</string>
+    <string name="podcasts_msg_in_queue">Ditambahkan ke antrean</string>
+    <string name="set_following_podcasts">Podcast</string>
 </resources>

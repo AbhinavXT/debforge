@@ -84,7 +84,10 @@ data class AudioTrack(
     val youtube: YouTubeAudio? = null,
     /** The artist's channel page, for a streamed YouTube track; not stored anywhere, so a downloaded file has none. */
     val artistUrl: String? = null
-)
+) {
+    /** A podcast episode streamed from its feed's url: a network [uri] with no YouTube stream behind it. */
+    val isRemoteStream: Boolean get() = youtube == null && (uri.scheme == "http" || uri.scheme == "https")
+}
 
 /** Which YouTube audio stream a track plays, enough to re-resolve it when the link expires. */
 data class YouTubeAudio(val videoId: String, val audioItag: Int)
@@ -582,7 +585,9 @@ class AudioPlayer @Inject constructor(
             if (t.local) local[t.id] else {
                 val video = t.videoId
                 val itag = t.itag
-                if (video == null || itag == null) null
+                val url = t.streamUrl
+                if (video == null && url != null) AudioTrack(t.id, Uri.parse(url), t.title, t.artist, null, t.artworkUrl) // a podcast episode
+                else if (video == null || itag == null) null
                 else AudioTrack(t.id, t.streamUrl?.let { Uri.parse(it) } ?: Uri.EMPTY, t.title, t.artist, null, t.artworkUrl,
                     YouTubeAudio(video, itag), t.artistUrl)
             }
@@ -828,6 +833,20 @@ class AudioPlayer @Inject constructor(
     /** Plays [index] of the current queue (tapping "Up next"). */
     fun skipTo(index: Int) = whenActive { it.seekToDefaultPosition(index); it.play() }
 
+    /**
+     * Adds [track] to the end of the queue (starts it when nothing is playing or loaded). A track already queued
+     * is left where it is.
+     */
+    fun enqueue(track: AudioTrack) {
+        val p = player
+        if (p == null || tracks.isEmpty()) { play(listOf(track), 0); return }
+        if (tracks.any { it.id == track.id }) return
+        tracks = tracks + track
+        p.addMediaItem(track.toMediaItem())
+        queueChanged.value++
+        publish()
+    }
+
     /** Files were deleted: take them out of the queue, moving on if the current one went, and forget where they were left. */
     fun removeTracks(ids: Set<String>) {
         removeFromQueue(ids)
@@ -888,10 +907,10 @@ class AudioPlayer @Inject constructor(
     }
 
     private fun AudioTrack.toSaved() = SavedTrack(
-        id = id, title = title, artist = artist, local = youtube == null,
+        id = id, title = title, artist = artist, local = youtube == null && !isRemoteStream,
         videoId = youtube?.videoId, itag = youtube?.audioItag,
-        streamUrl = if (youtube != null) uri.toString() else null,
-        artworkUrl = if (youtube != null) artworkUrl else null,
+        streamUrl = if (youtube != null || isRemoteStream) uri.toString() else null,
+        artworkUrl = if (youtube != null || isRemoteStream) artworkUrl else null,
         artistUrl = artistUrl
     )
 

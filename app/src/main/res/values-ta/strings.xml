@@ -1052,4 +1052,27 @@
     <string name="podcast_err_too_big">இந்த ஃபீட் பின்தொடர மிகப் பெரியது (15 MB-க்கு மேல்).</string>
     <string name="podcast_err_network">ஃபீடை அடைய முடியவில்லை. இணைப்பைச் சரிபார்த்து மீண்டும் முயலவும்.</string>
     <string name="podcast_err_http">ஃபீடின் சர்வர் %1$d பிழையுடன் பதிலளித்தது.</string>
+    <string name="podcasts_chip">பாட்காஸ்ட்கள்</string>
+    <string name="podcasts_add">பாட்காஸ்ட் சேர்</string>
+    <string name="podcasts_add_title">பாட்காஸ்டைப் பின்தொடர்</string>
+    <string name="podcasts_add_hint">பாட்காஸ்ட் ஃபீட் URL</string>
+    <string name="podcasts_paste">ஒட்டு</string>
+    <string name="podcasts_follow">பின்தொடர்</string>
+    <string name="podcasts_empty_title">இன்னும் பாட்காஸ்ட்கள் இல்லை</string>
+    <string name="podcasts_empty_body">பின்தொடர ஒரு பாட்காஸ்டின் ஃபீட் இணைப்பை ஒட்டவும். எபிசோட்களை ஸ்ட்ரீம் செய்யலாம் அல்லது பதிவிறக்கலாம்; புதியவை இங்கே தெரியும்.</string>
+    <string name="podcasts_new_count">%1$d புதியவை</string>
+    <string name="podcasts_new">புதியது</string>
+    <string name="podcasts_back">பின்செல்</string>
+    <string name="podcasts_mark_seen">அனைத்தையும் பார்த்ததாகக் குறி</string>
+    <string name="podcasts_add_queue">வரிசையில் சேர்</string>
+    <string name="podcasts_download">பதிவிறக்கு</string>
+    <string name="podcasts_downloaded">பதிவிறக்கப்பட்டது</string>
+    <string name="podcasts_downloading">பதிவிறக்குகிறது</string>
+    <string name="podcasts_no_episodes">இந்த ஃபீடில் எபிசோட்கள் இல்லை</string>
+    <string name="podcasts_msg_queued">பதிவிறக்கம் தொடங்கியது</string>
+    <string name="podcasts_msg_already">ஏற்கெனவே பதிவிறக்கப்பட்டது அல்லது வரிசையில் உள்ளது</string>
+    <string name="podcasts_msg_failed">பதிவிறக்கத்தைத் தொடங்க முடியவில்லை</string>
+    <string name="podcasts_msg_no_file">இந்த எபிசோடில் ஆடியோ கோப்பு இல்லை</string>
+    <string name="podcasts_msg_in_queue">வரிசையில் சேர்க்கப்பட்டது</string>
+    <string name="set_following_podcasts">பாட்காஸ்ட்கள்</string>
 </resources>

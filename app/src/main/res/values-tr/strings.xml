@@ -1052,4 +1052,27 @@
     <string name="podcast_err_too_big">Bu besleme takip edilemeyecek kadar büyük (15 MB üzeri).</string>
     <string name="podcast_err_network">Beslemeye ulaşılamadı. Bağlantını kontrol edip tekrar dene.</string>
     <string name="podcast_err_http">Beslemenin sunucusu %1$d hatasıyla yanıt verdi.</string>
+    <string name="podcasts_chip">Podcast\'ler</string>
+    <string name="podcasts_add">Podcast ekle</string>
+    <string name="podcasts_add_title">Podcast takip et</string>
+    <string name="podcasts_add_hint">Podcast akış URL\'si</string>
+    <string name="podcasts_paste">Yapıştır</string>
+    <string name="podcasts_follow">Takip et</string>
+    <string name="podcasts_empty_title">Henüz podcast yok</string>
+    <string name="podcasts_empty_body">Takip etmek için bir podcast\'in akış bağlantısını yapıştırın. Bölümleri dinleyebilir veya indirebilir, yenileri burada görebilirsiniz.</string>
+    <string name="podcasts_new_count">%1$d yeni</string>
+    <string name="podcasts_new">Yeni</string>
+    <string name="podcasts_back">Geri</string>
+    <string name="podcasts_mark_seen">Tümünü görüldü işaretle</string>
+    <string name="podcasts_add_queue">Kuyruğa ekle</string>
+    <string name="podcasts_download">İndir</string>
+    <string name="podcasts_downloaded">İndirildi</string>
+    <string name="podcasts_downloading">İndiriliyor</string>
+    <string name="podcasts_no_episodes">Bu akışta bölüm yok</string>
+    <string name="podcasts_msg_queued">İndirme başladı</string>
+    <string name="podcasts_msg_already">Zaten indirildi veya kuyrukta</string>
+    <string name="podcasts_msg_failed">İndirme başlatılamadı</string>
+    <string name="podcasts_msg_no_file">Bu bölümün ses dosyası yok</string>
+    <string name="podcasts_msg_in_queue">Kuyruğa eklendi</string>
+    <string name="set_following_podcasts">Podcast\'ler</string>
 </resources>

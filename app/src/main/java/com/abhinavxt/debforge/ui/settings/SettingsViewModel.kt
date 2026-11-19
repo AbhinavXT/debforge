@@ -186,6 +186,11 @@ class SettingsViewModel @Inject constructor(
         .map { list -> list.filter { it.kind == com.abhinavxt.debforge.data.subscriptions.SubscriptionKind.YT_CHANNEL }.sortedBy { it.title.lowercase() } }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
+    /** Followed podcasts, by title. */
+    val podcasts: StateFlow<List<com.abhinavxt.debforge.data.subscriptions.SubscriptionEntity>> = subscriptionRepo.subscriptions
+        .map { list -> list.filter { it.kind == com.abhinavxt.debforge.data.subscriptions.SubscriptionKind.PODCAST }.sortedBy { it.title.lowercase() } }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
     fun setChannelAutoDownload(id: Long, mode: com.abhinavxt.debforge.data.subscriptions.AutoDownload) =
         viewModelScope.launch { subscriptionRepo.setAutoDownload(id, mode) }
 

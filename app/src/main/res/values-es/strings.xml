@@ -1102,4 +1102,27 @@
     <string name="podcast_err_too_big">Este feed es demasiado grande para seguirlo (más de 15 MB).</string>
     <string name="podcast_err_network">No se pudo acceder al feed. Revisa tu conexión e inténtalo de nuevo.</string>
     <string name="podcast_err_http">El servidor del feed respondió con el error %1$d.</string>
+    <string name="podcasts_chip">Podcasts</string>
+    <string name="podcasts_add">Añadir podcast</string>
+    <string name="podcasts_add_title">Seguir un podcast</string>
+    <string name="podcasts_add_hint">URL del feed del podcast</string>
+    <string name="podcasts_paste">Pegar</string>
+    <string name="podcasts_follow">Seguir</string>
+    <string name="podcasts_empty_title">Aún no hay podcasts</string>
+    <string name="podcasts_empty_body">Pega el enlace del feed de un podcast para seguirlo. Reproduce o descarga sus episodios y ve aquí los nuevos.</string>
+    <string name="podcasts_new_count">%1$d nuevos</string>
+    <string name="podcasts_new">Nuevo</string>
+    <string name="podcasts_back">Atrás</string>
+    <string name="podcasts_mark_seen">Marcar todo como visto</string>
+    <string name="podcasts_add_queue">Añadir a la cola</string>
+    <string name="podcasts_download">Descargar</string>
+    <string name="podcasts_downloaded">Descargado</string>
+    <string name="podcasts_downloading">Descargando</string>
+    <string name="podcasts_no_episodes">No hay episodios en este feed</string>
+    <string name="podcasts_msg_queued">Descarga iniciada</string>
+    <string name="podcasts_msg_already">Ya descargado o en cola</string>
+    <string name="podcasts_msg_failed">No se pudo iniciar la descarga</string>
+    <string name="podcasts_msg_no_file">Este episodio no tiene archivo de audio</string>
+    <string name="podcasts_msg_in_queue">Añadido a la cola</string>
+    <string name="set_following_podcasts">Podcasts</string>
 </resources>

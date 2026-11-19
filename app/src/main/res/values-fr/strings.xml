@@ -1102,4 +1102,27 @@
     <string name="podcast_err_too_big">Ce flux est trop volumineux pour être suivi (plus de 15 Mo).</string>
     <string name="podcast_err_network">Impossible d\'atteindre le flux. Vérifiez votre connexion et réessayez.</string>
     <string name="podcast_err_http">Le serveur du flux a répondu par l\'erreur %1$d.</string>
+    <string name="podcasts_chip">Podcasts</string>
+    <string name="podcasts_add">Ajouter un podcast</string>
+    <string name="podcasts_add_title">Suivre un podcast</string>
+    <string name="podcasts_add_hint">URL du flux du podcast</string>
+    <string name="podcasts_paste">Coller</string>
+    <string name="podcasts_follow">Suivre</string>
+    <string name="podcasts_empty_title">Aucun podcast pour l\'instant</string>
+    <string name="podcasts_empty_body">Collez le lien du flux d\'un podcast pour le suivre. Écoutez ou téléchargez ses épisodes et retrouvez les nouveaux ici.</string>
+    <string name="podcasts_new_count">%1$d nouveau(x)</string>
+    <string name="podcasts_new">Nouveau</string>
+    <string name="podcasts_back">Retour</string>
+    <string name="podcasts_mark_seen">Tout marquer comme vu</string>
+    <string name="podcasts_add_queue">Ajouter à la file</string>
+    <string name="podcasts_download">Télécharger</string>
+    <string name="podcasts_downloaded">Téléchargé</string>
+    <string name="podcasts_downloading">Téléchargement en cours</string>
+    <string name="podcasts_no_episodes">Aucun épisode dans ce flux</string>
+    <string name="podcasts_msg_queued">Téléchargement lancé</string>
+    <string name="podcasts_msg_already">Déjà téléchargé ou en file d\'attente</string>
+    <string name="podcasts_msg_failed">Impossible de lancer le téléchargement</string>
+    <string name="podcasts_msg_no_file">Cet épisode n\'a pas de fichier audio</string>
+    <string name="podcasts_msg_in_queue">Ajouté à la file</string>
+    <string name="set_following_podcasts">Podcasts</string>
 </resources>

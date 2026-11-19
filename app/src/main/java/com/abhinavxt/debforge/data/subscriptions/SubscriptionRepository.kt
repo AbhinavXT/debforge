@@ -13,6 +13,7 @@ import com.abhinavxt.debforge.download.follow.FollowJobService
 import com.abhinavxt.debforge.download.follow.SubscriptionChecker
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -89,6 +90,16 @@ class SubscriptionRepository @Inject constructor(
     suspend fun markSeen(subId: Long, itemKey: String) = dao.markSeen(subId, itemKey)
 
     suspend fun markAllSeen() = dao.markEverythingSeen()
+
+    /** The episodes (or videos) of one subscription, newest first. */
+    fun itemsOf(subId: Long): Flow<List<FeedItemEntity>> = dao.observeItems(subId)
+
+    /** New-item counts per subscription id. */
+    val unseenBySub: Flow<Map<Long, Int>> get() = dao.observeUnseenBySub().map { l -> l.associate { it.subId to it.count } }
+
+    suspend fun markAllSeen(subId: Long) = dao.markAllSeen(subId)
+
+    suspend fun subscription(id: Long): SubscriptionEntity? = dao.get(id)
 
     /**
      * Follows the podcast feed at [feedUrl] (normalised by [PodcastFeeds.normalizeUrl]); the episodes already in the

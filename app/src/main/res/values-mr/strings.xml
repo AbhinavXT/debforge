@@ -1052,4 +1052,27 @@
     <string name="podcast_err_too_big">हे फीड फॉलो करण्यासाठी खूप मोठे आहे (15 MB पेक्षा जास्त).</string>
     <string name="podcast_err_network">फीडपर्यंत पोहोचता आले नाही. कनेक्शन तपासा आणि पुन्हा प्रयत्न करा.</string>
     <string name="podcast_err_http">फीडच्या सर्व्हरने त्रुटी %1$d दिली.</string>
+    <string name="podcasts_chip">पॉडकास्ट</string>
+    <string name="podcasts_add">पॉडकास्ट जोडा</string>
+    <string name="podcasts_add_title">पॉडकास्ट फॉलो करा</string>
+    <string name="podcasts_add_hint">पॉडकास्ट फीड URL</string>
+    <string name="podcasts_paste">पेस्ट करा</string>
+    <string name="podcasts_follow">फॉलो करा</string>
+    <string name="podcasts_empty_title">अजून पॉडकास्ट नाहीत</string>
+    <string name="podcasts_empty_body">फॉलो करण्यासाठी पॉडकास्टचा फीड लिंक पेस्ट करा. भाग स्ट्रीम किंवा डाउनलोड करा आणि नवीन भाग येथे पहा.</string>
+    <string name="podcasts_new_count">%1$d नवीन</string>
+    <string name="podcasts_new">नवीन</string>
+    <string name="podcasts_back">मागे</string>
+    <string name="podcasts_mark_seen">सर्व पाहिलेले म्हणून खूण करा</string>
+    <string name="podcasts_add_queue">रांगेत जोडा</string>
+    <string name="podcasts_download">डाउनलोड करा</string>
+    <string name="podcasts_downloaded">डाउनलोड झाले</string>
+    <string name="podcasts_downloading">डाउनलोड होत आहे</string>
+    <string name="podcasts_no_episodes">या फीडमध्ये भाग नाहीत</string>
+    <string name="podcasts_msg_queued">डाउनलोड सुरू झाले</string>
+    <string name="podcasts_msg_already">आधीच डाउनलोड झाले आहे किंवा रांगेत आहे</string>
+    <string name="podcasts_msg_failed">डाउनलोड सुरू करता आले नाही</string>
+    <string name="podcasts_msg_no_file">या भागाची ऑडिओ फाइल नाही</string>
+    <string name="podcasts_msg_in_queue">रांगेत जोडले</string>
+    <string name="set_following_podcasts">पॉडकास्ट</string>
 </resources>

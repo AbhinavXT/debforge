@@ -141,6 +141,7 @@ fun SettingsScreen(onConnect: () -> Unit, onBack: (() -> Unit)? = null, viewMode
     val autoDeleteConfirm by viewModel.autoDeleteConfirm.collectAsStateWithLifecycle()
     val follows by viewModel.follows.collectAsStateWithLifecycle()
     val channels by viewModel.channels.collectAsStateWithLifecycle()
+    val podcasts by viewModel.podcasts.collectAsStateWithLifecycle()
     val sponsorBlock by viewModel.sponsorBlock.collectAsStateWithLifecycle()
     val sponsorCategories by viewModel.sponsorCategories.collectAsStateWithLifecycle()
     val internalPlayer by viewModel.internalPlayer.collectAsStateWithLifecycle()
@@ -527,9 +528,9 @@ fun SettingsScreen(onConnect: () -> Unit, onBack: (() -> Unit)? = null, viewMode
                     SettingRow(
                         icon = Icons.Rounded.NotificationsActive,
                         title = stringResource(R.string.set_following),
-                        subtitle = if (follows.isEmpty() && channels.isEmpty()) stringResource(R.string.set_following_none)
-                        else (follows.map { it.title } + channels.map { it.title }).joinToString(", "),
-                        onClick = if (follows.isEmpty() && channels.isEmpty()) null else ({ followsOpen = true })
+                        subtitle = if (follows.isEmpty() && channels.isEmpty() && podcasts.isEmpty()) stringResource(R.string.set_following_none)
+                        else (follows.map { it.title } + channels.map { it.title } + podcasts.map { it.title }).joinToString(", "),
+                        onClick = if (follows.isEmpty() && channels.isEmpty() && podcasts.isEmpty()) null else ({ followsOpen = true })
                     )
                     RowDivider()
                     TmdbKeyRow(
@@ -553,7 +554,7 @@ fun SettingsScreen(onConnect: () -> Unit, onBack: (() -> Unit)? = null, viewMode
     }
 
     // Nothing left to list after the last unfollow: close the dialog.
-    LaunchedEffect(follows.isEmpty() && channels.isEmpty()) { if (follows.isEmpty() && channels.isEmpty()) followsOpen = false }
+    LaunchedEffect(follows.isEmpty() && channels.isEmpty() && podcasts.isEmpty()) { if (follows.isEmpty() && channels.isEmpty() && podcasts.isEmpty()) followsOpen = false }
     if (followsOpen) {
         val multiService = follows.map { it.provider }.distinct().size > 1
         AlertDialog(
@@ -583,10 +584,12 @@ fun SettingsScreen(onConnect: () -> Unit, onBack: (() -> Unit)? = null, viewMode
                             TextButton(onClick = { viewModel.unfollow(f) }) { Text(stringResource(R.string.follow_unfollow)) }
                         }
                     }
-                    if (channels.isNotEmpty()) {
-                        if (follows.isNotEmpty()) Spacer(Modifier.height(16.dp))
-                        Text(stringResource(R.string.set_following_channels), style = MaterialTheme.typography.titleSmall)
-                        channels.forEach { c ->
+                    listOf(R.string.set_following_channels to channels, R.string.set_following_podcasts to podcasts).forEach { (sectionTitle, subs) ->
+                      val isPodcasts = subs === podcasts
+                      if (subs.isNotEmpty()) {
+                        if (follows.isNotEmpty() || (isPodcasts && channels.isNotEmpty())) Spacer(Modifier.height(16.dp))
+                        Text(stringResource(sectionTitle), style = MaterialTheme.typography.titleSmall)
+                        subs.forEach { c ->
                             Spacer(Modifier.height(8.dp))
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Text(c.title, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
@@ -598,7 +601,7 @@ fun SettingsScreen(onConnect: () -> Unit, onBack: (() -> Unit)? = null, viewMode
                                     com.abhinavxt.debforge.data.subscriptions.AutoDownload.OFF to R.string.set_auto_dl_off,
                                     com.abhinavxt.debforge.data.subscriptions.AutoDownload.AUDIO to R.string.set_auto_dl_audio,
                                     com.abhinavxt.debforge.data.subscriptions.AutoDownload.VIDEO to R.string.set_auto_dl_video,
-                                ).forEach { (mode, label) ->
+                                ).filter { !isPodcasts || it.first != com.abhinavxt.debforge.data.subscriptions.AutoDownload.VIDEO }.forEach { (mode, label) ->
                                     androidx.compose.material3.FilterChip(
                                         selected = c.autoDownload == mode,
                                         onClick = { viewModel.setChannelAutoDownload(c.id, mode) },
@@ -608,6 +611,7 @@ fun SettingsScreen(onConnect: () -> Unit, onBack: (() -> Unit)? = null, viewMode
                                 }
                             }
                         }
+                      }
                     }
                 }
             },

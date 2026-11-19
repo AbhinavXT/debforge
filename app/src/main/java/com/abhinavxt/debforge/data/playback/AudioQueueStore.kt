@@ -120,7 +120,7 @@ object AudioQueueCodec {
                     streamUrl = t.optString("u").takeIf { it.isNotEmpty() },
                     artworkUrl = t.optString("w").takeIf { it.isNotEmpty() },
                     artistUrl = t.optString("c").takeIf { it.isNotEmpty() }
-                ).takeIf { local || (it.videoId != null && it.itag != null) }
+                ).takeIf { local || (it.videoId != null && it.itag != null) || it.streamUrl != null }
             }
             QueueSnapshot(
                 tracks = tracks,

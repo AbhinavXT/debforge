@@ -1052,4 +1052,27 @@
     <string name="podcast_err_too_big">এই ফিডটি অনুসরণ করার জন্য খুব বড় (১৫ MB-এর বেশি)।</string>
     <string name="podcast_err_network">ফিডে পৌঁছানো যায়নি। আপনার সংযোগ পরীক্ষা করে আবার চেষ্টা করুন।</string>
     <string name="podcast_err_http">ফিডের সার্ভার ত্রুটি %1$d দিয়েছে।</string>
+    <string name="podcasts_chip">পডকাস্ট</string>
+    <string name="podcasts_add">পডকাস্ট যোগ করুন</string>
+    <string name="podcasts_add_title">পডকাস্ট ফলো করুন</string>
+    <string name="podcasts_add_hint">পডকাস্ট ফিড URL</string>
+    <string name="podcasts_paste">পেস্ট করুন</string>
+    <string name="podcasts_follow">ফলো করুন</string>
+    <string name="podcasts_empty_title">এখনও কোনো পডকাস্ট নেই</string>
+    <string name="podcasts_empty_body">ফলো করতে কোনো পডকাস্টের ফিড লিংক পেস্ট করুন। এপিসোড স্ট্রিম বা ডাউনলোড করুন এবং নতুনগুলো এখানে দেখুন।</string>
+    <string name="podcasts_new_count">%1$dটি নতুন</string>
+    <string name="podcasts_new">নতুন</string>
+    <string name="podcasts_back">পেছনে</string>
+    <string name="podcasts_mark_seen">সব দেখা হয়েছে চিহ্নিত করুন</string>
+    <string name="podcasts_add_queue">সারিতে যোগ করুন</string>
+    <string name="podcasts_download">ডাউনলোড</string>
+    <string name="podcasts_downloaded">ডাউনলোড হয়েছে</string>
+    <string name="podcasts_downloading">ডাউনলোড হচ্ছে</string>
+    <string name="podcasts_no_episodes">এই ফিডে কোনো এপিসোড নেই</string>
+    <string name="podcasts_msg_queued">ডাউনলোড শুরু হয়েছে</string>
+    <string name="podcasts_msg_already">ইতিমধ্যে ডাউনলোড হয়েছে বা সারিতে আছে</string>
+    <string name="podcasts_msg_failed">ডাউনলোড শুরু করা যায়নি</string>
+    <string name="podcasts_msg_no_file">এই এপিসোডে কোনো অডিও ফাইল নেই</string>
+    <string name="podcasts_msg_in_queue">সারিতে যোগ করা হয়েছে</string>
+    <string name="set_following_podcasts">পডকাস্ট</string>
 </resources>

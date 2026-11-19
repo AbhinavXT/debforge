@@ -1052,4 +1052,27 @@
     <string name="podcast_err_too_big">ఈ ఫీడ్ ఫాలో చేయడానికి చాలా పెద్దది (15 MB కంటే ఎక్కువ).</string>
     <string name="podcast_err_network">ఫీడ్‌ను చేరుకోలేకపోయాం. మీ కనెక్షన్‌ను తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.</string>
     <string name="podcast_err_http">ఫీడ్ సర్వర్ %1$d లోపంతో స్పందించింది.</string>
+    <string name="podcasts_chip">పాడ్‌కాస్ట్‌లు</string>
+    <string name="podcasts_add">పాడ్‌కాస్ట్ జోడించండి</string>
+    <string name="podcasts_add_title">పాడ్‌కాస్ట్‌ను ఫాలో చేయండి</string>
+    <string name="podcasts_add_hint">పాడ్‌కాస్ట్ ఫీడ్ URL</string>
+    <string name="podcasts_paste">అతికించండి</string>
+    <string name="podcasts_follow">ఫాలో చేయండి</string>
+    <string name="podcasts_empty_title">ఇంకా పాడ్‌కాస్ట్‌లు లేవు</string>
+    <string name="podcasts_empty_body">ఫాలో చేయడానికి పాడ్‌కాస్ట్ ఫీడ్ లింక్‌ను అతికించండి. ఎపిసోడ్‌లను స్ట్రీమ్ లేదా డౌన్‌లోడ్ చేయండి, కొత్తవి ఇక్కడ చూడండి.</string>
+    <string name="podcasts_new_count">%1$d కొత్తవి</string>
+    <string name="podcasts_new">కొత్త</string>
+    <string name="podcasts_back">వెనుకకు</string>
+    <string name="podcasts_mark_seen">అన్నీ చూసినట్లు గుర్తించండి</string>
+    <string name="podcasts_add_queue">క్యూలో జోడించండి</string>
+    <string name="podcasts_download">డౌన్‌లోడ్</string>
+    <string name="podcasts_downloaded">డౌన్‌లోడ్ అయింది</string>
+    <string name="podcasts_downloading">డౌన్‌లోడ్ అవుతోంది</string>
+    <string name="podcasts_no_episodes">ఈ ఫీడ్‌లో ఎపిసోడ్‌లు లేవు</string>
+    <string name="podcasts_msg_queued">డౌన్‌లోడ్ ప్రారంభమైంది</string>
+    <string name="podcasts_msg_already">ఇప్పటికే డౌన్‌లోడ్ అయింది లేదా క్యూలో ఉంది</string>
+    <string name="podcasts_msg_failed">డౌన్‌లోడ్ ప్రారంభించలేకపోయాం</string>
+    <string name="podcasts_msg_no_file">ఈ ఎపిసోడ్‌కు ఆడియో ఫైల్ లేదు</string>
+    <string name="podcasts_msg_in_queue">క్యూలో జోడించబడింది</string>
+    <string name="set_following_podcasts">పాడ్‌కాస్ట్‌లు</string>
 </resources>

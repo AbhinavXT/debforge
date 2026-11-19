@@ -21,6 +21,12 @@ class AudioQueueCodecTest {
         assertEquals(q, AudioQueueCodec.decode(AudioQueueCodec.encode(q)))
     }
 
+    @Test fun streamedPodcastEpisodeRoundTrips() {
+        val pod = SavedTrack("pod:abc", "Episode", "Show", local = false, streamUrl = "https://cdn/ep.mp3", artworkUrl = "https://cdn/a.jpg")
+        val q = QueueSnapshot(listOf(local, pod))
+        assertEquals(q, AudioQueueCodec.decode(AudioQueueCodec.encode(q)))
+    }
+
     @Test fun shuffleOrderRoundTripsAndBadOnesAreDropped() {
         val q = QueueSnapshot(listOf(local, yt, local.copy(id = "b")), shuffle = true, shuffleOrder = listOf(2, 0, 1))
         assertEquals(listOf(2, 0, 1), AudioQueueCodec.decode(AudioQueueCodec.encode(q))!!.shuffleOrder)
