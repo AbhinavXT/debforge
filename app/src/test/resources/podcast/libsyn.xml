@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>The Sample Show</title>
+    <link>https://example.com/show</link>
+    <description><![CDATA[<p>Weekly chat about &amp; around sample things.</p>]]></description>
+    <itunes:author>Sam Example</itunes:author>
+    <itunes:image href="https://example.com/art/show.jpg"/>
+    <image><url>https://example.com/art/fallback.jpg</url><title>x</title></image>
+    <item>
+      <title>Episode 2: Second &amp; Better</title>
+      <link>https://example.com/ep2</link>
+      <guid isPermaLink="false">ep-2-guid</guid>
+      <pubDate>Tue, 05 Mar 2024 08:30:00 GMT</pubDate>
+      <description><![CDATA[<p>Notes with <a href="https://x.test">a link</a> &amp; &quot;quotes&quot;&nbsp;here.</p><p>Second para.</p>]]></description>
+      <enclosure url="https://cdn.example.com/ep2.mp3" length="12345678" type="audio/mpeg"/>
+      <itunes:duration>01:02:03</itunes:duration>
+      <itunes:image href="https://example.com/art/ep2.jpg"/>
+    </item>
+    <item>
+      <title>Episode 1</title>
+      <guid>ep-1-guid</guid>
+      <pubDate>Tue, 27 Feb 2024 08:30:00 +0000</pubDate>
+      <description>Plain first episode</description>
+      <enclosure url="https://cdn.example.com/ep1.mp3" length="999" type="audio/mpeg"/>
+      <itunes:duration>2400</itunes:duration>
+    </item>
+    <item>
+      <title>Blog post, no audio</title>
+      <guid>blog-1</guid>
+      <pubDate>Mon, 01 Jan 2024 00:00:00 GMT</pubDate>
+      <enclosure url="https://example.com/pic.jpg" length="10" type="image/jpeg"/>
+    </item>
+    <item>
+      <title>Text only</title>
+      <guid>text-1</guid>
+    </item>
+  </channel>
+</rss>

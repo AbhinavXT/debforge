@@ -1,5 +1,6 @@
 package com.abhinavxt.debforge.data.search
 
+import com.abhinavxt.debforge.data.net.SecureXml
 import com.abhinavxt.debforge.domain.SearchKind
 import com.abhinavxt.debforge.domain.SearchResult
 import com.abhinavxt.debforge.domain.SearchResults
@@ -7,7 +8,6 @@ import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import org.w3c.dom.Element
 import java.io.StringReader
-import javax.xml.parsers.DocumentBuilderFactory
 import org.xml.sax.InputSource
 
 /**
@@ -149,13 +149,7 @@ object Torznab {
     private val PUB_DATE = java.time.format.DateTimeFormatter.ofPattern("d MMM yyyy HH:mm:ss Z", java.util.Locale.ENGLISH)
 
     private fun parse(xml: String): Element {
-        val factory = DocumentBuilderFactory.newInstance().apply {
-            isNamespaceAware = true
-            isExpandEntityReferences = false
-            // No DTDs or external entities from a server we don't control.
-            runCatching { setFeature("http://apache.org/xml/features/disallow-doctype-decl", true) }
-            runCatching { setFeature("http://xml.org/sax/features/external-general-entities", false) }
-        }
+        val factory = SecureXml.documentBuilderFactory()
         return factory.newDocumentBuilder().parse(InputSource(StringReader(xml))).documentElement
     }
 

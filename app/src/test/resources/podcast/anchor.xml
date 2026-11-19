@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd" version="2.0">
+  <channel>
+    <title><![CDATA[Anchor Style Talks]]></title>
+    <description><![CDATA[Short &amp; sweet]]></description>
+    <image>
+      <url>https://example.com/anchor.jpg</url>
+      <title>Anchor Style Talks</title>
+    </image>
+    <itunes:author><![CDATA[Pat Host]]></itunes:author>
+    <item>
+      <title><![CDATA[Hello world]]></title>
+      <description><![CDATA[<p>First!</p>]]></description>
+      <link>https://example.com/hello</link>
+      <enclosure url="https://cdn.example.com/hello.m4a" length="0" type="audio/x-m4a"/>
+      <pubDate>Fri, 5 Jan 2024 10:00:00 -0500</pubDate>
+      <itunes:duration>12:34</itunes:duration>
+    </item>
+  </channel>
+</rss>
