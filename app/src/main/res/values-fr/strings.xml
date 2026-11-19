@@ -1007,6 +1007,8 @@
     <string name="audio_stop_close">Arrêter et fermer le lecteur</string>
     <string name="audio_expand">Ouvrir la lecture en cours</string>
     <string name="audio_up_next">À suivre</string>
+    <string name="audio_autoplay">Lecture automatique</string>
+    <string name="audio_autoplay_item">Lecture automatique · %1$s</string>
     <string name="audio_speed_cd">Vitesse de lecture, %1$s</string>
     <string name="audio_sleep_off_cd">Minuterie de veille, désactivée</string>
     <string name="audio_sleep_end">À la fin du titre</string>
@@ -1109,6 +1111,8 @@
     <string name="set_auto_dl_video">Vidéo</string>
     <string name="set_sponsorblock">Passer les sponsors (SponsorBlock)</string>
     <string name="set_sponsorblock_detail">Passe les segments sponsorisés des vidéos YouTube. Envoie un court hachage de l’ID de la vidéo à sponsor.ajay.app.</string>
+    <string name="set_yt_autoplay">Lecture automatique des vidéos similaires</string>
+    <string name="set_yt_autoplay_detail">Quand une file YouTube en streaming se termine, une vidéo similaire continue en audio.</string>
     <string name="set_sb_sponsor">Sponsor</string>
     <string name="set_sb_selfpromo">Autopromotion</string>
     <string name="set_sb_interaction">Rappel d’interaction</string>

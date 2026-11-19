@@ -913,6 +913,8 @@
     <string name="audio_stop_close">Hentikan dan tutup pemutar</string>
     <string name="audio_expand">Buka yang sedang diputar</string>
     <string name="audio_up_next">Berikutnya</string>
+    <string name="audio_autoplay">Putar otomatis</string>
+    <string name="audio_autoplay_item">Putar otomatis · %1$s</string>
     <string name="audio_speed_cd">Kecepatan pemutaran, %1$s</string>
     <string name="audio_sleep_off_cd">Timer tidur, mati</string>
     <string name="audio_sleep_end">Di akhir trek</string>
@@ -1009,6 +1011,8 @@
     <string name="set_auto_dl_video">Video</string>
     <string name="set_sponsorblock">Lewati sponsor (SponsorBlock)</string>
     <string name="set_sponsorblock_detail">Melewati bagian sponsor di video YouTube. Mengirim hash singkat ID video ke sponsor.ajay.app.</string>
+    <string name="set_yt_autoplay">Putar otomatis video terkait</string>
+    <string name="set_yt_autoplay_detail">Saat antrean YouTube yang distreaming habis, video terkait terus diputar sebagai audio.</string>
     <string name="set_sb_sponsor">Sponsor</string>
     <string name="set_sb_selfpromo">Promosi diri</string>
     <string name="set_sb_interaction">Pengingat interaksi</string>

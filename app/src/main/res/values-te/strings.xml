@@ -960,6 +960,8 @@
     <string name="audio_stop_close">ఆపి ప్లేయర్‌ను మూసివేయి</string>
     <string name="audio_expand">ఇప్పుడు ప్లే అవుతున్నదాన్ని తెరువు</string>
     <string name="audio_up_next">తర్వాత</string>
+    <string name="audio_autoplay">ఆటోప్లే</string>
+    <string name="audio_autoplay_item">ఆటోప్లే · %1$s</string>
     <string name="audio_speed_cd">ప్లేబ్యాక్ వేగం, %1$s</string>
     <string name="audio_sleep_off_cd">స్లీప్ టైమర్, ఆఫ్</string>
     <string name="audio_sleep_end">ట్రాక్ చివరిలో</string>
@@ -1059,6 +1061,8 @@
     <string name="set_auto_dl_video">వీడియో</string>
     <string name="set_sponsorblock">స్పాన్సర్లను దాటవేయండి (SponsorBlock)</string>
     <string name="set_sponsorblock_detail">YouTube వీడియోల్లో స్పాన్సర్ భాగాలను దాటవేస్తుంది. వీడియో ID యొక్క చిన్న హాష్‌ను sponsor.ajay.app కి పంపుతుంది.</string>
+    <string name="set_yt_autoplay">సంబంధిత వీడియోలను ఆటోప్లే చేయండి</string>
+    <string name="set_yt_autoplay_detail">స్ట్రీమ్ చేసిన YouTube క్యూ ముగిసినప్పుడు, సంబంధిత వీడియో ఆడియోగా కొనసాగుతుంది.</string>
     <string name="set_sb_sponsor">స్పాన్సర్</string>
     <string name="set_sb_selfpromo">స్వీయ ప్రచారం</string>
     <string name="set_sb_interaction">ఇంటరాక్షన్ రిమైండర్</string>

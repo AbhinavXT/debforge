@@ -960,6 +960,8 @@
     <string name="audio_stop_close">थांबवा आणि प्लेयर बंद करा</string>
     <string name="audio_expand">आता सुरू असलेले उघडा</string>
     <string name="audio_up_next">पुढे</string>
+    <string name="audio_autoplay">ऑटोप्ले</string>
+    <string name="audio_autoplay_item">ऑटोप्ले · %1$s</string>
     <string name="audio_speed_cd">प्लेबॅक गती, %1$s</string>
     <string name="audio_sleep_off_cd">स्लीप टायमर, बंद</string>
     <string name="audio_sleep_end">ट्रॅकच्या शेवटी</string>
@@ -1059,6 +1061,8 @@
     <string name="set_auto_dl_video">व्हिडिओ</string>
     <string name="set_sponsorblock">स्पॉन्सर वगळा (SponsorBlock)</string>
     <string name="set_sponsorblock_detail">YouTube व्हिडिओतील स्पॉन्सर भाग वगळतो. व्हिडिओ ID चा छोटा हॅश sponsor.ajay.app ला पाठवतो.</string>
+    <string name="set_yt_autoplay">संबंधित व्हिडिओ ऑटोप्ले करा</string>
+    <string name="set_yt_autoplay_detail">स्ट्रीम केलेली YouTube रांग संपल्यावर एक संबंधित व्हिडिओ ऑडिओ म्हणून सुरू राहतो.</string>
     <string name="set_sb_sponsor">स्पॉन्सर</string>
     <string name="set_sb_selfpromo">स्वतःची जाहिरात</string>
     <string name="set_sb_interaction">इंटरॅक्शन रिमाइंडर</string>

@@ -962,6 +962,8 @@
     <string name="audio_stop_close">Stop and close player</string>
     <string name="audio_expand">Open now playing</string>
     <string name="audio_up_next">Up next</string>
+    <string name="audio_autoplay">Autoplay</string>
+    <string name="audio_autoplay_item">Autoplay · %1$s</string>
     <string name="audio_speed_cd">Playback speed, %1$s</string>
     <string name="audio_sleep_off_cd">Sleep timer, off</string>
     <string name="audio_sleep_end">End of track</string>
@@ -1061,6 +1063,8 @@
     <string name="set_auto_dl_video">Video</string>
     <string name="set_sponsorblock">Skip sponsors (SponsorBlock)</string>
     <string name="set_sponsorblock_detail">Skips sponsor segments in YouTube videos. Sends a short hash of the video ID to sponsor.ajay.app.</string>
+    <string name="set_yt_autoplay">Autoplay related videos</string>
+    <string name="set_yt_autoplay_detail">When a streamed YouTube queue ends, keeps playing a related video as audio.</string>
     <string name="set_sb_sponsor">Sponsor</string>
     <string name="set_sb_selfpromo">Self-promotion</string>
     <string name="set_sb_interaction">Interaction reminder</string>

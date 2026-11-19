@@ -913,6 +913,8 @@
     <string name="audio_stop_close">停止并关闭播放器</string>
     <string name="audio_expand">打开正在播放</string>
     <string name="audio_up_next">接下来播放</string>
+    <string name="audio_autoplay">自动播放</string>
+    <string name="audio_autoplay_item">自动播放 · %1$s</string>
     <string name="audio_speed_cd">播放速度，%1$s</string>
     <string name="audio_sleep_off_cd">睡眠定时，已关闭</string>
     <string name="audio_sleep_end">当前曲目结束时</string>
@@ -1009,6 +1011,8 @@
     <string name="set_auto_dl_video">视频</string>
     <string name="set_sponsorblock">跳过赞助片段（SponsorBlock）</string>
     <string name="set_sponsorblock_detail">跳过 YouTube 视频中的赞助片段。会向 sponsor.ajay.app 发送视频 ID 的简短哈希。</string>
+    <string name="set_yt_autoplay">自动播放相关视频</string>
+    <string name="set_yt_autoplay_detail">流式播放的 YouTube 队列结束后，继续以音频播放一个相关视频。</string>
     <string name="set_sb_sponsor">赞助</string>
     <string name="set_sb_selfpromo">自我宣传</string>
     <string name="set_sb_interaction">互动提醒</string>

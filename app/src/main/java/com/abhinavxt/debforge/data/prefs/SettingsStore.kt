@@ -53,6 +53,7 @@ class SettingsStore @Inject constructor(
     private val keyAutoplayNext = booleanPreferencesKey("autoplay_next")
     private val keyPip = booleanPreferencesKey("picture_in_picture")
     private val keyAutoSkipIntro = booleanPreferencesKey("auto_skip_intro")
+    private val keyYouTubeAutoplay = booleanPreferencesKey("youtube_autoplay")
     private val keySponsorBlock = booleanPreferencesKey("sponsorblock_enabled")
     private val keySponsorCategories = stringPreferencesKey("sponsorblock_categories")
     private val keyNightMode = booleanPreferencesKey("player_night_mode")
@@ -173,6 +174,10 @@ class SettingsStore @Inject constructor(
 
     val sponsorBlockEnabledFlow: Flow<Boolean> = context.settingsDataStore.data.map { it[keySponsorBlock] ?: false }
     suspend fun setSponsorBlockEnabled(v: Boolean) = context.settingsDataStore.edit { it[keySponsorBlock] = v }
+
+    /** Streamed YouTube audio carries on with a related video when the queue ends. On by default. */
+    val youTubeAutoplayFlow: Flow<Boolean> = context.settingsDataStore.data.map { it[keyYouTubeAutoplay] ?: true }
+    suspend fun setYouTubeAutoplay(v: Boolean) = context.settingsDataStore.edit { it[keyYouTubeAutoplay] = v }
 
     /** SponsorBlock category names, comma separated in storage. */
     val sponsorBlockCategoriesFlow: Flow<Set<String>> = context.settingsDataStore.data.map { p ->
@@ -331,7 +336,7 @@ class SettingsStore @Inject constructor(
     private val backupBooleans get() = listOf(
         keyDynamicColor, keyPosterView, keyOrganize, keyWifiOnly, keyChargingOnly,
         keyScheduleOn, keyAutoUpdate, keyRemoveAfter, keyPureBlack, keyShowExtras, keyClipboardOffer, keyAdBlock,
-        keyInternalPlayer, keyAutoplayNext, keyPip, keyAutoSkipIntro, keySponsorBlock, keyNightMode, keyStreamPreviews,
+        keyInternalPlayer, keyAutoplayNext, keyPip, keyAutoSkipIntro, keySponsorBlock, keyYouTubeAutoplay, keyNightMode, keyStreamPreviews,
         keyPlayerArtColor, keyPlayerGestures, keyPlayerShowRemaining, keyPlayerBackground, keyHistoryPaused
     )
     /** May be blank on purpose (nothing avoided, no site left unblocked). */

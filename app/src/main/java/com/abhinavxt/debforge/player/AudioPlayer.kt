@@ -175,7 +175,11 @@ data class AudioState(
     val speed: Float = 1f,
     /** Sleep timer: time left when counting down, [sleepAtEnd] when pausing after this track; both unset = off. */
     val sleepLeftMs: Long? = null,
-    val sleepAtEnd: Boolean = false
+    val sleepAtEnd: Boolean = false,
+    /** Ids of queue items that autoplay appended (labelled "Autoplay"); kept in memory only. */
+    val autoplayIds: Set<String> = emptySet(),
+    /** The "autoplay related videos" setting, mirrored in the queue sheet. */
+    val autoplayOn: Boolean = true
 ) {
     val track: AudioTrack? get() = queue.getOrNull(index)
 }
@@ -285,7 +289,8 @@ class AudioPlayer @Inject constructor(
     private val queueStore: AudioQueueStore,
     private val downloads: DownloadDao,
     private val history: PlayHistory,
-    private val sponsorSegments: SponsorSegmentRepository
+    private val sponsorSegments: SponsorSegmentRepository,
+    private val settings: com.abhinavxt.debforge.data.prefs.SettingsStore
 ) {
 
     private val _state = MutableStateFlow(AudioState())
@@ -358,6 +363,7 @@ class AudioPlayer @Inject constructor(
             // Repeat-one keeps the same item, so the timer still applies; any other change of item drops it.
             if (sleepAtEnd && !sleepEndStillApplies(sleepItemId, mediaItem?.mediaId)) cancelSleep()
             resolveAhead()
+            maybeAutoplay()
             if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED || reason == Player.MEDIA_ITEM_TRANSITION_REASON_REPEAT) return
             applyResume(mediaItem?.mediaId ?: return)
         }
@@ -387,6 +393,57 @@ class AudioPlayer @Inject constructor(
     }
 
     private val relatedCache = RelatedCache()
+
+    // Autoplay: when the last item of a streamed queue becomes current, append a related video (radio style).
+    private var autoplayEnabled = true
+    private val autoplayIds = HashSet<String>()
+    /** Video ids that played this session (not persisted), so autoplay does not loop back. */
+    private val playedVideos = HashSet<String>()
+    private var autoplayJob: Job? = null
+    private var autoplayFor: String? = null
+
+    fun setAutoplay(on: Boolean) {
+        autoplayEnabled = on
+        scope.launch { settings.setYouTubeAutoplay(on) }
+        publish()
+        if (on) maybeAutoplay()
+    }
+
+    private fun isLastInOrder(p: ExoPlayer): Boolean {
+        val tl = p.currentTimeline
+        if (tl.windowCount != tracks.size) return false
+        return tl.getNextWindowIndex(p.currentMediaItemIndex, Player.REPEAT_MODE_OFF, p.shuffleModeEnabled) == C.INDEX_UNSET
+    }
+
+    private fun maybeAutoplay() {
+        val p = player ?: return
+        if (restoredPending) return
+        val track = tracks.getOrNull(p.currentMediaItemIndex) ?: return
+        val yt = track.youtube
+        if (yt != null) playedVideos.add(yt.videoId)
+        if (!shouldAutoplay(isLastInOrder(p), yt != null, repeatFromPlayerMode(p.repeatMode), autoplayEnabled, sleepAtEnd)) return
+        if (autoplayFor == track.id && autoplayJob?.isActive == true) return
+        autoplayJob?.cancel()
+        autoplayFor = track.id
+        autoplayJob = scope.launch { appendAutoplay(track, p) }
+    }
+
+    private suspend fun appendAutoplay(track: AudioTrack, p: ExoPlayer) {
+        val yt = track.youtube ?: return
+        // Not cached yet: look the current item up again (shared with resolve-ahead and recovery) so its related list lands.
+        val related = relatedCache.get(yt.videoId) ?: run { refreshed(track); relatedCache.get(yt.videoId) } ?: return
+        // The queue may have moved on while looking up.
+        if (player !== p || tracks.getOrNull(p.currentMediaItemIndex)?.id != track.id) return
+        if (!shouldAutoplay(isLastInOrder(p), true, repeatFromPlayerMode(p.repeatMode), autoplayEnabled, sleepAtEnd)) return
+        val queued = tracks.mapNotNullTo(HashSet()) { it.youtube?.videoId }
+        val pick = pickAutoplay(related, playedVideos, queued) ?: return
+        val id = YouTubeLinks.videoId(pick.url) ?: return
+        val outcome = enqueueYouTube(id, YouTubeMeta(pick.title, pick.channel, pick.durationSec.toInt()))
+        if (outcome == EnqueueOutcome.ADDED) {
+            tracks.lastOrNull()?.let { autoplayIds.add(it.id) }
+            publish()
+        }
+    }
 
     /** The related videos of [videoId] from the last time the player resolved it (null if not among the last 20). For autoplay. */
     fun relatedFor(videoId: String): List<YouTubeSearchResult>? = relatedCache.get(videoId)
@@ -531,6 +588,7 @@ class AudioPlayer @Inject constructor(
 
     private fun cancelLookups() {
         aheadJob?.cancel(); aheadJob = null; aheadId = null
+        autoplayJob?.cancel(); autoplayJob = null; autoplayFor = null; autoplayIds.clear()
         lookups.cancelAll()
     }
 
@@ -573,6 +631,7 @@ class AudioPlayer @Inject constructor(
     }
 
     init {
+        scope.launch { settings.youTubeAutoplayFlow.collect { autoplayEnabled = it; publish() } }
         // Save the position now and then while playing, so a killed process loses little.
         scope.launch { playing.collectLatest { if (it) while (true) { delay(15_000); saveSpot(); savePositionNow() } } }
         // Play history: the same cadence as the video player (about every 5 s while playing); pause and track changes record too.
@@ -1019,6 +1078,20 @@ class AudioPlayer @Inject constructor(
         player?.let {
             if (wantsToPlay(it.playWhenReady, it.playbackState)) it.pause()
             else {
+                youtubeBreaker.reset() // an explicit press: try afresh after the breaker tripped
+                val cur = tracks.getOrNull(it.currentMediaItemIndex)
+                if (cur?.youtube != null && cur.uri == Uri.EMPTY) {
+                    // Never resolved (the breaker stopped it): look it up, then prepare and play in this one press.
+                    it.playWhenReady = true
+                    scope.launch {
+                        applyAhead(cur, it)
+                        if (player === it && tracks.getOrNull(it.currentMediaItemIndex)?.uri != Uri.EMPTY) {
+                            if (it.playbackState == Player.STATE_IDLE) it.prepare()
+                            it.play()
+                        }
+                    }
+                    return
+                }
                 if (it.playbackState == Player.STATE_IDLE) it.prepare() // stopped by an error (kept while offline): try again
                 it.play()
             }
@@ -1046,7 +1119,7 @@ class AudioPlayer @Inject constructor(
         scope.launch { resume.forget(id) }
     }
     fun setShuffle(on: Boolean) { player?.shuffleModeEnabled = on; queueChanged.value++; resolveAhead() }
-    fun cycleRepeat() { player?.let { it.repeatMode = repeatFromPlayerMode(it.repeatMode).next().toPlayerMode(); queueChanged.value++; resolveAhead() } }
+    fun cycleRepeat() { player?.let { it.repeatMode = repeatFromPlayerMode(it.repeatMode).next().toPlayerMode(); queueChanged.value++; resolveAhead(); maybeAutoplay() } }
 
     /** Plays [index] of the current queue (tapping "Up next"). */
     fun skipTo(index: Int) = whenActive { it.seekToDefaultPosition(index); it.play() }
@@ -1218,6 +1291,8 @@ class AudioPlayer @Inject constructor(
             speed = p.playbackParameters.speed,
             sleepLeftMs = if (sleepJob != null) (sleepDeadline - SystemClock.uptimeMillis()).coerceAtLeast(0) else null,
             sleepAtEnd = sleepAtEnd,
+            autoplayIds = autoplayIds.filterTo(HashSet()) { id -> tracks.any { it.id == id } },
+            autoplayOn = autoplayEnabled,
             order = if (p.shuffleModeEnabled && p.mediaItemCount == tracks.size) {
                 val tl = p.currentTimeline
                 playOrder(tracks.size, p.currentMediaItemIndex) { tl.getNextWindowIndex(it, if (p.repeatMode == Player.REPEAT_MODE_ALL) Player.REPEAT_MODE_ALL else Player.REPEAT_MODE_OFF, true) }

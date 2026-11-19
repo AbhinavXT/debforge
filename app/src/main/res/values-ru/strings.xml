@@ -1054,6 +1054,8 @@
     <string name="audio_stop_close">Остановить и закрыть плеер</string>
     <string name="audio_expand">Открыть плеер</string>
     <string name="audio_up_next">Далее в очереди</string>
+    <string name="audio_autoplay">Автовоспроизведение</string>
+    <string name="audio_autoplay_item">Автовоспроизведение · %1$s</string>
     <string name="audio_speed_cd">Скорость воспроизведения, %1$s</string>
     <string name="audio_sleep_off_cd">Таймер сна, выключен</string>
     <string name="audio_sleep_end">В конце трека</string>
@@ -1159,6 +1161,8 @@
     <string name="set_auto_dl_video">Видео</string>
     <string name="set_sponsorblock">Пропускать рекламу (SponsorBlock)</string>
     <string name="set_sponsorblock_detail">Пропускает рекламные фрагменты в видео YouTube. Отправляет на sponsor.ajay.app короткий хеш ID видео.</string>
+    <string name="set_yt_autoplay">Автовоспроизведение похожих видео</string>
+    <string name="set_yt_autoplay_detail">Когда очередь YouTube из потоков заканчивается, похожее видео продолжает играть как аудио.</string>
     <string name="set_sb_sponsor">Реклама</string>
     <string name="set_sb_selfpromo">Самореклама</string>
     <string name="set_sb_interaction">Призыв к действию</string>

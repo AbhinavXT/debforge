@@ -17,6 +17,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.semantics.Role
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import com.abhinavxt.debforge.ui.components.channelLink
 import androidx.compose.foundation.layout.Arrangement
@@ -147,7 +150,9 @@ fun NowPlaying(
     /** Tints the background from the track's artwork. */
     artColor: Boolean = true,
     /** Length of the skip back / forward buttons. */
-    skipSeconds: Int = DEFAULT_SKIP_SECONDS
+    skipSeconds: Int = DEFAULT_SKIP_SECONDS,
+    /** Turns autoplay of related YouTube videos on or off; mirrors the setting. */
+    onAutoplay: (Boolean) -> Unit = {}
 ) {
     val track = state.track ?: return
     val surface = MaterialTheme.colorScheme.surface
@@ -180,12 +185,12 @@ fun NowPlaying(
                         }
                         Column(Modifier.weight(1f).fillMaxHeight(), verticalArrangement = Arrangement.Center) {
                             Controls(state, onToggle, onNext, onPrevious, onSeek, onSkip, onShuffle, onRepeat, onSpeed, onSleep, playFocus = playFocus, onChannel = onChannel, skipSeconds = skipSeconds)
-                            Queue(state, onSkipTo, Modifier.weight(1f, fill = false).heightIn(max = 220.dp))
+                            Queue(state, onSkipTo, onAutoplay, Modifier.weight(1f, fill = false).heightIn(max = 220.dp))
                         }
                     }
                 } else {
                     Queue(
-                        state, onSkipTo, Modifier.weight(1f),
+                        state, onSkipTo, onAutoplay, Modifier.weight(1f),
                         header = {
                             // With nothing up next the player fills the screen, centred, instead of leaving the lower half blank.
                             val alone = upNextOrder(state.order, state.index, state.repeat).none { it in state.queue.indices }
@@ -492,18 +497,35 @@ private fun spoken(ms: Long): String {
 
 /** "Up next" list; [header] scrolls with it so a phone in portrait fits everything. */
 @Composable
-private fun Queue(state: AudioState, onSkipTo: (Int) -> Unit, modifier: Modifier, header: (@Composable () -> Unit)? = null) {
+private fun Queue(state: AudioState, onSkipTo: (Int) -> Unit, onAutoplay: (Boolean) -> Unit, modifier: Modifier, header: (@Composable () -> Unit)? = null) {
     val cs = MaterialTheme.colorScheme
     LazyColumn(modifier.fillMaxWidth()) {
         if (header != null) item { header() }
         val upNext = upNextOrder(state.order, state.index, state.repeat).filter { it in state.queue.indices }
-        if (upNext.isNotEmpty()) item {
-            Text(
-                stringResource(R.string.audio_up_next),
-                style = MaterialTheme.typography.titleSmall,
-                color = cs.onSurfaceVariant,
-                modifier = Modifier.padding(top = 24.dp, bottom = 8.dp)
-            )
+        val streamed = state.queue.any { it.youtube != null }
+        if (upNext.isNotEmpty() || streamed) item {
+            Row(Modifier.fillMaxWidth().padding(top = 24.dp, bottom = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    stringResource(R.string.audio_up_next),
+                    style = MaterialTheme.typography.titleSmall,
+                    color = cs.onSurfaceVariant,
+                    modifier = Modifier.weight(1f)
+                )
+                if (streamed) {
+                    val si = remember { MutableInteractionSource() }
+                    // The whole chip is the switch, so a D-pad can reach it and a screen reader announces its state.
+                    Row(
+                        Modifier.heightIn(min = 48.dp).clip(MaterialTheme.shapes.small)
+                            .focusRing(si, MaterialTheme.shapes.small)
+                            .toggleable(state.autoplayOn, si, androidx.compose.material3.ripple(), role = Role.Switch, onValueChange = onAutoplay)
+                            .padding(horizontal = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(stringResource(R.string.audio_autoplay), style = MaterialTheme.typography.labelMedium, color = cs.onSurfaceVariant)
+                        androidx.compose.material3.Switch(state.autoplayOn, null, Modifier.scale(0.7f))
+                    }
+                }
+            }
         }
         items(upNext, key = { it }) { i ->
             val t = state.queue[i]
@@ -517,8 +539,9 @@ private fun Queue(state: AudioState, onSkipTo: (Int) -> Unit, modifier: Modifier
                 verticalArrangement = Arrangement.Center
             ) {
                 Text(t.title, style = MaterialTheme.typography.bodyLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                val artist = t.artist ?: stringResource(R.string.audio_unknown_artist)
                 Text(
-                    t.artist ?: stringResource(R.string.audio_unknown_artist),
+                    if (t.id in state.autoplayIds) stringResource(R.string.audio_autoplay_item, artist) else artist,
                     style = MaterialTheme.typography.bodySmall, color = cs.onSurfaceVariant,
                     maxLines = 1, overflow = TextOverflow.Ellipsis
                 )

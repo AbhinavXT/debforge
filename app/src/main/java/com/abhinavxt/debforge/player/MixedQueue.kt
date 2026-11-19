@@ -121,3 +121,20 @@ class InFlight<K : Any, V> {
 
     fun cancelAll() { map.values.forEach { it.cancel() }; map.clear() }
 }
+
+/**
+ * The related video autoplay appends: the first of [related] that was not played this session, is not queued, and is
+ * not live (a live stream reports no duration). Null when nothing fits.
+ */
+fun pickAutoplay(related: List<YouTubeSearchResult>, playedThisSession: Set<String>, queuedIds: Set<String>): YouTubeSearchResult? =
+    related.firstOrNull { r ->
+        val id = YouTubeLinks.videoId(r.url) ?: return@firstOrNull false
+        r.durationSec > 0 && id !in playedThisSession && id !in queuedIds
+    }
+
+/**
+ * Whether reaching the current item should append a related video: the item is the last in play order and streams
+ * from YouTube, repeat is off, the setting is on, and a sleep timer set for the end of the track is not armed.
+ */
+fun shouldAutoplay(isLastInOrder: Boolean, isYouTube: Boolean, repeat: AudioRepeat, enabled: Boolean, sleepAtEnd: Boolean): Boolean =
+    enabled && isLastInOrder && isYouTube && repeat == AudioRepeat.OFF && !sleepAtEnd

@@ -145,6 +145,7 @@ fun SettingsScreen(onConnect: () -> Unit, onBack: (() -> Unit)? = null, viewMode
     val podcasts by viewModel.podcasts.collectAsStateWithLifecycle()
     val sponsorBlock by viewModel.sponsorBlock.collectAsStateWithLifecycle()
     val sponsorCategories by viewModel.sponsorCategories.collectAsStateWithLifecycle()
+    val youTubeAutoplay by viewModel.youTubeAutoplay.collectAsStateWithLifecycle()
     val internalPlayer by viewModel.internalPlayer.collectAsStateWithLifecycle()
     val autoplayNext by viewModel.autoplayNext.collectAsStateWithLifecycle()
     val pip by viewModel.pip.collectAsStateWithLifecycle()
@@ -464,6 +465,14 @@ fun SettingsScreen(onConnect: () -> Unit, onBack: (() -> Unit)? = null, viewMode
                                 modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 12.dp),
                             )
                         }
+                        RowDivider()
+                        SwitchSettingRow(
+                            icon = Icons.Rounded.SkipNext,
+                            title = stringResource(R.string.set_yt_autoplay),
+                            subtitle = stringResource(R.string.set_yt_autoplay_detail),
+                            checked = youTubeAutoplay,
+                            onChange = viewModel::setYouTubeAutoplay
+                        )
                         RowDivider()
                         SwitchSettingRow(
                             icon = Icons.Rounded.Image,

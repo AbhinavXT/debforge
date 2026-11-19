@@ -960,6 +960,8 @@
     <string name="audio_stop_close">Durdur ve oynatıcıyı kapat</string>
     <string name="audio_expand">Çalan parçayı aç</string>
     <string name="audio_up_next">Sıradaki</string>
+    <string name="audio_autoplay">Otomatik oynatma</string>
+    <string name="audio_autoplay_item">Otomatik oynatma · %1$s</string>
     <string name="audio_speed_cd">Oynatma hızı, %1$s</string>
     <string name="audio_sleep_off_cd">Uyku zamanlayıcısı, kapalı</string>
     <string name="audio_sleep_end">Parçanın sonunda</string>
@@ -1059,6 +1061,8 @@
     <string name="set_auto_dl_video">Video</string>
     <string name="set_sponsorblock">Sponsorları atla (SponsorBlock)</string>
     <string name="set_sponsorblock_detail">YouTube videolarındaki sponsor bölümlerini atlar. Video kimliğinin kısa bir özetini sponsor.ajay.app adresine gönderir.</string>
+    <string name="set_yt_autoplay">İlgili videoları otomatik oynat</string>
+    <string name="set_yt_autoplay_detail">Akışla çalınan YouTube sırası bittiğinde ilgili bir video ses olarak çalmaya devam eder.</string>
     <string name="set_sb_sponsor">Sponsor</string>
     <string name="set_sb_selfpromo">Kendi tanıtımı</string>
     <string name="set_sb_interaction">Etkileşim hatırlatması</string>

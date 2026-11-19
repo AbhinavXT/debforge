@@ -202,6 +202,11 @@ class SettingsViewModel @Inject constructor(
     )
     fun setSponsorBlock(v: Boolean) = viewModelScope.launch { settingsStore.setSponsorBlockEnabled(v) }
 
+    val youTubeAutoplay: StateFlow<Boolean> = settingsStore.youTubeAutoplayFlow.stateIn(
+        viewModelScope, SharingStarted.WhileSubscribed(5_000), true
+    )
+    fun setYouTubeAutoplay(v: Boolean) = viewModelScope.launch { settingsStore.setYouTubeAutoplay(v) }
+
     val sponsorCategories: StateFlow<Set<String>> = settingsStore.sponsorBlockCategoriesFlow.stateIn(
         viewModelScope, SharingStarted.WhileSubscribed(5_000), com.abhinavxt.debforge.data.prefs.DEFAULT_SPONSOR_CATEGORIES
     )

@@ -523,6 +523,7 @@ fun HomeScreen(signedIn: Boolean) {
                     onSpeed = shell.audio::setSpeed,
                     onSleep = shell.audio::setSleepTimer,
                     onSkipTo = shell.audio::skipTo,
+                    onAutoplay = shell.audio::setAutoplay,
                     onClose = { nowPlaying = false },
                     onStop = { nowPlaying = false; shell.audio.clear() },
                     onChannel = openChannel,

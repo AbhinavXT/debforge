@@ -960,6 +960,8 @@
     <string name="audio_stop_close">நிறுத்தி பிளேயரை மூடு</string>
     <string name="audio_expand">இப்போது இயங்குவதைத் திற</string>
     <string name="audio_up_next">அடுத்து</string>
+    <string name="audio_autoplay">தானாக இயக்கு</string>
+    <string name="audio_autoplay_item">தானாக இயக்கு · %1$s</string>
     <string name="audio_speed_cd">பிளேபேக் வேகம், %1$s</string>
     <string name="audio_sleep_off_cd">ஸ்லீப் டைமர், அணைப்பு</string>
     <string name="audio_sleep_end">டிராக் முடிவில்</string>
@@ -1059,6 +1061,8 @@
     <string name="set_auto_dl_video">வீடியோ</string>
     <string name="set_sponsorblock">ஸ்பான்சரைத் தவிர் (SponsorBlock)</string>
     <string name="set_sponsorblock_detail">YouTube வீடியோக்களில் ஸ்பான்சர் பகுதிகளைத் தவிர்க்கும். வீடியோ ID-யின் சிறிய ஹாஷை sponsor.ajay.app-க்கு அனுப்பும்.</string>
+    <string name="set_yt_autoplay">தொடர்புடைய வீடியோக்களை தானாக இயக்கு</string>
+    <string name="set_yt_autoplay_detail">ஸ்ட்ரீம் செய்யப்பட்ட YouTube வரிசை முடிந்ததும், தொடர்புடைய வீடியோ ஆடியோவாக தொடர்ந்து இயங்கும்.</string>
     <string name="set_sb_sponsor">ஸ்பான்சர்</string>
     <string name="set_sb_selfpromo">சுய விளம்பரம்</string>
     <string name="set_sb_interaction">தொடர்பு நினைவூட்டல்</string>

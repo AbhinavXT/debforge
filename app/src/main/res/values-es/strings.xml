@@ -1007,6 +1007,8 @@
     <string name="audio_stop_close">Detener y cerrar el reproductor</string>
     <string name="audio_expand">Abrir reproducción</string>
     <string name="audio_up_next">A continuación</string>
+    <string name="audio_autoplay">Reproducción automática</string>
+    <string name="audio_autoplay_item">Reproducción automática · %1$s</string>
     <string name="audio_speed_cd">Velocidad de reproducción, %1$s</string>
     <string name="audio_sleep_off_cd">Temporizador de apagado, desactivado</string>
     <string name="audio_sleep_end">Al final de la pista</string>
@@ -1109,6 +1111,8 @@
     <string name="set_auto_dl_video">Vídeo</string>
     <string name="set_sponsorblock">Saltar patrocinios (SponsorBlock)</string>
     <string name="set_sponsorblock_detail">Salta los segmentos de patrocinio en los vídeos de YouTube. Envía un hash corto del ID del vídeo a sponsor.ajay.app.</string>
+    <string name="set_yt_autoplay">Reproducir vídeos relacionados automáticamente</string>
+    <string name="set_yt_autoplay_detail">Cuando termina una cola de YouTube en streaming, sigue con un vídeo relacionado como audio.</string>
     <string name="set_sb_sponsor">Patrocinio</string>
     <string name="set_sb_selfpromo">Autopromoción</string>
     <string name="set_sb_interaction">Recordatorio de interacción</string>
