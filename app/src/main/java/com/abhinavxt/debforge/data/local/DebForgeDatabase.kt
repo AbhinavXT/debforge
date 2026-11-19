@@ -36,9 +36,12 @@ class Converters {
     entities = [
         DownloadEntity::class, ChunkEntity::class, MediaMetaEntity::class, WatchEntity::class, UsageEntity::class,
         com.abhinavxt.debforge.data.playback.PlaybackEntity::class,
-        com.abhinavxt.debforge.data.history.HistoryEntity::class
+        com.abhinavxt.debforge.data.history.HistoryEntity::class,
+        com.abhinavxt.debforge.data.subscriptions.SubscriptionEntity::class,
+        com.abhinavxt.debforge.data.subscriptions.FeedItemEntity::class,
+        com.abhinavxt.debforge.data.sponsor.SponsorSegmentEntity::class
     ],
-    version = 12,
+    version = 13,
     // Schemas land in app/schemas (commit them): DatabaseMigrationTest checks
     // every migration against them. v1–v7 were rebuilt from the migrations.
     exportSchema = true
@@ -52,13 +55,15 @@ abstract class DebForgeDatabase : RoomDatabase() {
     abstract fun usageDao(): UsageDao
     abstract fun playbackDao(): com.abhinavxt.debforge.data.playback.PlaybackDao
     abstract fun historyDao(): com.abhinavxt.debforge.data.history.HistoryDao
+    abstract fun subscriptionDao(): com.abhinavxt.debforge.data.subscriptions.SubscriptionDao
+    abstract fun sponsorSegmentDao(): com.abhinavxt.debforge.data.sponsor.SponsorSegmentDao
 
     companion object {
         const val NAME = "debforge.db"
 
         /** Every migration, oldest first. A new one goes here (and DatabaseMigrationTest checks it). Lazy: they are declared below. */
         val ALL_MIGRATIONS: Array<Migration> by lazy {
-            arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12)
+            arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13)
         }
 
         /**
@@ -155,6 +160,34 @@ abstract class DebForgeDatabase : RoomDatabase() {
                         "CASE WHEN itemId LIKE 'ytstream:%' THEN substr(itemId, 10) ELSE sourceRef END, " +
                         "parentRef, showKey, title, NULL, NULL, positionMs, durationMs, updatedAt " +
                         "FROM playback_positions"
+                )
+            }
+        }
+
+        /**
+         * v12 -> v13: followed channels and podcasts, their feed items, and cached SponsorBlock
+         * segments. New tables only; nothing existing is touched.
+         */
+        val MIGRATION_12_13 = object : Migration(12, 13) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `subscriptions` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                        "`kind` TEXT NOT NULL, `url` TEXT NOT NULL, `title` TEXT NOT NULL, `artworkUrl` TEXT, " +
+                        "`autoDownload` TEXT NOT NULL DEFAULT 'OFF', `since` INTEGER NOT NULL, `etag` TEXT, " +
+                        "`lastModified` TEXT, `lastChecked` INTEGER NOT NULL DEFAULT 0)"
+                )
+                db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_subscriptions_url` ON `subscriptions` (`url`)")
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `feed_items` (`subId` INTEGER NOT NULL, `itemKey` TEXT NOT NULL, " +
+                        "`title` TEXT NOT NULL, `mediaUrl` TEXT, `publishedAt` INTEGER NOT NULL, `durationSec` INTEGER, " +
+                        "`thumbUrl` TEXT, `isNew` INTEGER NOT NULL, `queued` INTEGER NOT NULL, " +
+                        "PRIMARY KEY(`subId`, `itemKey`), FOREIGN KEY(`subId`) REFERENCES `subscriptions`(`id`) " +
+                        "ON UPDATE NO ACTION ON DELETE CASCADE )"
+                )
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_feed_items_subId` ON `feed_items` (`subId`)")
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `sponsor_segments` (`videoId` TEXT NOT NULL, `json` TEXT NOT NULL, " +
+                        "`fetchedAt` INTEGER NOT NULL, PRIMARY KEY(`videoId`))"
                 )
             }
         }

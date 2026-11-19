@@ -49,4 +49,10 @@ object DatabaseModule {
 
     @Provides
     fun provideHistoryDao(db: DebForgeDatabase): com.abhinavxt.debforge.data.history.HistoryDao = db.historyDao()
+
+    @Provides
+    fun provideSubscriptionDao(db: DebForgeDatabase): com.abhinavxt.debforge.data.subscriptions.SubscriptionDao = db.subscriptionDao()
+
+    @Provides
+    fun provideSponsorSegmentDao(db: DebForgeDatabase): com.abhinavxt.debforge.data.sponsor.SponsorSegmentDao = db.sponsorSegmentDao()
 }

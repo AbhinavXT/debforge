@@ -6,6 +6,12 @@ import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import com.abhinavxt.debforge.domain.DownloadState
 import com.abhinavxt.debforge.domain.ProviderId
+import com.abhinavxt.debforge.data.sponsor.SponsorSegmentEntity
+import com.abhinavxt.debforge.data.subscriptions.AutoDownload
+import com.abhinavxt.debforge.data.subscriptions.FeedItemEntity
+import com.abhinavxt.debforge.data.subscriptions.SubscriptionEntity
+import com.abhinavxt.debforge.data.subscriptions.SubscriptionKind
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
 import org.junit.After
@@ -196,6 +202,38 @@ class DatabaseMigrationTest {
                 assertNull(yt.provider)
                 assertEquals("abc", yt.sourceRef)
                 assertEquals(700L, yt.playedAt)
+            }
+        } finally {
+            room.close()
+        }
+    }
+
+    @Test
+    fun v12DataSurvivesAndTheNewTablesWork() {
+        val name = create(12) { db ->
+            db.execSQL(
+                "INSERT INTO downloads (rdId, provider, filename, originalLink, downloadUrl, host, filesize, chunksAllowed, state, " +
+                    "bytesDownloaded, createdAt, updatedAt) VALUES ('d1', 'REAL_DEBRID', 'a.mkv', 'link', 'url', 'host', 100, 8, 'COMPLETED', 100, 1, 2)"
+            )
+        }
+        val room = openWithRoom(name)
+        try {
+            runBlocking {
+                assertEquals(100L, room.downloadDao().getById("d1")?.bytesDownloaded)
+                val dao = room.subscriptionDao()
+                assertTrue(dao.all().isEmpty())
+                val id = dao.insert(
+                    SubscriptionEntity(kind = SubscriptionKind.PODCAST, url = "https://x/feed", title = "Pod", since = 5)
+                )
+                val dup = SubscriptionEntity(kind = SubscriptionKind.PODCAST, url = "https://x/feed", title = "Dup", since = 6)
+                assertEquals(-1L, dao.insert(dup))
+                assertEquals(AutoDownload.OFF, dao.get(id)?.autoDownload)
+                dao.insertItems(listOf(FeedItemEntity(id, "g1", "Ep 1", "https://x/1.mp3", 10, null, null, isNew = true, queued = false)))
+                assertEquals(1, dao.observeNew().first().size)
+                dao.delete(id)
+                assertTrue(dao.items(id).isEmpty()) // cascade
+                room.sponsorSegmentDao().upsert(SponsorSegmentEntity("vid", "[]", 1))
+                assertEquals("[]", room.sponsorSegmentDao().get("vid")?.json)
             }
         } finally {
             room.close()
