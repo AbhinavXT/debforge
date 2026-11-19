@@ -26,7 +26,24 @@ data class YouTubeVideo(
     val subtitles: List<YouTubeSubtitle> = emptyList(),
     /** The uploader's channel page; null when the extractor gave none. */
     val uploaderUrl: String? = null,
+    /** "Up next" videos from the same extractor response; empty when none came. */
+    val related: List<YouTubeSearchResult> = emptyList(),
 )
+
+/** One related item as the extractor reported it, before filtering; [isStream] is false for playlists and channels. */
+data class RelatedCandidate(val item: YouTubeSearchResult, val isStream: Boolean, val isLive: Boolean)
+
+const val MAX_RELATED = 20
+
+/** Videos only (no playlists, channels, live or zero-length), without [selfId], one per video id, at most [MAX_RELATED]. */
+fun relatedVideos(selfId: String, candidates: List<RelatedCandidate>): List<YouTubeSearchResult> =
+    candidates.asSequence()
+        .filter { it.isStream && !it.isLive && it.item.durationSec > 0 }
+        .filter { val id = YouTubeLinks.videoId(it.item.url); id != null && id != selfId }
+        .distinctBy { YouTubeLinks.videoId(it.item.url) }
+        .map { it.item }
+        .take(MAX_RELATED)
+        .toList()
 
 /** A WebVTT track YouTube offers for a video; [languageCode] is a BCP 47 tag, [auto] marks machine captions. */
 data class YouTubeSubtitle(val languageCode: String, val label: String, val url: String, val auto: Boolean)
