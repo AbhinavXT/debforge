@@ -21,6 +21,8 @@ DebForge downloads the files in your debrid account straight to your phone, tabl
 <li>Built-in browser: downloads a page starts go to DebForge's queue, and videos it plays (HLS streams too) are listed to download. Ads, trackers and pop-ups are blocked with uBlock Origin's default filter lists</li>
 <li>Pixeldrain, Google Drive and direct file links download straight to your phone, no service needed</li>
 <li>Follow a show and new episodes that reach your account download by themselves, with a Coming up row showing when the next one airs</li>
+<li>Follow YouTube channels and podcast feeds: new uploads and episodes show up in a New row and can download by themselves, as audio or video</li>
+<li>SponsorBlock (off by default) skips sponsor segments in YouTube videos and audio</li>
 <li>Play on TV: send a stream to a DLNA TV on your Wi-Fi, no Google services needed</li>
 <li>Release preferences: never see CAM or TS releases, and rank the ones you like higher</li>
 <li>Skip intros, recaps and credits; find missing subtitles on OpenSubtitles</li>
