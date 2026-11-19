@@ -1,0 +1,7 @@
+• Follow YouTube channels: new uploads appear in a New row and can download by themselves
+• Podcasts: follow a feed in Media → Audio, then stream or download episodes
+• SponsorBlock (off by default) skips sponsor segments in YouTube videos and audio
+• Followed channels and podcasts are included in backups
+• Audio saved to a chosen folder finishes in seconds instead of minutes
+• Streamed YouTube audio resumes where you left off again
+• Fixes
