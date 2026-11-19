@@ -1094,4 +1094,7 @@
     <string name="set_following_podcasts">Podcast\'ler</string>
     <string name="audio_err_no_aac">Bu videoda kaydedilecek AAC ses yok.</string>
     <string name="audio_err_not_mp4">Bu dosya bir MP4 videosu değil, bu yüzden sesi kaydedilemez.</string>
+    <string name="set_import_local">İndirme klasöründeki diğer dosyaları göster</string>
+    <string name="set_import_local_detail">Klasöre kendiniz koyduğunuz ses ve videolar Medya bölümünde görünür. Dosyalar asla taşınmaz veya kopyalanmaz.</string>
+    <string name="media_refresh">Yenile</string>
 </resources>

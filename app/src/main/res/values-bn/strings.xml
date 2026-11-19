@@ -1094,4 +1094,7 @@
     <string name="set_following_podcasts">পডকাস্ট</string>
     <string name="audio_err_no_aac">এই ভিডিওতে সংরক্ষণ করার মতো AAC অডিও নেই।</string>
     <string name="audio_err_not_mp4">এই ফাইলটি MP4 ভিডিও নয়, তাই এর অডিও সংরক্ষণ করা যাবে না।</string>
+    <string name="set_import_local">ডাউনলোড ফোল্ডারের অন্য ফাইল দেখান</string>
+    <string name="set_import_local_detail">আপনি নিজে ফোল্ডারে রাখা অডিও ও ভিডিও মিডিয়াতে দেখা যায়। ফাইল কখনো সরানো বা কপি করা হয় না।</string>
+    <string name="media_refresh">রিফ্রেশ</string>
 </resources>

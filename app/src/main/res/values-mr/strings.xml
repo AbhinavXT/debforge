@@ -1094,4 +1094,7 @@
     <string name="set_following_podcasts">पॉडकास्ट</string>
     <string name="audio_err_no_aac">या व्हिडिओमध्ये जतन करण्यासाठी AAC ऑडिओ नाही.</string>
     <string name="audio_err_not_mp4">ही फाइल MP4 व्हिडिओ नाही, त्यामुळे तिचा ऑडिओ जतन करता येत नाही.</string>
+    <string name="set_import_local">डाउनलोड फोल्डरमधील इतर फाइल दाखवा</string>
+    <string name="set_import_local_detail">तुम्ही स्वतः फोल्डरमध्ये ठेवलेले ऑडिओ आणि व्हिडिओ मीडियामध्ये दिसतात. फाइल कधीही हलवल्या किंवा कॉपी केल्या जात नाहीत.</string>
+    <string name="media_refresh">रिफ्रेश करा</string>
 </resources>

@@ -1094,4 +1094,7 @@
     <string name="set_following_podcasts">பாட்காஸ்ட்கள்</string>
     <string name="audio_err_no_aac">இந்த வீடியோவில் சேமிக்க AAC ஆடியோ இல்லை.</string>
     <string name="audio_err_not_mp4">இந்தக் கோப்பு MP4 வீடியோ அல்ல, அதனால் அதன் ஆடியோவைச் சேமிக்க முடியாது.</string>
+    <string name="set_import_local">பதிவிறக்க கோப்புறையில் உள்ள பிற கோப்புகளைக் காட்டு</string>
+    <string name="set_import_local_detail">நீங்களே கோப்புறையில் வைக்கும் ஆடியோ மற்றும் வீடியோ மீடியாவில் தோன்றும். கோப்புகள் நகர்த்தப்படவோ நகலெடுக்கப்படவோ மாட்டா.</string>
+    <string name="media_refresh">புதுப்பி</string>
 </resources>

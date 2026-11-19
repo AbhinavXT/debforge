@@ -95,6 +95,17 @@ class MediaViewModel @Inject constructor(
         viewModelScope.launch { localImporter.scanIfStale() }
     }
 
+    private val _refreshing = MutableStateFlow(false)
+    /** A pull-to-refresh (or the menu's Refresh) scan is running. */
+    val refreshing: StateFlow<Boolean> = _refreshing
+
+    fun refresh() {
+        if (!_refreshing.compareAndSet(false, true)) return
+        viewModelScope.launch {
+            try { localImporter.scan() } finally { _refreshing.value = false }
+        }
+    }
+
     private val ui = MutableStateFlow(Ui("", SortOrder.DATE_DESC, FileKind.Video, emptySet()))
 
     /** Settings: DebForge's player, or the "open with" chooser. */

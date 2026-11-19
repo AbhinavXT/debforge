@@ -1042,4 +1042,7 @@
     <string name="set_following_podcasts">Podcast</string>
     <string name="audio_err_no_aac">Video ini tidak memiliki audio AAC untuk disimpan.</string>
     <string name="audio_err_not_mp4">File ini bukan video MP4, sehingga audionya tidak dapat disimpan.</string>
+    <string name="set_import_local">Tampilkan file lain di folder unduhan</string>
+    <string name="set_import_local_detail">Audio dan video yang Anda taruh sendiri di folder muncul di Media. File tidak pernah dipindahkan atau disalin.</string>
+    <string name="media_refresh">Segarkan</string>
 </resources>

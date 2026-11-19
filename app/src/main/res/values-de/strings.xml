@@ -1094,4 +1094,7 @@
     <string name="set_following_podcasts">Podcasts</string>
     <string name="audio_err_no_aac">Dieses Video enthält kein AAC-Audio zum Speichern.</string>
     <string name="audio_err_not_mp4">Diese Datei ist kein MP4-Video, daher kann ihr Audio nicht gespeichert werden.</string>
+    <string name="set_import_local">Andere Dateien im Download-Ordner anzeigen</string>
+    <string name="set_import_local_detail">Audio und Video, die Sie selbst in den Ordner legen, erscheinen unter Medien. Dateien werden nie verschoben oder kopiert.</string>
+    <string name="media_refresh">Aktualisieren</string>
 </resources>

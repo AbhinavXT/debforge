@@ -59,6 +59,8 @@ import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -131,6 +133,7 @@ fun MediaScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val watch by viewModel.watch.collectAsStateWithLifecycle()
+    val refreshing by viewModel.refreshing.collectAsStateWithLifecycle()
     val internalPlayer by viewModel.useInternalPlayer.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val snackbar = remember { SnackbarHostState() }
@@ -179,6 +182,8 @@ fun MediaScreen(
         onOpenSettings = onOpenSettings,
         onOpenYouTube = onOpenYouTube,
         onOpenHistory = onOpenHistory,
+        refreshing = refreshing,
+        onRefresh = viewModel::refresh,
         tell = tell,
         lists = AudioListActions(
             onPick = viewModel::selectAudioList,
@@ -216,6 +221,8 @@ internal fun MediaContent(
     onOpenSettings: () -> Unit,
     onOpenYouTube: () -> Unit,
     onOpenHistory: () -> Unit = {},
+    refreshing: Boolean = false,
+    onRefresh: () -> Unit = {},
     tell: (String) -> Unit = {},
     lists: AudioListActions = AudioListActions(),
     watch: Map<String, com.abhinavxt.debforge.data.playback.PlaybackEntity>? = null,
@@ -314,7 +321,7 @@ internal fun MediaContent(
                     clearDescription = stringResource(R.string.media_search_clear),
                     modifier = Modifier.weight(1f)
                 )
-                SortMenu(state.sort, onSort)
+                SortMenu(state.sort, onSort, onRefresh)
             }
 
             if (state.kind == FileKind.Audio) {
@@ -379,6 +386,7 @@ internal fun MediaContent(
                     modifier = Modifier.holdFocus(held)
                 )
             } else {
+                PullToRefreshBox(isRefreshing = refreshing, onRefresh = onRefresh, modifier = Modifier.fillMaxSize()) {
                 BoxWithConstraints(Modifier.fillMaxSize()) {
                 // Audio rows: at most two columns of at least 420dp, and a single column is capped (centred) so the menu stays near the title.
                 val audio = state.kind != FileKind.Video
@@ -417,6 +425,7 @@ internal fun MediaContent(
                             )
                         }
                     }
+                }
                 }
                 }
             }
@@ -483,7 +492,7 @@ internal fun MediaContent(
 private fun Modifier.combinedClickableSimple(onClick: () -> Unit) = this.combinedClickable(onClick = onClick)
 
 @Composable
-private fun SortMenu(sort: SortOrder, onSort: (SortOrder) -> Unit) {
+private fun SortMenu(sort: SortOrder, onSort: (SortOrder) -> Unit, onRefresh: () -> Unit) {
     var open by remember { mutableStateOf(false) }
     Box {
         IconButton(onClick = { open = true }) { Icon(Icons.AutoMirrored.Rounded.Sort, stringResource(R.string.media_sort)) }
@@ -498,6 +507,11 @@ private fun SortMenu(sort: SortOrder, onSort: (SortOrder) -> Unit) {
                     onClick = { open = false; onSort(o) }
                 )
             }
+            HorizontalDivider()
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.media_refresh)) },
+                onClick = { open = false; onRefresh() }
+            )
         }
     }
 }

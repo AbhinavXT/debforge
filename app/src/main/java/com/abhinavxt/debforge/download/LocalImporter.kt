@@ -40,7 +40,8 @@ import javax.inject.Singleton
 class LocalImporter @Inject constructor(
     @ApplicationContext private val context: Context,
     private val settings: SettingsStore,
-    private val dao: DownloadDao
+    private val dao: DownloadDao,
+    private val metadata: LocalMetadata
 ) {
     private val lock = Mutex()
     @Volatile private var lastScanAt = 0L
@@ -96,6 +97,7 @@ class LocalImporter @Inject constructor(
         if (diff.removes.isNotEmpty()) dao.deleteByIds(diff.removes)
         for ((id, file) in diff.moves) dao.moveLocal(id, file.path, file.name, file.lastModified)
         if (diff.inserts.isNotEmpty()) dao.insertAll(diff.inserts.map { it.toLocalEntity() })
+        metadata.kick() // reads tags in the background
     }
 
     /** Null when the folder can't be read, so nothing is removed on a transient failure. */

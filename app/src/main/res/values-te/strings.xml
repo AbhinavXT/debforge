@@ -1094,4 +1094,7 @@
     <string name="set_following_podcasts">పాడ్‌కాస్ట్‌లు</string>
     <string name="audio_err_no_aac">ఈ వీడియోలో సేవ్ చేయడానికి AAC ఆడియో లేదు.</string>
     <string name="audio_err_not_mp4">ఈ ఫైల్ MP4 వీడియో కాదు, కాబట్టి దాని ఆడియోను సేవ్ చేయలేము.</string>
+    <string name="set_import_local">డౌన్‌లోడ్ ఫోల్డర్‌లోని ఇతర ఫైళ్లను చూపించు</string>
+    <string name="set_import_local_detail">మీరే ఫోల్డర్‌లో ఉంచిన ఆడియో, వీడియో మీడియాలో కనిపిస్తాయి. ఫైళ్లు ఎప్పుడూ తరలించబడవు లేదా కాపీ చేయబడవు.</string>
+    <string name="media_refresh">రిఫ్రెష్ చేయి</string>
 </resources>

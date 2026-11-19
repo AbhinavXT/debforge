@@ -1146,4 +1146,7 @@
     <string name="set_following_podcasts">Podcasts</string>
     <string name="audio_err_no_aac">Este vídeo não tem áudio AAC para salvar.</string>
     <string name="audio_err_not_mp4">Este arquivo não é um vídeo MP4, então o áudio dele não pode ser salvo.</string>
+    <string name="set_import_local">Mostrar outros arquivos da pasta de downloads</string>
+    <string name="set_import_local_detail">Áudio e vídeo que você mesmo coloca na pasta aparecem em Mídia. Os arquivos nunca são movidos nem copiados.</string>
+    <string name="media_refresh">Atualizar</string>
 </resources>

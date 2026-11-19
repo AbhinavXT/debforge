@@ -111,6 +111,13 @@ interface DownloadDao {
     @Query("SELECT partFilePath FROM downloads WHERE provider != 'LOCAL' AND partFilePath IS NOT NULL")
     suspend fun claimedPartPaths(): List<String>
 
+    /** Imported rows whose tags haven't been read yet (blank title, see LocalMetadataLogic). */
+    @Query("SELECT * FROM downloads WHERE provider = 'LOCAL' AND (title IS NULL OR title = '') LIMIT :limit")
+    suspend fun localUnchecked(limit: Int): List<DownloadEntity>
+
+    @Query("UPDATE downloads SET title = :title, artist = :artist WHERE rdId = :id AND provider = 'LOCAL'")
+    suspend fun setLocalMeta(id: String, title: String, artist: String?)
+
     @Query("DELETE FROM downloads WHERE provider = 'LOCAL'")
     suspend fun deleteLocal()
 

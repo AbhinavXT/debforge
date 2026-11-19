@@ -1096,4 +1096,7 @@
     <string name="set_following_podcasts">Podcasts</string>
     <string name="audio_err_no_aac">This video has no AAC audio to save.</string>
     <string name="audio_err_not_mp4">This file isn\'t an MP4 video, so its audio can\'t be saved.</string>
+    <string name="set_import_local">Show other files in the download folder</string>
+    <string name="set_import_local_detail">Audio and video you put in the folder yourself appear in Media. Files are never moved or copied.</string>
+    <string name="media_refresh">Refresh</string>
 </resources>

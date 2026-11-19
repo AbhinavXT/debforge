@@ -1198,4 +1198,7 @@
     <string name="set_following_podcasts">Подкасты</string>
     <string name="audio_err_no_aac">В этом видео нет звука AAC, который можно сохранить.</string>
     <string name="audio_err_not_mp4">Этот файл не является видео MP4, поэтому его звук нельзя сохранить.</string>
+    <string name="set_import_local">Показывать другие файлы из папки загрузок</string>
+    <string name="set_import_local_detail">Аудио и видео, которые вы сами положили в папку, появляются в разделе «Медиа». Файлы никогда не перемещаются и не копируются.</string>
+    <string name="media_refresh">Обновить</string>
 </resources>

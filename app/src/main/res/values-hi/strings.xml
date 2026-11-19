@@ -1094,4 +1094,7 @@
     <string name="set_following_podcasts">पॉडकास्ट</string>
     <string name="audio_err_no_aac">इस वीडियो में सहेजने लायक AAC ऑडियो नहीं है।</string>
     <string name="audio_err_not_mp4">यह फ़ाइल MP4 वीडियो नहीं है, इसलिए इसका ऑडियो सहेजा नहीं जा सकता।</string>
+    <string name="set_import_local">डाउनलोड फ़ोल्डर की अन्य फ़ाइलें दिखाएँ</string>
+    <string name="set_import_local_detail">आप जो ऑडियो और वीडियो खुद फ़ोल्डर में रखते हैं, वे मीडिया में दिखते हैं। फ़ाइलें कभी हिलाई या कॉपी नहीं की जातीं।</string>
+    <string name="media_refresh">रीफ़्रेश करें</string>
 </resources>

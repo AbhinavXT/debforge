@@ -318,6 +318,9 @@ class SettingsViewModel @Inject constructor(
     val downloadDir: StateFlow<String> = settingsStore.downloadDirFlow.stateIn(
         viewModelScope, SharingStarted.WhileSubscribed(5_000), SettingsStore.DEFAULT_DOWNLOAD_DIR
     )
+    val importLocal: StateFlow<Boolean> = settingsStore.importLocalFilesFlow.stateIn(
+        viewModelScope, SharingStarted.WhileSubscribed(5_000), true
+    )
     val sortDefault: StateFlow<SortOrder> = settingsStore.sortOrderFlow.stateIn(
         viewModelScope, SharingStarted.WhileSubscribed(5_000), SortOrder.DATE_DESC
     )
@@ -338,6 +341,8 @@ class SettingsViewModel @Inject constructor(
      */
     fun selectProvider(id: ProviderId) = viewModelScope.launch { auth.setActiveProvider(id) }
 
+    /** MainActivity scans when this changes; off drops the imported rows (never the files). */
+    fun setImportLocal(on: Boolean) = viewModelScope.launch { settingsStore.setImportLocalFiles(on) }
     fun setDownloadDir(path: String) = viewModelScope.launch { settingsStore.setDownloadDir(path) }
     fun setSortDefault(order: SortOrder) = viewModelScope.launch { settingsStore.setSortOrder(order) }
     fun setThemeMode(mode: ThemeMode) = viewModelScope.launch { settingsStore.setThemeMode(mode) }

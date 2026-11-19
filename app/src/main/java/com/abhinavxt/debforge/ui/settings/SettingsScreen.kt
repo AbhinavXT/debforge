@@ -120,6 +120,7 @@ import com.abhinavxt.debforge.domain.Housekeeping
 @Composable
 fun SettingsScreen(onConnect: () -> Unit, onBack: (() -> Unit)? = null, viewModel: SettingsViewModel = hiltViewModel()) {
     val dir by viewModel.downloadDir.collectAsStateWithLifecycle()
+    val importLocal by viewModel.importLocal.collectAsStateWithLifecycle()
     val sort by viewModel.sortDefault.collectAsStateWithLifecycle()
     val theme by viewModel.themeMode.collectAsStateWithLifecycle()
     val providers by viewModel.providers.collectAsStateWithLifecycle()
@@ -300,6 +301,14 @@ fun SettingsScreen(onConnect: () -> Unit, onBack: (() -> Unit)? = null, viewMode
                         trailing = {
                             TextButton(onClick = { showFolderDialog = true }) { Text(stringResource(R.string.set_change)) }
                         }
+                    )
+                    RowDivider()
+                    SwitchSettingRow(
+                        icon = Icons.Rounded.FolderOpen,
+                        title = stringResource(R.string.set_import_local),
+                        subtitle = stringResource(R.string.set_import_local_detail),
+                        checked = importLocal,
+                        onChange = viewModel::setImportLocal
                     )
                     RowDivider()
                     SwitchSettingRow(
