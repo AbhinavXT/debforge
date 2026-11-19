@@ -66,4 +66,11 @@ object SponsorSkip {
      */
     fun autoSkip(segments: List<SponsorSegment>, positionMs: Long, done: Set<Long>): SponsorSegment? =
         segmentAt(segments, positionMs)?.takeIf { it.startMs !in done }
+
+    /** True when skipping to [endMs] lands at the end of a [durationMs] video, so the player should move on to the next item. */
+    fun endsVideo(endMs: Long, durationMs: Long, slackMs: Long, hasNext: Boolean): Boolean =
+        hasNext && endMs >= durationMs - slackMs
+
+    /** A slow segment load is applied only if no other file started since: [started] is the generation it was launched for. */
+    fun isCurrent(started: Int, current: Int): Boolean = started == current
 }

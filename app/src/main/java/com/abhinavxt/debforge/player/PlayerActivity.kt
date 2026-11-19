@@ -551,7 +551,7 @@ class PlayerActivity : ComponentActivity() {
     private fun updateSkip() {
         val p = player
         val duration = durationOrNull()
-        if (p == null || duration == null || switching || cardShownAt != null || isInPictureInPictureMode) {
+        if (p == null || duration == null || switching || cardShownAt != null) {
             hideSkip()
             return
         }
@@ -573,6 +573,11 @@ class PlayerActivity : ComponentActivity() {
                 showMessage(getString(R.string.player_skipped_sponsor))
                 return
             }
+        }
+        // Sponsor skipping above also runs in picture-in-picture; the skip button and intro skips do not.
+        if (isInPictureInPictureMode) {
+            hideSkip()
+            return
         }
         val segment = IntroSkip.at(segments, position)?.takeIf { it.startMs !in doneSkips }
         if (segment != null) {
@@ -617,7 +622,7 @@ class PlayerActivity : ComponentActivity() {
     /** Jumps past [segment]; credits running to the end go straight to the next episode. */
     private fun skipSegment(segment: IntroSkip.Segment) {
         val duration = durationOrNull() ?: return
-        if (segment.endMs >= duration - END_SLACK_MS && queue.isNotEmpty()) playNext()
+        if (com.abhinavxt.debforge.domain.SponsorSkip.endsVideo(segment.endMs, duration, END_SLACK_MS, queue.isNotEmpty())) playNext()
         else player?.seekTo(segment.endMs.coerceAtMost(duration))
     }
 
@@ -1180,7 +1185,7 @@ class PlayerActivity : ComponentActivity() {
             ?: identity?.sourceRef?.let { com.abhinavxt.debforge.domain.YouTubeLinks.parseSourceRef(it)?.videoId }
         if (videoId != null) lifecycleScope.launch {
             val found = runCatching { sponsorRepo.segmentsFor(videoId) }.getOrDefault(emptyList())
-            if (generation0 == fileGeneration) sponsorRaw = found
+            if (com.abhinavxt.debforge.domain.SponsorSkip.isCurrent(generation0, fileGeneration)) sponsorRaw = found
         }
         val file = identity?.filename?.takeIf { it.isNotBlank() } ?: uri.lastPathSegment.orEmpty()
         val source = uri

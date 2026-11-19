@@ -12,8 +12,9 @@ import javax.inject.Singleton
  * SponsorBlock segments of a YouTube video, cached in Room. UI-free: used by
  * the video player, the audio player and download completion.
  *
- * The cache holds every default and enabled category as fetched; the enabled
- * ones are filtered at read time. An entry older than [MAX_AGE_MS] is refetched
+ * The cache holds every default and enabled category as fetched (the fetched
+ * set is stored in the payload; a newly enabled category triggers a refetch);
+ * the enabled ones are filtered at read time. An entry older than [MAX_AGE_MS] is refetched
  * but never deleted: if the refetch fails, the stale copy still serves (offline).
  */
 @Singleton
@@ -50,19 +51,41 @@ class SponsorSegmentRepository(
 
     private suspend fun load(videoId: String, wanted: Set<String>): List<SponsorSegment> {
         val cached = dao.get(videoId)
-        if (cached != null && now() - cached.fetchedAt < MAX_AGE_MS) return lookup.fromJson(cached.json)
+        val parsed = cached?.let { decode(it.json) }
+        if (cached != null && parsed != null) {
+            val ttl = if (parsed.segments.isEmpty()) EMPTY_MAX_AGE_MS else MAX_AGE_MS
+            if (now() - cached.fetchedAt < ttl && parsed.fetched.containsAll(wanted)) return parsed.segments
+        }
+        val fetched = DEFAULT_SPONSOR_CATEGORIES + wanted
         return try {
-            val fresh = lookup.segments(videoId, DEFAULT_SPONSOR_CATEGORIES + wanted)
-            dao.upsert(SponsorSegmentEntity(videoId, lookup.toJson(fresh), now()))
+            val fresh = lookup.segments(videoId, fetched)
+            dao.upsert(SponsorSegmentEntity(videoId, encode(fetched, lookup.toJson(fresh)), now()))
             fresh
         } catch (e: CancellationException) {
             throw e
         } catch (_: java.io.IOException) {
-            cached?.let { lookup.fromJson(it.json) }.orEmpty()
+            parsed?.segments.orEmpty()
         }
     }
 
+    private class Payload(val fetched: Set<String>, val segments: List<SponsorSegment>)
+
+    /** Payload: `#cats:a,b,c` line, then the segments JSON. Older payloads are bare JSON, fetched with the default categories. */
+    private fun decode(json: String): Payload {
+        if (!json.startsWith(HEADER)) return Payload(DEFAULT_SPONSOR_CATEGORIES.toSet(), lookup.fromJson(json))
+        val nl = json.indexOf('\n')
+        if (nl < 0) return Payload(DEFAULT_SPONSOR_CATEGORIES.toSet(), emptyList())
+        val cats = json.substring(HEADER.length, nl).split(',').filter { it.isNotBlank() }.toSet()
+        return Payload(cats, lookup.fromJson(json.substring(nl + 1)))
+    }
+
+    private fun encode(fetched: Collection<String>, segmentsJson: String): String =
+        HEADER + fetched.toSortedSet().joinToString(",") + "\n" + segmentsJson
+
     companion object {
         const val MAX_AGE_MS = 7L * 24 * 60 * 60 * 1000
+        /** Videos with no segments are rechecked sooner: new uploads get submissions within hours. */
+        const val EMPTY_MAX_AGE_MS = 24L * 60 * 60 * 1000
+        private const val HEADER = "#cats:"
     }
 }

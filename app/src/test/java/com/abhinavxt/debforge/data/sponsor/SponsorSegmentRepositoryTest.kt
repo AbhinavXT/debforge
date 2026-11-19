@@ -54,7 +54,7 @@ class SponsorSegmentRepositoryTest {
         assertEquals(listOf(sponsor, promo), repo.segmentsFor("v"))
         assertEquals(listOf(sponsor, promo), repo.segmentsFor("v"))
         assertEquals(1, lookup.calls)
-        assertEquals(3, lookup.fromJson(dao.rows["v"]!!.json).size)
+        assertEquals(3, lookup.fromJson(dao.rows["v"]!!.json.substringAfter("\n")).size)
     }
 
     @Test fun fetchesDefaultsPlusEnabled() = runBlocking {
@@ -63,11 +63,66 @@ class SponsorSegmentRepositoryTest {
         assertEquals(setOf("sponsor", "selfpromo", "interaction", "intro"), lookup.lastCategories.toSet())
     }
 
-    @Test fun categoryChangeFiltersWithoutRefetch() = runBlocking {
+    @Test fun narrowingCategoriesFiltersWithoutRefetch() = runBlocking {
         repo.segmentsFor("v")
         cats = setOf("sponsor")
         assertEquals(listOf(sponsor), repo.segmentsFor("v"))
         assertEquals(1, lookup.calls)
+    }
+
+    @Test fun newlyEnabledCategoryTriggersRefetch() = runBlocking {
+        lookup.result = listOf(sponsor, promo)
+        assertEquals(listOf(sponsor, promo), repo.segmentsFor("v"))
+        cats = setOf("sponsor", "selfpromo", "intro")
+        lookup.result = listOf(sponsor, promo, intro)
+        assertEquals(listOf(sponsor, promo, intro), repo.segmentsFor("v"))
+        assertEquals(2, lookup.calls)
+        assertTrue("intro" in lookup.lastCategories)
+        repo.segmentsFor("v")
+        assertEquals(2, lookup.calls) // now cached
+    }
+
+    @Test fun emptyResultsExpireAfterADayButNonEmptyDoNot() = runBlocking {
+        lookup.result = emptyList()
+        repo.segmentsFor("e")
+        clock += SponsorSegmentRepository.EMPTY_MAX_AGE_MS - 1
+        repo.segmentsFor("e")
+        assertEquals(1, lookup.calls)
+        clock += 2
+        lookup.result = listOf(sponsor)
+        assertEquals(listOf(sponsor), repo.segmentsFor("e"))
+        assertEquals(2, lookup.calls)
+        clock += SponsorSegmentRepository.EMPTY_MAX_AGE_MS + 1
+        repo.segmentsFor("e")
+        assertEquals(2, lookup.calls)
+    }
+
+    @Test fun oldPayloadCountsAsFetchedWithDefaultCategories() = runBlocking {
+        dao.rows["v"] = SponsorSegmentEntity("v", lookup.toJson(listOf(sponsor, promo)), clock)
+        assertEquals(listOf(sponsor, promo), repo.segmentsFor("v"))
+        assertEquals(0, lookup.calls)
+        cats = setOf("sponsor", "intro") // not covered by defaults
+        lookup.result = listOf(sponsor, intro)
+        assertEquals(listOf(sponsor, intro), repo.segmentsFor("v"))
+        assertEquals(1, lookup.calls)
+    }
+
+    @Test fun staleCopyWithMissingCategoryStillServesOffline() = runBlocking {
+        repo.segmentsFor("v")
+        cats = setOf("sponsor", "intro")
+        lookup.fail = true
+        assertEquals(listOf(sponsor, intro), repo.segmentsFor("v"))
+    }
+
+    @Test fun segmentEndingNearVideoEndPlaysNextOnlyWithAQueue() {
+        assertTrue(SponsorSkip.endsVideo(59_800, 60_000, 500, true))
+        assertTrue(!SponsorSkip.endsVideo(59_800, 60_000, 500, false))
+        assertTrue(!SponsorSkip.endsVideo(30_000, 60_000, 500, true))
+    }
+
+    @Test fun staleLoadIsDroppedByGeneration() {
+        assertTrue(SponsorSkip.isCurrent(3, 3))
+        assertTrue(!SponsorSkip.isCurrent(3, 4))
     }
 
     @Test fun refetchesAfterSevenDaysAndReplacesRow() = runBlocking {
