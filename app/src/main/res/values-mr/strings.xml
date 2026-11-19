@@ -745,6 +745,8 @@
     <string name="browser_yt_title">हा YouTube व्हिडिओ डाउनलोड करा</string>
     <string name="browser_yt_audio">ऑडिओ डाउनलोड करा</string>
     <string name="browser_yt_video">व्हिडिओ डाउनलोड करा</string>
+    <string name="browser_video_download_cd">व्हिडिओ डाउनलोड करा</string>
+    <string name="browser_video_audio_cd">फक्त ऑडिओ डाउनलोड करा</string>
     <plurals name="browser_videos_n">
         <item quantity="one">%d व्हिडिओ</item>
         <item quantity="other">%d व्हिडिओ</item>

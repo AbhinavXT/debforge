@@ -708,6 +708,8 @@
     <string name="browser_yt_title">下载此 YouTube 视频</string>
     <string name="browser_yt_audio">下载音频</string>
     <string name="browser_yt_video">下载视频</string>
+    <string name="browser_video_download_cd">下载视频</string>
+    <string name="browser_video_audio_cd">仅下载音频</string>
     <plurals name="browser_videos_n">
         <item quantity="other">%d 个视频</item>
     </plurals>

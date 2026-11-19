@@ -745,6 +745,8 @@
     <string name="browser_yt_title">ఈ YouTube వీడియోను డౌన్‌లోడ్ చేయండి</string>
     <string name="browser_yt_audio">ఆడియోను డౌన్‌లోడ్ చేయండి</string>
     <string name="browser_yt_video">వీడియోను డౌన్‌లోడ్ చేయండి</string>
+    <string name="browser_video_download_cd">వీడియోను డౌన్‌లోడ్ చేయండి</string>
+    <string name="browser_video_audio_cd">ఆడియోను మాత్రమే డౌన్‌లోడ్ చేయండి</string>
     <plurals name="browser_videos_n">
         <item quantity="one">%d వీడియో</item>
         <item quantity="other">%d వీడియోలు</item>

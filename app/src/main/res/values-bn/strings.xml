@@ -745,6 +745,8 @@
     <string name="browser_yt_title">এই YouTube ভিডিও ডাউনলোড করুন</string>
     <string name="browser_yt_audio">অডিও ডাউনলোড করুন</string>
     <string name="browser_yt_video">ভিডিও ডাউনলোড করুন</string>
+    <string name="browser_video_download_cd">ভিডিও ডাউনলোড করুন</string>
+    <string name="browser_video_audio_cd">শুধু অডিও ডাউনলোড করুন</string>
     <plurals name="browser_videos_n">
         <item quantity="one">%dটি ভিডিও</item>
         <item quantity="other">%dটি ভিডিও</item>

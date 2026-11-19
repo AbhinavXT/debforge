@@ -53,6 +53,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.AudioFile
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
@@ -397,7 +398,25 @@ fun BrowserScreen(onMagnet: (String) -> Unit, onOpenDownloads: () -> Unit, onOpe
                             val approx = if (v.sourceRef.startsWith(DirectLinkParser.HLS_PREFIX)) "~" else ""
                             Text(if (v.filesize > 0) "$approx${formatSize(v.filesize)} · ${v.host}" else v.host)
                         },
-                        trailingContent = { Icon(Icons.Filled.Download, contentDescription = null) },
+                        trailingContent = {
+                            Row {
+                                // An HLS stream has no single MP4 to take the audio from: video only.
+                                if (!v.sourceRef.startsWith(DirectLinkParser.HLS_PREFIX)) {
+                                    IconButton(onClick = {
+                                        viewModel.downloadAudio(v)
+                                        showVideos = false
+                                    }) {
+                                        Icon(Icons.Filled.AudioFile, contentDescription = stringResource(R.string.browser_video_audio_cd))
+                                    }
+                                }
+                                IconButton(onClick = {
+                                    viewModel.downloadVideo(v)
+                                    showVideos = false
+                                }) {
+                                    Icon(Icons.Filled.Download, contentDescription = stringResource(R.string.browser_video_download_cd))
+                                }
+                            }
+                        },
                         modifier = Modifier.clickable {
                             viewModel.downloadVideo(v)
                             showVideos = false

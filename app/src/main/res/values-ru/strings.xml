@@ -819,6 +819,8 @@
     <string name="browser_yt_title">Скачать это видео с YouTube</string>
     <string name="browser_yt_audio">Скачать аудио</string>
     <string name="browser_yt_video">Скачать видео</string>
+    <string name="browser_video_download_cd">Скачать видео</string>
+    <string name="browser_video_audio_cd">Скачать только аудио</string>
     <plurals name="browser_videos_n">
         <item quantity="one">%d видео</item>
         <item quantity="few">%d видео</item>

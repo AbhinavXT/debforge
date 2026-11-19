@@ -782,6 +782,8 @@
     <string name="browser_yt_title">Télécharger cette vidéo YouTube</string>
     <string name="browser_yt_audio">Télécharger l\'audio</string>
     <string name="browser_yt_video">Télécharger la vidéo</string>
+    <string name="browser_video_download_cd">Télécharger la vidéo</string>
+    <string name="browser_video_audio_cd">Télécharger l’audio uniquement</string>
     <plurals name="browser_videos_n">
         <item quantity="one">%d vidéo</item>
         <item quantity="many">%d vidéos</item>

@@ -745,6 +745,8 @@
     <string name="browser_yt_title">Bu YouTube videosunu indir</string>
     <string name="browser_yt_audio">Sesi indir</string>
     <string name="browser_yt_video">Videoyu indir</string>
+    <string name="browser_video_download_cd">Videoyu indir</string>
+    <string name="browser_video_audio_cd">Yalnızca sesi indir</string>
     <plurals name="browser_videos_n">
         <item quantity="one">%d video</item>
         <item quantity="other">%d video</item>

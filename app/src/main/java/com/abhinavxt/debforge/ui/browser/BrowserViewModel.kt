@@ -220,6 +220,11 @@ class BrowserViewModel @Inject constructor(
         viewModelScope.launch { queue(listOf(video)) }
     }
 
+    /** Like [downloadVideo], but saves only the audio track as .m4a. */
+    fun downloadAudio(video: DownloadItem) {
+        viewModelScope.launch { queue(listOf(directLinks.audioOf(video))) }
+    }
+
     /** Downloads the YouTube video on the page at [pageUrl] as audio or video, at the default quality. */
     fun downloadYouTube(pageUrl: String, audio: Boolean) {
         viewModelScope.launch {
