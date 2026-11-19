@@ -209,6 +209,10 @@ class PodcastsViewModel @Inject constructor(
     fun download(sub: SubscriptionEntity, item: FeedItemEntity) {
         viewModelScope.launch {
             repo.markSeen(sub.id, item.itemKey)
+            if (enqueuer.retryIfFailed(item)) {
+                _messages.send(PodcastMessage.QUEUED)
+                return@launch
+            }
             _messages.send(
                 when (enqueuer.enqueue(sub, item)) {
                     EnqueueResult.QUEUED -> PodcastMessage.QUEUED
