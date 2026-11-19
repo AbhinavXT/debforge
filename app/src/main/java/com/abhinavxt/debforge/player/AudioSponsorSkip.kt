@@ -22,6 +22,15 @@ object AudioSponsorSkip {
         return if (atEnd) AudioSkip.EndTrack(s.startMs) else AudioSkip.Seek(s.endMs, s.startMs)
     }
 
+    /** A failed segment load is retried once, this long after it failed, if the track is still playing. */
+    const val RETRY_AFTER_MS = 30_000L
+
+    fun retryDue(failedAtMs: Long, nowMs: Long, alreadyRetried: Boolean): Boolean =
+        !alreadyRetried && nowMs - failedAtMs >= RETRY_AFTER_MS
+
+    /** Where to seek inside the current track to finish it: its end, so ExoPlayer ends it as it would naturally. */
+    fun endSeekMs(durationMs: Long): Long = if (durationMs > 0) durationMs else Long.MAX_VALUE
+
     /** A finished load still applies only if the track it was for is still current. */
     fun loadStillCurrent(loadedFor: String?, currentId: String?): Boolean = loadedFor != null && loadedFor == currentId
 }

@@ -31,7 +31,10 @@ import com.abhinavxt.debforge.data.playback.Snapshot
 import com.abhinavxt.debforge.data.playback.restorePlan
 import com.abhinavxt.debforge.data.playback.validShuffleOrder
 import androidx.media3.exoplayer.source.ShuffleOrder.DefaultShuffleOrder
+import com.abhinavxt.debforge.data.sponsor.SponsorSegmentRepository
 import com.abhinavxt.debforge.domain.DownloadState
+import com.abhinavxt.debforge.domain.SponsorSegment
+import com.abhinavxt.debforge.domain.SponsorSkip
 import com.abhinavxt.debforge.download.LocalFiles
 import com.abhinavxt.debforge.data.youtube.YouTubeException
 import com.abhinavxt.debforge.data.youtube.YouTubeResolver
@@ -44,6 +47,7 @@ import com.abhinavxt.debforge.ui.history.audioHistoryEntry
 import com.abhinavxt.debforge.player.youtube.YouTubeStreamTag
 import com.abhinavxt.debforge.player.youtube.YouTubeStreaming
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -263,7 +267,7 @@ class AudioPlayer @Inject constructor(
     private val queueStore: AudioQueueStore,
     private val downloads: DownloadDao,
     private val history: PlayHistory,
-    private val sponsorSegments: com.abhinavxt.debforge.data.sponsor.SponsorSegmentRepository
+    private val sponsorSegments: SponsorSegmentRepository
 ) {
 
     private val _state = MutableStateFlow(AudioState())
@@ -284,9 +288,12 @@ class AudioPlayer @Inject constructor(
 
     /** SponsorBlock segments of the current YouTube track, loaded off the main thread; [sponsorId] is the track they belong to. */
     private var sponsorId: String? = null
-    private var sponsorList: List<com.abhinavxt.debforge.domain.SponsorSegment> = emptyList()
+    private var sponsorList: List<SponsorSegment> = emptyList()
     private val sponsorDone = HashSet<Long>()
     private var sponsorJob: Job? = null
+    /** Uptime of a failed load of [sponsorId]'s segments (null = none or loaded); one retry is allowed later in the same item. */
+    private var sponsorFailedAt: Long? = null
+    private var sponsorRetried = false
 
     private val listener = object : Player.Listener {
         override fun onEvents(player: Player, events: Player.Events) {
@@ -372,7 +379,7 @@ class AudioPlayer @Inject constructor(
         val yt = track.youtube ?: return Refresh.Broken
         val video = try {
             youtubeResolver.resolve("https://www.youtube.com/watch?v=${yt.videoId}")
-        } catch (e: kotlinx.coroutines.CancellationException) {
+        } catch (e: CancellationException) {
             throw e // play()/clear() replaced the queue: not a failure
         } catch (e: Exception) {
             return if (linkFailure(e, isOnline()) == LinkFailure.OFFLINE) Refresh.Offline else Refresh.Broken
@@ -452,37 +459,42 @@ class AudioPlayer @Inject constructor(
         if (restoredPending || p.playbackState != Player.STATE_READY) return
         val id = p.currentMediaItem?.mediaId ?: return
         if (sponsorId != id) { loadSponsor(id); return }
+        val failed = sponsorFailedAt
+        if (failed != null && AudioSponsorSkip.retryDue(failed, SystemClock.uptimeMillis(), sponsorRetried)) { sponsorRetried = true; loadSponsor(id, retry = true); return }
         if (sponsorList.isEmpty()) return
         when (val d = AudioSponsorSkip.decide(sponsorList, p.currentPosition, currentDurationMs(p), sponsorDone)) {
             AudioSkip.None -> {}
             is AudioSkip.Seek -> { sponsorDone += d.startMs; p.seekTo(d.toMs); publish() }
             is AudioSkip.EndTrack -> {
+                // Seek to the end of the CURRENT item and let ExoPlayer finish it: the same auto transition, repeat,
+                // pause-at-end (sleep timer) or STATE_ENDED as a natural end. Same-item seeks are not saved as a resume spot.
                 sponsorDone += d.startMs
-                if (p.hasNextMediaItem()) p.seekToNextMediaItem() else p.seekTo(currentDurationMs(p))
+                p.seekTo(p.currentMediaItemIndex, AudioSponsorSkip.endSeekMs(currentDurationMs(p)))
             }
         }
     }
 
     /** Starts loading the segments of track [id]; an empty list stands for "none", so the load runs once per item. */
-    private fun loadSponsor(id: String) {
+    private fun loadSponsor(id: String, retry: Boolean = false) {
         sponsorJob?.cancel()
         sponsorId = id
-        sponsorList = emptyList()
-        sponsorDone.clear()
+        sponsorFailedAt = null
+        if (!retry) { sponsorList = emptyList(); sponsorDone.clear(); sponsorRetried = false }
         val track = tracks.firstOrNull { it.id == id } ?: return
         sponsorJob = scope.launch {
             val videoId = track.youtube?.videoId ?: withContext(Dispatchers.IO) {
-                downloads.getById(id)?.sourceRef?.let { com.abhinavxt.debforge.domain.YouTubeLinks.parseSourceRef(it)?.videoId }
+                downloads.getById(id)?.sourceRef?.let { YouTubeLinks.parseSourceRef(it)?.videoId }
             } ?: return@launch
             val found = try {
                 withContext(Dispatchers.IO) { sponsorSegments.segmentsFor(videoId) }
-            } catch (e: kotlinx.coroutines.CancellationException) {
+            } catch (e: CancellationException) {
                 throw e
             } catch (_: Exception) {
-                emptyList()
+                null
             }
             if (AudioSponsorSkip.loadStillCurrent(id, sponsorId)) {
-                sponsorList = com.abhinavxt.debforge.domain.SponsorSkip.normalise(found, 0)
+                if (found == null) { sponsorFailedAt = SystemClock.uptimeMillis(); return@launch }
+                sponsorList = SponsorSkip.normalise(found, 0)
             }
         }
     }
@@ -923,6 +935,8 @@ class AudioPlayer @Inject constructor(
         scope.launch { queueStore.forget(); queueForgotten.tryEmit(Unit) } // closing the queue (or a video taking over) forgets it
         playing.value = false
         BackgroundPlayback.openIntent = null // only audio sets it; a later video must open itself
+        sponsorJob?.cancel(); sponsorId = null; sponsorList = emptyList(); sponsorDone.clear()
+        sponsorFailedAt = null; sponsorRetried = false
         val p = player ?: return
         cancelSleep()
         player = null
@@ -932,7 +946,6 @@ class AudioPlayer @Inject constructor(
         }
         p.removeListener(listener)
         p.release()
-        sponsorJob?.cancel(); sponsorId = null; sponsorList = emptyList(); sponsorDone.clear()
         tracks = emptyList()
         _state.value = AudioState()
     }
