@@ -1,5 +1,6 @@
 package com.abhinavxt.debforge.download.follow
 
+import dagger.hilt.android.EntryPointAccessors
 import android.app.job.JobInfo
 import android.app.job.JobParameters
 import android.app.job.JobScheduler
@@ -202,11 +203,19 @@ class FollowJobService : JobService() {
             context.getSystemService(JobScheduler::class.java)?.cancel(JOB_ID)
         }
 
-        /** Whether any channel or podcast is followed; kept current by the app start and [com.abhinavxt.debforge.data.subscriptions.SubscriptionRepository]. */
-        @Volatile var subscriptionsActive = false
-
-        /** Runs the job only while a show, channel or podcast is followed. */
-        fun sync(context: Context, anyFollows: Boolean) =
-            if (anyFollows || subscriptionsActive) schedule(context) else cancel(context)
+        /** Runs the job while a show, channel or podcast is followed; subscriptions are read from the database each time. */
+        suspend fun sync(context: Context, anyFollows: Boolean) {
+            val subscribed = !anyFollows && runCatching {
+                EntryPointAccessors.fromApplication(context.applicationContext, SubscriptionsEntryPoint::class.java)
+                    .subscriptionDao().all().isNotEmpty()
+            }.getOrDefault(true)
+            if (anyFollows || subscribed) schedule(context) else cancel(context)
+        }
     }
+}
+
+@dagger.hilt.EntryPoint
+@dagger.hilt.InstallIn(dagger.hilt.components.SingletonComponent::class)
+internal interface SubscriptionsEntryPoint {
+    fun subscriptionDao(): com.abhinavxt.debforge.data.subscriptions.SubscriptionDao
 }

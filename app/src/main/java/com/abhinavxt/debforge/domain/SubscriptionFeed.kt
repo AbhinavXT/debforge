@@ -21,20 +21,24 @@ object FeedPlanner {
     /** Auto-downloads per subscription per check; the rest stay in the New row. */
     const val AUTO_CAP = 3
 
+    /** Stored as publishedAt when the source gave no date; never overwrites a real date. */
+    const val UNKNOWN_DATE = 0L
+
     class Plan(val items: List<FeedItemEntity>, val toDownload: List<FeedItemEntity>)
 
     /**
      * An entry is new when its key is not in [known] and it was published after [SubscriptionEntity.since]
-     * (an entry with no date counts as published at [now]). [initial] (the first fetch right after following)
-     * records everything as not new. At most [cap] new entries, newest first, are chosen for download.
+     * (an entry with no date is never new: it is stored with [UNKNOWN_DATE], because a feed that lost its dates
+     * would otherwise flood the New row and auto-download the back catalogue). [initial] (the first fetch right
+     * after following) records everything as not new. At most [cap] new entries, newest first, are chosen for download.
      */
     fun plan(sub: SubscriptionEntity, known: Set<String>, entries: List<FeedEntry>, now: Long, initial: Boolean = false, cap: Int = AUTO_CAP): Plan {
         val items = entries.distinctBy { it.key }.map {
-            val published = it.publishedAt ?: now
+            val published = it.publishedAt ?: UNKNOWN_DATE
             FeedItemEntity(
                 subId = sub.id, itemKey = it.key, title = it.title, mediaUrl = it.url, publishedAt = published,
                 durationSec = it.durationSec, thumbUrl = it.thumbUrl,
-                isNew = !initial && it.key !in known && published > sub.since, queued = false,
+                isNew = !initial && it.key !in known && published != UNKNOWN_DATE && published > sub.since, queued = false,
             )
         }
         val download = if (sub.autoDownload == AutoDownload.OFF) emptyList()
@@ -47,6 +51,8 @@ object FeedPlanner {
 interface FeedStore {
     suspend fun itemKeys(subId: Long): Set<String>
     suspend fun upsertItems(items: List<FeedItemEntity>)
+    /** Items still marked new that were never queued, e.g. because an earlier enqueue failed. */
+    suspend fun pendingItems(subId: Long): List<FeedItemEntity>
     suspend fun markQueued(subId: Long, itemKey: String)
     suspend fun markChecked(sub: SubscriptionEntity, checkedAt: Long)
     suspend fun trim(subId: Long, keep: Int)
@@ -77,7 +83,11 @@ class SubscriptionRun(
                 val plan = FeedPlanner.plan(sub, store.itemKeys(sub.id), entries, t)
                 store.upsertItems(plan.items)
                 labels += plan.items.filter { it.isNew }.sortedByDescending { it.publishedAt }.map { "${sub.title} · ${it.title}" }
-                for (item in plan.toDownload) {
+                // Newly found items plus earlier ones whose enqueue failed, within the cap, newest first.
+                val toDownload = if (sub.autoDownload == AutoDownload.OFF) emptyList()
+                else store.pendingItems(sub.id).filter { it.publishedAt > sub.since }
+                    .sortedByDescending { it.publishedAt }.take(FeedPlanner.AUTO_CAP)
+                for (item in toDownload) {
                     val r = try {
                         enqueue(sub, item)
                     } catch (e: CancellationException) {

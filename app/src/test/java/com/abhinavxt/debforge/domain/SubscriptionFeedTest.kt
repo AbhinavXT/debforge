@@ -19,6 +19,8 @@ private class FakeStore : FeedStore {
     override suspend fun upsertItems(items: List<FeedItemEntity>) {
         items.forEach { this.items.getOrPut(it.subId) { mutableMapOf() }.putIfAbsent(it.itemKey, it) }
     }
+    override suspend fun pendingItems(subId: Long) =
+        items[subId].orEmpty().values.filter { it.isNew && !it.queued && it.publishedAt > 0 }.sortedByDescending { it.publishedAt }
     override suspend fun markQueued(subId: Long, itemKey: String) {
         val m = items[subId]!!; m[itemKey] = m[itemKey]!!.copy(queued = true)
     }
@@ -48,10 +50,37 @@ class SubscriptionFeedTest {
         assertTrue(p.toDownload.isEmpty())
     }
 
-    @Test fun undatedEntryCountsAsPublishedNow() {
+    @Test fun undatedEntriesAreNeverNewNorQueued() {
         val p = FeedPlanner.plan(sub(since = 1000), emptySet(), listOf(e("a", null)), now = 5000)
-        assertEquals(5000L, p.items.single().publishedAt)
-        assertTrue(p.items.single().isNew)
+        assertEquals(FeedPlanner.UNKNOWN_DATE, p.items.single().publishedAt)
+        assertTrue(p.items.none { it.isNew })
+        assertTrue(p.toDownload.isEmpty())
+    }
+
+    @Test fun undatedFallbackAfterDatedFollowDoesNotFlood() = runBlocking {
+        val store = FakeStore()
+        val s = sub(since = 1000)
+        store.upsertItems(FeedPlanner.plan(s, emptySet(), listOf(e("v1", 2000)), now = 3000, initial = true).items)
+        var enq = 0
+        val run = SubscriptionRun(store, { (1..30).map { e("old$it", null) } + e("v1", null) }, { _, _ -> enq++; EnqueueResult.QUEUED }, now = { 9000 })
+        val r = run.run(listOf(s))
+        assertEquals(0, r.newLabels.size)
+        assertEquals(0, enq)
+        assertTrue(store.items[1]!!.values.none { it.isNew })
+    }
+
+    @Test fun failedEnqueueIsRetriedOnNextCheck() = runBlocking {
+        val store = FakeStore()
+        var fail = true
+        var enq = 0
+        val run = SubscriptionRun(store, { listOf(e("a", 3000)) }, { _, _ -> enq++; if (fail) throw java.io.IOException("x") else EnqueueResult.QUEUED }, now = { 9000 })
+        run.run(listOf(sub(1)))
+        assertTrue(!store.items[1]!!["a"]!!.queued)
+        fail = false
+        val r = run.run(listOf(sub(1)))
+        assertTrue(store.items[1]!!["a"]!!.queued)
+        assertEquals(1, r.queued)
+        assertEquals(2, enq)
     }
 
     @Test fun downloadsCappedAtThreeNewestFirst() {

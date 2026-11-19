@@ -50,9 +50,18 @@ class SubscriptionChecker @Inject constructor(
             onError = { sub, e -> Log.w("SubscriptionCheck", "Check of ${sub.url} failed", e) },
         )
         val result = run.run(subs)
-        if (fromBackground && result.newLabels.isNotEmpty()) DownloadNotifications.notifyNewUploads(context, result.newLabels)
+        if (fromBackground && result.newLabels.isNotEmpty() && !isAppInForeground()) DownloadNotifications.notifyNewUploads(context, result.newLabels)
         result.newLabels.size
     }
+
+    private fun isAppInForeground(): Boolean {
+        val info = android.app.ActivityManager.RunningAppProcessInfo()
+        android.app.ActivityManager.getMyMemoryState(info)
+        return info.importance <= android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND
+    }
+
+    /** Run [block] with the check lock held, so a check never sees a half-written follow. */
+    suspend fun <T> exclusive(block: suspend () -> T): T = lock.withLock { block() }
 
     private fun modeFor(sub: SubscriptionEntity) = if (sub.autoDownload == AutoDownload.VIDEO) EnqueueMode.VIDEO else EnqueueMode.AUDIO
 }
@@ -60,6 +69,7 @@ class SubscriptionChecker @Inject constructor(
 internal class DaoFeedStore(private val dao: SubscriptionDao) : FeedStore {
     override suspend fun itemKeys(subId: Long) = dao.itemKeys(subId).toHashSet()
     override suspend fun upsertItems(items: List<FeedItemEntity>) = dao.upsertItems(items)
+    override suspend fun pendingItems(subId: Long) = dao.pendingItems(subId)
     override suspend fun markQueued(subId: Long, itemKey: String) = dao.markQueued(subId, itemKey)
     override suspend fun markChecked(sub: SubscriptionEntity, checkedAt: Long) = dao.markChecked(sub.id, sub.etag, sub.lastModified, checkedAt)
     override suspend fun trim(subId: Long, keep: Int) = dao.trimItems(subId, keep)

@@ -6,6 +6,7 @@ import com.abhinavxt.debforge.data.youtube.YouTubeResolver
 import com.abhinavxt.debforge.domain.FeedPlanner
 import com.abhinavxt.debforge.domain.YouTubeChannelLinks
 import com.abhinavxt.debforge.download.follow.FollowJobService
+import com.abhinavxt.debforge.download.follow.SubscriptionChecker
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
@@ -18,6 +19,7 @@ class SubscriptionRepository @Inject constructor(
     private val dao: SubscriptionDao,
     private val resolver: YouTubeResolver,
     private val followStore: FollowStore,
+    private val checker: SubscriptionChecker,
 ) {
     sealed class FollowResult {
         class Followed(val sub: SubscriptionEntity) : FollowResult()
@@ -46,15 +48,19 @@ class SubscriptionRepository @Inject constructor(
         val ref = resolver.channelRef(target)
         dao.getByUrl(ref.url)?.let { return FollowResult.AlreadyFollowing(it) }
         val entries = resolver.channelFeed(ref.url)
-        val id = dao.insert(
-            SubscriptionEntity(
-                kind = SubscriptionKind.YT_CHANNEL, url = ref.url, title = ref.title, artworkUrl = ref.artworkUrl,
-                autoDownload = autoDownload, since = now, lastChecked = now,
+        // Under the checker's lock so a running check never sees the subscription without its initial items.
+        val sub = checker.exclusive {
+            val id = dao.insert(
+                SubscriptionEntity(
+                    kind = SubscriptionKind.YT_CHANNEL, url = ref.url, title = ref.title, artworkUrl = ref.artworkUrl,
+                    autoDownload = autoDownload, since = now, lastChecked = now,
+                )
             )
-        )
-        if (id < 0) return FollowResult.AlreadyFollowing(checkNotNull(dao.getByUrl(ref.url)))
-        val sub = checkNotNull(dao.get(id))
-        dao.upsertItems(FeedPlanner.plan(sub, emptySet(), entries, now, initial = true).items)
+            if (id < 0) return@exclusive null
+            val created = checkNotNull(dao.get(id))
+            dao.upsertItems(FeedPlanner.plan(created, emptySet(), entries, now, initial = true).items)
+            created
+        } ?: return FollowResult.AlreadyFollowing(checkNotNull(dao.getByUrl(ref.url)))
         syncJob()
         return FollowResult.Followed(sub)
     }
@@ -68,7 +74,6 @@ class SubscriptionRepository @Inject constructor(
 
     /** Schedules or cancels the periodic check for the current set of follows. */
     suspend fun syncJob() {
-        FollowJobService.subscriptionsActive = dao.all().isNotEmpty()
         FollowJobService.sync(context, followStore.all().isNotEmpty())
     }
 }

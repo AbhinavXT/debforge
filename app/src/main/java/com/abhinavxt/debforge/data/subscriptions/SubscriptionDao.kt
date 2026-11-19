@@ -47,6 +47,9 @@ interface SubscriptionDao {
     @Query("SELECT * FROM feed_items WHERE subId = :subId")
     suspend fun items(subId: Long): List<FeedItemEntity>
 
+    @Query("SELECT * FROM feed_items WHERE subId = :subId AND isNew = 1 AND queued = 0 AND publishedAt > 0 ORDER BY publishedAt DESC")
+    suspend fun pendingItems(subId: Long): List<FeedItemEntity>
+
     @Query("SELECT itemKey FROM feed_items WHERE subId = :subId")
     suspend fun itemKeys(subId: Long): List<String>
 
@@ -69,10 +72,11 @@ interface SubscriptionDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertItems(items: List<FeedItemEntity>)
 
-    /** Refresh an existing item's metadata; isNew / queued are left alone. */
+    /** Refresh an existing item's metadata; isNew / queued are left alone, and a publishedAt of 0 (unknown) keeps the stored date. */
     @Query(
         "UPDATE feed_items SET title = :title, mediaUrl = :mediaUrl, thumbUrl = :thumbUrl, " +
-            "durationSec = :durationSec, publishedAt = :publishedAt WHERE subId = :subId AND itemKey = :itemKey"
+            "durationSec = :durationSec, publishedAt = CASE WHEN :publishedAt > 0 THEN :publishedAt ELSE publishedAt END " +
+            "WHERE subId = :subId AND itemKey = :itemKey"
     )
     suspend fun updateItemMetadata(
         subId: Long, itemKey: String, title: String, mediaUrl: String?, thumbUrl: String?, durationSec: Long?, publishedAt: Long
