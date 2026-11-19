@@ -283,7 +283,7 @@ fun formatClock(ms: Long): String {
 /**
  * Background audio for downloaded music: one ExoPlayer that outlives the UI,
  * shown by [BackgroundPlaybackService] as a media notification. Video uses
- * its own player; [stopForVideo] makes room for it.
+ * its own player; [parkForVideo] pauses the queue and keeps it for when the video closes.
  */
 @OptIn(UnstableApi::class, FlowPreview::class)
 @Singleton
@@ -369,8 +369,10 @@ class AudioPlayer @Inject constructor(
             if (sleepAtEnd && !sleepEndStillApplies(sleepItemId, mediaItem?.mediaId)) cancelSleep()
             resolveAhead()
             maybeAutoplay()
+            val mark = handoffAfterTransition(handoffId, mediaItem?.mediaId, reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED)
+            handoffId = mark.next
             if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED || reason == Player.MEDIA_ITEM_TRANSITION_REASON_REPEAT) return
-            if (handoffSkipsResume(mediaItem?.mediaId, handoffId)) { handoffId = null; return } // the video's own position wins
+            if (mark.skipResume) return // the video's own position wins
             applyResume(mediaItem?.mediaId ?: return)
         }
 
@@ -736,6 +738,7 @@ class AudioPlayer @Inject constructor(
     fun playHandoff(track: AudioTrack, startMs: Long, speed: Float) {
         playJob?.cancel()
         playJob = scope.launch {
+            awaitRestore(parkRestoreJob) // a parked queue is still coming back: join it, do not replace it
             // A local download and the streamed copy of one YouTube video are the same item: match them by video id.
             val (videoId, localId) = handoffIdentity(track)
             fun planNow(): HandoffPlan {
@@ -744,13 +747,14 @@ class AudioPlayer @Inject constructor(
                 else handoffPlan(tracks, cur.currentMediaItemIndex, track, localId, videoId)
             }
             var t = track
+            val failure = HandoffFailure(track, startMs, speed)
             handoffId = null
             if (planNow() !is HandoffPlan.JumpTo && !restoredPending && t.youtube != null && t.uri == Uri.EMPTY) {
                 when (val r = refreshed(t)) {
                     is Refresh.Fresh -> t = r.track
-                    Refresh.Offline -> { showOffline(); return@launch }
-                    Refresh.Blocked -> return@launch
-                    Refresh.Broken -> { showSkipped(); return@launch }
+                    Refresh.Offline -> { showOffline(); handoffFailed.tryEmit(failure); return@launch }
+                    Refresh.Blocked -> { handoffFailed.tryEmit(failure); return@launch }
+                    Refresh.Broken -> { showSkipped(); handoffFailed.tryEmit(failure); return@launch }
                 }
             }
             when (val plan = planNow()) {
@@ -775,7 +779,7 @@ class AudioPlayer @Inject constructor(
             val p = player ?: return@launch
             p.setPlaybackSpeed(speed)
             if (restoredPending) {
-                if (!activate()) return@launch
+                if (!activate()) { handoffFailed.tryEmit(failure); return@launch }
             } else {
                 pauseBackgroundedVideo()
                 setOpenIntent()
@@ -796,13 +800,40 @@ class AudioPlayer @Inject constructor(
      */
     fun parkForVideo() {
         val p = player ?: return
-        if (restoredPending || tracks.isEmpty()) return // nothing playing, or already parked
+        when (parkAction(tracks.isEmpty(), restoredPending)) {
+            ParkAction.NONE -> return
+            ParkAction.CANCEL_ACTIVATION -> {
+                // Already parked, perhaps mid-activation: it must not finish and take audio focus from the video.
+                activateJob?.cancel()
+                playJob?.cancel()
+                pendingAction = null
+                activating = false
+                publish()
+                return
+            }
+            ParkAction.PARK -> Unit
+        }
         p.pause()
         saveCurrent()
         val snap = currentSnapshot(p) ?: return
         playJob?.cancel()
         release()
-        scope.launch { queueStore.saveQueue(snap); restore() }
+        parkRestoreJob = scope.launch { queueStore.saveQueue(snap); restore() }
+    }
+
+    /** The restore of a parked queue, so a handoff arriving at once waits for it (see [playHandoff]). */
+    private var parkRestoreJob: Job? = null
+
+    /** A handoff that could not start playing: the video it came from is already closed, so the UI offers a way back. */
+    val handoffFailed = MutableSharedFlow<HandoffFailure>(extraBufferCapacity = 1)
+
+    /** The live playback position of the current item (the published state can lag a moment behind). */
+    fun positionNow(): Long = player?.currentPosition ?: _state.value.positionMs
+
+    /** Pauses the audio (a restored queue that is still activating included). */
+    fun pause() {
+        if (restoredPending) { if (activating) whenActive { it.pause() }; return }
+        player?.pause()
     }
 
     /**
@@ -1367,7 +1398,7 @@ class AudioPlayer @Inject constructor(
     /** Stops, releases the player and the notification. */
     fun clear() {
         saveCurrent()
-        scope.launch { queueStore.forget(); queueForgotten.tryEmit(Unit) } // closing the queue (or a video taking over) forgets it
+        scope.launch { queueStore.forget(); queueForgotten.tryEmit(Unit) } // closing the queue forgets it (a video only parks it, see parkForVideo)
         release()
     }
 
@@ -1397,9 +1428,6 @@ class AudioPlayer @Inject constructor(
         tracks = emptyList()
         _state.value = AudioState()
     }
-
-    /** Video is about to play: let go of the audio session. */
-    fun stopForVideo() = clear()
 
     /** A video left playing in the background owns the service; pause it and take over. */
     private fun pauseBackgroundedVideo() {

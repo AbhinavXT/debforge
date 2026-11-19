@@ -734,6 +734,7 @@ class PlayerActivity : ComponentActivity() {
                 android.view.KeyEvent.KEYCODE_MEDIA_NEXT -> if (queue.isNotEmpty()) { playNext(); return true }
                 android.view.KeyEvent.KEYCODE_MEDIA_PREVIOUS -> if (previousQueue.isNotEmpty()) { playPrevious(); return true }
                 android.view.KeyEvent.KEYCODE_INFO -> { showStats(!controls.stats); return true }
+                android.view.KeyEvent.KEYCODE_MENU -> if (isTv && showTvOptions()) return true
             }
         }
         val overlayFocused = focus != null && (focus === startOverView || focus === skipView || isInside(focus, nextCard))
@@ -892,6 +893,17 @@ class PlayerActivity : ComponentActivity() {
             audioHandoffTrack = track
             controls.audioHandoffReady = track != null
         }
+    }
+
+    /** TV: the remote's MENU key offers "Play as audio" (Media3's controller has no slot for it). False when there is nothing to offer. */
+    private fun showTvOptions(): Boolean {
+        val p = player ?: return false
+        val offer = playAsAudioVisible(p.isCurrentMediaItemLive, durationOrNull() ?: 0L, audioHandoffTrack != null, controls.casting, controls.debridStream)
+        if (!offer || handingOff) return false
+        AlertDialog.Builder(this)
+            .setItems(arrayOf(getString(R.string.player_play_as_audio))) { _, _ -> handOffToAudio() }
+            .show()
+        return true
     }
 
     /** "Play as audio": save the spot, hand the item to the audio player at this position and speed, and close. */

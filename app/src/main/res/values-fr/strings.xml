@@ -1006,6 +1006,7 @@
     <string name="audio_repeat_one">Répéter le titre</string>
     <string name="audio_close">Fermer la lecture en cours</string>
     <string name="audio_watch_video">Regarder la vidéo</string>
+    <string name="audio_play_failed">Impossible de lire en audio</string>
     <string name="audio_stop_close">Arrêter et fermer le lecteur</string>
     <string name="audio_expand">Ouvrir la lecture en cours</string>
     <string name="audio_up_next">À suivre</string>

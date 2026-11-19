@@ -912,6 +912,7 @@
     <string name="audio_repeat_one">Ulangi satu</string>
     <string name="audio_close">Tutup yang sedang diputar</string>
     <string name="audio_watch_video">Tonton video</string>
+    <string name="audio_play_failed">Tidak dapat memutar sebagai audio</string>
     <string name="audio_stop_close">Hentikan dan tutup pemutar</string>
     <string name="audio_expand">Buka yang sedang diputar</string>
     <string name="audio_up_next">Berikutnya</string>

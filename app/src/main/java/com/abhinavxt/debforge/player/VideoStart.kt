@@ -30,3 +30,6 @@ fun restoresSavedPosition(start: VideoStart?): Boolean = start == null
 /** Whether the video player shows "Play as audio". */
 fun playAsAudioVisible(live: Boolean, durationMs: Long, hasAudioTrack: Boolean, casting: Boolean, debridStream: Boolean): Boolean =
     !live && durationMs > 0 && hasAudioTrack && !casting && !debridStream
+
+/** Where "Watch video" starts: the audio position read just before launching (it keeps moving while the video is looked up). */
+fun watchStart(positionMs: Long, speed: Float): VideoStart = VideoStart(positionMs.coerceAtLeast(0L), speed)

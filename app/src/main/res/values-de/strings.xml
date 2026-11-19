@@ -959,6 +959,7 @@
     <string name="audio_repeat_one">Titel wiederholen</string>
     <string name="audio_close">Wiedergabe schließen</string>
     <string name="audio_watch_video">Video ansehen</string>
+    <string name="audio_play_failed">Als Audio konnte nicht abgespielt werden</string>
     <string name="audio_stop_close">Stoppen und Player schließen</string>
     <string name="audio_expand">Wiedergabe öffnen</string>
     <string name="audio_up_next">Als Nächstes</string>

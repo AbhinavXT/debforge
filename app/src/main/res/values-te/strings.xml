@@ -959,6 +959,7 @@
     <string name="audio_repeat_one">ఒకదాన్ని రిపీట్ చేయి</string>
     <string name="audio_close">ఇప్పుడు ప్లే అవుతున్నదాన్ని మూసివేయి</string>
     <string name="audio_watch_video">వీడియో చూడండి</string>
+    <string name="audio_play_failed">ఆడియోగా ప్లే చేయలేకపోయింది</string>
     <string name="audio_stop_close">ఆపి ప్లేయర్‌ను మూసివేయి</string>
     <string name="audio_expand">ఇప్పుడు ప్లే అవుతున్నదాన్ని తెరువు</string>
     <string name="audio_up_next">తర్వాత</string>

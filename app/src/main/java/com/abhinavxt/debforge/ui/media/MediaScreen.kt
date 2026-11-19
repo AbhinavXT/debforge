@@ -10,6 +10,11 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import com.abhinavxt.debforge.ui.player.focusRing
@@ -484,7 +489,7 @@ internal fun MediaContent(
                         val selected = e.id in state.selected
                         val m = Modifier.animateItem()
                         when (state.kind) {
-                            FileKind.Video -> VideoTile(e, tileProgress(watch != null, internalPlayer, watch?.get(e.id)), selected, m, onClick = { if (selecting) onToggle(e.id) else onOpenVideo(e) }, onLong = { onToggle(e.id) }, onPlayAudio = { onPlayVideoAsAudio(e) })
+                            FileKind.Video -> VideoTile(e, tileProgress(watch != null, internalPlayer, watch?.get(e.id)), selected, m, onClick = { if (selecting) onToggle(e.id) else onOpenVideo(e) }, onLong = { onToggle(e.id) }, onPlayAudio = { onPlayVideoAsAudio(e) }, showMenu = !selecting)
                             FileKind.Audio -> MediaRow(
                                 e, FileKind.Audio, selected, e.id == playingId, m,
                                 onClick = { if (selecting) onToggle(e.id) else onPlayAudio(items, items.indexOf(e)) },
@@ -649,12 +654,10 @@ private fun Art(e: DownloadEntity, modifier: Modifier, tag: String) {
 }
 
 @Composable
-private fun VideoTile(e: DownloadEntity, progress: WatchProgress, selected: Boolean, modifier: Modifier, onClick: () -> Unit, onLong: () -> Unit, onPlayAudio: () -> Unit) {
+private fun VideoTile(e: DownloadEntity, progress: WatchProgress, selected: Boolean, modifier: Modifier, onClick: () -> Unit, onLong: () -> Unit, onPlayAudio: () -> Unit, showMenu: Boolean) {
     val cs = MaterialTheme.colorScheme
     val shape = RoundedCornerShape(16.dp)
     var menu by remember { mutableStateOf(false) }
-    val tileFocus = remember { FocusRequester() }
-    val menuFocus = remember { FocusRequester() }
     val sub = listOfNotNull(e.formatLabel().takeIf { it.isNotEmpty() }, formatSize(e.filesize).takeIf { e.filesize > 0 }).joinToString(" · ")
     val channel = e.artist?.takeIf { it.isNotBlank() }
     val stateText = when (progress) {
@@ -662,7 +665,10 @@ private fun VideoTile(e: DownloadEntity, progress: WatchProgress, selected: Bool
         is WatchProgress.InProgress -> stringResource(R.string.media_watched_percent, progress.percent)
         WatchProgress.Finished -> null
     }
-    Column(modifier.focusRequester(tileFocus).focusProperties { right = menuFocus }.mediaClickable(shape, selected, onClick, onLong).padding(4.dp).then(if (stateText != null) Modifier.semantics { stateDescription = stateText } else Modifier)) {
+    // On a TV the D-pad moves tile to tile; the MENU key opens this tile's menu (the dots are for touch).
+    Column(modifier.onPreviewKeyEvent { ev ->
+        if (showMenu && ev.key == Key.Menu) { if (ev.type == KeyEventType.KeyUp) menu = true; true } else false
+    }.mediaClickable(shape, selected, onClick, onLong).padding(4.dp).then(if (stateText != null) Modifier.semantics { stateDescription = stateText } else Modifier)) {
         Box {
             Art(e, Modifier.fillMaxWidth().aspectRatio(16f / 9f).clip(shape), e.filename.substringAfterLast('.', "").uppercase())
             Icon(
@@ -690,13 +696,11 @@ private fun VideoTile(e: DownloadEntity, progress: WatchProgress, selected: Bool
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(e.displayTitle(), style = MaterialTheme.typography.titleSmall, maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f).padding(start = 4.dp, top = 6.dp, bottom = 6.dp))
             Box {
-                val menuSource = remember { MutableInteractionSource() }
-                IconButton(
+                if (showMenu) IconButton(
                     onClick = { menu = true },
-                    modifier = Modifier.size(32.dp).focusRequester(menuFocus).focusProperties { left = tileFocus }.focusRing(menuSource, CircleShape),
-                    interactionSource = menuSource
+                    modifier = Modifier.size(32.dp).focusProperties { canFocus = false }
                 ) { Icon(Icons.Rounded.MoreVert, stringResource(R.string.media_more)) }
-                DropdownMenu(menu, { menu = false }) {
+                DropdownMenu(menu && showMenu, { menu = false }) {
                     DropdownMenuItem(
                         text = { Text(stringResource(R.string.media_play_as_audio)) },
                         leadingIcon = { Icon(Icons.Rounded.MusicNote, null) },

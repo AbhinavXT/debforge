@@ -959,6 +959,7 @@
     <string name="audio_repeat_one">ஒன்றை மீண்டும் இயக்கு</string>
     <string name="audio_close">இப்போது இயங்குவதை மூடு</string>
     <string name="audio_watch_video">வீடியோவைப் பார்க்கவும்</string>
+    <string name="audio_play_failed">ஆடியோவாக இயக்க முடியவில்லை</string>
     <string name="audio_stop_close">நிறுத்தி பிளேயரை மூடு</string>
     <string name="audio_expand">இப்போது இயங்குவதைத் திற</string>
     <string name="audio_up_next">அடுத்து</string>

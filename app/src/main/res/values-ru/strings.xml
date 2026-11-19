@@ -1053,6 +1053,7 @@
     <string name="audio_repeat_one">Повторять трек</string>
     <string name="audio_close">Закрыть плеер</string>
     <string name="audio_watch_video">Смотреть видео</string>
+    <string name="audio_play_failed">Не удалось воспроизвести как аудио</string>
     <string name="audio_stop_close">Остановить и закрыть плеер</string>
     <string name="audio_expand">Открыть плеер</string>
     <string name="audio_up_next">Далее в очереди</string>

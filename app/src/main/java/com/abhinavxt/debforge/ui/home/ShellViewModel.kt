@@ -6,7 +6,9 @@ import com.abhinavxt.debforge.data.local.DownloadDao
 import com.abhinavxt.debforge.data.prefs.SettingsStore
 import com.abhinavxt.debforge.domain.DownloadState
 import com.abhinavxt.debforge.player.AudioPlayer
+import com.abhinavxt.debforge.player.HandoffFailure
 import com.abhinavxt.debforge.player.VideoHandoff
+import com.abhinavxt.debforge.player.watchStart
 import com.abhinavxt.debforge.player.WatchResult
 import com.abhinavxt.debforge.ui.browse.PlayRequest
 import kotlinx.coroutines.channels.Channel
@@ -62,17 +64,24 @@ class ShellViewModel @Inject constructor(
     private val _watchEvents = Channel<WatchEvent>(Channel.BUFFERED)
     val watchEvents = _watchEvents.receiveAsFlow()
 
-    /** Continues the current audio item as video from the current position and speed. The video player parks the audio queue. */
-    fun watchVideo() {
+    /**
+     * Continues the current audio item as video at its speed. The audio is paused at once, so it does not run on while
+     * the video is looked up, and the position is read just before launching. A failed lookup leaves it paused.
+     * [from] is a failed "Play as audio" handoff: the item and spot to go back to.
+     */
+    fun watchVideo(from: HandoffFailure? = null) {
         val state = audio.state.value
-        val track = state.track?.takeIf { it.canWatch } ?: return
+        val track = from?.track ?: state.track?.takeIf { it.canWatch } ?: return
         if (!_watchBusy.compareAndSet(expect = false, update = true)) return
-        val startMs = state.positionMs
-        val speed = state.speed
+        if (from == null) audio.pause()
         viewModelScope.launch {
             try {
                 _watchEvents.send(when (val r = videoHandoff.watchRequest(track)) {
-                    is WatchResult.Ready -> WatchEvent.Launch(r.request, startMs, speed)
+                    is WatchResult.Ready -> {
+                        val start = from?.let { watchStart(it.startMs, it.speed) }
+                            ?: watchStart(audio.positionNow(), audio.state.value.speed)
+                        WatchEvent.Launch(r.request, start.positionMs, start.speed)
+                    }
                     WatchResult.FileMissing -> WatchEvent.FileMissing
                     WatchResult.StreamFailed -> WatchEvent.StreamFailed
                 })

@@ -196,3 +196,31 @@ fun pickAutoplayMarked(related: List<YouTubeSearchResult>, playedThisSession: Mu
  */
 fun shouldAutoplay(isLastInOrder: Boolean, isYouTube: Boolean, repeat: AudioRepeat, enabled: Boolean, sleepAtEnd: Boolean): Boolean =
     enabled && isLastInOrder && isYouTube && repeat == AudioRepeat.OFF && !sleepAtEnd
+
+/** What [AudioPlayer.parkForVideo] does: nothing, only stop a pending activation, or park the playing queue. */
+enum class ParkAction { NONE, CANCEL_ACTIVATION, PARK }
+
+/** A queue that is already parked (restored, paused) may still be activating: that must be cancelled, not left to finish. */
+fun parkAction(queueEmpty: Boolean, restoredPending: Boolean): ParkAction = when {
+    queueEmpty -> ParkAction.NONE
+    restoredPending -> ParkAction.CANCEL_ACTIVATION
+    else -> ParkAction.PARK
+}
+
+/** A handoff transition: whether the resume-spot seek is skipped, and the handoff id that remains. */
+data class HandoffMark(val skipResume: Boolean, val next: String?)
+
+/**
+ * The handoff item is done with once playback reaches it or moves past it by a real transition. A playlist-changed
+ * transition (a replace in place) says nothing about that, so it keeps the id.
+ */
+fun handoffAfterTransition(handoffId: String?, mediaId: String?, playlistChanged: Boolean): HandoffMark {
+    if (handoffId == null || playlistChanged) return HandoffMark(false, handoffId)
+    return HandoffMark(skipResume = mediaId == handoffId, next = null)
+}
+
+/** Waits for a restore that is still running, so a handoff decides its plan on the restored queue. */
+suspend fun awaitRestore(restore: kotlinx.coroutines.Job?) { restore?.join() }
+
+/** A handoff to audio that failed to start. */
+data class HandoffFailure(val track: AudioTrack, val startMs: Long, val speed: Float)

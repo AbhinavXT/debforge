@@ -200,6 +200,23 @@ fun HomeScreen(signedIn: Boolean) {
             }
         }
     }
+    // "Play as audio" could not start and its video is already closed: say so and offer the way back.
+    var handoffFailure by remember { mutableStateOf<com.abhinavxt.debforge.player.HandoffFailure?>(null) }
+    LaunchedEffect(Unit) { shell.audio.handoffFailed.collect { handoffFailure = it } }
+    handoffFailure?.let { failure ->
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = { handoffFailure = null },
+            title = { Text(stringResource(R.string.audio_play_failed)) },
+            confirmButton = {
+                androidx.compose.material3.TextButton(onClick = { handoffFailure = null; shell.watchVideo(failure) }) {
+                    Text(stringResource(R.string.audio_watch_video))
+                }
+            },
+            dismissButton = {
+                androidx.compose.material3.TextButton(onClick = { handoffFailure = null }) { Text(stringResource(R.string.action_close)) }
+            }
+        )
+    }
     // The queue ended or was cleared: nothing left to show.
     LaunchedEffect(audio.track == null) { if (audio.track == null) nowPlaying = false }
 
@@ -432,7 +449,7 @@ fun HomeScreen(signedIn: Boolean) {
                 onNext = shell.audio::next,
                 onExpand = { nowPlaying = true },
                 onClose = shell.audio::clear,
-                onWatch = shell::watchVideo,
+                onWatch = { shell.watchVideo() },
                 watchBusy = watchBusy,
                 onChannel = openChannel,
                 modifier = Modifier.onFocusChanged { if (it.hasFocus) miniHasFocus = true },
@@ -552,7 +569,7 @@ fun HomeScreen(signedIn: Boolean) {
                     onAutoplay = shell.audio::setAutoplay,
                     onClose = { nowPlaying = false },
                     onStop = { nowPlaying = false; shell.audio.clear() },
-                    onWatch = shell::watchVideo,
+                    onWatch = { shell.watchVideo() },
                     watchBusy = watchBusy,
                     onChannel = openChannel,
                     playFocus = playFocus,

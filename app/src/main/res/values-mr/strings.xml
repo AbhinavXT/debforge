@@ -959,6 +959,7 @@
     <string name="audio_repeat_one">एक रिपीट करा</string>
     <string name="audio_close">आता सुरू असलेले बंद करा</string>
     <string name="audio_watch_video">व्हिडिओ पहा</string>
+    <string name="audio_play_failed">ऑडिओ म्हणून प्ले करता आले नाही</string>
     <string name="audio_stop_close">थांबवा आणि प्लेयर बंद करा</string>
     <string name="audio_expand">आता सुरू असलेले उघडा</string>
     <string name="audio_up_next">पुढे</string>
