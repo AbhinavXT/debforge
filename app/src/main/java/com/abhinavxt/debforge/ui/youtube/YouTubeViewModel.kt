@@ -24,6 +24,9 @@ import com.abhinavxt.debforge.domain.subtitleFileName
 import com.abhinavxt.debforge.domain.youTubeSubtitleId
 import com.abhinavxt.debforge.download.DownloadController
 import com.abhinavxt.debforge.download.StorageAccess
+import com.abhinavxt.debforge.download.youtube.EnqueueMode
+import com.abhinavxt.debforge.download.youtube.EnqueueResult
+import com.abhinavxt.debforge.download.youtube.YouTubeEnqueuer
 import com.abhinavxt.debforge.download.artworkFile
 import com.abhinavxt.debforge.player.AudioPlayer
 import com.abhinavxt.debforge.player.youtubeAudioTrack
@@ -107,7 +110,7 @@ class YouTubeViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val resolver: YouTubeResolver,
     private val downloads: DownloadController,
-    private val dao: DownloadDao,
+    private val enqueuer: YouTubeEnqueuer,
     private val settings: SettingsStore,
     private val history: YouTubeSearchHistoryStore,
     private val saved: SavedStateHandle,
@@ -486,11 +489,7 @@ class YouTubeViewModel @Inject constructor(
 
     private fun subtitleItemFor(video: DownloadItem, s: YouTubeSubtitle) = youTubeSubtitleItem(video, s)
 
-    private fun itemFor(video: YouTubeVideo, c: FormatChoice): DownloadItem = youTubeDownloadItem(
-        videoId = video.id, title = video.title, uploader = video.uploader, videoItag = c.videoItag, audioItag = c.audioItag,
-        extension = c.extension, height = c.height, estimatedBytes = c.estimatedBytes,
-        url = video.streams.firstOrNull { it.itag == (c.videoItag ?: c.audioItag) }?.url,
-    )
+    private fun itemFor(video: YouTubeVideo, c: FormatChoice): DownloadItem = enqueuer.itemFor(video, c)
 
     private suspend fun enqueue(item: DownloadItem, thumbnailUrl: String?, subtitle: DownloadItem? = null) {
         val video = tryEnqueue(item, thumbnailUrl)
@@ -501,18 +500,10 @@ class YouTubeViewModel @Inject constructor(
     }
 
     /** Queues [item] and says what happened: QUEUED, ALREADY_QUEUED or QUEUE_FAILED. */
-    private suspend fun tryEnqueue(item: DownloadItem, thumbnailUrl: String?): YouTubeEvent {
-        try {
-            // enqueue ignores an id it already has, so ask first and report what really happens.
-            if (dao.getById(item.id) != null) return YouTubeEvent.ALREADY_QUEUED
-            downloads.enqueue(item, foreground = true)
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Exception) {
-            return YouTubeEvent.QUEUE_FAILED
-        }
-        saveThumbnail(thumbnailUrl, item.id)
-        return YouTubeEvent.QUEUED
+    private suspend fun tryEnqueue(item: DownloadItem, thumbnailUrl: String?): YouTubeEvent = when (enqueuer.tryEnqueue(item, thumbnailUrl)) {
+        EnqueueResult.QUEUED -> YouTubeEvent.QUEUED
+        EnqueueResult.ALREADY_QUEUED -> YouTubeEvent.ALREADY_QUEUED
+        EnqueueResult.FAILED -> YouTubeEvent.QUEUE_FAILED
     }
 
     /** Adds the ticked playlist videos, one at a time, each in its own best-matching format. */
@@ -540,11 +531,9 @@ class YouTubeViewModel @Inject constructor(
             chosen.forEachIndexed { i, r ->
                 _ui.update { (it as? YouTubeUi.Playlist)?.copy(progress = i + 1 to chosen.size) ?: it }
                 try {
-                    val video = resolver.resolve(r.url)
-                    val pick = pickDefaultChoice(YouTubeFormats.choices(video.streams, Build.VERSION.SDK_INT, video.durationSec), quality)
-                    when (if (pick == null) YouTubeEvent.QUEUE_FAILED else tryEnqueue(itemFor(video, pick), video.thumbnailUrl)) {
-                        YouTubeEvent.QUEUED -> added++
-                        YouTubeEvent.ALREADY_QUEUED -> already++
+                    when (enqueuer.enqueue(r.url, EnqueueMode.DEFAULT, quality)) {
+                        EnqueueResult.QUEUED -> added++
+                        EnqueueResult.ALREADY_QUEUED -> already++
                         else -> failed++
                     }
                 } catch (e: CancellationException) {
@@ -576,8 +565,6 @@ class YouTubeViewModel @Inject constructor(
             waiting?.invoke()
         }
     }
-
-    private suspend fun saveThumbnail(url: String?, id: String) = saveYouTubeThumbnail(context, http, url, id)
 
     private companion object {
         const val LINK_KEY = "link"
