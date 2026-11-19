@@ -1110,4 +1110,21 @@
     <string name="set_import_local">Show other files in the download folder</string>
     <string name="set_import_local_detail">Audio and video you put in the folder yourself appear in Media. Files are never moved or copied.</string>
     <string name="media_refresh">Refresh</string>
+    <string name="media_play_all">Play all</string>
+    <string name="media_play_all_hint">Videos play as audio</string>
+    <string name="media_stream_badge">Stream</string>
+    <string name="media_yt_mode_audio">Audio</string>
+    <string name="media_yt_mode_video">Video</string>
+    <string name="media_yt_downloaded">Downloaded</string>
+    <string name="media_play_as_audio">Play as audio</string>
+    <string name="media_stream_failed">Couldn\'t open the video</string>
+    <string name="media_download_all_failed">Couldn\'t start the downloads</string>
+    <plurals name="media_download_all_n">
+        <item quantity="one">Download %1$d video?</item>
+        <item quantity="other">Download %1$d videos?</item>
+    </plurals>
+    <plurals name="media_download_all_queued_n">
+        <item quantity="one">Download started for %1$d video</item>
+        <item quantity="other">Download started for %1$d videos</item>
+    </plurals>
 </resources>

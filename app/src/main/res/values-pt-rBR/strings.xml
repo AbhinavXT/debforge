@@ -1161,4 +1161,23 @@
     <string name="set_import_local">Mostrar outros arquivos da pasta de downloads</string>
     <string name="set_import_local_detail">Áudio e vídeo que você mesmo coloca na pasta aparecem em Mídia. Os arquivos nunca são movidos nem copiados.</string>
     <string name="media_refresh">Atualizar</string>
+    <string name="media_play_all">Reproduzir tudo</string>
+    <string name="media_play_all_hint">Vídeos são reproduzidos como áudio</string>
+    <string name="media_stream_badge">Streaming</string>
+    <string name="media_yt_mode_audio">Áudio</string>
+    <string name="media_yt_mode_video">Vídeo</string>
+    <string name="media_yt_downloaded">Baixado</string>
+    <string name="media_play_as_audio">Reproduzir como áudio</string>
+    <string name="media_stream_failed">Não foi possível abrir o vídeo</string>
+    <string name="media_download_all_failed">Não foi possível iniciar os downloads</string>
+    <plurals name="media_download_all_n">
+        <item quantity="one">Baixar %1$d vídeo?</item>
+        <item quantity="many">Baixar %1$d de vídeos?</item>
+        <item quantity="other">Baixar %1$d vídeos?</item>
+    </plurals>
+    <plurals name="media_download_all_queued_n">
+        <item quantity="one">Download iniciado para %1$d vídeo</item>
+        <item quantity="many">Download iniciado para %1$d de vídeos</item>
+        <item quantity="other">Download iniciado para %1$d vídeos</item>
+    </plurals>
 </resources>

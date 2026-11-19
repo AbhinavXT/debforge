@@ -1214,4 +1214,25 @@
     <string name="set_import_local">Показывать другие файлы из папки загрузок</string>
     <string name="set_import_local_detail">Аудио и видео, которые вы сами положили в папку, появляются в разделе «Медиа». Файлы никогда не перемещаются и не копируются.</string>
     <string name="media_refresh">Обновить</string>
+    <string name="media_play_all">Воспроизвести все</string>
+    <string name="media_play_all_hint">Видео воспроизводятся как аудио</string>
+    <string name="media_stream_badge">Онлайн</string>
+    <string name="media_yt_mode_audio">Аудио</string>
+    <string name="media_yt_mode_video">Видео</string>
+    <string name="media_yt_downloaded">Скачано</string>
+    <string name="media_play_as_audio">Воспроизвести как аудио</string>
+    <string name="media_stream_failed">Не удалось открыть видео</string>
+    <string name="media_download_all_failed">Не удалось начать загрузки</string>
+    <plurals name="media_download_all_n">
+        <item quantity="one">Скачать %1$d видео?</item>
+        <item quantity="few">Скачать %1$d видео?</item>
+        <item quantity="many">Скачать %1$d видео?</item>
+        <item quantity="other">Скачать %1$d видео?</item>
+    </plurals>
+    <plurals name="media_download_all_queued_n">
+        <item quantity="one">Загрузка начата для %1$d видео</item>
+        <item quantity="few">Загрузка начата для %1$d видео</item>
+        <item quantity="many">Загрузка начата для %1$d видео</item>
+        <item quantity="other">Загрузка начата для %1$d видео</item>
+    </plurals>
 </resources>

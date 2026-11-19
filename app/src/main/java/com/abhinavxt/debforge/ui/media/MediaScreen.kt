@@ -46,6 +46,9 @@ import androidx.compose.material.icons.rounded.History
 import androidx.compose.material.icons.rounded.DeleteOutline
 import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.icons.rounded.GraphicEq
+import androidx.compose.material.icons.rounded.Videocam
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.material.icons.rounded.InsertDriveFile
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Favorite
@@ -145,9 +148,21 @@ fun MediaScreen(
     LaunchedEffect(Unit) {
         viewModel.playRequests.collect { context.startActivity(PlayerActivity.intent(context, it)) }
     }
+    val msgStream = stringResource(R.string.media_stream_failed)
+    val msgBulkFailed = stringResource(R.string.media_download_all_failed)
     LaunchedEffect(Unit) {
-        viewModel.messages.collect { tell(msgMissing) }
+        viewModel.messages.collect {
+            tell(when (it) {
+                MediaMessage.FILE_MISSING -> msgMissing
+                MediaMessage.STREAM_FAILED -> msgStream
+                MediaMessage.DOWNLOAD_ALL_FAILED -> msgBulkFailed
+            })
+        }
     }
+    LaunchedEffect(Unit) {
+        viewModel.bulkQueued.collect { n -> tell(context.resources.getQuantityString(R.plurals.media_download_all_queued_n, n, n)) }
+    }
+    val bulkRunning by viewModel.bulkRunning.collectAsStateWithLifecycle()
     val openExternal: (DownloadEntity) -> Unit = { e ->
         val path = e.finalFilePath
         if (path == null || !LocalFiles.exists(path)) tell(msgMissing)
@@ -193,7 +208,12 @@ fun MediaScreen(
             onRename = viewModel::renamePlaylist,
             onDelete = viewModel::deletePlaylist,
             onAddTo = viewModel::addToPlaylist,
-            onRemoveFrom = viewModel::removeFromPlaylist
+            onRemoveFrom = viewModel::removeFromPlaylist,
+            onRemoveEntry = viewModel::removeEntry,
+            onPlayRows = viewModel::playPlaylist,
+            onOpenVideo = viewModel::openVideo,
+            onDownloadAll = viewModel::downloadAll,
+            downloadAllRunning = bulkRunning
         )
     )
     SnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter).padding(bottom = 16.dp))
@@ -237,6 +257,9 @@ internal fun MediaContent(
     var nameFor by remember { mutableStateOf<Pair<String?, List<String>>?>(null) } // (playlist id when renaming, tracks to add when creating)
     var deleteList by remember { mutableStateOf<com.abhinavxt.debforge.data.playback.Playlist?>(null) }
     val pickedList = state.lists.playlists.firstOrNull { it.id == state.audioList }
+    // The ids of YouTube items the open "Download all" confirmation asked about, so what is queued is what was shown.
+    var confirmDownloadAll by remember { mutableStateOf<List<com.abhinavxt.debforge.data.playback.PlaylistEntry.YouTube>?>(null) }
+    val hasYouTubeItems = state.lists.playlists.any { p -> p.trackIds.any { com.abhinavxt.debforge.data.playback.PlaylistEntry.isYouTubeToken(it) } }
 
     Column(Modifier.fillMaxSize()) {
         if (selecting) {
@@ -283,7 +306,7 @@ internal fun MediaContent(
         if (!state.loaded) {
             // First load pending: show nothing rather than a wrong "Nothing downloaded yet".
             Spacer(Modifier.fillMaxSize())
-        } else if (state.totalCount == 0 && !(state.kind == FileKind.Audio && state.audioList == PODCASTS_LIST)) {
+        } else if (state.totalCount == 0 && !hasYouTubeItems && !(state.kind == FileKind.Audio && state.audioList == PODCASTS_LIST)) {
             MessageState(
                 icon = Icons.Rounded.Download,
                 title = stringResource(R.string.media_empty_title),
@@ -364,22 +387,25 @@ internal fun MediaContent(
             }
 
             val items = state.current
+            // An open playlist shows its own rows (downloads and YouTube items); otherwise the download list.
+            val listRows = state.playlistRows.takeIf { state.kind == FileKind.Audio }
+            val shownCount = listRows?.size ?: items.size
             // D-pad: deleting the last row removes the focused item; the empty message holds focus rather than letting it fall to the first tab.
             // Only when the same tab, list and query had rows a moment ago (a chip or field the user is on keeps its focus).
             val view = Triple(state.kind, state.audioList, state.query)
             var hadItems by remember { mutableStateOf<Triple<*, *, *>?>(null) }
             val held = hadItems == view
-            SideEffect { hadItems = if (items.isNotEmpty()) view else null }
+            SideEffect { hadItems = if (shownCount > 0) view else null }
             if (podcastsOpen) {
                 PodcastsPane(playingId, tell)
-            } else if (items.isEmpty() && state.kind == FileKind.Audio && state.audioList != null && state.query.isBlank()) {
+            } else if (shownCount == 0 && state.kind == FileKind.Audio && state.audioList != null && state.query.isBlank()) {
                 PullableMessage(refreshing, onRefresh) { mod -> MessageState(
                     icon = Icons.Rounded.MusicNote,
                     title = stringResource(R.string.media_list_empty_title),
                     body = stringResource(R.string.media_list_empty_body),
                     modifier = mod.holdFocus(held)
                 ) }
-            } else if (items.isEmpty()) {
+            } else if (shownCount == 0) {
                 PullableMessage(refreshing, onRefresh) { mod -> MessageState(
                     icon = Icons.Rounded.Download,
                     title = stringResource(R.string.media_no_match_title),
@@ -387,6 +413,17 @@ internal fun MediaContent(
                     modifier = mod.holdFocus(held)
                 ) }
             } else {
+                if (listRows != null && pickedList != null) {
+                    PlaylistActionsRow(
+                        rows = listRows,
+                        toDownload = state.ytToDownload,
+                        running = lists.downloadAllRunning,
+                        onPlayAll = { lists.onPlayRows(listRows, 0) },
+                        onDownloadAll = { targets ->
+                            if (needsDownloadAllConfirm(targets.size)) confirmDownloadAll = targets else lists.onDownloadAll(targets)
+                        }
+                    )
+                }
                 PullToRefreshBox(isRefreshing = refreshing, onRefresh = onRefresh, modifier = Modifier.fillMaxSize()) {
                 BoxWithConstraints(Modifier.fillMaxSize()) {
                 // Audio rows: at most two columns of at least 420dp, and a single column is capped (centred) so the menu stays near the title.
@@ -401,7 +438,45 @@ internal fun MediaContent(
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     verticalArrangement = Arrangement.spacedBy(if (state.kind == FileKind.Video) 16.dp else 4.dp)
                 ) {
-                    items(items, key = { it.id }) { e ->
+                    if (listRows != null && pickedList != null) items(listRows, key = { it.key }) { row ->
+                        val m = Modifier.animateItem()
+                        val hasStreams = listRows.any { it is PlaylistRow.YouTube }
+                        when (row) {
+                            is PlaylistRow.Download -> {
+                                val e = row.entity
+                                MediaRow(
+                                    e, FileKind.Audio, e.id in state.selected, e.id == playingId, m,
+                                    onClick = {
+                                        if (selecting) onToggle(e.id)
+                                        else if (hasStreams) lists.onPlayRows(listRows, listRows.indexOf(row))
+                                        else onPlayAudio(items, items.indexOf(e))
+                                    },
+                                    onLong = { onToggle(e.id) },
+                                    onPlay = { if (hasStreams) lists.onPlayRows(listRows, listRows.indexOf(row)) else onPlayAudio(items, items.indexOf(e)) },
+                                    onDelete = { confirm = listOf(e) },
+                                    favourite = e.id in state.lists.favourites,
+                                    onFavourite = { lists.onToggleFavourite(e.id) },
+                                    onAddToPlaylist = { addTo = listOf(e.id) },
+                                    removeFrom = pickedList.name to { lists.onRemoveFrom(pickedList.id, e.id) }
+                                )
+                            }
+                            is PlaylistRow.YouTube -> YouTubeRow(
+                                row,
+                                playing = playingId == com.abhinavxt.debforge.player.youtube.YouTubeStreaming.streamPositionKey(row.videoId, audioOnly = true) ||
+                                    (row.download != null && row.download.id == playingId),
+                                modifier = m,
+                                playlistName = pickedList.name,
+                                onClick = {
+                                    if (selecting) Unit
+                                    else if (row.entry.mode == com.abhinavxt.debforge.data.playback.YouTubeMode.VIDEO) lists.onOpenVideo(row)
+                                    else lists.onPlayRows(listRows, listRows.indexOf(row))
+                                },
+                                onPlayAudio = { lists.onPlayRows(listRows, listRows.indexOf(row)) },
+                                onDownload = if (row.isDownloaded) null else ({ lists.onDownloadAll(listOf(row.entry)) }),
+                                onRemove = { lists.onRemoveEntry(pickedList.id, row.entry) }
+                            )
+                        }
+                    } else items(items, key = { it.id }) { e ->
                         val selected = e.id in state.selected
                         val m = Modifier.animateItem()
                         when (state.kind) {
@@ -459,6 +534,17 @@ internal fun MediaContent(
                 TextButton(onClick = { deleteList = null; lists.onDelete(p.id) }) { Text(stringResource(R.string.media_delete), color = cs.error) }
             },
             dismissButton = { TextButton(onClick = { deleteList = null }) { Text(stringResource(R.string.action_cancel)) } }
+        )
+    }
+
+    confirmDownloadAll?.let { targets ->
+        AlertDialog(
+            onDismissRequest = { confirmDownloadAll = null },
+            title = { Text(pluralStringResource(R.plurals.media_download_all_n, targets.size, targets.size)) },
+            confirmButton = {
+                TextButton(onClick = { confirmDownloadAll = null; lists.onDownloadAll(targets) }) { Text(stringResource(R.string.action_download)) }
+            },
+            dismissButton = { TextButton(onClick = { confirmDownloadAll = null }) { Text(stringResource(R.string.action_cancel)) } }
         )
     }
 
@@ -695,6 +781,134 @@ private fun MediaRow(
                     text = { Text(stringResource(R.string.media_delete), color = cs.error) },
                     leadingIcon = { Icon(Icons.Rounded.DeleteOutline, null, tint = cs.error) },
                     onClick = { menu = false; onDelete() }
+                )
+            }
+        }
+    }
+}
+
+/** Play all and Download all for the open playlist; every control is a plain button, so the D-pad reaches it. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun PlaylistActionsRow(
+    rows: List<PlaylistRow>,
+    toDownload: List<com.abhinavxt.debforge.data.playback.PlaylistEntry.YouTube>,
+    running: Boolean,
+    onPlayAll: () -> Unit,
+    onDownloadAll: (List<com.abhinavxt.debforge.data.playback.PlaylistEntry.YouTube>) -> Unit
+) {
+    val cs = MaterialTheme.colorScheme
+    val hasStreams = rows.any { it is PlaylistRow.YouTube }
+    FlowRow(
+        Modifier.fillMaxWidth().padding(horizontal = 12.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        verticalArrangement = Arrangement.Center
+    ) {
+        Column(Modifier.align(Alignment.CenterVertically)) {
+            TextButton(onClick = onPlayAll, modifier = Modifier.heightIn(min = 48.dp)) {
+                Icon(Icons.Rounded.PlayArrow, null)
+                Spacer(Modifier.width(8.dp))
+                Text(stringResource(R.string.media_play_all))
+            }
+            if (hasStreams) Text(
+                stringResource(R.string.media_play_all_hint), style = MaterialTheme.typography.bodySmall, color = cs.onSurfaceVariant,
+                modifier = Modifier.padding(start = 12.dp)
+            )
+        }
+        if (toDownload.isNotEmpty()) TextButton(
+            onClick = { onDownloadAll(toDownload) }, enabled = !running, modifier = Modifier.heightIn(min = 48.dp).align(Alignment.CenterVertically)
+        ) {
+            Icon(Icons.Rounded.Download, null)
+            Spacer(Modifier.width(8.dp))
+            Text(stringResource(R.string.sheet_download_all, toDownload.size))
+        }
+    }
+}
+
+/** A YouTube item of a playlist: thumbnail, title, channel, a Stream badge (unless downloaded) and its audio or video mode. */
+@Composable
+private fun YouTubeRow(
+    row: PlaylistRow.YouTube,
+    playing: Boolean,
+    modifier: Modifier,
+    playlistName: String,
+    onClick: () -> Unit,
+    onPlayAudio: () -> Unit,
+    onDownload: (() -> Unit)?,
+    onRemove: () -> Unit
+) {
+    val cs = MaterialTheme.colorScheme
+    val shape = RoundedCornerShape(16.dp)
+    var menu by remember { mutableStateOf(false) }
+    val rowFocus = remember { FocusRequester() }
+    val menuFocus = remember { FocusRequester() }
+    val video = row.entry.mode == com.abhinavxt.debforge.data.playback.YouTubeMode.VIDEO
+    Row(
+        modifier.fillMaxWidth()
+            .background(if (playing) cs.primaryContainer.copy(alpha = 0.3f) else Color.Transparent, shape)
+            .focusRequester(rowFocus)
+            .focusProperties { right = menuFocus }
+            .mediaClickable(shape, false, onClick, {})
+            .padding(start = 8.dp, top = 6.dp, bottom = 6.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(Modifier.size(width = 100.dp, height = 56.dp).clip(RoundedCornerShape(12.dp)).background(cs.surfaceContainerHigh)) {
+            AsyncImage(row.thumbnailUrl, null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
+            if (playing) Box(Modifier.fillMaxSize().background(cs.primary.copy(alpha = 0.7f)), contentAlignment = Alignment.Center) {
+                Icon(Icons.Rounded.GraphicEq, stringResource(R.string.media_playing), tint = cs.onPrimary)
+            }
+        }
+        Spacer(Modifier.width(12.dp))
+        Column(Modifier.weight(1f)) {
+            Text(
+                row.title, style = MaterialTheme.typography.titleMedium, color = if (playing) cs.primary else cs.onSurface,
+                maxLines = 1, overflow = TextOverflow.Ellipsis
+            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    if (video) Icons.Rounded.Videocam else Icons.Rounded.MusicNote,
+                    stringResource(if (video) R.string.media_yt_mode_video else R.string.media_yt_mode_audio),
+                    tint = cs.onSurfaceVariant, modifier = Modifier.size(16.dp)
+                )
+                row.channel?.let {
+                    Text(
+                        it, style = MaterialTheme.typography.bodyMedium, color = cs.onSurfaceVariant, maxLines = 1,
+                        overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(start = 4.dp, end = 8.dp).weight(1f, fill = false)
+                    )
+                }
+                if (row.isDownloaded) Icon(
+                    Icons.Rounded.CheckCircle, stringResource(R.string.media_yt_downloaded), tint = cs.primary,
+                    modifier = Modifier.padding(start = 4.dp).size(16.dp)
+                ) else Text(
+                    stringResource(R.string.media_stream_badge), style = MaterialTheme.typography.labelSmall,
+                    color = cs.onSecondaryContainer,
+                    modifier = Modifier.padding(start = 4.dp).background(cs.secondaryContainer, RoundedCornerShape(6.dp)).padding(horizontal = 6.dp, vertical = 2.dp)
+                )
+            }
+        }
+        Box {
+            val menuSource = remember { MutableInteractionSource() }
+            IconButton(
+                onClick = { menu = true },
+                modifier = Modifier.focusRequester(menuFocus).focusProperties { left = rowFocus }.focusRing(menuSource, CircleShape),
+                interactionSource = menuSource
+            ) { Icon(Icons.Rounded.MoreVert, stringResource(R.string.media_more)) }
+            DropdownMenu(menu, { menu = false }) {
+                DropdownMenuItem(
+                    text = { Text(stringResource(if (video) R.string.media_play_as_audio else R.string.action_play)) },
+                    leadingIcon = { Icon(Icons.Rounded.MusicNote, null) },
+                    onClick = { menu = false; onPlayAudio() }
+                )
+                if (onDownload != null) DropdownMenuItem(
+                    text = { Text(stringResource(R.string.action_download)) },
+                    leadingIcon = { Icon(Icons.Rounded.Download, null) },
+                    onClick = { menu = false; onDownload() }
+                )
+                // Removes the item from this playlist only; downloaded files are never touched here.
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.action_remove_from, playlistName)) },
+                    leadingIcon = { Icon(Icons.Rounded.Close, null) },
+                    onClick = { menu = false; onRemove() }
                 )
             }
         }

@@ -1108,4 +1108,21 @@
     <string name="set_import_local">Andere Dateien im Download-Ordner anzeigen</string>
     <string name="set_import_local_detail">Audio und Video, die Sie selbst in den Ordner legen, erscheinen unter Medien. Dateien werden nie verschoben oder kopiert.</string>
     <string name="media_refresh">Aktualisieren</string>
+    <string name="media_play_all">Alle abspielen</string>
+    <string name="media_play_all_hint">Videos werden als Audio abgespielt</string>
+    <string name="media_stream_badge">Stream</string>
+    <string name="media_yt_mode_audio">Audio</string>
+    <string name="media_yt_mode_video">Video</string>
+    <string name="media_yt_downloaded">Heruntergeladen</string>
+    <string name="media_play_as_audio">Als Audio abspielen</string>
+    <string name="media_stream_failed">Das Video konnte nicht geöffnet werden</string>
+    <string name="media_download_all_failed">Die Downloads konnten nicht gestartet werden</string>
+    <plurals name="media_download_all_n">
+        <item quantity="one">%1$d Video herunterladen?</item>
+        <item quantity="other">%1$d Videos herunterladen?</item>
+    </plurals>
+    <plurals name="media_download_all_queued_n">
+        <item quantity="one">Download für %1$d Video gestartet</item>
+        <item quantity="other">Download für %1$d Videos gestartet</item>
+    </plurals>
 </resources>

@@ -1161,4 +1161,23 @@
     <string name="set_import_local">Mostrar otros archivos de la carpeta de descargas</string>
     <string name="set_import_local_detail">El audio y el vídeo que pongas tú en la carpeta aparecen en Multimedia. Los archivos nunca se mueven ni se copian.</string>
     <string name="media_refresh">Actualizar</string>
+    <string name="media_play_all">Reproducir todo</string>
+    <string name="media_play_all_hint">Los vídeos se reproducen como audio</string>
+    <string name="media_stream_badge">Streaming</string>
+    <string name="media_yt_mode_audio">Audio</string>
+    <string name="media_yt_mode_video">Vídeo</string>
+    <string name="media_yt_downloaded">Descargado</string>
+    <string name="media_play_as_audio">Reproducir como audio</string>
+    <string name="media_stream_failed">No se pudo abrir el vídeo</string>
+    <string name="media_download_all_failed">No se pudieron iniciar las descargas</string>
+    <plurals name="media_download_all_n">
+        <item quantity="one">¿Descargar %1$d vídeo?</item>
+        <item quantity="many">¿Descargar %1$d de vídeos?</item>
+        <item quantity="other">¿Descargar %1$d vídeos?</item>
+    </plurals>
+    <plurals name="media_download_all_queued_n">
+        <item quantity="one">Descarga iniciada para %1$d vídeo</item>
+        <item quantity="many">Descarga iniciada para %1$d de vídeos</item>
+        <item quantity="other">Descarga iniciada para %1$d vídeos</item>
+    </plurals>
 </resources>

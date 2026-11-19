@@ -1108,4 +1108,21 @@
     <string name="set_import_local">డౌన్‌లోడ్ ఫోల్డర్‌లోని ఇతర ఫైళ్లను చూపించు</string>
     <string name="set_import_local_detail">మీరే ఫోల్డర్‌లో ఉంచిన ఆడియో, వీడియో మీడియాలో కనిపిస్తాయి. ఫైళ్లు ఎప్పుడూ తరలించబడవు లేదా కాపీ చేయబడవు.</string>
     <string name="media_refresh">రిఫ్రెష్ చేయి</string>
+    <string name="media_play_all">అన్నీ ప్లే చేయి</string>
+    <string name="media_play_all_hint">వీడియోలు ఆడియోగా ప్లే అవుతాయి</string>
+    <string name="media_stream_badge">స్ట్రీమ్</string>
+    <string name="media_yt_mode_audio">ఆడియో</string>
+    <string name="media_yt_mode_video">వీడియో</string>
+    <string name="media_yt_downloaded">డౌన్‌లోడ్ అయింది</string>
+    <string name="media_play_as_audio">ఆడియోగా ప్లే చేయి</string>
+    <string name="media_stream_failed">వీడియోను తెరవలేకపోయాం</string>
+    <string name="media_download_all_failed">డౌన్‌లోడ్‌లను ప్రారంభించలేకపోయాం</string>
+    <plurals name="media_download_all_n">
+        <item quantity="one">%1$d వీడియోను డౌన్‌లోడ్ చేయాలా?</item>
+        <item quantity="other">%1$d వీడియోలను డౌన్‌లోడ్ చేయాలా?</item>
+    </plurals>
+    <plurals name="media_download_all_queued_n">
+        <item quantity="one">%1$d వీడియో డౌన్‌లోడ్ ప్రారంభమైంది</item>
+        <item quantity="other">%1$d వీడియోల డౌన్‌లోడ్ ప్రారంభమైంది</item>
+    </plurals>
 </resources>

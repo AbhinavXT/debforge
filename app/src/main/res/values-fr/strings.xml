@@ -1161,4 +1161,23 @@
     <string name="set_import_local">Afficher les autres fichiers du dossier de téléchargement</string>
     <string name="set_import_local_detail">Les fichiers audio et vidéo que vous placez vous-même dans le dossier apparaissent dans Médias. Les fichiers ne sont jamais déplacés ni copiés.</string>
     <string name="media_refresh">Actualiser</string>
+    <string name="media_play_all">Tout lire</string>
+    <string name="media_play_all_hint">Les vidéos sont lues en audio</string>
+    <string name="media_stream_badge">Streaming</string>
+    <string name="media_yt_mode_audio">Audio</string>
+    <string name="media_yt_mode_video">Vidéo</string>
+    <string name="media_yt_downloaded">Téléchargé</string>
+    <string name="media_play_as_audio">Lire en audio</string>
+    <string name="media_stream_failed">Impossible d\'ouvrir la vidéo</string>
+    <string name="media_download_all_failed">Impossible de lancer les téléchargements</string>
+    <plurals name="media_download_all_n">
+        <item quantity="one">Télécharger %1$d vidéo ?</item>
+        <item quantity="many">Télécharger %1$d de vidéos ?</item>
+        <item quantity="other">Télécharger %1$d vidéos ?</item>
+    </plurals>
+    <plurals name="media_download_all_queued_n">
+        <item quantity="one">Téléchargement lancé pour %1$d vidéo</item>
+        <item quantity="many">Téléchargement lancé pour %1$d de vidéos</item>
+        <item quantity="other">Téléchargement lancé pour %1$d vidéos</item>
+    </plurals>
 </resources>

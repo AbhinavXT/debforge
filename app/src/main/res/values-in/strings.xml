@@ -1055,4 +1055,19 @@
     <string name="set_import_local">Tampilkan file lain di folder unduhan</string>
     <string name="set_import_local_detail">Audio dan video yang Anda taruh sendiri di folder muncul di Media. File tidak pernah dipindahkan atau disalin.</string>
     <string name="media_refresh">Segarkan</string>
+    <string name="media_play_all">Putar semua</string>
+    <string name="media_play_all_hint">Video diputar sebagai audio</string>
+    <string name="media_stream_badge">Stream</string>
+    <string name="media_yt_mode_audio">Audio</string>
+    <string name="media_yt_mode_video">Video</string>
+    <string name="media_yt_downloaded">Terunduh</string>
+    <string name="media_play_as_audio">Putar sebagai audio</string>
+    <string name="media_stream_failed">Tidak dapat membuka video</string>
+    <string name="media_download_all_failed">Tidak dapat memulai unduhan</string>
+    <plurals name="media_download_all_n">
+        <item quantity="other">Unduh %1$d video?</item>
+    </plurals>
+    <plurals name="media_download_all_queued_n">
+        <item quantity="other">Unduhan dimulai untuk %1$d video</item>
+    </plurals>
 </resources>

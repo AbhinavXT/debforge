@@ -1055,4 +1055,19 @@
     <string name="set_import_local">显示下载文件夹中的其他文件</string>
     <string name="set_import_local_detail">你自己放入文件夹的音频和视频会显示在媒体中。文件绝不会被移动或复制。</string>
     <string name="media_refresh">刷新</string>
+    <string name="media_play_all">全部播放</string>
+    <string name="media_play_all_hint">视频将以音频播放</string>
+    <string name="media_stream_badge">在线</string>
+    <string name="media_yt_mode_audio">音频</string>
+    <string name="media_yt_mode_video">视频</string>
+    <string name="media_yt_downloaded">已下载</string>
+    <string name="media_play_as_audio">以音频播放</string>
+    <string name="media_stream_failed">无法打开视频</string>
+    <string name="media_download_all_failed">无法开始下载</string>
+    <plurals name="media_download_all_n">
+        <item quantity="other">下载 %1$d 个视频？</item>
+    </plurals>
+    <plurals name="media_download_all_queued_n">
+        <item quantity="other">已开始下载 %1$d 个视频</item>
+    </plurals>
 </resources>

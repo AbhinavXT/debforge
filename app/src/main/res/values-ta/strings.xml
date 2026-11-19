@@ -1108,4 +1108,21 @@
     <string name="set_import_local">பதிவிறக்க கோப்புறையில் உள்ள பிற கோப்புகளைக் காட்டு</string>
     <string name="set_import_local_detail">நீங்களே கோப்புறையில் வைக்கும் ஆடியோ மற்றும் வீடியோ மீடியாவில் தோன்றும். கோப்புகள் நகர்த்தப்படவோ நகலெடுக்கப்படவோ மாட்டா.</string>
     <string name="media_refresh">புதுப்பி</string>
+    <string name="media_play_all">அனைத்தையும் இயக்கு</string>
+    <string name="media_play_all_hint">வீடியோக்கள் ஆடியோவாக இயங்கும்</string>
+    <string name="media_stream_badge">ஸ்ட்ரீம்</string>
+    <string name="media_yt_mode_audio">ஆடியோ</string>
+    <string name="media_yt_mode_video">வீடியோ</string>
+    <string name="media_yt_downloaded">பதிவிறக்கப்பட்டது</string>
+    <string name="media_play_as_audio">ஆடியோவாக இயக்கு</string>
+    <string name="media_stream_failed">வீடியோவைத் திறக்க முடியவில்லை</string>
+    <string name="media_download_all_failed">பதிவிறக்கங்களைத் தொடங்க முடியவில்லை</string>
+    <plurals name="media_download_all_n">
+        <item quantity="one">%1$d வீடியோவைப் பதிவிறக்கவா?</item>
+        <item quantity="other">%1$d வீடியோக்களைப் பதிவிறக்கவா?</item>
+    </plurals>
+    <plurals name="media_download_all_queued_n">
+        <item quantity="one">%1$d வீடியோவின் பதிவிறக்கம் தொடங்கியது</item>
+        <item quantity="other">%1$d வீடியோக்களின் பதிவிறக்கம் தொடங்கியது</item>
+    </plurals>
 </resources>

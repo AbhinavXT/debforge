@@ -1108,4 +1108,21 @@
     <string name="set_import_local">डाउनलोड फ़ोल्डर की अन्य फ़ाइलें दिखाएँ</string>
     <string name="set_import_local_detail">आप जो ऑडियो और वीडियो खुद फ़ोल्डर में रखते हैं, वे मीडिया में दिखते हैं। फ़ाइलें कभी हिलाई या कॉपी नहीं की जातीं।</string>
     <string name="media_refresh">रीफ़्रेश करें</string>
+    <string name="media_play_all">सभी चलाएं</string>
+    <string name="media_play_all_hint">वीडियो ऑडियो के रूप में चलते हैं</string>
+    <string name="media_stream_badge">स्ट्रीम</string>
+    <string name="media_yt_mode_audio">ऑडियो</string>
+    <string name="media_yt_mode_video">वीडियो</string>
+    <string name="media_yt_downloaded">डाउनलोड हो गया</string>
+    <string name="media_play_as_audio">ऑडियो के रूप में चलाएं</string>
+    <string name="media_stream_failed">वीडियो नहीं खुल सका</string>
+    <string name="media_download_all_failed">डाउनलोड शुरू नहीं हो सके</string>
+    <plurals name="media_download_all_n">
+        <item quantity="one">%1$d वीडियो डाउनलोड करें?</item>
+        <item quantity="other">%1$d वीडियो डाउनलोड करें?</item>
+    </plurals>
+    <plurals name="media_download_all_queued_n">
+        <item quantity="one">%1$d वीडियो का डाउनलोड शुरू हुआ</item>
+        <item quantity="other">%1$d वीडियो का डाउनलोड शुरू हुआ</item>
+    </plurals>
 </resources>

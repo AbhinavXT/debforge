@@ -5,6 +5,20 @@ import androidx.lifecycle.viewModelScope
 import com.abhinavxt.debforge.data.local.DownloadDao
 import com.abhinavxt.debforge.data.playback.AudioLists
 import com.abhinavxt.debforge.data.playback.AudioListsState
+import com.abhinavxt.debforge.data.playback.PlaylistEntry
+import com.abhinavxt.debforge.data.youtube.YouTubeResolver
+import com.abhinavxt.debforge.domain.YouTubeFormats
+import com.abhinavxt.debforge.domain.YouTubeLinks
+import com.abhinavxt.debforge.download.youtube.EnqueueMode
+import com.abhinavxt.debforge.download.youtube.EnqueueResult
+import com.abhinavxt.debforge.download.youtube.YouTubeEnqueuer
+import com.abhinavxt.debforge.download.youtube.choiceForMode
+import com.abhinavxt.debforge.player.audioTrackFor
+import com.abhinavxt.debforge.ui.browse.youTubePlayRequest
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.first
 import com.abhinavxt.debforge.data.local.DownloadEntity
 import com.abhinavxt.debforge.domain.DownloadState
 import com.abhinavxt.debforge.domain.FileKind
@@ -49,7 +63,11 @@ data class MediaUiState(
     /** Number of audio tracks matching the search, before the list pick (what the tab badge shows). */
     val audioTotal: Int = 0,
     /** False until Room has emitted the first time, so the screen does not flash its empty message. */
-    val loaded: Boolean = true
+    val loaded: Boolean = true,
+    /** A playlist is open: its rows, downloads and YouTube items in playlist order. Null otherwise. */
+    val playlistRows: List<PlaylistRow>? = null,
+    /** The open playlist's YouTube items that "Download all" would queue. */
+    val ytToDownload: List<PlaylistEntry.YouTube> = emptyList()
 ) {
     /** Tab badge count: the audio badge ignores the list pick. */
     fun count(k: FileKind): Int = shown[k].orEmpty().size.let { if (k == FileKind.Audio) maxOf(it, audioTotal) else it }
@@ -57,7 +75,7 @@ data class MediaUiState(
 }
 
 /** Why a tap on a file did nothing. */
-enum class MediaMessage { FILE_MISSING }
+enum class MediaMessage { FILE_MISSING, STREAM_FAILED, DOWNLOAD_ALL_FAILED }
 
 /** The selection restricted to rows that are still on screen, so the count always matches what an action touches. */
 internal fun pruneSelection(selected: Set<String>, visibleIds: Collection<String>): Set<String> =
@@ -82,7 +100,10 @@ class MediaViewModel @Inject constructor(
     private val controller: DownloadController,
     private val localPlayback: LocalPlayback,
     private val audioPlayer: AudioPlayer,
-    settings: SettingsStore,
+    private val settings: SettingsStore,
+    @ApplicationContext private val context: android.content.Context,
+    private val resolver: YouTubeResolver,
+    private val ytEnqueuer: YouTubeEnqueuer,
     private val audioLists: AudioLists,
     private val localImporter: com.abhinavxt.debforge.download.LocalImporter,
     playbackPositions: com.abhinavxt.debforge.data.playback.PlaybackPositions
@@ -142,10 +163,15 @@ class MediaViewModel @Inject constructor(
         val titleLower = title.lowercase()
     }
 
+    /** Every YouTube download of any state, for the "Download all" selection. */
+    private val ytDownloads = dao.observeAll()
+        .map { all -> all.mapNotNull { e -> YouTubeLinks.parseSourceRef(e.sourceRef)?.let { YouTubeDownloadState(it.videoId, e.state) } } }
+        .distinctUntilChanged()
+
     private val completed = dao.observeCompleted().distinctUntilChanged()
         .map { rows -> rows.map { Row(it, kindOf(it.filename), it.displayTitle()) } }
 
-    val state: StateFlow<MediaUiState> = combine(completed, ui, activeSummary, audioLists.state) { rows, u, active, lists ->
+    val state: StateFlow<MediaUiState> = combine(completed, ui, activeSummary, audioLists.state, ytDownloads) { rows, u, active, lists, ytDl ->
         val q = u.query.trim()
         val byKind = rows.groupBy { it.kind }
         val shown = FileKind.entries.associateWith { kind ->
@@ -159,7 +185,13 @@ class MediaViewModel @Inject constructor(
             if (u.audioList != null) m[FileKind.Audio] = audioListView(m[FileKind.Audio].orEmpty(), lists, u.audioList)
         }
         val selected = pruneSelection(u.selected, view[u.kind].orEmpty().map { it.id })
-        MediaUiState(view, rows.size, u.query, u.sort, u.kind, selected, active, u.audioList, lists, audioMatching)
+        val typed = u.audioList?.let { pick -> lists.typedPlaylists().firstOrNull { it.id == pick } }
+        val playlistRows = typed?.let {
+            val locals = YouTubeLocals.of(rows.map { r -> r.entity })
+            playlistRows(it.entries, shown[FileKind.Audio].orEmpty().associateBy { e -> e.id }, lists.ytMeta, locals, u.query)
+        }
+        val toDownload = typed?.let { youTubeToDownload(it.entries, ytDl) }.orEmpty()
+        MediaUiState(view, rows.size, u.query, u.sort, u.kind, selected, active, u.audioList, lists, audioMatching, true, playlistRows, toDownload)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), MediaUiState(loaded = false))
 
     private fun comparator(sort: SortOrder): Comparator<Row> = when (sort) {
@@ -191,6 +223,66 @@ class MediaViewModel @Inject constructor(
     }
     fun addToPlaylist(listId: String, ids: Collection<String>) { viewModelScope.launch { audioLists.add(listId, ids) } }
     fun removeFromPlaylist(listId: String, id: String) { viewModelScope.launch { audioLists.remove(listId, id) } }
+
+    /** Removes one entry from a playlist. Only the playlist changes: no file is touched. */
+    fun removeEntry(listId: String, entry: PlaylistEntry) { viewModelScope.launch { audioLists.removeEntry(listId, entry) } }
+
+    /** Plays the open playlist as audio from [startRow]: downloads and YouTube items through one queue. */
+    fun playPlaylist(rows: List<PlaylistRow>, startRow: Int) {
+        val (entries, start) = mixedQueueFor(rows, startRow) { audioTrackFor(context, it) }
+        if (entries.isNotEmpty()) audioPlayer.playMixed(entries, start)
+    }
+
+    private var videoJob: Job? = null
+
+    /** Opens a video-mode item as video: its local video download, else streamed the way the YouTube tab does. */
+    fun openVideo(row: PlaylistRow.YouTube) {
+        row.videoDownload?.let { play(it); return }
+        if (videoJob?.isActive == true) return // double tap
+        videoJob = viewModelScope.launch {
+            val request = try {
+                val video = resolver.resolve(row.videoId)
+                val choices = YouTubeFormats.choices(video.streams, android.os.Build.VERSION.SDK_INT, video.durationSec)
+                choiceForMode(choices, EnqueueMode.VIDEO, settings.youTubeQualityFlow.first())?.let { youTubePlayRequest(video, it) }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                null
+            }
+            if (request != null) _playRequests.send(request) else _messages.send(MediaMessage.STREAM_FAILED)
+        }
+    }
+
+    private val _bulkRunning = MutableStateFlow(false)
+    /** True while a "Download all" batch is being queued. */
+    val bulkRunning: StateFlow<Boolean> = _bulkRunning
+
+    private val _bulkQueued = Channel<Int>(Channel.BUFFERED)
+    /** How many items a "Download all" actually queued. */
+    val bulkQueued = _bulkQueued.receiveAsFlow()
+
+    /** Queues [items] one by one, each in its own mode at the default quality. */
+    fun downloadAll(items: List<PlaylistEntry.YouTube>) {
+        if (items.isEmpty() || !_bulkRunning.compareAndSet(expect = false, update = true)) return
+        viewModelScope.launch {
+            try {
+                var queued = 0
+                for (item in items) {
+                    val result = try {
+                        ytEnqueuer.enqueue(item.videoId, item.enqueueMode())
+                    } catch (e: CancellationException) {
+                        throw e
+                    } catch (e: Exception) {
+                        EnqueueResult.FAILED
+                    }
+                    if (result == EnqueueResult.QUEUED) queued++
+                }
+                if (queued > 0) _bulkQueued.send(queued) else _messages.send(MediaMessage.DOWNLOAD_ALL_FAILED)
+            } finally {
+                _bulkRunning.value = false
+            }
+        }
+    }
 
     fun toggleSelected(id: String) = ui.update { it.copy(selected = if (id in it.selected) it.selected - id else it.selected + id) }
     fun selectAll() = ui.update { u -> u.copy(selected = state.value.current.map { it.id }.toSet()) }

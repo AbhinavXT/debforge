@@ -32,7 +32,12 @@ class AudioListActions(
     val onRename: (String, String) -> Unit = { _, _ -> },
     val onDelete: (String) -> Unit = {},
     val onAddTo: (String, List<String>) -> Unit = { _, _ -> },
-    val onRemoveFrom: (String, String) -> Unit = { _, _ -> }
+    val onRemoveFrom: (String, String) -> Unit = { _, _ -> },
+    val onRemoveEntry: (String, com.abhinavxt.debforge.data.playback.PlaylistEntry) -> Unit = { _, _ -> },
+    val onPlayRows: (List<PlaylistRow>, Int) -> Unit = { _, _ -> },
+    val onOpenVideo: (PlaylistRow.YouTube) -> Unit = {},
+    val onDownloadAll: (List<com.abhinavxt.debforge.data.playback.PlaylistEntry.YouTube>) -> Unit = {},
+    val downloadAllRunning: Boolean = false
 )
 
 /** Single text field for creating or renaming a playlist. Save is off while the name is blank. */
