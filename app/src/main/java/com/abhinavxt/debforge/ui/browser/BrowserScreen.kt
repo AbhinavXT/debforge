@@ -132,6 +132,7 @@ import com.abhinavxt.debforge.ui.browse.formatSize
 fun BrowserScreen(onMagnet: (String) -> Unit, onOpenDownloads: () -> Unit, onOpenSettings: () -> Unit, activeDownloads: Int, viewModel: BrowserViewModel = hiltViewModel()) {
     val videos by viewModel.videos.collectAsStateWithLifecycle()
     val adBlock by viewModel.adBlock.collectAsStateWithLifecycle()
+    val ytBusy by viewModel.ytBusy.collectAsStateWithLifecycle()
     var showAdBlock by remember { mutableStateOf(false) }
     val adHiding = remember { AdHiding(viewModel::hidingCss) }
     val snackbar = remember { SnackbarHostState() }
@@ -179,8 +180,12 @@ fun BrowserScreen(onMagnet: (String) -> Unit, onOpenDownloads: () -> Unit, onOpe
             Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 if (onYouTubeVideo) {
                     ExtendedFloatingActionButton(
-                        onClick = { showYouTube = true },
-                        icon = { Icon(Icons.Filled.Download, contentDescription = null) },
+                        // Busy: the resolve is running; a second tap does nothing.
+                        onClick = { if (!ytBusy) showYouTube = true },
+                        icon = {
+                            if (ytBusy) CircularProgressIndicator(Modifier.size(24.dp), strokeWidth = 2.dp)
+                            else Icon(Icons.Filled.Download, contentDescription = null)
+                        },
                         text = { Text(stringResource(R.string.browser_yt_download)) }
                     )
                 }

@@ -18,23 +18,34 @@ object YouTubeLinks {
         mediaUrl?.takeIf { videoId(it) != null } ?: "https://www.youtube.com/watch?v=$itemKey"
 
     private val pageHosts = setOf("youtube.com", "www.youtube.com", "m.youtube.com", "music.youtube.com")
+    private val idOnly = Regex("[A-Za-z0-9_-]{11}")
+    private val parts = Regex("^https?://([^/?#]*)([^?#]*)(?:\\?([^#]*))?", RegexOption.IGNORE_CASE)
 
     /**
-     * Whether a browser page at [url] shows one video: a watch page (a `list=` beside the `v=` is still that video),
-     * a short, or a youtu.be link. Channel, playlist-only, search and other sites' pages are not.
+     * The id of the one video a browser page at [url] shows, or null: a watch page (its `v=` param; a `list=` beside
+     * it is still that video), `/shorts/<id>`, `/live/<id>`, or a youtu.be link. Channel, playlist-only, search and
+     * other sites' pages are not. The id is read only from those places, never from elsewhere in the URL.
+     * Parsed by hand so a stray `|` or space (which java.net.URI rejects) does not hide the button.
      */
-    fun isVideoPage(url: String): Boolean {
-        val uri = try { java.net.URI(url.trim()) } catch (e: java.net.URISyntaxException) { return false }
-        if (uri.scheme?.lowercase() !in setOf("http", "https")) return false
-        val host = uri.host?.lowercase() ?: return false
-        val path = uri.rawPath.orEmpty()
-        val onPath = when (host) {
-            "youtu.be" -> path.length > 1
-            in pageHosts -> path == "/watch" || path.startsWith("/shorts/")
-            else -> false
+    fun pageVideoId(url: String): String? {
+        val m = parts.find(url.trim()) ?: return null
+        val host = m.groupValues[1].substringAfterLast('@').substringBefore(':').lowercase()
+        val path = m.groupValues[2]
+        val query = m.groupValues[3]
+        val id = when (host) {
+            "youtu.be" -> path.removePrefix("/").substringBefore('/')
+            in pageHosts -> when {
+                path == "/watch" -> query.split('&').firstOrNull { it.startsWith("v=") }?.removePrefix("v=")
+                path.startsWith("/shorts/") -> path.removePrefix("/shorts/").substringBefore('/')
+                path.startsWith("/live/") -> path.removePrefix("/live/").substringBefore('/')
+                else -> null
+            }
+            else -> null
         }
-        return onPath && videoId(url) != null
+        return id?.takeIf { idOnly.matches(it) }
     }
+
+    fun isVideoPage(url: String): Boolean = pageVideoId(url) != null
 
     fun isPlaylistOnly(text: String): Boolean = videoId(text) == null && playlist.containsMatchIn(text)
 

@@ -98,6 +98,9 @@ class YouTubeLinksTest {
             "https://music.youtube.com/watch?v=$id",
             "https://youtu.be/$id?si=x",
             "https://www.youtube.com/shorts/$id",
+            "https://www.youtube.com/live/$id?feature=share",
+            "https://www.youtube.com/watch?v=$id&pp=a|b",
+            "https://www.youtube.com/watch?v=$id&q=two words",
         ).forEach { assertTrue(it, YouTubeLinks.isVideoPage(it)) }
     }
 
@@ -108,11 +111,34 @@ class YouTubeLinksTest {
             "https://www.youtube.com/channel/UCabcdefghijklmnopqrstuv",
             "https://www.youtube.com/playlist?list=PL123",
             "https://www.youtube.com/watch?list=PL123",
+            "https://www.youtube.com/watch?list=X&u=youtu.be/AAAAAAAAAAA",
+            "https://www.youtube.com/results?search_query=youtu.be/AAAAAAAAAAA",
+            "https://www.youtube.com/embed/$id",
+            "https://youtu.be/",
             "https://www.youtube.com/results?search_query=$id",
             "https://example.com/watch?v=$id",
             "https://example.com/?u=youtube.com/watch?v=$id",
             "https://duckduckgo.com/",
             "not a url",
         ).forEach { assertFalse(it, YouTubeLinks.isVideoPage(it)) }
+    }
+
+    @Test fun pageVideoIdComesFromTheRightPlace() {
+        assertEquals(id, YouTubeLinks.pageVideoId("https://www.youtube.com/watch?list=PL1&v=$id&u=youtu.be/AAAAAAAAAAA"))
+        assertEquals(id, YouTubeLinks.pageVideoId("https://youtu.be/$id?si=x"))
+        assertEquals(id, YouTubeLinks.pageVideoId("https://www.youtube.com/live/$id"))
+        assertEquals(id, YouTubeLinks.pageVideoId("https://www.youtube.com/watch?pp=a|b&v=$id#t=1"))
+        assertEquals(id, YouTubeLinks.pageVideoId("  https://m.youtube.com/shorts/$id/ "))
+        assertNull(YouTubeLinks.pageVideoId("https://www.youtube.com/watch?x=v=$id"))
+        assertNull(YouTubeLinks.pageVideoId("https://www.youtube.com/watch?v=short"))
+    }
+
+    @Test fun pageVideoIdResolvesToTheSameVideoThroughWatchUrl() {
+        listOf(
+            "https://www.youtube.com/watch?list=PL1&v=$id",
+            "https://youtu.be/$id?si=x",
+            "https://www.youtube.com/live/$id?feature=share",
+            "https://www.youtube.com/watch?v=$id&pp=a|b",
+        ).forEach { assertEquals(it, id, YouTubeLinks.videoId(YouTubeLinks.watchUrl(YouTubeLinks.pageVideoId(it)!!))) }
     }
 }

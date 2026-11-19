@@ -14,6 +14,7 @@ import com.abhinavxt.debforge.domain.DownloadItem
 import com.abhinavxt.debforge.domain.PageVideos
 import com.abhinavxt.debforge.domain.adblock.PageFlags
 import com.abhinavxt.debforge.domain.adblock.RequestType
+import com.abhinavxt.debforge.domain.YouTubeLinks
 import com.abhinavxt.debforge.download.DownloadController
 import com.abhinavxt.debforge.download.StorageAccess
 import com.abhinavxt.debforge.download.youtube.EnqueueMode
@@ -225,34 +226,48 @@ class BrowserViewModel @Inject constructor(
         viewModelScope.launch { queue(listOf(directLinks.audioOf(video))) }
     }
 
+    private val _ytBusy = MutableStateFlow(false)
+    /** True while a YouTube download is being resolved and queued; a second tap meanwhile does nothing. */
+    val ytBusy: StateFlow<Boolean> = _ytBusy.asStateFlow()
+
     /** Downloads the YouTube video on the page at [pageUrl] as audio or video, at the default quality. */
     fun downloadYouTube(pageUrl: String, audio: Boolean) {
+        val id = YouTubeLinks.pageVideoId(pageUrl) ?: return
+        if (!_ytBusy.compareAndSet(false, true)) return
         viewModelScope.launch {
-            if (!StorageAccess.canWrite(context, settings.downloadDirFlow.first())) {
-                _messages.send(context.getString(R.string.add_needs_storage))
-                return@launch
+            try {
+                downloadYouTubeNow(id, audio)
+            } finally {
+                _ytBusy.value = false
             }
-            val msg = try {
-                when (youTube.enqueue(pageUrl, if (audio) EnqueueMode.AUDIO else EnqueueMode.VIDEO, foreground = true)) {
-                    EnqueueResult.QUEUED -> R.string.yt_queued
-                    EnqueueResult.ALREADY_QUEUED -> R.string.yt_already_queued
-                    EnqueueResult.FAILED -> R.string.yt_err_queue
-                    EnqueueResult.NO_FORMAT -> R.string.yt_err_unavailable
-                }
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                when (errorKind(e)) {
-                    YouTubeErrorKind.NOT_LINK -> R.string.yt_err_not_link
-                    YouTubeErrorKind.PLAYLIST -> R.string.yt_err_playlist
-                    YouTubeErrorKind.SIGN_IN -> R.string.yt_err_sign_in
-                    YouTubeErrorKind.UNAVAILABLE -> R.string.yt_err_unavailable
-                    YouTubeErrorKind.NETWORK -> R.string.yt_err_network
-                    YouTubeErrorKind.GENERIC -> R.string.yt_err_generic
-                }
-            }
-            _messages.send(context.getString(msg))
         }
+    }
+
+    private suspend fun downloadYouTubeNow(id: String, audio: Boolean) {
+        if (!StorageAccess.canWrite(context, settings.downloadDirFlow.first())) {
+            _messages.send(context.getString(R.string.add_needs_storage))
+            return
+        }
+        val msg = try {
+            when (youTube.enqueue(YouTubeLinks.watchUrl(id), if (audio) EnqueueMode.AUDIO else EnqueueMode.VIDEO, foreground = true)) {
+                EnqueueResult.QUEUED -> R.string.yt_queued
+                EnqueueResult.ALREADY_QUEUED -> R.string.yt_already_queued
+                EnqueueResult.FAILED -> R.string.yt_err_queue
+                EnqueueResult.NO_FORMAT -> R.string.yt_err_unavailable
+            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            when (errorKind(e)) {
+                YouTubeErrorKind.NOT_LINK -> R.string.yt_err_not_link
+                YouTubeErrorKind.PLAYLIST -> R.string.yt_err_playlist
+                YouTubeErrorKind.SIGN_IN -> R.string.yt_err_sign_in
+                YouTubeErrorKind.UNAVAILABLE -> R.string.yt_err_unavailable
+                YouTubeErrorKind.NETWORK -> R.string.yt_err_network
+                YouTubeErrorKind.GENERIC -> R.string.yt_err_generic
+            }
+        }
+        _messages.send(context.getString(msg))
     }
 
     private suspend fun queue(files: List<DownloadItem>) {
