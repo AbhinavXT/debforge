@@ -456,7 +456,7 @@
         <item quantity="other">%d episode baru</item>
     </plurals>
     <string name="notif_sub_one">Unggahan baru: %1$s</string>
-    <string name="notif_sub_body">Dari kanal yang Anda ikuti.</string>
+    <string name="notif_sub_body">Dari kanal dan podcast yang Anda ikuti.</string>
     <plurals name="notif_sub_many">
         <item quantity="other">%d unggahan baru</item>
     </plurals>
@@ -997,4 +997,8 @@
         <item quantity="other">Sekarang mengikuti %d kanal dan podcast dari cadangan.</item>
     </plurals>
     <string name="about_sponsorblock_credit">Data segmen sponsor dari SponsorBlock (sponsor.ajay.app), berlisensi CC BY-NC-SA 4.0</string>
+    <string name="podcast_err_not_feed">Tautan ini bukan feed podcast.</string>
+    <string name="podcast_err_too_big">Feed ini terlalu besar untuk diikuti (lebih dari 15 MB).</string>
+    <string name="podcast_err_network">Tidak dapat menjangkau feed. Periksa koneksi Anda lalu coba lagi.</string>
+    <string name="podcast_err_http">Server feed menjawab dengan galat %1$d.</string>
 </resources>

@@ -502,7 +502,7 @@
         <item quantity="other">%d nouveaux épisodes</item>
     </plurals>
     <string name="notif_sub_one">Nouvelle vidéo : %1$s</string>
-    <string name="notif_sub_body">Des chaînes que vous suivez.</string>
+    <string name="notif_sub_body">Des chaînes et podcasts que vous suivez.</string>
     <plurals name="notif_sub_many">
         <item quantity="one">%d nouvelle vidéo</item>
         <item quantity="many">%d nouvelles vidéos</item>
@@ -1097,4 +1097,8 @@
         <item quantity="other">%d chaînes et podcasts de la sauvegarde sont maintenant suivis.</item>
     </plurals>
     <string name="about_sponsorblock_credit">Données de segments sponsorisés de SponsorBlock (sponsor.ajay.app), sous licence CC BY-NC-SA 4.0</string>
+    <string name="podcast_err_not_feed">Ce lien n\'est pas un flux de podcast.</string>
+    <string name="podcast_err_too_big">Ce flux est trop volumineux pour être suivi (plus de 15 Mo).</string>
+    <string name="podcast_err_network">Impossible d\'atteindre le flux. Vérifiez votre connexion et réessayez.</string>
+    <string name="podcast_err_http">Le serveur du flux a répondu par l\'erreur %1$d.</string>
 </resources>

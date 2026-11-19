@@ -502,7 +502,7 @@
         <item quantity="other">%d episodios nuevos</item>
     </plurals>
     <string name="notif_sub_one">Subida nueva: %1$s</string>
-    <string name="notif_sub_body">De canales que sigues.</string>
+    <string name="notif_sub_body">De los canales y podcasts que sigues.</string>
     <plurals name="notif_sub_many">
         <item quantity="one">%d subida nueva</item>
         <item quantity="many">%d subidas nuevas</item>
@@ -1097,4 +1097,8 @@
         <item quantity="other">Ahora sigues %d canales y podcasts de la copia.</item>
     </plurals>
     <string name="about_sponsorblock_credit">Datos de segmentos de patrocinio de SponsorBlock (sponsor.ajay.app), con licencia CC BY-NC-SA 4.0</string>
+    <string name="podcast_err_not_feed">Este enlace no es un feed de podcast.</string>
+    <string name="podcast_err_too_big">Este feed es demasiado grande para seguirlo (más de 15 MB).</string>
+    <string name="podcast_err_network">No se pudo acceder al feed. Revisa tu conexión e inténtalo de nuevo.</string>
+    <string name="podcast_err_http">El servidor del feed respondió con el error %1$d.</string>
 </resources>

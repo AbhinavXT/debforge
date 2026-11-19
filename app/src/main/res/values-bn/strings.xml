@@ -479,7 +479,7 @@
         <item quantity="other">%dটি নতুন এপিসোড</item>
     </plurals>
     <string name="notif_sub_one">নতুন আপলোড: %1$s</string>
-    <string name="notif_sub_body">আপনার অনুসরণ করা চ্যানেল থেকে।</string>
+    <string name="notif_sub_body">আপনি যেসব চ্যানেল ও পডকাস্ট অনুসরণ করেন তার থেকে।</string>
     <plurals name="notif_sub_many">
         <item quantity="one">%dটি নতুন আপলোড</item>
         <item quantity="other">%dটি নতুন আপলোড</item>
@@ -1047,4 +1047,8 @@
         <item quantity="other">ব্যাকআপ থেকে %d টি চ্যানেল ও পডকাস্ট এখন ফলো করা হচ্ছে।</item>
     </plurals>
     <string name="about_sponsorblock_credit">স্পনসর অংশের তথ্য SponsorBlock (sponsor.ajay.app) থেকে, CC BY-NC-SA 4.0 লাইসেন্সপ্রাপ্ত</string>
+    <string name="podcast_err_not_feed">এই লিংকটি পডকাস্ট ফিড নয়।</string>
+    <string name="podcast_err_too_big">এই ফিডটি অনুসরণ করার জন্য খুব বড় (১৫ MB-এর বেশি)।</string>
+    <string name="podcast_err_network">ফিডে পৌঁছানো যায়নি। আপনার সংযোগ পরীক্ষা করে আবার চেষ্টা করুন।</string>
+    <string name="podcast_err_http">ফিডের সার্ভার ত্রুটি %1$d দিয়েছে।</string>
 </resources>

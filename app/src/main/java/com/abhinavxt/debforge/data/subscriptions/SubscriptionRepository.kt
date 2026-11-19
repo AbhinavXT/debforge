@@ -2,6 +2,10 @@ package com.abhinavxt.debforge.data.subscriptions
 
 import android.content.Context
 import com.abhinavxt.debforge.data.follow.FollowStore
+import com.abhinavxt.debforge.data.podcast.PodcastFeeds
+import com.abhinavxt.debforge.data.podcast.PodcastFetchException
+import com.abhinavxt.debforge.data.podcast.PodcastFetchResult
+import com.abhinavxt.debforge.data.podcast.PodcastFetcher
 import com.abhinavxt.debforge.data.youtube.YouTubeResolver
 import com.abhinavxt.debforge.domain.FeedPlanner
 import com.abhinavxt.debforge.domain.YouTubeChannelLinks
@@ -12,7 +16,7 @@ import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/** Following and unfollowing YouTube channels. Podcasts are added by a later task. */
+/** Following and unfollowing YouTube channels and podcast feeds. */
 @Singleton
 class SubscriptionRepository @Inject constructor(
     @ApplicationContext private val context: Context,
@@ -20,6 +24,7 @@ class SubscriptionRepository @Inject constructor(
     private val resolver: YouTubeResolver,
     private val followStore: FollowStore,
     private val checker: SubscriptionChecker,
+    private val podcastFetcher: PodcastFetcher,
 ) {
     sealed class FollowResult {
         class Followed(val sub: SubscriptionEntity) : FollowResult()
@@ -84,6 +89,34 @@ class SubscriptionRepository @Inject constructor(
     suspend fun markSeen(subId: Long, itemKey: String) = dao.markSeen(subId, itemKey)
 
     suspend fun markAllSeen() = dao.markEverythingSeen()
+
+    /**
+     * Follows the podcast feed at [feedUrl] (normalised by [PodcastFeeds.normalizeUrl]); the episodes already in the
+     * feed are recorded as seen, so only later ones are new or auto-downloaded. Throws [PodcastFetchException]
+     * (with a user message) when the feed cannot be read.
+     */
+    suspend fun followPodcast(feedUrl: String, autoDownload: AutoDownload = AutoDownload.OFF, now: Long = System.currentTimeMillis()): FollowResult {
+        val url = PodcastFeeds.normalizeUrl(feedUrl) ?: throw PodcastFetchException(PodcastFetchException.Kind.NOT_A_FEED)
+        dao.getByUrl(url)?.let { return FollowResult.AlreadyFollowing(it) }
+        val fetched = podcastFetcher.fetch(url) as? PodcastFetchResult.Fresh
+            ?: throw PodcastFetchException(PodcastFetchException.Kind.NOT_A_FEED)
+        val feed = fetched.feed
+        val sub = checker.exclusive {
+            val id = dao.insert(
+                SubscriptionEntity(
+                    kind = SubscriptionKind.PODCAST, url = url, title = feed.title.ifBlank { url.substringAfter("://").substringBefore('/') },
+                    artworkUrl = feed.imageUrl, autoDownload = autoDownload, since = now,
+                    etag = fetched.etag, lastModified = fetched.lastModified, lastChecked = now,
+                )
+            )
+            if (id < 0) return@exclusive null
+            val created = checkNotNull(dao.get(id))
+            dao.upsertItems(FeedPlanner.plan(created, emptySet(), PodcastFeeds.entries(feed), now, initial = true).items)
+            created
+        } ?: return FollowResult.AlreadyFollowing(checkNotNull(dao.getByUrl(url)))
+        syncJob()
+        return FollowResult.Followed(sub)
+    }
 
     suspend fun unfollow(id: Long) {
         dao.delete(id)

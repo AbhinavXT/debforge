@@ -479,7 +479,7 @@
         <item quantity="other">%d yeni bölüm</item>
     </plurals>
     <string name="notif_sub_one">Yeni yükleme: %1$s</string>
-    <string name="notif_sub_body">Takip ettiğiniz kanallardan.</string>
+    <string name="notif_sub_body">Takip ettiğin kanallardan ve podcast\'lerden.</string>
     <plurals name="notif_sub_many">
         <item quantity="one">%d yeni yükleme</item>
         <item quantity="other">%d yeni yükleme</item>
@@ -1047,4 +1047,8 @@
         <item quantity="other">Yedekten %d kanal ve podcast artık takip ediliyor.</item>
     </plurals>
     <string name="about_sponsorblock_credit">Sponsor bölümü verileri SponsorBlock\'tan (sponsor.ajay.app), CC BY-NC-SA 4.0 lisanslı</string>
+    <string name="podcast_err_not_feed">Bu bağlantı bir podcast beslemesi değil.</string>
+    <string name="podcast_err_too_big">Bu besleme takip edilemeyecek kadar büyük (15 MB üzeri).</string>
+    <string name="podcast_err_network">Beslemeye ulaşılamadı. Bağlantını kontrol edip tekrar dene.</string>
+    <string name="podcast_err_http">Beslemenin sunucusu %1$d hatasıyla yanıt verdi.</string>
 </resources>

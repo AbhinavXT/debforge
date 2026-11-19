@@ -479,7 +479,7 @@
         <item quantity="other">%d புதிய எபிசோடுகள்</item>
     </plurals>
     <string name="notif_sub_one">புதிய பதிவேற்றம்: %1$s</string>
-    <string name="notif_sub_body">நீங்கள் பின்தொடரும் சேனல்களிலிருந்து.</string>
+    <string name="notif_sub_body">நீங்கள் பின்தொடரும் சேனல்கள் மற்றும் பாட்காஸ்ட்களிலிருந்து.</string>
     <plurals name="notif_sub_many">
         <item quantity="one">%d புதிய பதிவேற்றம்</item>
         <item quantity="other">%d புதிய பதிவேற்றங்கள்</item>
@@ -1047,4 +1047,8 @@
         <item quantity="other">காப்புப்பிரதியிலிருந்து %d சேனல்கள் மற்றும் பாட்காஸ்ட்கள் இப்போது பின்தொடரப்படுகின்றன.</item>
     </plurals>
     <string name="about_sponsorblock_credit">ஸ்பான்சர் பகுதித் தரவு SponsorBlock (sponsor.ajay.app) இலிருந்து, CC BY-NC-SA 4.0 உரிமத்தின் கீழ்</string>
+    <string name="podcast_err_not_feed">இந்த இணைப்பு பாட்காஸ்ட் ஃபீட் அல்ல.</string>
+    <string name="podcast_err_too_big">இந்த ஃபீட் பின்தொடர மிகப் பெரியது (15 MB-க்கு மேல்).</string>
+    <string name="podcast_err_network">ஃபீடை அடைய முடியவில்லை. இணைப்பைச் சரிபார்த்து மீண்டும் முயலவும்.</string>
+    <string name="podcast_err_http">ஃபீடின் சர்வர் %1$d பிழையுடன் பதிலளித்தது.</string>
 </resources>

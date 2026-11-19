@@ -479,7 +479,7 @@
         <item quantity="other">%d नवे एपिसोड</item>
     </plurals>
     <string name="notif_sub_one">नवीन अपलोड: %1$s</string>
-    <string name="notif_sub_body">तुम्ही फॉलो केलेल्या चॅनेलवरून.</string>
+    <string name="notif_sub_body">तुम्ही फॉलो केलेल्या चॅनेल आणि पॉडकास्टकडून.</string>
     <plurals name="notif_sub_many">
         <item quantity="one">%d नवीन अपलोड</item>
         <item quantity="other">%d नवीन अपलोड</item>
@@ -1047,4 +1047,8 @@
         <item quantity="other">बॅकअपमधील %d चॅनेल आणि पॉडकास्ट आता फॉलो केले जात आहेत.</item>
     </plurals>
     <string name="about_sponsorblock_credit">स्पॉन्सर विभागांचा डेटा SponsorBlock (sponsor.ajay.app) कडून, CC BY-NC-SA 4.0 परवान्याअंतर्गत</string>
+    <string name="podcast_err_not_feed">ही लिंक पॉडकास्ट फीड नाही.</string>
+    <string name="podcast_err_too_big">हे फीड फॉलो करण्यासाठी खूप मोठे आहे (15 MB पेक्षा जास्त).</string>
+    <string name="podcast_err_network">फीडपर्यंत पोहोचता आले नाही. कनेक्शन तपासा आणि पुन्हा प्रयत्न करा.</string>
+    <string name="podcast_err_http">फीडच्या सर्व्हरने त्रुटी %1$d दिली.</string>
 </resources>

@@ -525,7 +525,7 @@
         <item quantity="other">%d новой серии</item>
     </plurals>
     <string name="notif_sub_one">Новое видео: %1$s</string>
-    <string name="notif_sub_body">С каналов, на которые вы подписаны.</string>
+    <string name="notif_sub_body">От каналов и подкастов, на которые вы подписаны.</string>
     <plurals name="notif_sub_many">
         <item quantity="one">%d новое видео</item>
         <item quantity="few">%d новых видео</item>
@@ -1147,4 +1147,8 @@
         <item quantity="other">Теперь отслеживаются %d канала и подкаста из резервной копии.</item>
     </plurals>
     <string name="about_sponsorblock_credit">Данные о рекламных сегментах предоставлены SponsorBlock (sponsor.ajay.app), лицензия CC BY-NC-SA 4.0</string>
+    <string name="podcast_err_not_feed">Эта ссылка не является лентой подкаста.</string>
+    <string name="podcast_err_too_big">Эта лента слишком большая для подписки (более 15 МБ).</string>
+    <string name="podcast_err_network">Не удалось подключиться к ленте. Проверьте соединение и повторите попытку.</string>
+    <string name="podcast_err_http">Сервер ленты ответил ошибкой %1$d.</string>
 </resources>
