@@ -30,6 +30,10 @@ import com.abhinavxt.debforge.ui.browse.PlayRequest
 import com.abhinavxt.debforge.ui.browse.youTubePlayRequest
 import com.abhinavxt.debforge.domain.StreamKind
 import com.abhinavxt.debforge.data.prefs.SettingsStore
+import com.abhinavxt.debforge.data.playback.AudioLists
+import com.abhinavxt.debforge.data.playback.Playlist
+import com.abhinavxt.debforge.data.playback.YouTubeAddResult
+import com.abhinavxt.debforge.data.playback.YouTubeMode
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -85,6 +89,8 @@ sealed interface YouTubeEvent {
     data object FollowFailed : YouTubeEvent
     /** Playing without downloading failed before it started. */
     data class StreamFailed(val kind: YouTubeErrorKind) : YouTubeEvent
+    /** Result of adding a video to playlist [listName]. */
+    data class PlaylistAdd(val result: YouTubeAddResult, val listName: String) : YouTubeEvent
 }
 
 /** What to tell the user after the video's own enqueue [video] and the chosen subtitle's [sub] (null: none chosen). */
@@ -109,6 +115,7 @@ class YouTubeViewModel @Inject constructor(
     private val saved: SavedStateHandle,
     @ApiHttpClient private val http: OkHttpClient,
     private val audioPlayer: AudioPlayer,
+    private val audioLists: AudioLists,
     private val subscriptions: com.abhinavxt.debforge.data.subscriptions.SubscriptionRepository,
 ) : ViewModel() {
     private val _ui = MutableStateFlow<YouTubeUi>(YouTubeUi.Empty)
@@ -525,6 +532,23 @@ class YouTubeViewModel @Inject constructor(
     }
 
     /** A results row's Play icon: resolves, then plays at the default quality; "ask every time" opens the preview. */
+    suspend fun playlists(): List<Playlist> = audioLists.snapshot().playlists
+
+    fun addToPlaylist(req: AddToPlaylistRequest, listId: String, mode: YouTubeMode) {
+        viewModelScope.launch {
+            val name = audioLists.snapshot().playlists.firstOrNull { it.id == listId }?.name.orEmpty()
+            _events.send(YouTubeEvent.PlaylistAdd(audioLists.addYouTube(listId, req.videoId, mode, req.meta), name))
+        }
+    }
+
+    fun addToNewPlaylist(req: AddToPlaylistRequest, name: String, mode: YouTubeMode) {
+        viewModelScope.launch {
+            val id = audioLists.create(name)
+            if (id.isEmpty()) _events.send(YouTubeEvent.PlaylistAdd(YouTubeAddResult.NO_SUCH_LIST, name))
+            else addToPlaylist(req, id, mode)
+        }
+    }
+
     fun playResult(result: YouTubeSearchResult) {
         if (streamJob?.isActive == true) return
         _streamingUrl.value = result.url

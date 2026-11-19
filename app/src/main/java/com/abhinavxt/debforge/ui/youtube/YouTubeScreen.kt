@@ -218,19 +218,32 @@ fun YouTubeScreen(
                     YouTubeEvent.SUBTITLE_ADDED -> msgSubtitleAdded
                     YouTubeEvent.FollowFailed -> msgFollowFailed
                     is YouTubeEvent.StreamFailed -> res.getString(errorText(e.kind))
+                    is YouTubeEvent.PlaylistAdd -> res.getString(playlistAddMessage(e.result), e.listName)
                     is YouTubeEvent.BatchDone -> listOfNotNull(
                         e.added.takeIf { it > 0 }?.let { res.getQuantityString(R.plurals.yt_batch_added, it, it) },
                         e.already.takeIf { it > 0 }?.let { res.getQuantityString(R.plurals.yt_batch_already, it, it) },
                         e.failed.takeIf { it > 0 }?.let { res.getQuantityString(R.plurals.yt_batch_failed, it, it) },
                     ).joinToString(" · ")
                 },
-                actionLabel = if (e == YouTubeEvent.QUEUE_FAILED || e == YouTubeEvent.FollowFailed || e is YouTubeEvent.StreamFailed) null else viewDownloads,
+                actionLabel = if (e == YouTubeEvent.QUEUE_FAILED || e == YouTubeEvent.FollowFailed || e is YouTubeEvent.StreamFailed || e is YouTubeEvent.PlaylistAdd) null else viewDownloads,
                 duration = if (queuedOk) SnackbarDuration.Long else SnackbarDuration.Short,
             )
             if (r == SnackbarResult.ActionPerformed) onOpenDownloads()
         }
     }
 
+    var addRequest by remember { mutableStateOf<AddToPlaylistRequest?>(null) }
+    var addLists by remember { mutableStateOf<List<com.abhinavxt.debforge.data.playback.Playlist>>(emptyList()) }
+    val openAdd = remember<(AddToPlaylistRequest) -> Unit> { { req -> scope.launch { addLists = viewModel.playlists(); addRequest = req } } }
+    addRequest?.let { req ->
+        YouTubeAddToPlaylistFlow(
+            req, addLists,
+            onAdd = { id, mode -> viewModel.addToPlaylist(req, id, mode); addRequest = null },
+            onCreate = { name, mode -> viewModel.addToNewPlaylist(req, name, mode); addRequest = null },
+            onDismiss = { addRequest = null },
+        )
+    }
+    androidx.compose.runtime.CompositionLocalProvider(LocalAddToPlaylist provides openAdd) {
     Box(modifier.fillMaxSize()) {
         Column(Modifier.fillMaxSize()) {
             ScreenHeader(stringResource(R.string.yt_title), subtitle = stringResource(R.string.yt_subtitle)) {
@@ -285,6 +298,7 @@ fun YouTubeScreen(
             }
         }
         SnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter).padding(bottom = if (ui is YouTubeUi.Preview || ui is YouTubeUi.Playlist) 88.dp else 16.dp))
+    }
     }
 }
 
@@ -562,6 +576,11 @@ private fun ResultRow(
     val rowFocus = rowFocus ?: remember { FocusRequester() }
     val channelFocus = remember { FocusRequester() }
     val playFocus = remember { FocusRequester() }
+    val addFocus = remember { FocusRequester() }
+    val addToPlaylist = LocalAddToPlaylist.current
+    val addRequest = remember(r) { r.toAddRequest() }
+    val canAdd = addToPlaylist != null && addRequest != null
+    val addSource = remember { MutableInteractionSource() }
     val channelSource = remember { MutableInteractionSource() }
     val playSource = remember { MutableInteractionSource() }
     // The row and the channel name are siblings, not nested clickables, so TalkBack and TV focus see both.
@@ -604,11 +623,18 @@ private fun ResultRow(
             }
             IconButton(
                 onClick = { onPlay(r) }, enabled = !streaming,
-                modifier = Modifier.focusRequester(playFocus).focusProperties { left = if (channelUrl != null) channelFocus else rowFocus; right = edge }
+                modifier = Modifier.focusRequester(playFocus).focusProperties { left = if (channelUrl != null) channelFocus else rowFocus; right = if (canAdd) addFocus else edge }
                     .focusRing(playSource, CircleShape),
                 interactionSource = playSource
             ) {
                 Icon(Icons.Rounded.PlayCircle, contentDescription = stringResource(R.string.yt_play_cd))
+            }
+            if (canAdd) IconButton(
+                onClick = { addToPlaylist?.invoke(addRequest!!) },
+                modifier = Modifier.focusRequester(addFocus).focusProperties { left = playFocus; right = edge }.focusRing(addSource, CircleShape),
+                interactionSource = addSource
+            ) {
+                Icon(Icons.Rounded.PlaylistAdd, contentDescription = stringResource(R.string.media_add_to_playlist))
             }
         }
     }
@@ -1032,6 +1058,7 @@ private fun PreviewState(
     val scrollLeft = remember(p.video.id) { ScrollState(0) }
     val scrollRight = remember(p.video.id) { ScrollState(0) }
     // Pinned: the list scrolls, the primary action does not.
+    val addToPlaylist = LocalAddToPlaylist.current
     val bar: @Composable (Modifier) -> Unit = { mod ->
         Surface(color = MaterialTheme.colorScheme.surfaceContainer, tonalElevation = 3.dp, shadowElevation = 6.dp, modifier = mod.fillMaxWidth()) {
             Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -1049,6 +1076,9 @@ private fun PreviewState(
                         stringResource(R.string.yt_download_format, choiceLabel(p.selected), sizeText(p.selected)),
                         maxLines = 2, overflow = TextOverflow.Ellipsis, textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                     )
+                }
+                if (addToPlaylist != null) OutlinedButton(onClick = { addToPlaylist(p.video.toAddRequest(audio)) }, modifier = Modifier.heightIn(min = 56.dp)) {
+                    Icon(Icons.Rounded.PlaylistAdd, contentDescription = stringResource(R.string.media_add_to_playlist))
                 }
             }
         }

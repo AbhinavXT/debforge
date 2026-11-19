@@ -812,6 +812,11 @@
     <string name="yt_best">Terbaik</string>
     <string name="yt_up_next">Berikutnya</string>
     <string name="yt_add_to_queue_cd">Tambahkan ke antrean</string>
+    <string name="yt_pl_added">Ditambahkan ke %1$s</string>
+    <string name="yt_pl_already">Sudah ada di %1$s</string>
+    <string name="yt_pl_limit">Playlist penuh</string>
+    <string name="yt_pl_failed">Tidak dapat menambahkan video ini</string>
+    <string name="yt_pl_add_as">Tambahkan sebagai</string>
     <string name="yt_download_format">Unduh · %1$s · %2$s</string>
     <string name="yt_another_link">Gunakan tautan lain</string>
     <string name="yt_queued">Ditambahkan ke unduhan</string>
@@ -830,7 +835,6 @@
     <string name="yt_err_sign_in">Video ini dibatasi usia atau perlu masuk akun, jadi tidak bisa diunduh.</string>
     <string name="yt_err_unavailable">Video ini tidak tersedia atau bersifat pribadi.</string>
     <string name="yt_err_network">Periksa koneksi Anda lalu coba lagi.</string>
-    <string name="yt_skipped_unavailable">Video yang tidak tersedia dilewati</string>
     <string name="yt_skipped_unavailable">Video yang tidak tersedia dilewati</string>
     <string name="yt_err_generic">Terjadi masalah saat membaca video ini. Coba lagi sebentar lagi.</string>
     <string name="yt_err_queue">Unduhan tidak bisa ditambahkan. Coba lagi.</string>

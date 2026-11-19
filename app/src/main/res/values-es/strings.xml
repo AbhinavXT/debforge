@@ -892,6 +892,11 @@
     <string name="yt_best">Mejor</string>
     <string name="yt_up_next">A continuación</string>
     <string name="yt_add_to_queue_cd">Añadir a la cola</string>
+    <string name="yt_pl_added">Añadido a %1$s</string>
+    <string name="yt_pl_already">Ya está en %1$s</string>
+    <string name="yt_pl_limit">Las listas están llenas</string>
+    <string name="yt_pl_failed">No se pudo añadir este vídeo</string>
+    <string name="yt_pl_add_as">Añadir como</string>
     <string name="yt_download_format">Descargar · %1$s · %2$s</string>
     <string name="yt_another_link">Usar otro enlace</string>
     <string name="yt_queued">Añadido a descargas</string>
@@ -910,7 +915,6 @@
     <string name="yt_err_sign_in">Este vídeo tiene restricción de edad o requiere iniciar sesión, por lo que no se puede descargar.</string>
     <string name="yt_err_unavailable">Este vídeo no está disponible o es privado.</string>
     <string name="yt_err_network">Comprueba tu conexión e inténtalo de nuevo.</string>
-    <string name="yt_skipped_unavailable">Se omitió un vídeo no disponible</string>
     <string name="yt_skipped_unavailable">Se omitió un vídeo no disponible</string>
     <string name="yt_err_generic">Algo salió mal al leer este vídeo. Inténtalo de nuevo en un momento.</string>
     <string name="yt_err_queue">No se pudo añadir la descarga. Inténtalo de nuevo.</string>

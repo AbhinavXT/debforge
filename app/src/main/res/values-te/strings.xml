@@ -852,6 +852,11 @@
     <string name="yt_best">ఉత్తమం</string>
     <string name="yt_up_next">తర్వాత</string>
     <string name="yt_add_to_queue_cd">క్యూకు జోడించు</string>
+    <string name="yt_pl_added">%1$sకి జోడించబడింది</string>
+    <string name="yt_pl_already">ఇప్పటికే %1$sలో ఉంది</string>
+    <string name="yt_pl_limit">ప్లేలిస్ట్‌లు నిండిపోయాయి</string>
+    <string name="yt_pl_failed">ఈ వీడియోను జోడించలేకపోయాం</string>
+    <string name="yt_pl_add_as">ఇలా జోడించు</string>
     <string name="yt_download_format">డౌన్‌లోడ్ · %1$s · %2$s</string>
     <string name="yt_another_link">మరొక లింక్‌ను ఉపయోగించండి</string>
     <string name="yt_queued">డౌన్‌లోడ్‌లకు జోడించబడింది</string>
@@ -870,7 +875,6 @@
     <string name="yt_err_sign_in">ఈ వీడియోకు వయోపరిమితి ఉంది లేదా సైన్ ఇన్ అవసరం, కాబట్టి దీన్ని డౌన్‌లోడ్ చేయలేరు.</string>
     <string name="yt_err_unavailable">ఈ వీడియో అందుబాటులో లేదు లేదా ప్రైవేట్‌గా ఉంది.</string>
     <string name="yt_err_network">మీ కనెక్షన్‌ను తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.</string>
-    <string name="yt_skipped_unavailable">అందుబాటులో లేని వీడియో దాటవేయబడింది</string>
     <string name="yt_skipped_unavailable">అందుబాటులో లేని వీడియో దాటవేయబడింది</string>
     <string name="yt_err_generic">ఈ వీడియోను చదువుతున్నప్పుడు ఏదో తప్పు జరిగింది. కొద్దిసేపటి తర్వాత మళ్లీ ప్రయత్నించండి.</string>
     <string name="yt_err_queue">డౌన్‌లోడ్‌ను జోడించలేకపోయాం. మళ్లీ ప్రయత్నించండి.</string>

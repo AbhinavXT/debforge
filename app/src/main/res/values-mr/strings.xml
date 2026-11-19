@@ -852,6 +852,11 @@
     <string name="yt_best">सर्वोत्तम</string>
     <string name="yt_up_next">पुढे</string>
     <string name="yt_add_to_queue_cd">रांगेत जोडा</string>
+    <string name="yt_pl_added">%1$s मध्ये जोडले</string>
+    <string name="yt_pl_already">आधीच %1$s मध्ये आहे</string>
+    <string name="yt_pl_limit">प्लेलिस्ट भरल्या आहेत</string>
+    <string name="yt_pl_failed">हा व्हिडिओ जोडता आला नाही</string>
+    <string name="yt_pl_add_as">या स्वरूपात जोडा</string>
     <string name="yt_download_format">डाउनलोड · %1$s · %2$s</string>
     <string name="yt_another_link">दुसरी लिंक वापरा</string>
     <string name="yt_queued">डाउनलोडमध्ये जोडले</string>
@@ -870,7 +875,6 @@
     <string name="yt_err_sign_in">या व्हिडिओला वयोमर्यादा आहे किंवा साइन-इन आवश्यक आहे, म्हणून तो डाउनलोड करता येत नाही.</string>
     <string name="yt_err_unavailable">हा व्हिडिओ उपलब्ध नाही किंवा खाजगी आहे.</string>
     <string name="yt_err_network">तुमचे कनेक्शन तपासा आणि पुन्हा प्रयत्न करा.</string>
-    <string name="yt_skipped_unavailable">अनुपलब्ध व्हिडिओ वगळला</string>
     <string name="yt_skipped_unavailable">अनुपलब्ध व्हिडिओ वगळला</string>
     <string name="yt_err_generic">हा व्हिडिओ वाचताना काहीतरी चूक झाली. थोड्या वेळाने पुन्हा प्रयत्न करा.</string>
     <string name="yt_err_queue">डाउनलोड जोडता आला नाही. पुन्हा प्रयत्न करा.</string>

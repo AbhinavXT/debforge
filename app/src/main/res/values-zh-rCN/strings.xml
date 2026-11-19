@@ -812,6 +812,11 @@
     <string name="yt_best">最佳</string>
     <string name="yt_up_next">接下来</string>
     <string name="yt_add_to_queue_cd">添加到队列</string>
+    <string name="yt_pl_added">已添加到%1$s</string>
+    <string name="yt_pl_already">已在%1$s中</string>
+    <string name="yt_pl_limit">播放列表已满</string>
+    <string name="yt_pl_failed">无法添加此视频</string>
+    <string name="yt_pl_add_as">添加为</string>
     <string name="yt_download_format">下载 · %1$s · %2$s</string>
     <string name="yt_another_link">换一个链接</string>
     <string name="yt_queued">已添加到下载</string>
@@ -830,7 +835,6 @@
     <string name="yt_err_sign_in">此视频有年龄限制或需要登录，无法下载。</string>
     <string name="yt_err_unavailable">此视频不可用或为私享视频。</string>
     <string name="yt_err_network">请检查网络连接后重试。</string>
-    <string name="yt_skipped_unavailable">已跳过不可用的视频</string>
     <string name="yt_skipped_unavailable">已跳过不可用的视频</string>
     <string name="yt_err_generic">读取此视频时出错，请稍后重试。</string>
     <string name="yt_err_queue">无法添加下载，请重试。</string>
