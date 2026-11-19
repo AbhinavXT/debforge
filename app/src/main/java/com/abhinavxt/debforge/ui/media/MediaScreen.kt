@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -372,19 +373,19 @@ internal fun MediaContent(
             if (podcastsOpen) {
                 PodcastsPane(playingId, tell)
             } else if (items.isEmpty() && state.kind == FileKind.Audio && state.audioList != null && state.query.isBlank()) {
-                MessageState(
+                PullableMessage(refreshing, onRefresh) { mod -> MessageState(
                     icon = Icons.Rounded.MusicNote,
                     title = stringResource(R.string.media_list_empty_title),
                     body = stringResource(R.string.media_list_empty_body),
-                    modifier = Modifier.holdFocus(held)
-                )
+                    modifier = mod.holdFocus(held)
+                ) }
             } else if (items.isEmpty()) {
-                MessageState(
+                PullableMessage(refreshing, onRefresh) { mod -> MessageState(
                     icon = Icons.Rounded.Download,
                     title = stringResource(R.string.media_no_match_title),
                     body = stringResource(R.string.media_no_match_body, state.query),
-                    modifier = Modifier.holdFocus(held)
-                )
+                    modifier = mod.holdFocus(held)
+                ) }
             } else {
                 PullToRefreshBox(isRefreshing = refreshing, onRefresh = onRefresh, modifier = Modifier.fillMaxSize()) {
                 BoxWithConstraints(Modifier.fillMaxSize()) {
@@ -491,6 +492,17 @@ internal fun MediaContent(
 
 @OptIn(ExperimentalFoundationApi::class)
 private fun Modifier.combinedClickableSimple(onClick: () -> Unit) = this.combinedClickable(onClick = onClick)
+
+/** An empty list that can still be pulled to rescan the folder. */
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@Composable
+private fun PullableMessage(refreshing: Boolean, onRefresh: () -> Unit, content: @Composable (Modifier) -> Unit) {
+    PullToRefreshBox(isRefreshing = refreshing, onRefresh = onRefresh, modifier = Modifier.fillMaxSize()) {
+        BoxWithConstraints(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+            content(Modifier.height(maxHeight))
+        }
+    }
+}
 
 @Composable
 private fun SortMenu(sort: SortOrder, onSort: (SortOrder) -> Unit, onRefresh: () -> Unit) {

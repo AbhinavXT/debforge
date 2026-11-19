@@ -31,6 +31,28 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
+ * Runs a block so that, after [runFresh] returns, a run that began after the call has finished.
+ * A call made while a run is in progress waits for it and then runs once more (callers queued
+ * together share that one rerun) instead of returning on the stale run.
+ */
+class FreshRunGate {
+    private val lock = Mutex()
+    private val state = Any()
+    private var started = 0L
+    private var lastCompletedStart = 0L
+
+    suspend fun runFresh(block: suspend () -> Unit) {
+        val snapshot = synchronized(state) { started }
+        lock.withLock {
+            if (synchronized(state) { lastCompletedStart } > snapshot) return // a run began after this call and finished
+            val mine = synchronized(state) { ++started }
+            block()
+            synchronized(state) { lastCompletedStart = mine }
+        }
+    }
+}
+
+/**
  * Lists audio and video in the download folder that DebForge did not download
  * and links them in place as ProviderId.LOCAL rows (never copied). Rows whose
  * file is gone are dropped; files are never deleted here.
@@ -47,7 +69,7 @@ class LocalImporter @Inject constructor(
     private val db: DebForgeDatabase,
     private val metadata: LocalMetadata
 ) {
-    private val lock = Mutex()
+    private val gate = FreshRunGate()
     @Volatile private var lastScanAt = 0L
 
     /** [scan], unless one finished less than [minIntervalMs] ago. */
@@ -58,7 +80,7 @@ class LocalImporter @Inject constructor(
     }
 
     /** Scans the current download folder and updates the LOCAL rows. Never throws except on cancellation. */
-    suspend fun scan() = lock.withLock {
+    suspend fun scan() = gate.runFresh {
         try {
             withContext(Dispatchers.IO) { scanLocked() }
             lastScanAt = android.os.SystemClock.elapsedRealtime()

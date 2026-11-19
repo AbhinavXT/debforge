@@ -102,7 +102,13 @@ class MediaViewModel @Inject constructor(
     fun refresh() {
         if (!_refreshing.compareAndSet(false, true)) return
         viewModelScope.launch {
-            try { localImporter.scan() } finally { _refreshing.value = false }
+            try {
+                val started = android.os.SystemClock.elapsedRealtime()
+                localImporter.scan()
+                // A quick scan would flash the indicator unseen; keep it up briefly.
+                val left = 600L - (android.os.SystemClock.elapsedRealtime() - started)
+                if (left > 0) kotlinx.coroutines.delay(left)
+            } finally { _refreshing.value = false }
         }
     }
 
