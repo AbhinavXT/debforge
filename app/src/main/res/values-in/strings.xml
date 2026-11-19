@@ -993,4 +993,8 @@
     <string name="set_sb_outro">Outro</string>
     <string name="set_sb_preview">Pratinjau</string>
     <string name="set_sb_none_hint">Pilih setidaknya satu kategori</string>
+    <plurals name="restore_subscriptions_n">
+        <item quantity="other">Sekarang mengikuti %d kanal dan podcast dari cadangan.</item>
+    </plurals>
+    <string name="about_sponsorblock_credit">Data segmen sponsor dari SponsorBlock (sponsor.ajay.app), berlisensi CC BY-NC-SA 4.0</string>
 </resources>

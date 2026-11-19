@@ -1044,4 +1044,9 @@
     <string name="set_sb_outro">Outro</string>
     <string name="set_sb_preview">Preview</string>
     <string name="set_sb_none_hint">Pick at least one category</string>
+    <plurals name="restore_subscriptions_n">
+        <item quantity="one">Now following %d channel or podcast from the backup.</item>
+        <item quantity="other">Now following %d channels and podcasts from the backup.</item>
+    </plurals>
+    <string name="about_sponsorblock_credit">Sponsor segment data from SponsorBlock (sponsor.ajay.app), licensed CC BY-NC-SA 4.0</string>
 </resources>

@@ -1091,4 +1091,10 @@
     <string name="set_sb_outro">Outro</string>
     <string name="set_sb_preview">Aperçu</string>
     <string name="set_sb_none_hint">Choisissez au moins une catégorie</string>
+    <plurals name="restore_subscriptions_n">
+        <item quantity="one">%d chaîne ou podcast de la sauvegarde est maintenant suivi.</item>
+        <item quantity="many">%d de chaînes et podcasts de la sauvegarde sont maintenant suivis.</item>
+        <item quantity="other">%d chaînes et podcasts de la sauvegarde sont maintenant suivis.</item>
+    </plurals>
+    <string name="about_sponsorblock_credit">Données de segments sponsorisés de SponsorBlock (sponsor.ajay.app), sous licence CC BY-NC-SA 4.0</string>
 </resources>

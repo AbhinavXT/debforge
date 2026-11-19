@@ -1042,4 +1042,9 @@
     <string name="set_sb_outro">आउट्रो</string>
     <string name="set_sb_preview">प्रिव्ह्यू</string>
     <string name="set_sb_none_hint">किमान एक श्रेणी निवडा</string>
+    <plurals name="restore_subscriptions_n">
+        <item quantity="one">बॅकअपमधील %d चॅनेल किंवा पॉडकास्ट आता फॉलो केले जात आहे.</item>
+        <item quantity="other">बॅकअपमधील %d चॅनेल आणि पॉडकास्ट आता फॉलो केले जात आहेत.</item>
+    </plurals>
+    <string name="about_sponsorblock_credit">स्पॉन्सर विभागांचा डेटा SponsorBlock (sponsor.ajay.app) कडून, CC BY-NC-SA 4.0 परवान्याअंतर्गत</string>
 </resources>

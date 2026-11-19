@@ -993,4 +993,8 @@
     <string name="set_sb_outro">片尾</string>
     <string name="set_sb_preview">预告</string>
     <string name="set_sb_none_hint">至少选择一个类别</string>
+    <plurals name="restore_subscriptions_n">
+        <item quantity="other">已从备份中关注 %d 个频道和播客。</item>
+    </plurals>
+    <string name="about_sponsorblock_credit">赞助片段数据来自 SponsorBlock (sponsor.ajay.app)，采用 CC BY-NC-SA 4.0 许可</string>
 </resources>

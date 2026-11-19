@@ -1042,4 +1042,9 @@
     <string name="set_sb_outro">Outro</string>
     <string name="set_sb_preview">Vorschau</string>
     <string name="set_sb_none_hint">Wähle mindestens eine Kategorie</string>
+    <plurals name="restore_subscriptions_n">
+        <item quantity="one">%d Kanal oder Podcast aus dem Backup wird jetzt verfolgt.</item>
+        <item quantity="other">%d Kanäle und Podcasts aus dem Backup werden jetzt verfolgt.</item>
+    </plurals>
+    <string name="about_sponsorblock_credit">Daten zu Sponsorsegmenten von SponsorBlock (sponsor.ajay.app), lizenziert unter CC BY-NC-SA 4.0</string>
 </resources>

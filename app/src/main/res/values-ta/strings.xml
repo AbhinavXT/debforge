@@ -1042,4 +1042,9 @@
     <string name="set_sb_outro">அவுட்ரோ</string>
     <string name="set_sb_preview">முன்னோட்டம்</string>
     <string name="set_sb_none_hint">குறைந்தது ஒரு வகையைத் தேர்ந்தெடுக்கவும்</string>
+    <plurals name="restore_subscriptions_n">
+        <item quantity="one">காப்புப்பிரதியிலிருந்து %d சேனல் அல்லது பாட்காஸ்ட் இப்போது பின்தொடரப்படுகிறது.</item>
+        <item quantity="other">காப்புப்பிரதியிலிருந்து %d சேனல்கள் மற்றும் பாட்காஸ்ட்கள் இப்போது பின்தொடரப்படுகின்றன.</item>
+    </plurals>
+    <string name="about_sponsorblock_credit">ஸ்பான்சர் பகுதித் தரவு SponsorBlock (sponsor.ajay.app) இலிருந்து, CC BY-NC-SA 4.0 உரிமத்தின் கீழ்</string>
 </resources>

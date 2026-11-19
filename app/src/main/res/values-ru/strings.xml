@@ -1140,4 +1140,11 @@
     <string name="set_sb_outro">Концовка</string>
     <string name="set_sb_preview">Анонс</string>
     <string name="set_sb_none_hint">Выберите хотя бы одну категорию</string>
+    <plurals name="restore_subscriptions_n">
+        <item quantity="one">Теперь отслеживается %d канал или подкаст из резервной копии.</item>
+        <item quantity="few">Теперь отслеживаются %d канала и подкаста из резервной копии.</item>
+        <item quantity="many">Теперь отслеживаются %d каналов и подкастов из резервной копии.</item>
+        <item quantity="other">Теперь отслеживаются %d канала и подкаста из резервной копии.</item>
+    </plurals>
+    <string name="about_sponsorblock_credit">Данные о рекламных сегментах предоставлены SponsorBlock (sponsor.ajay.app), лицензия CC BY-NC-SA 4.0</string>
 </resources>

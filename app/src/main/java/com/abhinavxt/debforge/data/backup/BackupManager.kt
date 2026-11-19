@@ -35,6 +35,7 @@ class BackupManager @Inject constructor(
     private val history: com.abhinavxt.debforge.data.history.PlayHistory,
     private val searchStore: com.abhinavxt.debforge.data.search.SearchHistoryStore,
     private val youtubeSearchStore: com.abhinavxt.debforge.data.search.YouTubeSearchHistoryStore,
+    private val subscriptions: com.abhinavxt.debforge.data.subscriptions.SubscriptionDao,
     moshi: Moshi
 ) {
     private val mapAdapter: JsonAdapter<Map<String, Any?>> = moshi.adapter<Map<String, Any?>>(
@@ -58,6 +59,7 @@ class BackupManager @Inject constructor(
         runCatching {
             SearchesBackup.toJson(SearchesBackup.Model(searchStore.all(), youtubeSearchStore.all()))
         }.getOrNull()?.let { root["searches"] = it }
+        runCatching { SubscriptionsBackup.toJson(subscriptions.all()) }.getOrNull()?.let { root["subscriptions"] = it }
         if (password != null) {
             val secrets = linkedMapOf<String, Any?>(
                 "active" to tokens.activeProvider()?.name,
@@ -90,7 +92,8 @@ class BackupManager @Inject constructor(
         val hasSecrets: Boolean,
         val hasLists: Boolean = false,
         val hasHistory: Boolean = false,
-        val hasSearches: Boolean = false
+        val hasSearches: Boolean = false,
+        val hasSubscriptions: Boolean = false
     )
 
     fun preview(json: String): Preview {
@@ -101,7 +104,8 @@ class BackupManager @Inject constructor(
             hasSecrets = root["secrets"] is Map<*, *>,
             hasLists = root["audioLists"] is Map<*, *>,
             hasHistory = root["history"] is Map<*, *>,
-            hasSearches = root["searches"] is Map<*, *>
+            hasSearches = root["searches"] is Map<*, *>,
+            hasSubscriptions = root["subscriptions"] is Map<*, *>
         )
     }
 
@@ -116,7 +120,9 @@ class BackupManager @Inject constructor(
         val favouritesAdded: Int = 0,
         val playlistsAdded: Int = 0,
         val historyAdded: Int = 0,
-        val searchesAdded: Int = 0
+        val searchesAdded: Int = 0,
+        /** Channels and podcasts newly followed from the file. */
+        val subscriptionsAdded: Int = 0
     )
 
     /**
@@ -147,6 +153,11 @@ class BackupManager @Inject constructor(
         val searches = SearchesBackup.fromJson(root["searches"])
         val searchesAdded = runCatching { searchStore.mergeFromBackup(searches.search) }.getOrDefault(0) +
             runCatching { youtubeSearchStore.mergeFromBackup(searches.youtube) }.getOrDefault(0)
+        val subscriptionsAdded = runCatching {
+            val existing = subscriptions.all().mapTo(HashSet()) { it.url }
+            val fresh = SubscriptionsBackup.toInsert(SubscriptionsBackup.fromJson(root["subscriptions"]), existing, System.currentTimeMillis())
+            fresh.count { subscriptions.insert(it) > 0 }
+        }.getOrDefault(0)
 
         var services = emptyList<ProviderId>()
         if (opened != null) {
@@ -166,7 +177,7 @@ class BackupManager @Inject constructor(
         }
         return Result(
             outcome.applied, services, outcome.skippedFolder, followsAdded, follows.all().isNotEmpty(),
-            lists?.favouritesAdded ?: 0, lists?.playlistsAdded ?: 0, historyAdded, searchesAdded
+            lists?.favouritesAdded ?: 0, lists?.playlistsAdded ?: 0, historyAdded, searchesAdded, subscriptionsAdded
         )
     }
 

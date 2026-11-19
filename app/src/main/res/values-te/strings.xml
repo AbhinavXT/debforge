@@ -1042,4 +1042,9 @@
     <string name="set_sb_outro">అవుట్రో</string>
     <string name="set_sb_preview">ప్రివ్యూ</string>
     <string name="set_sb_none_hint">కనీసం ఒక వర్గాన్ని ఎంచుకోండి</string>
+    <plurals name="restore_subscriptions_n">
+        <item quantity="one">బ్యాకప్ నుండి %d ఛానెల్ లేదా పాడ్‌కాస్ట్ ఇప్పుడు ఫాలో అవుతోంది.</item>
+        <item quantity="other">బ్యాకప్ నుండి %d ఛానెల్స్, పాడ్‌కాస్ట్‌లు ఇప్పుడు ఫాలో అవుతున్నాయి.</item>
+    </plurals>
+    <string name="about_sponsorblock_credit">స్పాన్సర్ సెగ్మెంట్ డేటా SponsorBlock (sponsor.ajay.app) నుండి, CC BY-NC-SA 4.0 లైసెన్స్ కింద</string>
 </resources>

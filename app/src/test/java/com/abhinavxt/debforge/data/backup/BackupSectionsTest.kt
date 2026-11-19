@@ -3,6 +3,9 @@ package com.abhinavxt.debforge.data.backup
 import com.abhinavxt.debforge.data.history.HistoryEntity
 import com.abhinavxt.debforge.data.playback.AudioListsState
 import com.abhinavxt.debforge.data.playback.Playlist
+import com.abhinavxt.debforge.data.subscriptions.AutoDownload
+import com.abhinavxt.debforge.data.subscriptions.SubscriptionEntity
+import com.abhinavxt.debforge.data.subscriptions.SubscriptionKind
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import org.junit.Assert.assertEquals
@@ -154,5 +157,51 @@ class BackupSectionsTest {
         assertEquals(AudioListsState(), AudioListsBackup.fromJson(root["audioLists"]))
         assertTrue(HistoryBackup.fromJson(root["history"]).isEmpty())
         assertEquals(SearchesBackup.Model(), SearchesBackup.fromJson(root["searches"]))
+    }
+
+    // ---- subscriptions
+
+    private fun sub(url: String, kind: SubscriptionKind = SubscriptionKind.YT_CHANNEL, auto: AutoDownload = AutoDownload.OFF) =
+        SubscriptionEntity(id = 7, kind = kind, url = url, title = "T $url", artworkUrl = "https://x/a.jpg", autoDownload = auto, since = 5, etag = "e", lastChecked = 9)
+
+    @Test fun subscriptionsRoundTrip() {
+        val ch = "https://www.youtube.com/channel/UCabcdefghijklmnopqrstuv"
+        val subs = listOf(sub(ch, auto = AutoDownload.AUDIO), sub("https://pod.example/feed.xml", SubscriptionKind.PODCAST, AutoDownload.VIDEO))
+        val back = SubscriptionsBackup.fromJson(viaJson(SubscriptionsBackup.toJson(subs)))
+        assertEquals(2, back.size)
+        assertEquals(SubscriptionsBackup.Item(SubscriptionKind.YT_CHANNEL, ch, "T $ch", "https://x/a.jpg", AutoDownload.AUDIO), back.first { it.url == ch })
+        assertEquals(AutoDownload.VIDEO, back.first { it.kind == SubscriptionKind.PODCAST }.autoDownload)
+    }
+
+    @Test fun subscriptionsIgnoreFeedStateAndGarbage() {
+        val json = SubscriptionsBackup.toJson(listOf(sub("https://pod.example/f", SubscriptionKind.PODCAST))).toString()
+        assertTrue("etag" !in json && "since" !in json)
+        assertTrue(SubscriptionsBackup.fromJson("x").isEmpty())
+        val bad = mapOf("items" to listOf(1, mapOf("k" to "NOPE", "u" to "https://a"), mapOf("k" to "PODCAST", "u" to "ftp://a"), mapOf("k" to "PODCAST", "u" to "https://ok/f")))
+        assertEquals(listOf("https://ok/f"), SubscriptionsBackup.fromJson(bad).map { it.url })
+    }
+
+    @Test fun oldBackupWithoutSectionRestoresNothing() {
+        val root = adapter.fromJson("""{"app":"DebForge","format":1,"settings":{}}""")!!
+        assertTrue(SubscriptionsBackup.fromJson(root["subscriptions"]).isEmpty())
+    }
+
+    @Test fun subscriptionsMergeSkipsExistingAndStartsFresh() {
+        val incoming = listOf(
+            SubscriptionsBackup.Item(SubscriptionKind.PODCAST, "https://have/f", "Have"),
+            SubscriptionsBackup.Item(SubscriptionKind.PODCAST, "https://new/f", "New", null, AutoDownload.AUDIO)
+        )
+        val ins = SubscriptionsBackup.toInsert(incoming, setOf("https://have/f"), now = 1234)
+        assertEquals(1, ins.size)
+        assertEquals("https://new/f", ins[0].url)
+        assertEquals(1234L, ins[0].since)
+        assertEquals(0L, ins[0].lastChecked)
+        assertEquals(0L, ins[0].id)
+        assertTrue(SubscriptionsBackup.toInsert(incoming, setOf("https://have/f", "https://new/f"), 1).isEmpty())
+    }
+
+    @Test fun subscriptionsExportIsCapped() {
+        val many = (1..SubscriptionsBackup.MAX_EXPORT + 50).map { sub("https://p/$it", SubscriptionKind.PODCAST) }
+        assertEquals(SubscriptionsBackup.MAX_EXPORT, (SubscriptionsBackup.toJson(many)["items"] as List<*>).size)
     }
 }

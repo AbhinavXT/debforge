@@ -73,6 +73,11 @@ Sign in to as many as you like and switch in Settings. When adding, DebForge che
   account (added by hand or by the service's own RSS/automation) download by
   themselves, one file per episode in the quality you had. Checked whenever the
   Library loads and every couple of hours in the background.
+- **Follow YouTube channels and podcasts.** Follow a channel or add a podcast feed and new
+  uploads and episodes show up in a New row; optionally they download by themselves
+  (up to 3 per check). Checked every couple of hours in the background.
+- **SponsorBlock.** Optional (Settings → Library): skips sponsor, self-promotion and
+  interaction-reminder segments in YouTube videos and audio.
 - **Add from anywhere.** Tap a magnet link, share a URL, or open a `.torrent`
   file. DebForge sends it to your service and, if you want, downloads it when it's ready.
 - **Videos on a web page.** Paste a page's link and tap *Find videos on this page*:
@@ -151,7 +156,7 @@ Sign in to as many as you like and switch in Settings. When adding, DebForge che
   the torrent cached. The other services have removed this check from their APIs.
 - **Data usage.** This month's downloads split into Wi-Fi and mobile data, a
   30-day chart, and totals per service.
-- **Backup and restore.** Move your settings and followed shows to another phone. Sign-ins can be
+- **Backup and restore.** Move your settings, followed shows, channels and podcasts to another phone. Sign-ins can be
   included, encrypted with a password you choose.
 - **Organised library.** Optional Plex/Jellyfin layout
   (`Shows/Name/Season 01`, `Movies/Name (Year)`).
@@ -171,6 +176,8 @@ Sign in to as many as you like and switch in Settings. When adding, DebForge che
 
 - API keys are encrypted on the device with a key held in the Android Keystore, and are excluded from backups.
 - The app talks only to your debrid service, to TMDB for posters and air dates (if you add a key), to TVs on your own network when you use Play on TV, to the filter-list hosts (ublockorigin.github.io, easylist.to, pgl.yoyo.org) every few days while you use the Browser tab with ad blocking on, and to GitHub to check for updates (you can turn this off in Settings → About).
+- SponsorBlock is off by default. When on, DebForge asks sponsor.ajay.app for the skip segments of a YouTube video, sending only the first 4 hex characters of the SHA-256 of the video ID (a k-anonymity lookup), not the ID itself.
+- Following a YouTube channel fetches the channel's public feed from YouTube about every 2 hours while you follow at least one. Podcasts fetch the feed URLs you add from their hosts.
 - Backups contain your sign-ins only if you choose to include them, and then only encrypted with your password (PBKDF2 + AES-256-GCM).
 - There are no analytics and no crash-reporting SDK. If the app crashes, a report with tokens, links and file names removed is saved on the device. On the next launch you're asked whether to share it; nothing is sent automatically.
 

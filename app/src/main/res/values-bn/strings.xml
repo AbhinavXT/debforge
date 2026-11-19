@@ -1042,4 +1042,9 @@
     <string name="set_sb_outro">আউট্রো</string>
     <string name="set_sb_preview">প্রিভিউ</string>
     <string name="set_sb_none_hint">কমপক্ষে একটি বিভাগ বেছে নিন</string>
+    <plurals name="restore_subscriptions_n">
+        <item quantity="one">ব্যাকআপ থেকে %d টি চ্যানেল বা পডকাস্ট এখন ফলো করা হচ্ছে।</item>
+        <item quantity="other">ব্যাকআপ থেকে %d টি চ্যানেল ও পডকাস্ট এখন ফলো করা হচ্ছে।</item>
+    </plurals>
+    <string name="about_sponsorblock_credit">স্পনসর অংশের তথ্য SponsorBlock (sponsor.ajay.app) থেকে, CC BY-NC-SA 4.0 লাইসেন্সপ্রাপ্ত</string>
 </resources>

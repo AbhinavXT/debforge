@@ -162,6 +162,9 @@ class BackupViewModel @Inject constructor(
                         R.string.restore_done_lists, r.favouritesAdded, r.playlistsAdded, r.historyAdded, r.searchesAdded
                     )
                 }
+                if (r.subscriptionsAdded > 0) {
+                    parts += context.resources.getQuantityString(R.plurals.restore_subscriptions_n, r.subscriptionsAdded, r.subscriptionsAdded)
+                }
                 com.abhinavxt.debforge.download.follow.FollowJobService.sync(context, r.anyFollows)
                 if (r.skippedFolder) parts += context.getString(R.string.restore_folder_skipped)
                 BackupUi.Done(parts.joinToString("\n"))

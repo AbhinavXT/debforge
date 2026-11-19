@@ -22,6 +22,8 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material.icons.rounded.Description
 import androidx.compose.material.icons.rounded.NewReleases
 import android.content.Intent
+import android.net.Uri
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -210,6 +212,21 @@ private fun LicencesDialog(onDismiss: () -> Unit) {
                         Text(licence, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
+                val context = LocalContext.current
+                Text(
+                    stringResource(R.string.about_sponsorblock_credit),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier
+                        .padding(top = 12.dp)
+                        .clickable {
+                            runCatching {
+                                context.startActivity(
+                                    Intent(Intent.ACTION_VIEW, Uri.parse("https://sponsor.ajay.app")).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                )
+                            }
+                        }
+                )
             }
         },
         confirmButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_done)) } }

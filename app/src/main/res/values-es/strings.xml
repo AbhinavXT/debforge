@@ -1091,4 +1091,10 @@
     <string name="set_sb_outro">Final</string>
     <string name="set_sb_preview">Avance</string>
     <string name="set_sb_none_hint">Elige al menos una categoría</string>
+    <plurals name="restore_subscriptions_n">
+        <item quantity="one">Ahora sigues %d canal o podcast de la copia.</item>
+        <item quantity="many">Ahora sigues %d de canales y podcasts de la copia.</item>
+        <item quantity="other">Ahora sigues %d canales y podcasts de la copia.</item>
+    </plurals>
+    <string name="about_sponsorblock_credit">Datos de segmentos de patrocinio de SponsorBlock (sponsor.ajay.app), con licencia CC BY-NC-SA 4.0</string>
 </resources>
