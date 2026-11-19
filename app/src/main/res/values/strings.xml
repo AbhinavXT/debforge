@@ -468,8 +468,6 @@
     <string name="follow_stopped">Stopped following %1$s.</string>
     <string name="follow_queued_one">New episode queued: %1$s</string>
     <string name="follow_unfollow">Unfollow</string>
-    <string name="set_follows">Followed shows</string>
-    <string name="set_follows_none">None yet. Open a show in the Library and tap Follow.</string>
     <string name="set_follows_detail">New episodes that reach your account are downloaded automatically. DebForge checks every couple of hours and whenever the Library loads.</string>
     <string name="notif_follow_one">New episode: %1$s</string>
     <string name="notif_follow_body">Queued for download. Open DebForge if it hasn\'t started.</string>
@@ -1045,4 +1043,5 @@
     <string name="set_sb_intro">Intro</string>
     <string name="set_sb_outro">Outro</string>
     <string name="set_sb_preview">Preview</string>
+    <string name="set_sb_none_hint">Pick at least one category</string>
 </resources>

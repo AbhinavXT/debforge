@@ -447,6 +447,12 @@ fun SettingsScreen(onConnect: () -> Unit, onBack: (() -> Unit)? = null, viewMode
                                     )
                                 }
                             }
+                            if (sponsorCategories.isEmpty()) Text(
+                                stringResource(R.string.set_sb_none_hint),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 12.dp),
+                            )
                         }
                         RowDivider()
                         SwitchSettingRow(
@@ -546,6 +552,8 @@ fun SettingsScreen(onConnect: () -> Unit, onBack: (() -> Unit)? = null, viewMode
         }
     }
 
+    // Nothing left to list after the last unfollow: close the dialog.
+    LaunchedEffect(follows.isEmpty() && channels.isEmpty()) { if (follows.isEmpty() && channels.isEmpty()) followsOpen = false }
     if (followsOpen) {
         val multiService = follows.map { it.provider }.distinct().size > 1
         AlertDialog(
@@ -585,7 +593,7 @@ fun SettingsScreen(onConnect: () -> Unit, onBack: (() -> Unit)? = null, viewMode
                                 TextButton(onClick = { viewModel.unfollowChannel(c.id) }) { Text(stringResource(R.string.follow_unfollow)) }
                             }
                             Text(stringResource(R.string.set_following_auto), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                 listOf(
                                     com.abhinavxt.debforge.data.subscriptions.AutoDownload.OFF to R.string.set_auto_dl_off,
                                     com.abhinavxt.debforge.data.subscriptions.AutoDownload.AUDIO to R.string.set_auto_dl_audio,

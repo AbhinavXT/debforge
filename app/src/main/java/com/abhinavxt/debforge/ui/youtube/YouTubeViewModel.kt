@@ -110,7 +110,6 @@ class YouTubeViewModel @Inject constructor(
     @ApiHttpClient private val http: OkHttpClient,
     private val audioPlayer: AudioPlayer,
     private val subscriptions: com.abhinavxt.debforge.data.subscriptions.SubscriptionRepository,
-    private val subscriptionDao: com.abhinavxt.debforge.data.subscriptions.SubscriptionDao,
 ) : ViewModel() {
     private val _ui = MutableStateFlow<YouTubeUi>(YouTubeUi.Empty)
     val ui: StateFlow<YouTubeUi> = _ui.asStateFlow()
@@ -155,38 +154,58 @@ class YouTubeViewModel @Inject constructor(
         .map { list -> list.map { it.url }.toSet() }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptySet())
 
-    private val _followBusy = MutableStateFlow(false)
-    /** A follow request is running (reading the channel's feed). */
-    val followBusy: StateFlow<Boolean> = _followBusy.asStateFlow()
+    private val _followBusy = MutableStateFlow<String?>(null)
+    /** The channel url (as the page was opened) whose follow request is running (reading the channel's feed). */
+    val followBusy: StateFlow<String?> = _followBusy.asStateFlow()
+
+    private val _canonicalByPage = MutableStateFlow<Map<String, String>>(emptyMap())
+    /** Canonical channel urls of channel pages opened with a @handle, /c/ or /user/ link, which do not name the channel themselves. */
+    val canonicalByPage: StateFlow<Map<String, String>> = _canonicalByPage.asStateFlow()
+
+    private fun rememberCanonical(pageUrl: String, canonical: String) { _canonicalByPage.update { it + (pageUrl to canonical) } }
+
+    /** Resolves a channel page's canonical url once, so its Follow button reflects the real follow state. */
+    private fun resolveCanonical(pageUrl: String) {
+        if (com.abhinavxt.debforge.domain.YouTubeChannelLinks.canonicalUrl(pageUrl) != null || pageUrl in _canonicalByPage.value) return
+        viewModelScope.launch { subscriptions.canonicalChannelUrl(pageUrl)?.let { rememberCanonical(pageUrl, it) } }
+    }
 
     /** Follows the channel page's channel, or unfollows it when it is already followed. */
     fun toggleFollow(channelUrl: String) {
-        if (_followBusy.value) return
-        _followBusy.value = true
+        if (_followBusy.value == channelUrl) return
+        _followBusy.value = channelUrl
         viewModelScope.launch {
             try {
                 val canonical = com.abhinavxt.debforge.domain.YouTubeChannelLinks.canonicalUrl(channelUrl)
-                val existing = canonical?.let { c -> subscriptionDao.getByUrl(c) }
-                if (existing != null) subscriptions.unfollow(existing.id)
-                else subscriptions.follow(channelUrl)
+                    ?: _canonicalByPage.value[channelUrl] ?: subscriptions.canonicalChannelUrl(channelUrl)
+                val existing = canonical?.let { subscriptions.followedChannel(it) }
+                if (existing != null) {
+                    rememberCanonical(channelUrl, existing.url)
+                    subscriptions.unfollow(existing.id)
+                } else when (val r = subscriptions.follow(channelUrl)) {
+                    is com.abhinavxt.debforge.data.subscriptions.SubscriptionRepository.FollowResult.Followed -> rememberCanonical(channelUrl, r.sub.url)
+                    // Already followed (e.g. under another link form): the button now shows Following.
+                    is com.abhinavxt.debforge.data.subscriptions.SubscriptionRepository.FollowResult.AlreadyFollowing -> rememberCanonical(channelUrl, r.sub.url)
+                }
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
                 _events.trySend(YouTubeEvent.FollowFailed)
             } finally {
-                _followBusy.value = false
+                if (_followBusy.value == channelUrl) _followBusy.value = null
             }
         }
     }
 
     /** Opens a "New" tile like a search result, and marks it seen. */
     fun openNew(item: com.abhinavxt.debforge.data.subscriptions.NewFeedItem) {
-        val url = item.mediaUrl ?: return
-        viewModelScope.launch { subscriptionDao.markSeen(item.subId, item.itemKey) }
+        // The item key is the video id, so a tile without a stored url still opens.
+        val url = item.mediaUrl ?: "https://www.youtube.com/watch?v=${item.itemKey}"
+        viewModelScope.launch { subscriptions.markSeen(item.subId, item.itemKey) }
         pick(YouTubeSearchResult(url, item.title, item.subTitle, item.durationSec ?: 0, item.thumbUrl))
     }
 
-    fun markAllSeen() { viewModelScope.launch { subscriptionDao.markEverythingSeen() } }
+    fun markAllSeen() { viewModelScope.launch { subscriptions.markAllSeen() } }
 
     private val _trending = MutableStateFlow<List<YouTubeSearchResult>>(emptyList())
     /** Videos for the empty screen; stays empty when loading failed. */
@@ -366,6 +385,7 @@ class YouTubeViewModel @Inject constructor(
             _ui.value = try {
                 val page = resolver.channelVideos(nav.url)
                 nextPage = page.next
+                resolveCanonical(nav.url)
                 YouTubeUi.Results(nav.name, page.items, channelUrl = nav.url)
             } catch (e: CancellationException) {
                 throw e

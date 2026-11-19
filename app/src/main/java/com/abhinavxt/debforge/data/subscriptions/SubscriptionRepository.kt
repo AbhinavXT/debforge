@@ -65,6 +65,26 @@ class SubscriptionRepository @Inject constructor(
         return FollowResult.Followed(sub)
     }
 
+    /** The canonical url of the channel at [channelInput] (any channel link form): read from the link, or looked up for @handle, /c/ and /user/ links. Null when it cannot be resolved. */
+    suspend fun canonicalChannelUrl(channelInput: String): String? {
+        YouTubeChannelLinks.canonicalUrl(channelInput)?.let { return it }
+        val target = YouTubeChannelLinks.resolvable(channelInput) ?: return null
+        return try {
+            resolver.channelRef(target).url
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    /** The followed channel stored under the canonical [url], if any. */
+    suspend fun followedChannel(url: String): SubscriptionEntity? = dao.getByUrl(url)
+
+    suspend fun markSeen(subId: Long, itemKey: String) = dao.markSeen(subId, itemKey)
+
+    suspend fun markAllSeen() = dao.markEverythingSeen()
+
     suspend fun unfollow(id: Long) {
         dao.delete(id)
         syncJob()

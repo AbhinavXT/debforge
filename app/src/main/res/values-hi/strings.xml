@@ -467,8 +467,6 @@
     <string name="follow_stopped">%1$s को फ़ॉलो करना बंद किया।</string>
     <string name="follow_queued_one">नया एपिसोड कतार में: %1$s</string>
     <string name="follow_unfollow">अनफ़ॉलो करें</string>
-    <string name="set_follows">फ़ॉलो किए गए शो</string>
-    <string name="set_follows_none">अभी कोई नहीं। लाइब्रेरी में कोई शो खोलें और फ़ॉलो करें पर टैप करें।</string>
     <string name="set_follows_detail">आपके अकाउंट में आने वाले नए एपिसोड अपने-आप डाउनलोड होते हैं। DebForge हर कुछ घंटों में और लाइब्रेरी खुलने पर जाँच करता है।</string>
     <string name="notif_follow_one">नया एपिसोड: %1$s</string>
     <string name="notif_follow_body">डाउनलोड कतार में है। शुरू न हुआ हो तो DebForge खोलें।</string>
@@ -1043,4 +1041,5 @@
     <string name="set_sb_intro">इंट्रो</string>
     <string name="set_sb_outro">आउट्रो</string>
     <string name="set_sb_preview">प्रिव्यू</string>
+    <string name="set_sb_none_hint">कम से कम एक श्रेणी चुनें</string>
 </resources>

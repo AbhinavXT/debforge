@@ -488,8 +488,6 @@
     <string name="follow_stopped">Você deixou de seguir %1$s.</string>
     <string name="follow_queued_one">Episódio novo na fila: %1$s</string>
     <string name="follow_unfollow">Deixar de seguir</string>
-    <string name="set_follows">Séries seguidas</string>
-    <string name="set_follows_none">Nenhuma ainda. Abra uma série na Biblioteca e toque em Seguir.</string>
     <string name="set_follows_detail">Episódios novos que chegam à sua conta são baixados sozinhos. O DebForge verifica a cada poucas horas e sempre que a Biblioteca carrega.</string>
     <string name="notif_follow_one">Episódio novo: %1$s</string>
     <string name="notif_follow_body">Na fila para baixar. Abra o DebForge se não tiver começado.</string>
@@ -1092,4 +1090,5 @@
     <string name="set_sb_intro">Abertura</string>
     <string name="set_sb_outro">Encerramento</string>
     <string name="set_sb_preview">Prévia</string>
+    <string name="set_sb_none_hint">Escolha pelo menos uma categoria</string>
 </resources>

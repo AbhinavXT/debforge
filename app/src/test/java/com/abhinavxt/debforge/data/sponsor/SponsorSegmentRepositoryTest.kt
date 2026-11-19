@@ -50,6 +50,13 @@ class SponsorSegmentRepositoryTest {
         assertEquals(0, lookup.calls)
     }
 
+    @Test fun noCategoriesReturnsEmptyAndNeverFetches() = runBlocking {
+        cats = emptySet()
+        assertTrue(repo.segmentsFor("v").isEmpty())
+        repo.prefetch("v")
+        assertEquals(0, lookup.calls)
+    }
+
     @Test fun fetchesOnceThenServesFromCacheFilteredToEnabledCategories() = runBlocking {
         assertEquals(listOf(sponsor, promo), repo.segmentsFor("v"))
         assertEquals(listOf(sponsor, promo), repo.segmentsFor("v"))

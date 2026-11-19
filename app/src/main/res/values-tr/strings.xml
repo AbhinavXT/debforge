@@ -467,8 +467,6 @@
     <string name="follow_stopped">%1$s artık takip edilmiyor.</string>
     <string name="follow_queued_one">Yeni bölüm sırada: %1$s</string>
     <string name="follow_unfollow">Takibi bırak</string>
-    <string name="set_follows">Takip edilen diziler</string>
-    <string name="set_follows_none">Henüz yok. Kitaplık\'ta bir dizi açıp Takip et\'e dokunun.</string>
     <string name="set_follows_detail">Hesabınıza gelen yeni bölümler otomatik indirilir. DebForge birkaç saatte bir ve Kitaplık her yüklendiğinde kontrol eder.</string>
     <string name="notif_follow_one">Yeni bölüm: %1$s</string>
     <string name="notif_follow_body">İndirme sırasında. Başlamadıysa DebForge\'u açın.</string>
@@ -1043,4 +1041,5 @@
     <string name="set_sb_intro">Giriş</string>
     <string name="set_sb_outro">Bitiş</string>
     <string name="set_sb_preview">Önizleme</string>
+    <string name="set_sb_none_hint">En az bir kategori seçin</string>
 </resources>

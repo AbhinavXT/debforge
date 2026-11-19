@@ -161,6 +161,7 @@ fun YouTubeScreen(
     val newItems by viewModel.newItems.collectAsStateWithLifecycle()
     val followedUrls by viewModel.followedUrls.collectAsStateWithLifecycle()
     val followBusy by viewModel.followBusy.collectAsStateWithLifecycle()
+    val canonicalByPage by viewModel.canonicalByPage.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
     val context = LocalContext.current
     // Android only lets the focused window read the clipboard, so read when focus arrives, and again on tapping Paste.
@@ -273,6 +274,7 @@ fun YouTubeScreen(
                     onMarkAllSeen = viewModel::markAllSeen,
                     followedUrls = followedUrls,
                     followBusy = followBusy,
+                    canonicalByPage = canonicalByPage,
                     onToggleFollow = viewModel::toggleFollow,
                 )
             }
@@ -322,7 +324,8 @@ internal fun YouTubeContent(
     onNew: (NewFeedItem) -> Unit = {},
     onMarkAllSeen: () -> Unit = {},
     followedUrls: Set<String> = emptySet(),
-    followBusy: Boolean = false,
+    followBusy: String? = null,
+    canonicalByPage: Map<String, String> = emptyMap(),
     onToggleFollow: (String) -> Unit = {},
 ) {
     val cfg = androidx.compose.ui.platform.LocalConfiguration.current
@@ -341,7 +344,7 @@ internal fun YouTubeContent(
         when (state) {
             YouTubeUi.Empty -> EmptyState(input, clipLink, onInput, onSubmit, onPaste, trending, recent, onRemoveRecent, onClearRecent, onPick, onChannel, onLoadTrending, onPlayResult, streamingUrl, newItems, onNew, onMarkAllSeen)
             YouTubeUi.Resolving -> Skeleton()
-            is YouTubeUi.Results -> ResultsState(state, input, onInput, onSubmit, onPaste, onPick, onChannel, onLoadMore, resultsList, onPlayResult, streamingUrl, followedUrls, followBusy, onToggleFollow)
+            is YouTubeUi.Results -> ResultsState(state, input, onInput, onSubmit, onPaste, onPick, onChannel, onLoadMore, resultsList, onPlayResult, streamingUrl, followedUrls, followBusy, canonicalByPage, onToggleFollow)
             is YouTubeUi.Preview -> PreviewState(state, onReset, onMode, onSelect, onSubtitle, onDownload, onPlay, onChannel)
             is YouTubeUi.Playlist -> PlaylistState(state, onReset, onToggle, onSelectAll, onQuality, onDownloadPlaylist, onCancelBatch, onChannel)
             is YouTubeUi.Error -> MessageState(
@@ -436,7 +439,8 @@ private fun ResultsState(
     onPlay: (YouTubeSearchResult) -> Unit,
     streamingUrl: String?,
     followedUrls: Set<String>,
-    followBusy: Boolean,
+    followBusy: String?,
+    canonicalByPage: Map<String, String>,
     onToggleFollow: (String) -> Unit,
 ) {
     val focus = remember { FocusRequester() }
@@ -486,7 +490,9 @@ private fun ResultsState(
         if (r.channelUrl != null) {
             item {
                 val channelUrl = r.channelUrl
-                val following = com.abhinavxt.debforge.domain.YouTubeChannelLinks.canonicalUrl(channelUrl)?.let { it in followedUrls } == true
+                val canonical = com.abhinavxt.debforge.domain.YouTubeChannelLinks.canonicalUrl(channelUrl) ?: canonicalByPage[channelUrl]
+                val following = canonical != null && canonical in followedUrls
+                val followBusy = followBusy == channelUrl
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text(r.query, style = MaterialTheme.typography.titleMedium, maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f).semantics { heading() })
                     val btnMod = Modifier.heightIn(min = 48.dp).focusRequester(followFocus)
@@ -846,7 +852,7 @@ private fun NewRow(items: List<NewFeedItem>, onOpen: (NewFeedItem) -> Unit, onMa
                 Column(
                     Modifier.width(200.dp).clip(RoundedCornerShape(12.dp))
                         .focusRing(interaction, RoundedCornerShape(12.dp))
-                        .clickable(interactionSource = interaction, indication = null, onClick = { onOpen(item) })
+                        .clickable(interactionSource = interaction, indication = null, role = Role.Button, onClick = { onOpen(item) })
                         .padding(4.dp),
                     verticalArrangement = Arrangement.spacedBy(6.dp),
                 ) {

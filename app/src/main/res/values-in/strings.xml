@@ -446,8 +446,6 @@
     <string name="follow_stopped">Berhenti mengikuti %1$s.</string>
     <string name="follow_queued_one">Episode baru diantrekan: %1$s</string>
     <string name="follow_unfollow">Berhenti ikuti</string>
-    <string name="set_follows">Serial yang diikuti</string>
-    <string name="set_follows_none">Belum ada. Buka serial di Pustaka lalu ketuk Ikuti.</string>
     <string name="set_follows_detail">Episode baru yang masuk ke akun Anda diunduh otomatis. DebForge memeriksa setiap beberapa jam dan setiap kali Pustaka dimuat.</string>
     <string name="notif_follow_one">Episode baru: %1$s</string>
     <string name="notif_follow_body">Diantrekan untuk diunduh. Buka DebForge jika belum mulai.</string>
@@ -994,4 +992,5 @@
     <string name="set_sb_intro">Intro</string>
     <string name="set_sb_outro">Outro</string>
     <string name="set_sb_preview">Pratinjau</string>
+    <string name="set_sb_none_hint">Pilih setidaknya satu kategori</string>
 </resources>

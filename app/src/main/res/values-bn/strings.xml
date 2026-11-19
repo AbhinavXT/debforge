@@ -467,8 +467,6 @@
     <string name="follow_stopped">%1$s ফলো করা বন্ধ হয়েছে।</string>
     <string name="follow_queued_one">নতুন এপিসোড সারিতে: %1$s</string>
     <string name="follow_unfollow">আনফলো করুন</string>
-    <string name="set_follows">ফলো করা শো</string>
-    <string name="set_follows_none">এখনও নেই। লাইব্রেরিতে একটি শো খুলে ফলো করুন-এ ট্যাপ করুন।</string>
     <string name="set_follows_detail">আপনার অ্যাকাউন্টে আসা নতুন এপিসোড নিজে থেকে ডাউনলোড হয়। DebForge কয়েক ঘণ্টা পরপর এবং লাইব্রেরি লোড হলে দেখে।</string>
     <string name="notif_follow_one">নতুন এপিসোড: %1$s</string>
     <string name="notif_follow_body">ডাউনলোডের সারিতে। শুরু না হলে DebForge খুলুন।</string>
@@ -1043,4 +1041,5 @@
     <string name="set_sb_intro">ইন্ট্রো</string>
     <string name="set_sb_outro">আউট্রো</string>
     <string name="set_sb_preview">প্রিভিউ</string>
+    <string name="set_sb_none_hint">কমপক্ষে একটি বিভাগ বেছে নিন</string>
 </resources>

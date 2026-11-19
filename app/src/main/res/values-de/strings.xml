@@ -467,8 +467,6 @@
     <string name="follow_stopped">Du folgst %1$s nicht mehr.</string>
     <string name="follow_queued_one">Neue Folge eingereiht: %1$s</string>
     <string name="follow_unfollow">Nicht mehr folgen</string>
-    <string name="set_follows">Gefolgte Serien</string>
-    <string name="set_follows_none">Noch keine. Öffne eine Serie in der Mediathek und tippe auf Folgen.</string>
     <string name="set_follows_detail">Neue Folgen, die in deinem Konto ankommen, werden automatisch geladen. DebForge prüft alle paar Stunden und immer, wenn die Mediathek lädt.</string>
     <string name="notif_follow_one">Neue Folge: %1$s</string>
     <string name="notif_follow_body">Zum Download eingereiht. Öffne DebForge, falls es nicht startet.</string>
@@ -1043,4 +1041,5 @@
     <string name="set_sb_intro">Intro</string>
     <string name="set_sb_outro">Outro</string>
     <string name="set_sb_preview">Vorschau</string>
+    <string name="set_sb_none_hint">Wähle mindestens eine Kategorie</string>
 </resources>

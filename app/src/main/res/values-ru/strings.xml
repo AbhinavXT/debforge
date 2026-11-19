@@ -509,8 +509,6 @@
     <string name="follow_stopped">Вы больше не следите за «%1$s».</string>
     <string name="follow_queued_one">Новая серия в очереди: %1$s</string>
     <string name="follow_unfollow">Не следить</string>
-    <string name="set_follows">Отслеживаемые сериалы</string>
-    <string name="set_follows_none">Пока нет. Откройте сериал в библиотеке и нажмите «Следить».</string>
     <string name="set_follows_detail">Новые серии, попавшие в ваш аккаунт, скачиваются автоматически. DebForge проверяет каждые пару часов и при загрузке библиотеки.</string>
     <string name="notif_follow_one">Новая серия: %1$s</string>
     <string name="notif_follow_body">В очереди на загрузку. Откройте DebForge, если загрузка не началась.</string>
@@ -1141,4 +1139,5 @@
     <string name="set_sb_intro">Заставка</string>
     <string name="set_sb_outro">Концовка</string>
     <string name="set_sb_preview">Анонс</string>
+    <string name="set_sb_none_hint">Выберите хотя бы одну категорию</string>
 </resources>

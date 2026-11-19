@@ -446,8 +446,6 @@
     <string name="follow_stopped">已取消追《%1$s》。</string>
     <string name="follow_queued_one">新剧集已加入队列：%1$s</string>
     <string name="follow_unfollow">取消追剧</string>
-    <string name="set_follows">已追剧集</string>
-    <string name="set_follows_none">暂无。在媒体库中打开一部剧集，点按“追剧”。</string>
     <string name="set_follows_detail">进入账户的新剧集会自动下载。DebForge 每隔几小时及每次加载媒体库时检查一次。</string>
     <string name="notif_follow_one">新剧集：%1$s</string>
     <string name="notif_follow_body">已加入下载队列。若未开始，请打开 DebForge。</string>
@@ -994,4 +992,5 @@
     <string name="set_sb_intro">片头</string>
     <string name="set_sb_outro">片尾</string>
     <string name="set_sb_preview">预告</string>
+    <string name="set_sb_none_hint">至少选择一个类别</string>
 </resources>

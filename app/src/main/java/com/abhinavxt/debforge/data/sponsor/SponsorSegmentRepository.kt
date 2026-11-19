@@ -35,6 +35,7 @@ class SponsorSegmentRepository(
     suspend fun segmentsFor(videoId: String): List<SponsorSegment> {
         if (videoId.isBlank() || !enabled()) return emptyList()
         val wanted = categories()
+        if (wanted.isEmpty()) return emptyList()
         return load(videoId, wanted).filter { it.category in wanted }
     }
 
@@ -42,7 +43,9 @@ class SponsorSegmentRepository(
     suspend fun prefetch(videoId: String) {
         try {
             if (videoId.isBlank() || !enabled()) return
-            load(videoId, categories())
+            val wanted = categories()
+            if (wanted.isEmpty()) return
+            load(videoId, wanted)
         } catch (e: CancellationException) {
             throw e
         } catch (_: Exception) {

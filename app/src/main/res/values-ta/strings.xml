@@ -467,8 +467,6 @@
     <string name="follow_stopped">%1$s-ஐப் பின்தொடர்வது நிறுத்தப்பட்டது.</string>
     <string name="follow_queued_one">புதிய எபிசோட் வரிசையில்: %1$s</string>
     <string name="follow_unfollow">பின்தொடர்வதை நிறுத்து</string>
-    <string name="set_follows">பின்தொடரும் தொடர்கள்</string>
-    <string name="set_follows_none">இன்னும் இல்லை. நூலகத்தில் ஒரு தொடரைத் திறந்து பின்தொடர் என்பதைத் தட்டவும்.</string>
     <string name="set_follows_detail">உங்கள் கணக்கில் வரும் புதிய எபிசோடுகள் தானாகப் பதிவிறக்கப்படும். DebForge சில மணிநேரத்துக்கு ஒருமுறையும் நூலகம் ஏற்றப்படும்போதும் சரிபார்க்கும்.</string>
     <string name="notif_follow_one">புதிய எபிசோட்: %1$s</string>
     <string name="notif_follow_body">பதிவிறக்க வரிசையில் உள்ளது. தொடங்கவில்லை என்றால் DebForge-ஐத் திறக்கவும்.</string>
@@ -1043,4 +1041,5 @@
     <string name="set_sb_intro">இன்ட்ரோ</string>
     <string name="set_sb_outro">அவுட்ரோ</string>
     <string name="set_sb_preview">முன்னோட்டம்</string>
+    <string name="set_sb_none_hint">குறைந்தது ஒரு வகையைத் தேர்ந்தெடுக்கவும்</string>
 </resources>
