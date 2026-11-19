@@ -705,6 +705,9 @@
     <string name="player_skip_recap">Rückblick überspringen</string>
     <string name="player_skip_credits">Abspann überspringen</string>
     <string name="player_skip_preview">Vorschau überspringen</string>
+    <string name="player_skip_sponsor">Sponsor überspringen</string>
+    <string name="player_skip_self_promo">Eigenwerbung überspringen</string>
+    <string name="player_skip_interaction">Aufforderung überspringen</string>
     <string name="player_skipped_intro">Intro übersprungen</string>
     <string name="player_skipped_recap">Rückblick übersprungen</string>
     <string name="set_auto_skip_intro">Intros automatisch überspringen</string>

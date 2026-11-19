@@ -741,6 +741,9 @@
     <string name="player_skip_recap">Saltar resumen</string>
     <string name="player_skip_credits">Saltar créditos</string>
     <string name="player_skip_preview">Saltar avance</string>
+    <string name="player_skip_sponsor">Saltar patrocinio</string>
+    <string name="player_skip_self_promo">Saltar autopromoción</string>
+    <string name="player_skip_interaction">Saltar recordatorio</string>
     <string name="player_skipped_intro">Intro saltada</string>
     <string name="player_skipped_recap">Resumen saltado</string>
     <string name="set_auto_skip_intro">Saltar intros automáticamente</string>

@@ -705,6 +705,9 @@
     <string name="player_skip_recap">रीकॅप वगळा</string>
     <string name="player_skip_credits">क्रेडिट वगळा</string>
     <string name="player_skip_preview">प्रिव्ह्यू वगळा</string>
+    <string name="player_skip_sponsor">स्पॉन्सर वगळा</string>
+    <string name="player_skip_self_promo">स्वतःची जाहिरात वगळा</string>
+    <string name="player_skip_interaction">विनंती वगळा</string>
     <string name="player_skipped_intro">इंट्रो वगळला</string>
     <string name="player_skipped_recap">रीकॅप वगळला</string>
     <string name="set_auto_skip_intro">इंट्रो आपोआप वगळा</string>

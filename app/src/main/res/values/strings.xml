@@ -707,6 +707,9 @@
     <string name="player_skip_recap">Skip recap</string>
     <string name="player_skip_credits">Skip credits</string>
     <string name="player_skip_preview">Skip preview</string>
+    <string name="player_skip_sponsor">Skip sponsor</string>
+    <string name="player_skip_self_promo">Skip self-promotion</string>
+    <string name="player_skip_interaction">Skip reminder</string>
     <string name="player_skipped_intro">Skipped the intro</string>
     <string name="player_skipped_recap">Skipped the recap</string>
     <string name="set_auto_skip_intro">Skip intros automatically</string>

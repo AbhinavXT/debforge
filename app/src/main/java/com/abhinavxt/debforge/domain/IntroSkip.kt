@@ -8,7 +8,7 @@ package com.abhinavxt.debforge.domain
  */
 object IntroSkip {
 
-    enum class Kind { INTRO, RECAP, CREDITS, PREVIEW }
+    enum class Kind { INTRO, RECAP, CREDITS, PREVIEW, SPONSOR, SELF_PROMO, INTERACTION }
 
     data class Segment(val kind: Kind, val startMs: Long, val endMs: Long)
 

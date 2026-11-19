@@ -669,6 +669,9 @@
     <string name="player_skip_recap">Lewati rekap</string>
     <string name="player_skip_credits">Lewati kredit</string>
     <string name="player_skip_preview">Lewati cuplikan</string>
+    <string name="player_skip_sponsor">Lewati sponsor</string>
+    <string name="player_skip_self_promo">Lewati promosi diri</string>
+    <string name="player_skip_interaction">Lewati pengingat</string>
     <string name="player_skipped_intro">Intro dilewati</string>
     <string name="player_skipped_recap">Rekap dilewati</string>
     <string name="set_auto_skip_intro">Lewati intro otomatis</string>

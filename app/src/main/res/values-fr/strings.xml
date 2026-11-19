@@ -741,6 +741,9 @@
     <string name="player_skip_recap">Passer le résumé</string>
     <string name="player_skip_credits">Passer le générique de fin</string>
     <string name="player_skip_preview">Passer l’aperçu</string>
+    <string name="player_skip_sponsor">Passer le sponsor</string>
+    <string name="player_skip_self_promo">Passer l’autopromotion</string>
+    <string name="player_skip_interaction">Passer le rappel</string>
     <string name="player_skipped_intro">Générique passé</string>
     <string name="player_skipped_recap">Résumé passé</string>
     <string name="set_auto_skip_intro">Passer les génériques automatiquement</string>

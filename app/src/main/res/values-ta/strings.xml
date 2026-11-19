@@ -705,6 +705,9 @@
     <string name="player_skip_recap">முன்கதையைத் தவிர்</string>
     <string name="player_skip_credits">கிரெடிட்ஸைத் தவிர்</string>
     <string name="player_skip_preview">முன்னோட்டத்தைத் தவிர்</string>
+    <string name="player_skip_sponsor">ஸ்பான்சரைத் தவிர்</string>
+    <string name="player_skip_self_promo">சுய விளம்பரத்தைத் தவிர்</string>
+    <string name="player_skip_interaction">நினைவூட்டலைத் தவிர்</string>
     <string name="player_skipped_intro">அறிமுகம் தவிர்க்கப்பட்டது</string>
     <string name="player_skipped_recap">முன்கதை தவிர்க்கப்பட்டது</string>
     <string name="set_auto_skip_intro">அறிமுகங்களைத் தானாகத் தவிர்</string>

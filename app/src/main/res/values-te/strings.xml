@@ -705,6 +705,9 @@
     <string name="player_skip_recap">రీక్యాప్ దాటవేయండి</string>
     <string name="player_skip_credits">క్రెడిట్స్ దాటవేయండి</string>
     <string name="player_skip_preview">ప్రివ్యూ దాటవేయండి</string>
+    <string name="player_skip_sponsor">స్పాన్సర్ దాటవేయండి</string>
+    <string name="player_skip_self_promo">స్వీయ ప్రచారం దాటవేయండి</string>
+    <string name="player_skip_interaction">రిమైండర్ దాటవేయండి</string>
     <string name="player_skipped_intro">ఇంట్రో దాటవేయబడింది</string>
     <string name="player_skipped_recap">రీక్యాప్ దాటవేయబడింది</string>
     <string name="set_auto_skip_intro">ఇంట్రోలను ఆటోమేటిక్‌గా దాటవేయండి</string>

@@ -705,6 +705,9 @@
     <string name="player_skip_recap">Özeti atla</string>
     <string name="player_skip_credits">Jeneriği atla</string>
     <string name="player_skip_preview">Fragmanı atla</string>
+    <string name="player_skip_sponsor">Sponsoru atla</string>
+    <string name="player_skip_self_promo">Kendi tanıtımını atla</string>
+    <string name="player_skip_interaction">Hatırlatmayı atla</string>
     <string name="player_skipped_intro">Giriş atlandı</string>
     <string name="player_skipped_recap">Özet atlandı</string>
     <string name="set_auto_skip_intro">Girişleri otomatik atla</string>

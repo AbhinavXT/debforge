@@ -669,6 +669,9 @@
     <string name="player_skip_recap">跳过前情提要</string>
     <string name="player_skip_credits">跳过片尾</string>
     <string name="player_skip_preview">跳过预告</string>
+    <string name="player_skip_sponsor">跳过赞助</string>
+    <string name="player_skip_self_promo">跳过自我推广</string>
+    <string name="player_skip_interaction">跳过提醒</string>
     <string name="player_skipped_intro">已跳过片头</string>
     <string name="player_skipped_recap">已跳过前情提要</string>
     <string name="set_auto_skip_intro">自动跳过片头</string>

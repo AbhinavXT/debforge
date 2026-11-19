@@ -777,6 +777,9 @@
     <string name="player_skip_recap">Пропустить пересказ</string>
     <string name="player_skip_credits">Пропустить титры</string>
     <string name="player_skip_preview">Пропустить анонс</string>
+    <string name="player_skip_sponsor">Пропустить спонсора</string>
+    <string name="player_skip_self_promo">Пропустить самопиар</string>
+    <string name="player_skip_interaction">Пропустить напоминание</string>
     <string name="player_skipped_intro">Заставка пропущена</string>
     <string name="player_skipped_recap">Пересказ пропущен</string>
     <string name="set_auto_skip_intro">Пропускать заставки автоматически</string>

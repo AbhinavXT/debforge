@@ -53,6 +53,8 @@ class SettingsStore @Inject constructor(
     private val keyAutoplayNext = booleanPreferencesKey("autoplay_next")
     private val keyPip = booleanPreferencesKey("picture_in_picture")
     private val keyAutoSkipIntro = booleanPreferencesKey("auto_skip_intro")
+    private val keySponsorBlock = booleanPreferencesKey("sponsorblock_enabled")
+    private val keySponsorCategories = stringPreferencesKey("sponsorblock_categories")
     private val keyNightMode = booleanPreferencesKey("player_night_mode")
     private val keyStreamPreviews = booleanPreferencesKey("player_stream_previews")
     private val keyPlayerArtColor = booleanPreferencesKey("player_art_color")
@@ -162,6 +164,16 @@ class SettingsStore @Inject constructor(
     /** Player: jump over chapters marked intro / recap as they start, instead of offering a button. Off by default. */
     val autoSkipIntroFlow: Flow<Boolean> = context.settingsDataStore.data.map { it[keyAutoSkipIntro] ?: false }
     suspend fun setAutoSkipIntro(v: Boolean) = context.settingsDataStore.edit { it[keyAutoSkipIntro] = v }
+
+    val sponsorBlockEnabledFlow: Flow<Boolean> = context.settingsDataStore.data.map { it[keySponsorBlock] ?: false }
+    suspend fun setSponsorBlockEnabled(v: Boolean) = context.settingsDataStore.edit { it[keySponsorBlock] = v }
+
+    /** SponsorBlock category names, comma separated in storage. */
+    val sponsorBlockCategoriesFlow: Flow<Set<String>> = context.settingsDataStore.data.map { p ->
+        p[keySponsorCategories]?.split(',')?.filter { it.isNotBlank() }?.toSet() ?: DEFAULT_SPONSOR_CATEGORIES
+    }
+    suspend fun setSponsorBlockCategories(v: Set<String>) =
+        context.settingsDataStore.edit { it[keySponsorCategories] = v.sorted().joinToString(",") }
 
     /** Player: preview frames while seeking a stream (costs data; downloaded files always have them). Off by default. */
     val streamPreviewsFlow: Flow<Boolean> = context.settingsDataStore.data.map { it[keyStreamPreviews] ?: false }
@@ -313,12 +325,12 @@ class SettingsStore @Inject constructor(
     private val backupBooleans get() = listOf(
         keyDynamicColor, keyPosterView, keyOrganize, keyWifiOnly, keyChargingOnly,
         keyScheduleOn, keyAutoUpdate, keyRemoveAfter, keyPureBlack, keyShowExtras, keyClipboardOffer, keyAdBlock,
-        keyInternalPlayer, keyAutoplayNext, keyPip, keyAutoSkipIntro, keyNightMode, keyStreamPreviews,
+        keyInternalPlayer, keyAutoplayNext, keyPip, keyAutoSkipIntro, keySponsorBlock, keyNightMode, keyStreamPreviews,
         keyPlayerArtColor, keyPlayerGestures, keyPlayerShowRemaining, keyPlayerBackground, keyHistoryPaused
     )
     /** May be blank on purpose (nothing avoided, no site left unblocked). */
     private val backupStrings get() = listOf(keyReleaseAvoid, keyReleasePrefer, keyAdBlockOffSites, keyYouTubeQuality,
-        keyAudioLanguage, keySubtitleLanguage, keySubtitleStyle)
+        keyAudioLanguage, keySubtitleLanguage, keySubtitleStyle, keySponsorCategories)
     private val backupInts get() = listOf(keySortOrder, keyThemeMode, keyScheduleStart, keyScheduleEnd, keySpeedLimit, keyAutoDeleteDays,
         keyAudioSkipSeconds, keyStorageLimitGb)
 
@@ -406,3 +418,6 @@ data class DownloadRules(
 val STORAGE_LIMITS_GB = listOf(0, 1, 2, 5, 10, 20, 50, 100, 200, 500)
 
 fun validStorageLimitGb(v: Int?): Int = if (v != null && v in STORAGE_LIMITS_GB) v else 0
+
+/** SponsorBlock categories skipped until the user chooses others. */
+val DEFAULT_SPONSOR_CATEGORIES = setOf("sponsor", "selfpromo", "interaction")

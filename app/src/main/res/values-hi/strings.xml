@@ -705,6 +705,9 @@
     <string name="player_skip_recap">रीकैप छोड़ें</string>
     <string name="player_skip_credits">क्रेडिट छोड़ें</string>
     <string name="player_skip_preview">प्रीव्यू छोड़ें</string>
+    <string name="player_skip_sponsor">स्पॉन्सर छोड़ें</string>
+    <string name="player_skip_self_promo">स्व-प्रचार छोड़ें</string>
+    <string name="player_skip_interaction">अनुरोध छोड़ें</string>
     <string name="player_skipped_intro">इंट्रो छोड़ दिया</string>
     <string name="player_skipped_recap">रीकैप छोड़ दिया</string>
     <string name="set_auto_skip_intro">इंट्रो अपने-आप छोड़ें</string>

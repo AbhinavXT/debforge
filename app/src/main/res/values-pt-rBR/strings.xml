@@ -741,6 +741,9 @@
     <string name="player_skip_recap">Pular recapitulação</string>
     <string name="player_skip_credits">Pular créditos</string>
     <string name="player_skip_preview">Pular prévia</string>
+    <string name="player_skip_sponsor">Pular patrocínio</string>
+    <string name="player_skip_self_promo">Pular autopromoção</string>
+    <string name="player_skip_interaction">Pular lembrete</string>
     <string name="player_skipped_intro">Abertura pulada</string>
     <string name="player_skipped_recap">Recapitulação pulada</string>
     <string name="set_auto_skip_intro">Pular aberturas automaticamente</string>

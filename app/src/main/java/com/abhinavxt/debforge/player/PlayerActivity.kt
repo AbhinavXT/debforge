@@ -568,6 +568,9 @@ class PlayerActivity : ComponentActivity() {
                     IntroSkip.Kind.RECAP -> R.string.player_skip_recap
                     IntroSkip.Kind.CREDITS -> R.string.player_skip_credits
                     IntroSkip.Kind.PREVIEW -> R.string.player_skip_preview
+                    IntroSkip.Kind.SPONSOR -> R.string.player_skip_sponsor
+                    IntroSkip.Kind.SELF_PROMO -> R.string.player_skip_self_promo
+                    IntroSkip.Kind.INTERACTION -> R.string.player_skip_interaction
                 }
             ) {
                 doneSkips += segment.startMs

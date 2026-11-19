@@ -705,6 +705,9 @@
     <string name="player_skip_recap">রিক্যাপ বাদ দিন</string>
     <string name="player_skip_credits">ক্রেডিট বাদ দিন</string>
     <string name="player_skip_preview">প্রিভিউ বাদ দিন</string>
+    <string name="player_skip_sponsor">স্পনসর বাদ দিন</string>
+    <string name="player_skip_self_promo">নিজের প্রচার বাদ দিন</string>
+    <string name="player_skip_interaction">অনুরোধ বাদ দিন</string>
     <string name="player_skipped_intro">ইন্ট্রো বাদ দেওয়া হয়েছে</string>
     <string name="player_skipped_recap">রিক্যাপ বাদ দেওয়া হয়েছে</string>
     <string name="set_auto_skip_intro">ইন্ট্রো নিজে থেকে বাদ দিন</string>
