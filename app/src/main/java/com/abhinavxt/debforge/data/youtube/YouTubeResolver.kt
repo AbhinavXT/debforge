@@ -52,6 +52,8 @@ sealed class YouTubeException(message: String, cause: Throwable? = null) : Excep
     class PlaylistOnly : YouTubeException("Playlists aren't supported; open a single video")
     class SignInRequired(cause: Throwable? = null) : YouTubeException("Age restricted or sign-in required", cause)
     class Unavailable(message: String = "Video unavailable or private", cause: Throwable? = null) : YouTubeException(message, cause)
+    /** The input was not a video link at all: a caller bug, never a property of the video, so it must not count as "gone". */
+    class NotAVideoLink : YouTubeException("Not a YouTube video link")
     class Network(cause: Throwable?) : YouTubeException("Network error", cause)
     class Failed(cause: Throwable?) : YouTubeException(cause?.message ?: "Could not read the video", cause)
 }
@@ -63,7 +65,7 @@ class YouTubeResolver @Inject constructor(@ApiHttpClient private val client: OkH
     suspend fun resolve(url: String): YouTubeVideo = BlockingCalls.run {
         val id = YouTubeLinks.videoId(url)
             ?: throw if (YouTubeLinks.isPlaylistOnly(url)) YouTubeException.PlaylistOnly()
-            else YouTubeException.Unavailable("Not a YouTube video link")
+            else YouTubeException.NotAVideoLink()
         val info = try {
             init
             StreamInfo.getInfo("https://www.youtube.com/watch?v=$id")

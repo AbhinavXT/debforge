@@ -14,6 +14,7 @@ fun errorKind(e: Throwable): YouTubeErrorKind = when (e) {
     is YouTubeException.PlaylistOnly -> YouTubeErrorKind.PLAYLIST
     is YouTubeException.SignInRequired -> YouTubeErrorKind.SIGN_IN
     is YouTubeException.Unavailable -> YouTubeErrorKind.UNAVAILABLE
+    is YouTubeException.NotAVideoLink -> YouTubeErrorKind.NOT_LINK
     is YouTubeException.Network -> YouTubeErrorKind.NETWORK
     else -> YouTubeErrorKind.GENERIC
 }

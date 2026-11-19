@@ -13,6 +13,10 @@ object YouTubeLinks {
     fun videoId(text: String): String? =
         (long.find(text) ?: short.find(text))?.groupValues?.get(1)
 
+    /** A link the resolver accepts for a feed item: its own [mediaUrl] when that is a video link, else the watch URL of [itemKey]. */
+    fun watchUrl(itemKey: String, mediaUrl: String? = null): String =
+        mediaUrl?.takeIf { videoId(it) != null } ?: "https://www.youtube.com/watch?v=$itemKey"
+
     fun isPlaylistOnly(text: String): Boolean = videoId(text) == null && playlist.containsMatchIn(text)
 
     private val listParam = Regex("[?&]list=([A-Za-z0-9_-]+)")

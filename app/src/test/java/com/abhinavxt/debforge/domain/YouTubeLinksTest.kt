@@ -75,4 +75,19 @@ class YouTubeLinksTest {
         assertNull(YouTubeLinks.historyQuery("https://www.youtube.com/@somechannel"))
         assertNull(YouTubeLinks.historyQuery("https://example.com/page"))
     }
+
+    @Test fun watchUrlIsAlwaysSomethingTheResolverAccepts() {
+        // A bare id (what the feed stores as the item key) is not a link; the watch URL built from it is.
+        assertNull(YouTubeLinks.videoId(id))
+        assertEquals(id, YouTubeLinks.videoId(YouTubeLinks.watchUrl(id)))
+        assertEquals(id, YouTubeLinks.videoId(YouTubeLinks.watchUrl(id, null)))
+        assertEquals(id, YouTubeLinks.videoId(YouTubeLinks.watchUrl(id, "")))
+        assertEquals(id, YouTubeLinks.videoId(YouTubeLinks.watchUrl(id, "https://example.com/not-a-video")))
+        assertEquals("https://youtu.be/$id", YouTubeLinks.watchUrl(id, "https://youtu.be/$id"))
+    }
+
+    @Test fun notALinkErrorIsNotAGoneVideo() {
+        val e = com.abhinavxt.debforge.data.youtube.YouTubeException.NotAVideoLink()
+        assertFalse(e is com.abhinavxt.debforge.data.youtube.YouTubeException.Unavailable)
+    }
 }

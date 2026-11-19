@@ -12,6 +12,7 @@ import com.abhinavxt.debforge.data.subscriptions.SubscriptionDao
 import com.abhinavxt.debforge.data.subscriptions.SubscriptionEntity
 import com.abhinavxt.debforge.data.subscriptions.SubscriptionKind
 import com.abhinavxt.debforge.data.youtube.YouTubeException
+import com.abhinavxt.debforge.domain.YouTubeLinks
 import com.abhinavxt.debforge.data.youtube.YouTubeResolver
 import com.abhinavxt.debforge.domain.FeedStore
 import com.abhinavxt.debforge.domain.SubscriptionRun
@@ -63,7 +64,7 @@ class SubscriptionChecker @Inject constructor(
             },
             enqueue = { sub, item ->
                 if (sub.kind == SubscriptionKind.PODCAST) podcastEnqueuer.enqueue(sub, item, mimeTypes[sub.id to item.itemKey])
-                else enqueuer.enqueue(item.itemKey, modeFor(sub), foreground = false)
+                else enqueuer.enqueue(YouTubeLinks.watchUrl(item.itemKey, item.mediaUrl), modeFor(sub), foreground = false)
             },
             onError = { sub, e -> Log.w("SubscriptionCheck", "Check of ${sub.url} failed", e) },
             guard = { block -> exclusive { block() } },

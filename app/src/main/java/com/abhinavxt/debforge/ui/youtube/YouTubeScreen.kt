@@ -799,6 +799,8 @@ private fun EmptyState(
                 modifier = Modifier.heightIn(min = 48.dp),
             )
         }
+        // New uploads sit above the recent searches, which can fill the screen.
+        if (newItems.isNotEmpty()) NewRow(newItems, onNew, onMarkAllSeen)
         val shown = recent.take(RECENT_SHOWN)
         if (shown.isNotEmpty()) {
             // The sentence stays above, shorter: the list below is what this screen is for once there is one.
@@ -817,7 +819,6 @@ private fun EmptyState(
                 modifier = Modifier.heightIn(min = if (trending.isEmpty()) 280.dp else 160.dp),
             )
         }
-        if (newItems.isNotEmpty()) NewRow(newItems, onNew, onMarkAllSeen)
         if (trending.isNotEmpty()) {
             Text(stringResource(R.string.yt_trending), style = MaterialTheme.typography.titleMedium, modifier = Modifier.semantics { heading() })
             BoxWithConstraints(Modifier.fillMaxWidth()) {
