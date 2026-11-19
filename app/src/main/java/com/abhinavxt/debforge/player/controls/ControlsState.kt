@@ -38,7 +38,8 @@ data class PlaybackSnapshot(
     val bufferedMs: Long = 0,
     /** 0 while unknown. */
     val durationMs: Long = 0,
-    val speed: Float = 1f
+    val speed: Float = 1f,
+    val live: Boolean = false
 )
 
 /**
@@ -67,6 +68,12 @@ class ControlsState {
     /** The file's chapters (Matroska): marks on the seek bar and the Chapters list. */
     var chapters by mutableStateOf<List<com.abhinavxt.debforge.domain.MkvChapters.Chapter>>(emptyList())
     var pipAvailable by mutableStateOf(false)
+    /** The item has an audio track to hand over to the background player ("Play as audio"). */
+    var audioHandoffReady by mutableStateOf(false)
+    /** Playing on a TV (DLNA). */
+    var casting by mutableStateOf(false)
+    /** A debrid/Library stream: not handed over to audio. */
+    var debridStream by mutableStateOf(false)
     /** A stream (not a file on the phone), on a phone or tablet: can go to a TV. */
     var castAvailable by mutableStateOf(false)
     /** Not for a YouTube stream: its picture and sound are two links no other player can take. */

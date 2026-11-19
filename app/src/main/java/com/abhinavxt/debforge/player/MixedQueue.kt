@@ -53,11 +53,21 @@ fun sameHandoffItem(a: AudioTrack, b: AudioTrack): Boolean =
     a.id == b.id || (a.youtube != null && a.youtube.videoId == b.youtube?.videoId)
 
 /** Where [track] goes in [queue] (play position [current]): the current item or an already queued one is reused. */
-fun handoffPlan(queue: List<AudioTrack>, current: Int, track: AudioTrack): HandoffPlan {
+fun handoffPlan(
+    queue: List<AudioTrack>,
+    current: Int,
+    track: AudioTrack,
+    /** The id of a local download of the same YouTube video, when [track] is its stream. */
+    localId: String? = null,
+    /** The YouTube video id [track] stands for (a download of a YouTube video has no [AudioTrack.youtube]). */
+    videoId: String? = null
+): HandoffPlan {
     if (queue.isEmpty()) return HandoffPlan.StartNew
+    fun same(q: AudioTrack) = sameHandoffItem(q, track) || (localId != null && q.id == localId) ||
+        (videoId != null && q.youtube?.videoId == videoId)
     val cur = current.coerceIn(queue.indices)
-    if (sameHandoffItem(queue[cur], track)) return HandoffPlan.JumpTo(cur)
-    val at = queue.indexOfFirst { sameHandoffItem(it, track) }
+    if (same(queue[cur])) return HandoffPlan.JumpTo(cur)
+    val at = queue.indexOfFirst { same(it) }
     if (at >= 0) return HandoffPlan.JumpTo(at)
     return HandoffPlan.InsertAt(cur + 1)
 }

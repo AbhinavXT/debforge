@@ -52,6 +52,7 @@ import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.PhotoCamera
 import androidx.compose.material.icons.rounded.Repeat
 import androidx.compose.material.icons.rounded.Search
+import com.abhinavxt.debforge.player.playAsAudioVisible
 import androidx.compose.material.icons.rounded.Audiotrack
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Cast
@@ -138,6 +139,8 @@ interface ControlsActions {
     /** Jump to a chapter. */
     fun seekTo(ms: Long)
     fun openExternal()
+    /** Keep listening in the background audio player from here, then close the video. */
+    fun playAsAudio()
     /** Play on a TV on the same network (DLNA). */
     fun cast()
     fun rotate()
@@ -320,6 +323,9 @@ private fun TopBar(state: ControlsState, actions: ControlsActions, modifier: Mod
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold
             )
+        }
+        if (playAsAudioVisible(state.snapshot.live, state.snapshot.durationMs, state.audioHandoffReady, state.casting, state.debridStream)) {
+            ControlIcon(state, "asaudio", Icons.Rounded.Headphones, stringResource(R.string.player_play_as_audio)) { actions.playAsAudio() }
         }
         if (state.castAvailable) {
             ControlIcon(state, "cast", Icons.Rounded.Cast, stringResource(R.string.cast_title)) { actions.cast() }

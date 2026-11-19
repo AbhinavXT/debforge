@@ -112,6 +112,7 @@ class PlayerActivity : ComponentActivity() {
     @Inject lateinit var positions: PlaybackPositions
     @Inject lateinit var history: com.abhinavxt.debforge.data.history.PlayHistory
     @Inject lateinit var audioPlayer: AudioPlayer
+    @Inject lateinit var videoHandoff: VideoHandoff
     @Inject lateinit var upNext: UpNext
     @Inject lateinit var subtitleResolver: SubtitleResolver
     @Inject lateinit var repository: DownloadsRepository
@@ -197,6 +198,11 @@ class PlayerActivity : ComponentActivity() {
     /** Kept across the player being recreated (app switch), with the speed. */
     private var savedTrackParams: androidx.media3.common.TrackSelectionParameters? = null
     private var savedSpeed = 1f
+    /** Set when the audio player handed this item over: its speed beats the one remembered for the show. */
+    private var handoffStart: VideoStart? = null
+    /** The audio track "Play as audio" hands over; null when there is none for this file. */
+    private var audioHandoffTrack: AudioTrack? = null
+    private var handingOff = false
     /** Volume past the phone's maximum (1 = none, up to [GestureMath.MAX_VOLUME_LEVEL]). */
     private var boostLevel = 1f
     private var loudness: android.media.audiofx.LoudnessEnhancer? = null
@@ -309,7 +315,7 @@ class PlayerActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        audioPlayer.stopForVideo()
+        audioPlayer.parkForVideo() // the audio queue waits, paused, in the mini player
         uri = intent.data ?: run { finish(); return }
         title = intent.getStringExtra(EXTRA_TITLE).orEmpty()
         youtube = ytStreamFrom(intent)
@@ -321,6 +327,14 @@ class PlayerActivity : ComponentActivity() {
             )
         }
         subtitles = subtitlesFrom(intent)
+        if (savedInstanceState == null) {
+            // Handed over by the audio player: its position and speed, not the saved ones.
+            VideoStartExtras.from(intent)?.let {
+                handoffStart = it
+                resumePosition = it.positionMs
+                savedSpeed = it.speed
+            }
+        }
         identity?.let { id ->
             val q = upNext.take(id.itemId)
             queue.addAll(q.next)
@@ -328,6 +342,7 @@ class PlayerActivity : ComponentActivity() {
             currentEpisode = q.current
         }
         startFile()
+        refreshAudioHandoff()
         lifecycleScope.launch {
             autoplay = settings.autoplayNextFlow.first()
             pipAllowed = settings.pipFlow.first()
@@ -497,7 +512,7 @@ class PlayerActivity : ComponentActivity() {
         onBackPressedDispatcher.addCallback(this, cancelNextOnBack)
 
         // Fresh start (not a rotation/recreate): pick up where the user left off.
-        if (savedInstanceState == null) restoreSavedPosition()
+        if (savedInstanceState == null && restoresSavedPosition(handoffStart)) restoreSavedPosition()
     }
 
     /** Looks up the saved position; seeks there once known, unless the user already moved. */
@@ -852,6 +867,47 @@ class PlayerActivity : ComponentActivity() {
         }
     }
 
+    /** Looks up the audio track of the current file for "Play as audio"; none for a debrid/Library stream. */
+    private fun refreshAudioHandoff() {
+        audioHandoffTrack = null
+        controls.audioHandoffReady = false
+        val yt = youtube
+        val id = identity ?: return
+        controls.debridStream = yt == null && !isLocalFile()
+        if (controls.debridStream) return
+        val generation = fileGeneration
+        val name = title
+        lifecycleScope.launch {
+            val track = runCatching {
+                videoHandoff.audioTrackForVideo(
+                    itemId = id.itemId,
+                    videoId = yt?.videoId,
+                    title = name,
+                    channel = yt?.uploader,
+                    audioUrl = yt?.audioUrl,
+                    audioItag = yt?.let { com.abhinavxt.debforge.domain.YouTubeLinks.parseSourceRef(it.ref)?.audioItag }
+                )
+            }.getOrNull()
+            if (generation != fileGeneration) return@launch // another file by now
+            audioHandoffTrack = track
+            controls.audioHandoffReady = track != null
+        }
+    }
+
+    /** "Play as audio": save the spot, hand the item to the audio player at this position and speed, and close. */
+    private fun handOffToAudio() {
+        val track = audioHandoffTrack ?: return
+        val p = player ?: return
+        if (handingOff) return
+        handingOff = true
+        val at = p.currentPosition
+        val speed = p.playbackParameters.speed
+        p.pause()
+        savePosition()
+        audioPlayer.playHandoff(track, at, speed)
+        finish()
+    }
+
     private fun isLocalFile() = uri.scheme == "content" || uri.scheme == "file"
 
     /** Previews for this file: downloaded ones always, streams if Settings allow, and only while they work. */
@@ -884,7 +940,8 @@ class PlayerActivity : ComponentActivity() {
                 positionMs = p.currentPosition,
                 bufferedMs = p.bufferedPosition,
                 durationMs = durationOrNull() ?: 0L,
-                speed = p.playbackParameters.speed
+                speed = p.playbackParameters.speed,
+                live = p.isCurrentMediaItemLive
             )
         }
 
@@ -945,6 +1002,7 @@ class PlayerActivity : ComponentActivity() {
         override fun setSoftwareDecoding(on: Boolean) = this@PlayerActivity.setSoftwareDecoding(on, save = true)
         override fun openExternal() = openExternally()
         override fun cast() = castToTv()
+        override fun playAsAudio() = handOffToAudio()
 
         override fun rotate() {
             userRotated = true
@@ -1270,7 +1328,7 @@ class PlayerActivity : ComponentActivity() {
             TrackPicker.Choice.Leave -> Unit
         }
         p.trackSelectionParameters = params.build()
-        memory?.speed?.let { if (it != p.playbackParameters.speed) p.setPlaybackSpeed(it) }
+        if (handoffStart == null) memory?.speed?.let { if (it != p.playbackParameters.speed) p.setPlaybackSpeed(it) }
     }
 
     /**
@@ -1925,7 +1983,9 @@ class PlayerActivity : ComponentActivity() {
         controls.title = title
         controls.castAvailable = !isTv && !isLocalFile() && youtube == null
         controls.externalAvailable = youtube == null
+        handoffStart = null // a later episode is not the handed-over item
         startFile()
+        refreshAudioHandoff()
         offeredFallback = false
         nextCancelled = false
         refreshState = LinkRefresh.State()
@@ -2189,7 +2249,7 @@ class PlayerActivity : ComponentActivity() {
     /** Back in the player: the service lets go, pictures come back. */
     private fun takeBackFromBackground() {
         inBackground = false
-        audioPlayer.stopForVideo() // audio may have taken the service over meanwhile; video and audio never overlap
+        audioPlayer.parkForVideo() // audio may have taken the service over meanwhile; video and audio never overlap
         BackgroundPlayback.stop(this)
         BackgroundPlayback.player = null
         openSession()
@@ -2474,6 +2534,7 @@ class PlayerActivity : ComponentActivity() {
     /** While the TV plays: pause / play it, take the video back here, or leave it there and close. */
     private fun showCastRemote(on: com.abhinavxt.debforge.player.cast.Renderer) {
         var paused = false
+        controls.casting = true
         val dialog = AlertDialog.Builder(this)
             .setTitle(getString(R.string.cast_playing_on, on.name))
             .setMessage(title)
@@ -2484,6 +2545,7 @@ class PlayerActivity : ComponentActivity() {
                     // Carry on here from where the TV got to.
                     val at = caster.positionMs(on)
                     runCatching { caster.stop(on) }
+                    controls.casting = false
                     player?.let { p -> at?.let(p::seekTo); p.play() }
                 }
             }
@@ -2671,7 +2733,8 @@ class PlayerActivity : ComponentActivity() {
         private const val STATE_PLAY_WHEN_READY = "playWhenReady"
         private const val STATE_OFFERED = "offeredFallback"
 
-        fun intent(context: Context, request: PlayRequest): Intent =
+        /** The intent that opens [request]; [start] (from the audio player) sets where and how fast it begins, instead of the saved position. */
+        fun intent(context: Context, request: PlayRequest, start: VideoStart? = null): Intent =
             Intent(context, PlayerActivity::class.java)
                 .setData(request.uri)
                 .putExtra(EXTRA_TITLE, request.title)
@@ -2703,6 +2766,7 @@ class PlayerActivity : ComponentActivity() {
                         putExtra(EXTRA_SUB_REFS, subs.map { it.sourceRef.orEmpty() }.toTypedArray())
                     }
                 }
+                .apply { start?.let { VideoStartExtras.put(this, it) } }
                 .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
     }
 }

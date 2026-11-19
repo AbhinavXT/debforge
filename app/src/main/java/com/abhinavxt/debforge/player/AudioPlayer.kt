@@ -736,9 +736,12 @@ class AudioPlayer @Inject constructor(
     fun playHandoff(track: AudioTrack, startMs: Long, speed: Float) {
         playJob?.cancel()
         playJob = scope.launch {
+            // A local download and the streamed copy of one YouTube video are the same item: match them by video id.
+            val (videoId, localId) = handoffIdentity(track)
             fun planNow(): HandoffPlan {
                 val cur = player
-                return if (cur == null || tracks.isEmpty()) HandoffPlan.StartNew else handoffPlan(tracks, cur.currentMediaItemIndex, track)
+                return if (cur == null || tracks.isEmpty()) HandoffPlan.StartNew
+                else handoffPlan(tracks, cur.currentMediaItemIndex, track, localId, videoId)
             }
             var t = track
             handoffId = null
@@ -886,8 +889,19 @@ class AudioPlayer @Inject constructor(
     }
 
     /** The video ids of [entries] that have a completed download on disk, mapped to the track that plays it. */
-    private suspend fun localDownloadsFor(entries: List<MixedEntry>): Map<String, AudioTrack> {
-        val wanted = entries.filterIsInstance<MixedEntry.YouTube>().mapTo(HashSet()) { it.videoId }
+    private suspend fun localDownloadsFor(entries: List<MixedEntry>): Map<String, AudioTrack> =
+        localDownloadsForIds(entries.filterIsInstance<MixedEntry.YouTube>().mapTo(HashSet()) { it.videoId })
+
+    /** The YouTube video id of [track] (streamed, or a download of one) and the id of its preferred local download, if any. */
+    private suspend fun handoffIdentity(track: AudioTrack): Pair<String?, String?> {
+        val videoId = track.youtube?.videoId ?: withContext(Dispatchers.IO) {
+            downloads.getById(track.id)?.let { YouTubeLinks.parseSourceRef(it.sourceRef)?.videoId }
+        } ?: return null to null
+        val local = if (track.youtube != null) localDownloadsForIds(setOf(videoId))[videoId]?.id else null
+        return videoId to local
+    }
+
+    private suspend fun localDownloadsForIds(wanted: Set<String>): Map<String, AudioTrack> {
         if (wanted.isEmpty()) return emptyMap()
         return withContext(Dispatchers.IO) {
             val rows = downloads.completed().filter { row ->
