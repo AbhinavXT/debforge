@@ -7,6 +7,7 @@ import com.abhinavxt.debforge.data.subscriptions.FeedItemEntity
 import com.abhinavxt.debforge.data.subscriptions.SubscriptionDao
 import com.abhinavxt.debforge.data.subscriptions.SubscriptionEntity
 import com.abhinavxt.debforge.data.subscriptions.SubscriptionKind
+import com.abhinavxt.debforge.data.youtube.YouTubeException
 import com.abhinavxt.debforge.data.youtube.YouTubeResolver
 import com.abhinavxt.debforge.domain.FeedStore
 import com.abhinavxt.debforge.domain.SubscriptionRun
@@ -31,11 +32,15 @@ class SubscriptionChecker @Inject constructor(
     private val resolver: YouTubeResolver,
     private val enqueuer: YouTubeEnqueuer,
 ) {
-    private val lock = Mutex()
+    /** Serialises whole checks, so two never enqueue the same item. Held across network calls. */
+    private val checkLock = Mutex()
+
+    /** Guards the short database sections only; [SubscriptionRepository.follow] takes it too, never for a network call. */
+    private val dbLock = Mutex()
 
     /** Returns how many new uploads were found. */
-    suspend fun check(fromBackground: Boolean): Int = lock.withLock {
-        val subs = dao.all()
+    suspend fun check(fromBackground: Boolean): Int = checkLock.withLock {
+        val subs = exclusive { dao.all() }
         if (subs.isEmpty()) return 0
         val run = SubscriptionRun(
             store = DaoFeedStore(dao),
@@ -48,6 +53,8 @@ class SubscriptionChecker @Inject constructor(
             },
             enqueue = { sub, item -> enqueuer.enqueue(item.itemKey, modeFor(sub), foreground = false) },
             onError = { sub, e -> Log.w("SubscriptionCheck", "Check of ${sub.url} failed", e) },
+            guard = { block -> exclusive { block() } },
+            isPermanent = { it is YouTubeException.Unavailable },
         )
         val result = run.run(subs)
         if (fromBackground && result.newLabels.isNotEmpty() && !isAppInForeground()) DownloadNotifications.notifyNewUploads(context, result.newLabels)
@@ -60,8 +67,8 @@ class SubscriptionChecker @Inject constructor(
         return info.importance <= android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND
     }
 
-    /** Run [block] with the check lock held, so a check never sees a half-written follow. */
-    suspend fun <T> exclusive(block: suspend () -> T): T = lock.withLock { block() }
+    /** Run a short database [block] with the lock held, so a check never sees a half-written follow. No network inside. */
+    suspend fun <T> exclusive(block: suspend () -> T): T = dbLock.withLock { block() }
 
     private fun modeFor(sub: SubscriptionEntity) = if (sub.autoDownload == AutoDownload.VIDEO) EnqueueMode.VIDEO else EnqueueMode.AUDIO
 }

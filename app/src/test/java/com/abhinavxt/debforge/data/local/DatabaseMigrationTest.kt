@@ -297,6 +297,39 @@ class DatabaseMigrationTest {
     }
 
     @Test
+    fun metadataRefreshKeepsTheStoredDateWhenTheNewOneIsUnknownAndPendingItemsFilter() {
+        val room = openWithRoom(create(13) {})
+        try {
+            runBlocking {
+                val dao = room.subscriptionDao()
+                fun sub(url: String, auto: AutoDownload, since: Long) =
+                    SubscriptionEntity(kind = SubscriptionKind.YT_CHANNEL, url = url, title = url, autoDownload = auto, since = since)
+                val on = dao.insert(sub("on", AutoDownload.AUDIO, 100))
+                val off = dao.insert(sub("off", AutoDownload.OFF, 100))
+                fun item(id: Long, key: String, at: Long, isNew: Boolean = true, queued: Boolean = false) =
+                    FeedItemEntity(id, key, key, null, at, null, null, isNew = isNew, queued = queued)
+                dao.insertItems(listOf(
+                    item(on, "new1", 300), item(on, "new2", 400), item(on, "handled", 500, queued = true),
+                    item(on, "seen", 600, isNew = false), item(on, "undated", 0), item(on, "old", 100), item(on, "older", 50),
+                    item(off, "o1", 300),
+                ))
+                assertEquals(listOf("new2", "new1"), dao.pendingItems(on).map { it.itemKey })
+                assertTrue(dao.pendingItems(off).isEmpty())
+
+                // date-keeping CASE: 0 keeps the stored date, a real date replaces it
+                dao.updateItemMetadata(on, "new1", "t", null, null, null, 0)
+                assertEquals(300L, dao.items(on).first { it.itemKey == "new1" }.publishedAt)
+                dao.updateItemMetadata(on, "new1", "t", null, null, null, 350)
+                assertEquals(350L, dao.items(on).first { it.itemKey == "new1" }.publishedAt)
+                dao.updateItemMetadata(on, "undated", "t", null, null, null, 450)
+                assertEquals(450L, dao.items(on).first { it.itemKey == "undated" }.publishedAt)
+            }
+        } finally {
+            room.close()
+        }
+    }
+
+    @Test
     fun staleSponsorSegmentsAreListedNotDeleted() {
         val room = openWithRoom(create(13) {})
         try {

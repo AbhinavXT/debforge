@@ -52,6 +52,11 @@ data class FeedItemEntity(
     val durationSec: Long? = null,
     val thumbUrl: String? = null,
     val isNew: Boolean,
+    /**
+     * Auto-download has handled this item: it was queued, or it can never be (private, members-only, live,
+     * no usable format). Items that failed for a passing reason stay false and are retried on the next check.
+     * Independent of [isNew], so a handled item still shows in the New row.
+     */
     val queued: Boolean
 )
 

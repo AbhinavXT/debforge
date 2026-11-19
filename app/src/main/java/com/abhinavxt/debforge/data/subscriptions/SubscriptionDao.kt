@@ -47,7 +47,15 @@ interface SubscriptionDao {
     @Query("SELECT * FROM feed_items WHERE subId = :subId")
     suspend fun items(subId: Long): List<FeedItemEntity>
 
-    @Query("SELECT * FROM feed_items WHERE subId = :subId AND isNew = 1 AND queued = 0 AND publishedAt > 0 ORDER BY publishedAt DESC")
+    /**
+     * Items auto-download still has to handle: new, not yet [FeedItemEntity.queued] (handled), dated after the
+     * subscription's `since`, and only while the subscription's auto-download is on. Newest first.
+     */
+    @Query(
+        "SELECT f.* FROM feed_items f INNER JOIN subscriptions s ON s.id = f.subId " +
+            "WHERE f.subId = :subId AND f.isNew = 1 AND f.queued = 0 AND f.publishedAt > 0 AND f.publishedAt > s.since " +
+            "AND s.autoDownload != 'OFF' ORDER BY f.publishedAt DESC"
+    )
     suspend fun pendingItems(subId: Long): List<FeedItemEntity>
 
     @Query("SELECT itemKey FROM feed_items WHERE subId = :subId")

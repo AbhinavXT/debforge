@@ -26,7 +26,15 @@ import javax.inject.Singleton
 enum class EnqueueMode { DEFAULT, AUDIO, VIDEO }
 
 /** What happened to a queued item. */
-enum class EnqueueResult { QUEUED, ALREADY_QUEUED, FAILED }
+enum class EnqueueResult {
+    QUEUED, ALREADY_QUEUED,
+
+    /** Could not be queued right now (e.g. storage); worth retrying later. */
+    FAILED,
+
+    /** The video resolved but has no format to download (e.g. a live stream); retrying cannot help. */
+    NO_FORMAT,
+}
 
 /** The choice to download for [mode]; [quality] is the default-quality setting. Null when there are no choices. */
 internal fun choiceForMode(choices: List<FormatChoice>, mode: EnqueueMode, quality: DefaultQuality): FormatChoice? = when (mode) {
@@ -53,14 +61,14 @@ class YouTubeEnqueuer @Inject constructor(
 ) {
     /**
      * Resolves [videoUrlOrId] and queues it per [mode]. [quality] overrides the default-quality setting.
-     * Resolve failures throw (callers map them to messages); queueing failures return [EnqueueResult.FAILED].
+     * Resolve failures throw (callers map them to messages); queueing failures return [EnqueueResult.FAILED], and a video with nothing to download [EnqueueResult.NO_FORMAT].
      */
     suspend fun enqueue(videoUrlOrId: String, mode: EnqueueMode = EnqueueMode.DEFAULT, quality: DefaultQuality? = null,
         foreground: Boolean = true,
     ): EnqueueResult {
         val video = resolver.resolve(videoUrlOrId)
         val choices = YouTubeFormats.choices(video.streams, Build.VERSION.SDK_INT, video.durationSec)
-        val pick = choiceForMode(choices, mode, quality ?: settings.youTubeQualityFlow.first()) ?: return EnqueueResult.FAILED
+        val pick = choiceForMode(choices, mode, quality ?: settings.youTubeQualityFlow.first()) ?: return EnqueueResult.NO_FORMAT
         return tryEnqueue(itemFor(video, pick), video.thumbnailUrl, foreground)
     }
 

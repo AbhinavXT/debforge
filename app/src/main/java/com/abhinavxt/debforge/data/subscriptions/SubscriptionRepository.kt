@@ -48,7 +48,7 @@ class SubscriptionRepository @Inject constructor(
         val ref = resolver.channelRef(target)
         dao.getByUrl(ref.url)?.let { return FollowResult.AlreadyFollowing(it) }
         val entries = resolver.channelFeed(ref.url)
-        // Under the checker's lock so a running check never sees the subscription without its initial items.
+        // Under the checker's short database lock (never held across its network calls) so a running check never sees the subscription without its initial items.
         val sub = checker.exclusive {
             val id = dao.insert(
                 SubscriptionEntity(

@@ -59,7 +59,8 @@ interface FeedStore {
 }
 
 /**
- * Checks subscriptions one by one. A failing subscription is reported to [onError] and skipped; it never
+ * Checks subscriptions one by one. Only the short database sections (read known keys, write items, mark checked)
+ * go through [guard]; fetching and enqueueing, which use the network, run outside it. A failing subscription is reported to [onError] and skipped; it never
  * stops the others. [fetch] returns null for a kind that is not handled yet (podcasts), which is skipped
  * without marking it checked.
  */
@@ -70,6 +71,10 @@ class SubscriptionRun(
     private val now: () -> Long = System::currentTimeMillis,
     private val onError: (SubscriptionEntity, Throwable) -> Unit = { _, _ -> },
     private val keep: Int = KEEP_ITEMS,
+    /** Runs a short database section exclusively. */
+    private val guard: suspend (suspend () -> Unit) -> Unit = { it() },
+    /** True for an enqueue error that retrying can never fix (video unavailable, private, members-only...). */
+    private val isPermanent: (Throwable) -> Boolean = { false },
 ) {
     class Result(val newLabels: List<String>, val queued: Int)
 
@@ -80,13 +85,16 @@ class SubscriptionRun(
             try {
                 val entries = fetch(sub) ?: continue
                 val t = now()
-                val plan = FeedPlanner.plan(sub, store.itemKeys(sub.id), entries, t)
-                store.upsertItems(plan.items)
-                labels += plan.items.filter { it.isNew }.sortedByDescending { it.publishedAt }.map { "${sub.title} · ${it.title}" }
-                // Newly found items plus earlier ones whose enqueue failed, within the cap, newest first.
-                val toDownload = if (sub.autoDownload == AutoDownload.OFF) emptyList()
-                else store.pendingItems(sub.id).filter { it.publishedAt > sub.since }
-                    .sortedByDescending { it.publishedAt }.take(FeedPlanner.AUTO_CAP)
+                var toDownload = emptyList<FeedItemEntity>()
+                guard {
+                    val plan = FeedPlanner.plan(sub, store.itemKeys(sub.id), entries, t)
+                    store.upsertItems(plan.items)
+                    labels += plan.items.filter { it.isNew }.sortedByDescending { it.publishedAt }.map { "${sub.title} · ${it.title}" }
+                    // Newly found items plus earlier ones whose enqueue failed, within the cap, newest first.
+                    toDownload = if (sub.autoDownload == AutoDownload.OFF) emptyList()
+                    else store.pendingItems(sub.id).filter { it.publishedAt > sub.since }
+                        .sortedByDescending { it.publishedAt }.take(FeedPlanner.AUTO_CAP)
+                }
                 for (item in toDownload) {
                     val r = try {
                         enqueue(sub, item)
@@ -94,15 +102,18 @@ class SubscriptionRun(
                         throw e
                     } catch (e: Exception) {
                         onError(sub, e)
-                        EnqueueResult.FAILED
+                        if (isPermanent(e)) EnqueueResult.NO_FORMAT else EnqueueResult.FAILED
                     }
+                    // NO_FORMAT / permanent errors are marked handled so they stop crowding out older pending items.
                     if (r != EnqueueResult.FAILED) {
                         store.markQueued(sub.id, item.itemKey)
                         if (r == EnqueueResult.QUEUED) queued++
                     }
                 }
-                store.markChecked(sub, t)
-                store.trim(sub.id, keep)
+                guard {
+                    store.markChecked(sub, t)
+                    store.trim(sub.id, keep)
+                }
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {

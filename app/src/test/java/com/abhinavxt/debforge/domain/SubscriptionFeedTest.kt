@@ -10,17 +10,27 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.async
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import com.abhinavxt.debforge.data.youtube.YouTubeException
 
 private class FakeStore : FeedStore {
     val items = mutableMapOf<Long, MutableMap<String, FeedItemEntity>>()
     val checked = mutableMapOf<Long, Long>()
     val trimmed = mutableListOf<Long>()
+    /** Subscriptions known to the store; pendingItems filters like the real DAO's join (OFF, since). */
+    val subs = mutableMapOf<Long, SubscriptionEntity>()
     override suspend fun itemKeys(subId: Long) = items[subId].orEmpty().keys.toSet()
     override suspend fun upsertItems(items: List<FeedItemEntity>) {
         items.forEach { this.items.getOrPut(it.subId) { mutableMapOf() }.putIfAbsent(it.itemKey, it) }
     }
     override suspend fun pendingItems(subId: Long) =
-        items[subId].orEmpty().values.filter { it.isNew && !it.queued && it.publishedAt > 0 }.sortedByDescending { it.publishedAt }
+        items[subId].orEmpty().values.filter {
+            val s = subs[subId]
+            it.isNew && !it.queued && it.publishedAt > 0 && (s == null || (s.autoDownload != AutoDownload.OFF && it.publishedAt > s.since))
+        }.sortedByDescending { it.publishedAt }
     override suspend fun markQueued(subId: Long, itemKey: String) {
         val m = items[subId]!!; m[itemKey] = m[itemKey]!!.copy(queued = true)
     }
@@ -144,6 +154,92 @@ class SubscriptionFeedTest {
         val run = SubscriptionRun(store, { listOf(e("a", 3000)) }, { _, _ -> enq++; EnqueueResult.QUEUED }, now = { 9000 })
         run.run(listOf(sub(1))); run.run(listOf(sub(1)))
         assertEquals(1, enq)
+    }
+
+    @Test fun retriesAtMostThreeStuckItemsPerCheck() = runBlocking {
+        val store = FakeStore()
+        val s = sub(1); store.subs[1] = s
+        val tried = mutableListOf<String>()
+        val run = SubscriptionRun(store, { (1..5).map { e("v$it", 2000L + it) } },
+            { _, i -> tried += i.itemKey; throw java.io.IOException("x") }, now = { 9000 })
+        run.run(listOf(s))
+        assertEquals(listOf("v5", "v4", "v3"), tried)
+        tried.clear()
+        run.run(listOf(s))
+        assertEquals(listOf("v5", "v4", "v3"), tried)
+    }
+
+    @Test fun itemsNotAfterSinceAreNeverDownloaded() = runBlocking {
+        val store = FakeStore()
+        val s = sub(1, since = 1000); store.subs[1] = s
+        store.items[1] = mutableMapOf("old" to FeedItemEntity(1, "old", "t", null, 900, null, null, isNew = true, queued = false))
+        val tried = mutableListOf<String>()
+        SubscriptionRun(store, { listOf(e("old", 900)) }, { _, i -> tried += i.itemKey; EnqueueResult.QUEUED }, now = { 9000 }).run(listOf(s))
+        assertTrue(tried.isEmpty())
+    }
+
+    @Test fun autoOffNeverEnqueuesButItemsStayNew() = runBlocking {
+        val store = FakeStore()
+        val s = sub(1, auto = AutoDownload.OFF); store.subs[1] = s
+        var enq = 0
+        val r = SubscriptionRun(store, { listOf(e("a", 3000)) }, { _, _ -> enq++; EnqueueResult.QUEUED }, now = { 9000 }).run(listOf(s))
+        assertEquals(0, enq)
+        assertEquals(1, r.newLabels.size)
+        assertTrue(store.items[1]!!["a"]!!.isNew && !store.items[1]!!["a"]!!.queued)
+    }
+
+    @Test fun permanentFailuresAreHandledAndStopCrowdingOlderItems() = runBlocking {
+        val store = FakeStore()
+        val s = sub(1); store.subs[1] = s
+        val entries = (1..4).map { e("v$it", 2000L + it) }
+        val tried = mutableListOf<String>()
+        val run = SubscriptionRun(store, { entries }, { _, i ->
+            tried += i.itemKey
+            when (i.itemKey) {
+                "v4" -> throw YouTubeException.Unavailable("members only")
+                "v3" -> EnqueueResult.NO_FORMAT
+                else -> throw java.io.IOException("offline")
+            }
+        }, now = { 9000 }, isPermanent = { it is YouTubeException.Unavailable })
+        run.run(listOf(s))
+        val v4 = store.items[1]!!["v4"]!!
+        assertTrue(v4.queued && v4.isNew) // handled, still in the New row
+        assertTrue(store.items[1]!!["v3"]!!.queued)
+        assertTrue(!store.items[1]!!["v2"]!!.queued) // transient: retried
+        tried.clear()
+        run.run(listOf(s))
+        assertEquals(listOf("v2", "v1"), tried) // older items now get their turn
+    }
+
+    @Test fun networkWorkRunsOutsideTheGuard() = runBlocking {
+        val store = FakeStore()
+        val s = sub(1); store.subs[1] = s
+        val lock = Mutex()
+        var fetchLocked = true; var enqueueLocked = true; var guarded = 0
+        val run = SubscriptionRun(store, { fetchLocked = lock.isLocked; listOf(e("a", 3000)) },
+            { _, _ -> enqueueLocked = lock.isLocked; EnqueueResult.QUEUED }, now = { 9000 },
+            guard = { b -> lock.withLock { guarded++; b() } })
+        run.run(listOf(s))
+        assertTrue(!fetchLocked && !enqueueLocked)
+        assertEquals(2, guarded)
+        assertTrue(store.items[1]!!["a"]!!.queued)
+    }
+
+    @Test fun lockIsFreeWhileASlowFetchIsInFlight() = runBlocking {
+        val store = FakeStore()
+        val s = sub(1)
+        val lock = Mutex()
+        val gate = CompletableDeferred<Unit>()
+        val started = CompletableDeferred<Unit>()
+        val run = SubscriptionRun(store, { started.complete(Unit); gate.await(); listOf(e("a", 3000)) },
+            { _, _ -> EnqueueResult.QUEUED }, now = { 9000 }, guard = { b -> lock.withLock { b() } })
+        val job = async { run.run(listOf(s)) }
+        started.await()
+        // a follow would take this lock; it must be immediately available mid-fetch
+        assertTrue(lock.tryLock()); lock.unlock()
+        gate.complete(Unit)
+        job.await()
+        Unit
     }
 
     @Test fun channelUrlNormalisation() {

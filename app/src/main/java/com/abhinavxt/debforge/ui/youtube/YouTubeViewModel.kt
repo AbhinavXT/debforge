@@ -540,7 +540,7 @@ class YouTubeViewModel @Inject constructor(
     private suspend fun tryEnqueue(item: DownloadItem, thumbnailUrl: String?): YouTubeEvent = when (enqueuer.tryEnqueue(item, thumbnailUrl)) {
         EnqueueResult.QUEUED -> YouTubeEvent.QUEUED
         EnqueueResult.ALREADY_QUEUED -> YouTubeEvent.ALREADY_QUEUED
-        EnqueueResult.FAILED -> YouTubeEvent.QUEUE_FAILED
+        EnqueueResult.FAILED, EnqueueResult.NO_FORMAT -> YouTubeEvent.QUEUE_FAILED
     }
 
     /** Adds the ticked playlist videos, one at a time, each in its own best-matching format. */

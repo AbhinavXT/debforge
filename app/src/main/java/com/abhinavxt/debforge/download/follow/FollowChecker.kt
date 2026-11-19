@@ -28,6 +28,7 @@ import com.abhinavxt.debforge.download.DownloadNotifications
 import com.abhinavxt.debforge.download.StorageAccess
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -160,10 +161,20 @@ class FollowJobService : JobService() {
     override fun onStartJob(params: JobParameters): Boolean {
         work = scope.launch {
             try {
-                runCatching { checker.checkAccounts(fromBackground = true) }
-                    .onFailure { android.util.Log.w("FollowJob", "Follow check failed", it) }
-                runCatching { subscriptionChecker.check(fromBackground = true) }
-                    .onFailure { android.util.Log.w("FollowJob", "Subscription check failed", it) }
+                try {
+                    checker.checkAccounts(fromBackground = true)
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    android.util.Log.w("FollowJob", "Follow check failed", e)
+                }
+                try {
+                    subscriptionChecker.check(fromBackground = true)
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    android.util.Log.w("FollowJob", "Subscription check failed", e)
+                }
             } finally {
                 jobFinished(params, false)
             }
@@ -205,10 +216,14 @@ class FollowJobService : JobService() {
 
         /** Runs the job while a show, channel or podcast is followed; subscriptions are read from the database each time. */
         suspend fun sync(context: Context, anyFollows: Boolean) {
-            val subscribed = !anyFollows && runCatching {
+            val subscribed = !anyFollows && try {
                 EntryPointAccessors.fromApplication(context.applicationContext, SubscriptionsEntryPoint::class.java)
                     .subscriptionDao().all().isNotEmpty()
-            }.getOrDefault(true)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                true
+            }
             if (anyFollows || subscribed) schedule(context) else cancel(context)
         }
     }
