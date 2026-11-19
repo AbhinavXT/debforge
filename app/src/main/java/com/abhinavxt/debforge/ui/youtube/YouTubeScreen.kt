@@ -137,6 +137,8 @@ import com.abhinavxt.debforge.domain.YouTubeLinks
 import com.abhinavxt.debforge.domain.YouTubeSearchResult
 import com.abhinavxt.debforge.domain.YouTubeVideo
 import com.abhinavxt.debforge.ui.player.focusRing
+import com.abhinavxt.debforge.ui.player.rememberSwipeDown
+import com.abhinavxt.debforge.ui.player.swipeDownToDismiss
 import com.abhinavxt.debforge.ui.components.HeaderNavActions
 import com.abhinavxt.debforge.ui.components.MessageState
 import com.abhinavxt.debforge.ui.components.ScreenHeader
@@ -996,7 +998,9 @@ private fun PreviewState(
             }
         }
     }
-    BoxWithConstraints(Modifier.fillMaxSize()) {
+    // Drag down to close, like Back / X; scrolled lists only start it once they are at the top.
+    val dismiss = rememberSwipeDown(onReset)
+    BoxWithConstraints(Modifier.fillMaxSize().swipeDownToDismiss(dismiss)) {
         if (maxWidth > maxHeight && maxWidth >= 600.dp) {
             // Wide: picture and title on the left, choices and the action bar on the right.
             Row(Modifier.fillMaxSize()) {
