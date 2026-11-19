@@ -98,6 +98,12 @@ internal fun PodcastsPane(
     val msgNoFile = stringResource(R.string.podcasts_msg_no_file)
     val msgInQueue = stringResource(R.string.podcasts_msg_in_queue)
     val msgInQueueAlready = stringResource(R.string.podcasts_msg_in_queue_already)
+    val context = LocalContext.current
+    LaunchedEffect(Unit) {
+        viewModel.bulkQueued.collect { n ->
+            tell(context.resources.getQuantityString(R.plurals.podcasts_msg_queued_n, n, n))
+        }
+    }
     LaunchedEffect(Unit) {
         viewModel.messages.collect {
             tell(
@@ -190,6 +196,20 @@ private fun PodcastDetailView(d: PodcastDetail, playingId: String?, vm: Podcasts
     val cs = MaterialTheme.colorScheme
     val sub = d.sub
     var confirmUnfollow by remember { mutableStateOf(false) }
+    var confirmAll by remember { mutableStateOf(false) }
+    val toQueue = remember(d.episodes) { episodesToQueue(d.episodes) }
+    if (confirmAll) {
+        AlertDialog(
+            onDismissRequest = { confirmAll = false },
+            title = { Text(stringResource(R.string.podcasts_download_all_q, toQueue.size)) },
+            confirmButton = {
+                TextButton(onClick = { confirmAll = false; vm.downloadAll(sub, toQueue) }) {
+                    Text(stringResource(R.string.podcasts_download))
+                }
+            },
+            dismissButton = { TextButton(onClick = { confirmAll = false }) { Text(stringResource(R.string.action_cancel)) } }
+        )
+    }
     if (confirmUnfollow) {
         AlertDialog(
             onDismissRequest = { confirmUnfollow = false },
@@ -232,6 +252,18 @@ private fun PodcastDetailView(d: PodcastDetail, playingId: String?, vm: Podcasts
                         Icon(Icons.Rounded.CheckCircle, null)
                         Spacer(Modifier.width(8.dp))
                         Text(stringResource(R.string.podcasts_mark_seen))
+                    }
+                    TextButton(
+                        onClick = { if (needsDownloadAllConfirm(toQueue.size)) confirmAll = true else vm.downloadAll(sub, toQueue) },
+                        enabled = toQueue.isNotEmpty(),
+                        modifier = Modifier.heightIn(min = 48.dp)
+                    ) {
+                        Icon(Icons.Rounded.Download, null)
+                        Spacer(Modifier.width(8.dp))
+                        Text(
+                            if (toQueue.isEmpty()) stringResource(R.string.sheet_all_queued)
+                            else stringResource(R.string.sheet_download_all, toQueue.size)
+                        )
                     }
                     TextButton(onClick = { confirmUnfollow = true }, modifier = Modifier.heightIn(min = 48.dp)) {
                         Text(stringResource(R.string.follow_unfollow), color = cs.error)

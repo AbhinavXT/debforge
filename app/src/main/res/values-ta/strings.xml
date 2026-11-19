@@ -1079,6 +1079,11 @@
     <string name="podcasts_msg_no_file">இந்த எபிசோடில் ஆடியோ கோப்பு இல்லை</string>
     <string name="podcasts_msg_in_queue">வரிசையில் சேர்க்கப்பட்டது</string>
     <string name="podcasts_msg_in_queue_already">ஏற்கனவே வரிசையில் உள்ளது</string>
+    <string name="podcasts_download_all_q">%1$d எபிசோடுகளைப் பதிவிறக்கவா?</string>
+    <plurals name="podcasts_msg_queued_n">
+        <item quantity="one">%1$d எபிசோடுகளின் பதிவிறக்கம் தொடங்கியது</item>
+        <item quantity="other">%1$d எபிசோடுகளின் பதிவிறக்கம் தொடங்கியது</item>
+    </plurals>
     <string name="podcasts_unfollow_q">%1$s பின்தொடர்வதை நிறுத்தவா?</string>
     <string name="set_following_podcasts">பாட்காஸ்ட்கள்</string>
 </resources>

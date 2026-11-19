@@ -181,6 +181,19 @@ class PodcastsViewModel @Inject constructor(
         }
     }
 
+    private val _bulkQueued = Channel<Int>(Channel.BUFFERED)
+    /** How many episodes a "Download all" actually queued. */
+    val bulkQueued = _bulkQueued.receiveAsFlow()
+
+    /** Queues [items] one by one, in order, through the same path as a single download. */
+    fun downloadAll(sub: SubscriptionEntity, items: List<FeedItemEntity>) {
+        viewModelScope.launch {
+            var queued = 0
+            for (item in items) if (enqueuer.enqueue(sub, item) == EnqueueResult.QUEUED) queued++
+            if (queued > 0) _bulkQueued.send(queued) else _messages.send(PodcastMessage.DOWNLOAD_FAILED)
+        }
+    }
+
     fun download(sub: SubscriptionEntity, item: FeedItemEntity) {
         viewModelScope.launch {
             repo.markSeen(sub.id, item.itemKey)

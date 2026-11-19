@@ -1079,6 +1079,11 @@
     <string name="podcasts_msg_no_file">Bu bölümün ses dosyası yok</string>
     <string name="podcasts_msg_in_queue">Kuyruğa eklendi</string>
     <string name="podcasts_msg_in_queue_already">Zaten kuyrukta</string>
+    <string name="podcasts_download_all_q">%1$d bölüm indirilsin mi?</string>
+    <plurals name="podcasts_msg_queued_n">
+        <item quantity="one">%1$d bölümün indirilmesi başladı</item>
+        <item quantity="other">%1$d bölümün indirilmesi başladı</item>
+    </plurals>
     <string name="podcasts_unfollow_q">%1$s takibi bırakılsın mı?</string>
     <string name="set_following_podcasts">Podcast\'ler</string>
 </resources>

@@ -1179,6 +1179,13 @@
     <string name="podcasts_msg_no_file">У этого выпуска нет аудиофайла</string>
     <string name="podcasts_msg_in_queue">Добавлено в очередь</string>
     <string name="podcasts_msg_in_queue_already">Уже в очереди</string>
+    <string name="podcasts_download_all_q">Скачать эпизодов: %1$d?</string>
+    <plurals name="podcasts_msg_queued_n">
+        <item quantity="one">Скачивание начато: %1$d эпизод</item>
+        <item quantity="few">Скачивание начато: %1$d эпизода</item>
+        <item quantity="many">Скачивание начато: %1$d эпизодов</item>
+        <item quantity="other">Скачивание начато: %1$d эпизодов</item>
+    </plurals>
     <string name="podcasts_unfollow_q">Отписаться от %1$s?</string>
     <string name="set_following_podcasts">Подкасты</string>
 </resources>

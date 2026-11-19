@@ -1129,6 +1129,12 @@
     <string name="podcasts_msg_no_file">Este episodio no tiene archivo de audio</string>
     <string name="podcasts_msg_in_queue">Añadido a la cola</string>
     <string name="podcasts_msg_in_queue_already">Ya está en la cola</string>
+    <string name="podcasts_download_all_q">¿Descargar %1$d episodios?</string>
+    <plurals name="podcasts_msg_queued_n">
+        <item quantity="one">Descarga iniciada de %1$d episodio</item>
+        <item quantity="many">Descarga iniciada de %1$d episodios</item>
+        <item quantity="other">Descarga iniciada de %1$d episodios</item>
+    </plurals>
     <string name="podcasts_unfollow_q">¿Dejar de seguir %1$s?</string>
     <string name="set_following_podcasts">Podcasts</string>
 </resources>
