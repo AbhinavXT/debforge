@@ -117,6 +117,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.abhinavxt.debforge.R
 import com.abhinavxt.debforge.domain.DirectLinkParser
+import com.abhinavxt.debforge.download.AudioExtract
 import com.abhinavxt.debforge.domain.YouTubeLinks
 import com.abhinavxt.debforge.ui.browse.formatSize
 
@@ -405,8 +406,8 @@ fun BrowserScreen(onMagnet: (String) -> Unit, onOpenDownloads: () -> Unit, onOpe
                         },
                         trailingContent = {
                             Row {
-                                // An HLS stream has no single MP4 to take the audio from: video only.
-                                if (!v.sourceRef.startsWith(DirectLinkParser.HLS_PREFIX)) {
+                                // Audio is only extracted from MP4-family files (not HLS, webm, mkv, unknown).
+                                if (AudioExtract.canExtract(v.sourceRef) || AudioExtract.canExtract(v.filename)) {
                                     IconButton(onClick = {
                                         viewModel.downloadAudio(v)
                                         showVideos = false

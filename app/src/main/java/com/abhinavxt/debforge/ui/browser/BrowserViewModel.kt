@@ -11,6 +11,7 @@ import com.abhinavxt.debforge.data.provider.direct.DirectLinks
 import com.abhinavxt.debforge.data.prefs.SettingsStore
 import com.abhinavxt.debforge.domain.AdHosts
 import com.abhinavxt.debforge.domain.DownloadItem
+import com.abhinavxt.debforge.download.AudioExtract
 import com.abhinavxt.debforge.domain.PageVideos
 import com.abhinavxt.debforge.domain.adblock.PageFlags
 import com.abhinavxt.debforge.domain.adblock.RequestType
@@ -223,6 +224,7 @@ class BrowserViewModel @Inject constructor(
 
     /** Like [downloadVideo], but saves only the audio track as .m4a. */
     fun downloadAudio(video: DownloadItem) {
+        if (!AudioExtract.canExtract(video.sourceRef) && !AudioExtract.canExtract(video.filename)) return
         viewModelScope.launch { queue(listOf(directLinks.audioOf(video))) }
     }
 

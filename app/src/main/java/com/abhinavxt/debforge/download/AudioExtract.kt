@@ -10,6 +10,19 @@ object AudioExtract {
     /** Only AAC goes into an .m4a as is. */
     fun supports(mime: String?): Boolean = mime == "audio/mp4a-latm"
 
+    private val MP4_EXTS = setOf("mp4", "m4v", "mov", "3gp")
+    private val MP4_MIMES = setOf("video/mp4", "video/quicktime", "video/3gpp")
+
+    /** True when [url] (query and fragment ignored) or [mime] names an MP4-family file; never for HLS. */
+    fun canExtract(url: String, mime: String? = null): Boolean {
+        if (url.startsWith("hls:")) return false
+        if (mime?.substringBefore(';')?.trim()?.lowercase() in MP4_MIMES) return true
+        val path = url.substringBefore('#').substringBefore('?')
+        val name = path.substringAfterLast('/')
+        val dot = name.lastIndexOf('.')
+        return dot >= 0 && name.substring(dot + 1).lowercase() in MP4_EXTS
+    }
+
     /** [videoName] with its extension replaced by .m4a (added when there is none): "Clip.mp4" is "Clip.m4a". */
     fun m4aName(videoName: String): String {
         val dot = videoName.lastIndexOf('.')

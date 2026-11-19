@@ -16,6 +16,18 @@ class AudioExtractTest {
         assertFalse(AudioExtract.supports(null))
     }
 
+    @Test fun canExtractByExtensionOrMime() {
+        assertTrue(AudioExtract.canExtract("https://x.com/a.mp4"))
+        assertTrue(AudioExtract.canExtract("https://x.com/a.MP4?x=1"))
+        assertTrue(AudioExtract.canExtract("https://x.com/a.m4v#t=3"))
+        assertFalse(AudioExtract.canExtract("https://x.com/a.webm"))
+        assertFalse(AudioExtract.canExtract("https://x.com/a.mkv"))
+        assertFalse(AudioExtract.canExtract("https://x.com/watch"))
+        assertFalse(AudioExtract.canExtract("hls:https://x.com/a.mp4"))
+        assertTrue(AudioExtract.canExtract("https://x.com/watch", "video/mp4; codecs=avc1"))
+        assertFalse(AudioExtract.canExtract("https://x.com/watch", "video/webm"))
+    }
+
     @Test fun renamesToM4a() {
         assertEquals("Clip.m4a", AudioExtract.m4aName("Clip.mp4"))
         assertEquals("Clip.m4a", AudioExtract.m4aName("Clip"))
