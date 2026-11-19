@@ -1,5 +1,6 @@
 package com.abhinavxt.debforge.ui.media
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.abhinavxt.debforge.data.local.DownloadDao
@@ -241,12 +242,14 @@ class MediaViewModel @Inject constructor(
         if (videoJob?.isActive == true) return // double tap
         videoJob = viewModelScope.launch {
             val request = try {
-                val video = resolver.resolve(row.videoId)
+                // The resolver takes a link, not a bare id: a bare id is "not a video link" and always failed here.
+                val video = resolver.resolve(YouTubeLinks.watchUrl(row.videoId))
                 val choices = YouTubeFormats.choices(video.streams, android.os.Build.VERSION.SDK_INT, video.durationSec)
                 choiceForMode(choices, EnqueueMode.VIDEO, settings.youTubeQualityFlow.first())?.let { youTubePlayRequest(video, it) }
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
+                Log.w("MediaViewModel", "Opening YouTube video ${row.videoId} failed", e)
                 null
             }
             if (request != null) _playRequests.send(request) else _messages.send(MediaMessage.STREAM_FAILED)

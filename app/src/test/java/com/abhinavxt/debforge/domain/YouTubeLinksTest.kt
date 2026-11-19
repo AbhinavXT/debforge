@@ -141,4 +141,10 @@ class YouTubeLinksTest {
             "https://www.youtube.com/watch?v=$id&pp=a|b",
         ).forEach { assertEquals(it, id, YouTubeLinks.videoId(YouTubeLinks.watchUrl(YouTubeLinks.pageVideoId(it)!!))) }
     }
+
+    // A playlist's video entry stores a bare id; the resolver only accepts a link, so the id must go through watchUrl.
+    @Test fun bareIdIsNotALinkButItsWatchUrlIs() {
+        assertNull(YouTubeLinks.videoId("aqz-KE-bpKQ"))
+        assertEquals("aqz-KE-bpKQ", YouTubeLinks.videoId(YouTubeLinks.watchUrl("aqz-KE-bpKQ")))
+    }
 }

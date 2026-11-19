@@ -37,6 +37,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
@@ -236,9 +237,10 @@ fun YouTubeScreen(
         }
     }
 
+    val focusManager = androidx.compose.ui.platform.LocalFocusManager.current
     var addRequest by remember { mutableStateOf<AddToPlaylistRequest?>(null) }
     var addLists by remember { mutableStateOf<List<com.abhinavxt.debforge.data.playback.Playlist>>(emptyList()) }
-    val openAdd = remember<(AddToPlaylistRequest) -> Unit> { { req -> scope.launch { addLists = viewModel.playlists(); addRequest = req } } }
+    val openAdd = remember<(AddToPlaylistRequest) -> Unit> { { req -> focusManager.clearFocus(); scope.launch { addLists = viewModel.playlists(); addRequest = req } } }
     addRequest?.let { req ->
         YouTubeAddToPlaylistFlow(
             req, addLists,
@@ -303,7 +305,7 @@ fun YouTubeScreen(
                 )
             }
         }
-        SnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter).padding(bottom = if (ui is YouTubeUi.Preview || ui is YouTubeUi.Playlist) 88.dp else 16.dp))
+        SnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter).imePadding().padding(bottom = if (ui is YouTubeUi.Preview || ui is YouTubeUi.Playlist) 88.dp else 16.dp))
     }
     }
 }
