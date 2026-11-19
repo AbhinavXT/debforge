@@ -821,6 +821,25 @@ class AudioPlayer @Inject constructor(
         parkRestoreJob = scope.launch { queueStore.saveQueue(snap); restore() }
     }
 
+    /**
+     * A video closed at [positionMs]. When it is the item the parked queue is on (same download, or the same YouTube
+     * video whether streamed or downloaded), the queue continues from there; any other video leaves it as it was.
+     */
+    fun videoClosed(itemId: String, videoId: String?, positionMs: Long, durationMs: Long) {
+        scope.launch {
+            awaitRestore(parkRestoreJob)
+            val p = player ?: return@launch
+            if (!restoredPending) return@launch // audio is already playing: the user moved on
+            val cur = tracks.getOrNull(p.currentMediaItemIndex) ?: return@launch
+            val (curVideoId, _) = handoffIdentity(cur)
+            val at = parkedPositionAfterVideo(videoMatchesTrack(cur.id, curVideoId, itemId, videoId), positionMs, durationMs) ?: return@launch
+            if (player !== p || !restoredPending) return@launch
+            p.seekTo(at)
+            queueStore.savePosition(cur.id, at, currentDurationMs(p))
+            publish()
+        }
+    }
+
     /** The restore of a parked queue, so a handoff arriving at once waits for it (see [playHandoff]). */
     private var parkRestoreJob: Job? = null
 

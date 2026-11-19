@@ -55,6 +55,7 @@ class BackgroundPlaybackService : MediaSessionService() {
 
     override fun onCreate() {
         super.onCreate()
+        BackgroundPlayback.service = this
         val player = BackgroundPlayback.player ?: return // onStartCommand ends the service (after any required startForeground)
         // Tapping the notification returns to the player where it left off
         // (audio: the app with "now playing" open).
@@ -87,6 +88,7 @@ class BackgroundPlaybackService : MediaSessionService() {
             BackgroundPlayback.foregroundStart.onForeground()
         }
         if (session == null || stopRequested) { // no player was handed over, or it was cleared meanwhile
+            if (!foregroundRequired) runCatching { startForegroundPlaceholder() } // Media3 may have started us in the foreground
             stopForeground(STOP_FOREGROUND_REMOVE)
             stopSelf()
             return START_NOT_STICKY
@@ -124,6 +126,17 @@ class BackgroundPlaybackService : MediaSessionService() {
         )
     }
 
+    /**
+     * Ends the service. Media3 starts it in the foreground by itself when playback begins (not through
+     * [BackgroundPlayback.startForeground], so the gate knows nothing of it) and owes startForeground() until its
+     * first notification is up: stopping before that kills the app. A placeholder satisfies that debt first.
+     */
+    fun stopSafely() {
+        runCatching { startForegroundPlaceholder() }
+        stopForeground(STOP_FOREGROUND_REMOVE)
+        stopSelf()
+    }
+
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? = session
 
     /** Swiped away from recents: stop the sound with it. */
@@ -140,6 +153,7 @@ class BackgroundPlaybackService : MediaSessionService() {
         }
         session = null
         scope.cancel()
+        if (BackgroundPlayback.service === this) BackgroundPlayback.service = null
         super.onDestroy()
     }
 
@@ -218,6 +232,9 @@ object BackgroundPlayback {
     /** Whether a foreground start is still owed a startForeground(), and a stop held back until then. */
     val foregroundStart = ForegroundStartGate()
 
+    /** The running service, if any: a stop goes through it so that a foreground start Media3 made is answered first. */
+    @Volatile var service: BackgroundPlaybackService? = null
+
     /** Starts the service from the foreground (a plain start). */
     fun start(context: Context) {
         context.startService(Intent(context, BackgroundPlaybackService::class.java))
@@ -238,6 +255,20 @@ object BackgroundPlayback {
 
     /** Stops the service, or, while its foreground start is still pending, has it stop itself right after. */
     fun stop(context: Context) {
-        if (foregroundStart.requestStop()) context.stopService(Intent(context, BackgroundPlaybackService::class.java))
+        when (stopAction(foregroundStart.requestStop(), service != null)) {
+            StopAction.DEFER -> Unit
+            StopAction.STOP_SERVICE -> context.stopService(Intent(context, BackgroundPlaybackService::class.java))
+            StopAction.STOP_FROM_SERVICE -> service?.stopSafely() ?: context.stopService(Intent(context, BackgroundPlaybackService::class.java))
+        }
     }
+}
+
+/** How [BackgroundPlayback.stop] ends the service. */
+enum class StopAction { DEFER, STOP_SERVICE, STOP_FROM_SERVICE }
+
+/** A stop waits for our own pending foreground start; a running service stops itself, after answering any start Media3 made. */
+fun stopAction(mayStopNow: Boolean, serviceRunning: Boolean): StopAction = when {
+    !mayStopNow -> StopAction.DEFER
+    serviceRunning -> StopAction.STOP_FROM_SERVICE
+    else -> StopAction.STOP_SERVICE
 }

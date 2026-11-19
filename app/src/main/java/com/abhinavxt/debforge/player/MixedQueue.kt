@@ -224,3 +224,14 @@ suspend fun awaitRestore(restore: kotlinx.coroutines.Job?) { restore?.join() }
 
 /** A handoff to audio that failed to start. */
 data class HandoffFailure(val track: AudioTrack, val startMs: Long, val speed: Float)
+
+/** Whether a video is the item the parked queue is on: the same download id, or the same YouTube video (local or streamed copy). */
+fun videoMatchesTrack(trackId: String, trackVideoId: String?, itemId: String, videoId: String?): Boolean =
+    trackId == itemId || (videoId != null && trackVideoId == videoId)
+
+/** Where the parked audio continues once a matching video closes at [positionMs]; null leaves it alone (no match, or the video ended). */
+fun parkedPositionAfterVideo(matches: Boolean, positionMs: Long, durationMs: Long): Long? = when {
+    !matches || positionMs < 0 -> null
+    durationMs > 0 && positionMs >= durationMs - 1_000 -> null
+    else -> positionMs
+}

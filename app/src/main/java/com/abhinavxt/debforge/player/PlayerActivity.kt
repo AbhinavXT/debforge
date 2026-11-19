@@ -2248,6 +2248,13 @@ class PlayerActivity : ComponentActivity() {
     override fun onStop() {
         tickJob?.cancel()
         savePosition()
+        if (isFinishing && !handingOff) {
+            val id = identity
+            val p = player
+            if (id != null && p != null && !inBackground) {
+                audioPlayer.videoClosed(id.itemId, youtube?.videoId, p.currentPosition, p.duration.takeIf { it != C.TIME_UNSET } ?: 0L)
+            }
+        }
         playerView.onPause()
         if (inBackground && player != null && !isFinishing) {
             // Sound only while away: no point decoding pictures nobody sees.
