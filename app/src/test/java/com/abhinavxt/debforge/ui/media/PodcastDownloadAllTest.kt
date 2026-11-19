@@ -37,4 +37,21 @@ class PodcastDownloadAllTest {
         assertFalse(needsDownloadAllConfirm(20))
         assertTrue(needsDownloadAllConfirm(21))
     }
+
+    @Test fun retriesFailedEpisodes() {
+        val rows = listOf(ep("a", EpisodeDownload.FAILED), ep("b", EpisodeDownload.DONE), ep("c", EpisodeDownload.FAILED, url = null))
+        assertEquals(listOf("a"), episodesToQueue(rows).map { it.itemKey })
+    }
+
+    @Test fun failedOnlyKeepsButtonEnabled() {
+        assertEquals(2, episodesToQueue(listOf(ep("a", EpisodeDownload.FAILED), ep("b", EpisodeDownload.FAILED))).size)
+    }
+
+    @Test fun snapshotByKeysIgnoresLaterChanges() {
+        val shown = listOf(ep("a"), ep("b"))
+        val keys = episodesToQueue(shown).map { it.itemKey }
+        val later = listOf(ep("c"), ep("b", EpisodeDownload.ACTIVE), ep("a"))
+        assertEquals(listOf("b", "a"), episodesByKeys(later, keys).map { it.itemKey })
+        assertTrue(episodesByKeys(later, emptyList()).isEmpty())
+    }
 }

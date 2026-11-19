@@ -1081,7 +1081,10 @@
     <string name="podcasts_msg_no_file">This episode has no audio file</string>
     <string name="podcasts_msg_in_queue">Added to queue</string>
     <string name="podcasts_msg_in_queue_already">Already in the queue</string>
-    <string name="podcasts_download_all_q">Download %1$d episodes?</string>
+    <plurals name="podcasts_download_all_n">
+        <item quantity="one">Download %1$d episode?</item>
+        <item quantity="other">Download %1$d episodes?</item>
+    </plurals>
     <plurals name="podcasts_msg_queued_n">
         <item quantity="one">Download started for %1$d episode</item>
         <item quantity="other">Download started for %1$d episodes</item>

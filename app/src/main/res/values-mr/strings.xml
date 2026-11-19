@@ -1079,7 +1079,10 @@
     <string name="podcasts_msg_no_file">या भागाची ऑडिओ फाइल नाही</string>
     <string name="podcasts_msg_in_queue">रांगेत जोडले</string>
     <string name="podcasts_msg_in_queue_already">आधीच रांगेत आहे</string>
-    <string name="podcasts_download_all_q">%1$d भाग डाउनलोड करायचे?</string>
+    <plurals name="podcasts_download_all_n">
+        <item quantity="one">%1$d भाग डाउनलोड करायचे?</item>
+        <item quantity="other">%1$d भाग डाउनलोड करायचे?</item>
+    </plurals>
     <plurals name="podcasts_msg_queued_n">
         <item quantity="one">%1$d भागांचे डाउनलोड सुरू झाले</item>
         <item quantity="other">%1$d भागांचे डाउनलोड सुरू झाले</item>

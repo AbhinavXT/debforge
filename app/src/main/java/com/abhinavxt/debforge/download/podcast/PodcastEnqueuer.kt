@@ -5,6 +5,7 @@ import com.abhinavxt.debforge.data.subscriptions.FeedItemEntity
 import com.abhinavxt.debforge.data.subscriptions.SubscriptionEntity
 import com.abhinavxt.debforge.domain.DirectLinkParser
 import com.abhinavxt.debforge.domain.DownloadItem
+import com.abhinavxt.debforge.domain.DownloadState
 import com.abhinavxt.debforge.domain.ProviderId
 import com.abhinavxt.debforge.download.DownloadController
 import com.abhinavxt.debforge.download.youtube.EnqueueResult
@@ -80,6 +81,21 @@ class PodcastEnqueuer @Inject constructor(
             throw e
         } catch (e: Exception) {
             EnqueueResult.FAILED
+        }
+    }
+
+    /** Re-queues [item]'s download when it exists and FAILED (the downloads screen's retry). True when it did. */
+    suspend fun retryIfFailed(item: FeedItemEntity): Boolean {
+        val url = item.mediaUrl?.takeIf { it.toHttpUrlOrNull() != null } ?: return false
+        val id = DirectLinkParser.itemId(url)
+        return try {
+            if (dao.getById(id)?.state != DownloadState.FAILED) return false
+            downloads.retry(id)
+            true
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            false
         }
     }
 

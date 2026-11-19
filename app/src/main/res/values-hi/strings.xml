@@ -1079,7 +1079,10 @@
     <string name="podcasts_msg_no_file">इस एपिसोड की कोई ऑडियो फ़ाइल नहीं है</string>
     <string name="podcasts_msg_in_queue">कतार में जोड़ा गया</string>
     <string name="podcasts_msg_in_queue_already">पहले से कतार में है</string>
-    <string name="podcasts_download_all_q">%1$d एपिसोड डाउनलोड करें?</string>
+    <plurals name="podcasts_download_all_n">
+        <item quantity="one">%1$d एपिसोड डाउनलोड करें?</item>
+        <item quantity="other">%1$d एपिसोड डाउनलोड करें?</item>
+    </plurals>
     <plurals name="podcasts_msg_queued_n">
         <item quantity="one">%1$d एपिसोड का डाउनलोड शुरू हुआ</item>
         <item quantity="other">%1$d एपिसोड का डाउनलोड शुरू हुआ</item>

@@ -43,7 +43,7 @@ import javax.inject.Inject
 
 data class PodcastRow(val sub: SubscriptionEntity, val unseen: Int)
 
-enum class EpisodeDownload { NONE, ACTIVE, DONE }
+enum class EpisodeDownload { NONE, ACTIVE, DONE, FAILED }
 
 data class EpisodeRow(val item: FeedItemEntity, val download: EpisodeDownload)
 
@@ -99,7 +99,7 @@ class PodcastsViewModel @Inject constructor(
         return when (states[DirectLinkParser.itemId(url)]) {
             null -> EpisodeDownload.NONE
             DownloadState.COMPLETED -> EpisodeDownload.DONE
-            DownloadState.FAILED -> EpisodeDownload.NONE
+            DownloadState.FAILED -> EpisodeDownload.FAILED
             else -> EpisodeDownload.ACTIVE
         }
     }
@@ -181,16 +181,28 @@ class PodcastsViewModel @Inject constructor(
         }
     }
 
+    private val _bulkRunning = MutableStateFlow(false)
+    /** True while a "Download all" batch is being queued; the button is disabled meanwhile. */
+    val bulkRunning: StateFlow<Boolean> = _bulkRunning
+
     private val _bulkQueued = Channel<Int>(Channel.BUFFERED)
     /** How many episodes a "Download all" actually queued. */
     val bulkQueued = _bulkQueued.receiveAsFlow()
 
     /** Queues [items] one by one, in order, through the same path as a single download. */
     fun downloadAll(sub: SubscriptionEntity, items: List<FeedItemEntity>) {
+        if (items.isEmpty() || !_bulkRunning.compareAndSet(expect = false, update = true)) return
         viewModelScope.launch {
-            var queued = 0
-            for (item in items) if (enqueuer.enqueue(sub, item) == EnqueueResult.QUEUED) queued++
-            if (queued > 0) _bulkQueued.send(queued) else _messages.send(PodcastMessage.DOWNLOAD_FAILED)
+            try {
+                var queued = 0
+                for (item in items) {
+                    // A failed episode already has a download row; re-queue that, as the downloads screen's retry does.
+                    if (enqueuer.retryIfFailed(item) || enqueuer.enqueue(sub, item) == EnqueueResult.QUEUED) queued++
+                }
+                if (queued > 0) _bulkQueued.send(queued) else _messages.send(PodcastMessage.DOWNLOAD_FAILED)
+            } finally {
+                _bulkRunning.value = false
+            }
         }
     }
 

@@ -1029,7 +1029,9 @@
     <string name="podcasts_msg_no_file">Episode ini tidak punya file audio</string>
     <string name="podcasts_msg_in_queue">Ditambahkan ke antrean</string>
     <string name="podcasts_msg_in_queue_already">Sudah ada di antrean</string>
-    <string name="podcasts_download_all_q">Unduh %1$d episode?</string>
+    <plurals name="podcasts_download_all_n">
+        <item quantity="other">Unduh %1$d episode?</item>
+    </plurals>
     <plurals name="podcasts_msg_queued_n">
         <item quantity="other">Unduhan dimulai untuk %1$d episode</item>
     </plurals>

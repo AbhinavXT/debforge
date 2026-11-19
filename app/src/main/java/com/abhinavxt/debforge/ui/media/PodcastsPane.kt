@@ -7,6 +7,8 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -53,6 +55,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -63,6 +66,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -191,23 +195,26 @@ private fun PodcastListRow(row: PodcastRow, onClick: () -> Unit) {
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun PodcastDetailView(d: PodcastDetail, playingId: String?, vm: PodcastsViewModel) {
     val cs = MaterialTheme.colorScheme
     val sub = d.sub
     var confirmUnfollow by remember { mutableStateOf(false) }
-    var confirmAll by remember { mutableStateOf(false) }
+    // Keys of the episodes the open dialog asked about, so what is queued is what was shown. Null: no dialog.
+    var confirmKeys by rememberSaveable { mutableStateOf<ArrayList<String>?>(null) }
+    val running by vm.bulkRunning.collectAsStateWithLifecycle()
     val toQueue = remember(d.episodes) { episodesToQueue(d.episodes) }
-    if (confirmAll) {
+    confirmKeys?.let { keys ->
         AlertDialog(
-            onDismissRequest = { confirmAll = false },
-            title = { Text(stringResource(R.string.podcasts_download_all_q, toQueue.size)) },
+            onDismissRequest = { confirmKeys = null },
+            title = { Text(pluralStringResource(R.plurals.podcasts_download_all_n, keys.size, keys.size)) },
             confirmButton = {
-                TextButton(onClick = { confirmAll = false; vm.downloadAll(sub, toQueue) }) {
+                TextButton(onClick = { confirmKeys = null; vm.downloadAll(sub, episodesByKeys(d.episodes, keys)) }) {
                     Text(stringResource(R.string.podcasts_download))
                 }
             },
-            dismissButton = { TextButton(onClick = { confirmAll = false }) { Text(stringResource(R.string.action_cancel)) } }
+            dismissButton = { TextButton(onClick = { confirmKeys = null }) { Text(stringResource(R.string.action_cancel)) } }
         )
     }
     if (confirmUnfollow) {
@@ -247,21 +254,24 @@ private fun PodcastDetailView(d: PodcastDetail, playingId: String?, vm: Podcasts
                         )
                     }
                 }
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     if (d.unseen > 0) TextButton(onClick = { vm.markAllSeen(sub.id) }, modifier = Modifier.heightIn(min = 48.dp)) {
                         Icon(Icons.Rounded.CheckCircle, null)
                         Spacer(Modifier.width(8.dp))
                         Text(stringResource(R.string.podcasts_mark_seen))
                     }
                     TextButton(
-                        onClick = { if (needsDownloadAllConfirm(toQueue.size)) confirmAll = true else vm.downloadAll(sub, toQueue) },
-                        enabled = toQueue.isNotEmpty(),
+                        onClick = {
+                            if (needsDownloadAllConfirm(toQueue.size)) confirmKeys = ArrayList(toQueue.map { it.itemKey })
+                            else vm.downloadAll(sub, toQueue)
+                        },
+                        enabled = toQueue.isNotEmpty() && !running,
                         modifier = Modifier.heightIn(min = 48.dp)
                     ) {
                         Icon(Icons.Rounded.Download, null)
                         Spacer(Modifier.width(8.dp))
                         Text(
-                            if (toQueue.isEmpty()) stringResource(R.string.sheet_all_queued)
+                            if (toQueue.isEmpty()) stringResource(R.string.podcasts_download)
                             else stringResource(R.string.sheet_download_all, toQueue.size)
                         )
                     }
@@ -306,7 +316,7 @@ private fun EpisodeRowView(
     val state = when (ep.download) {
         EpisodeDownload.DONE -> stringResource(R.string.podcasts_downloaded)
         EpisodeDownload.ACTIVE -> stringResource(R.string.podcasts_downloading)
-        EpisodeDownload.NONE -> null
+        EpisodeDownload.NONE, EpisodeDownload.FAILED -> null
     }
     val sub = listOfNotNull(date, duration, state).joinToString(" · ")
     Row(
@@ -360,7 +370,7 @@ private fun EpisodeRowView(
                     leadingIcon = { Icon(Icons.Rounded.PlaylistAdd, null) },
                     onClick = { menu = false; onQueue() }
                 )
-                if (ep.download == EpisodeDownload.NONE) DropdownMenuItem(
+                if (ep.download == EpisodeDownload.NONE || ep.download == EpisodeDownload.FAILED) DropdownMenuItem(
                     text = { Text(stringResource(R.string.podcasts_download)) },
                     leadingIcon = { Icon(Icons.Rounded.Download, null) },
                     onClick = { menu = false; onDownload() }

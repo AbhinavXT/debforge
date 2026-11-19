@@ -1079,7 +1079,10 @@
     <string name="podcasts_msg_no_file">Diese Folge hat keine Audiodatei</string>
     <string name="podcasts_msg_in_queue">Zur Warteschlange hinzugefügt</string>
     <string name="podcasts_msg_in_queue_already">Bereits in der Warteschlange</string>
-    <string name="podcasts_download_all_q">%1$d Folgen herunterladen?</string>
+    <plurals name="podcasts_download_all_n">
+        <item quantity="one">%1$d Folge herunterladen?</item>
+        <item quantity="other">%1$d Folgen herunterladen?</item>
+    </plurals>
     <plurals name="podcasts_msg_queued_n">
         <item quantity="one">Download von %1$d Folge gestartet</item>
         <item quantity="other">Download von %1$d Folgen gestartet</item>
