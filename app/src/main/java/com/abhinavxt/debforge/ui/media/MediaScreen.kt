@@ -189,6 +189,7 @@ fun MediaScreen(
         onSelectAll = viewModel::selectAll,
         onClearSelection = viewModel::clearSelection,
         onOpenVideo = openVideo,
+        onPlayVideoAsAudio = viewModel::playAsAudio,
         onOpenFile = openFile,
         onPlayAudio = onPlayAudio,
         onDelete = { ids ->
@@ -237,6 +238,7 @@ internal fun MediaContent(
     onSelectAll: () -> Unit,
     onClearSelection: () -> Unit,
     onOpenVideo: (DownloadEntity) -> Unit,
+    onPlayVideoAsAudio: (DownloadEntity) -> Unit,
     onOpenFile: (DownloadEntity) -> Unit,
     onPlayAudio: (List<DownloadEntity>, Int) -> Unit,
     onDelete: (List<String>) -> Unit,
@@ -482,7 +484,7 @@ internal fun MediaContent(
                         val selected = e.id in state.selected
                         val m = Modifier.animateItem()
                         when (state.kind) {
-                            FileKind.Video -> VideoTile(e, tileProgress(watch != null, internalPlayer, watch?.get(e.id)), selected, m, onClick = { if (selecting) onToggle(e.id) else onOpenVideo(e) }, onLong = { onToggle(e.id) })
+                            FileKind.Video -> VideoTile(e, tileProgress(watch != null, internalPlayer, watch?.get(e.id)), selected, m, onClick = { if (selecting) onToggle(e.id) else onOpenVideo(e) }, onLong = { onToggle(e.id) }, onPlayAudio = { onPlayVideoAsAudio(e) })
                             FileKind.Audio -> MediaRow(
                                 e, FileKind.Audio, selected, e.id == playingId, m,
                                 onClick = { if (selecting) onToggle(e.id) else onPlayAudio(items, items.indexOf(e)) },
@@ -647,9 +649,12 @@ private fun Art(e: DownloadEntity, modifier: Modifier, tag: String) {
 }
 
 @Composable
-private fun VideoTile(e: DownloadEntity, progress: WatchProgress, selected: Boolean, modifier: Modifier, onClick: () -> Unit, onLong: () -> Unit) {
+private fun VideoTile(e: DownloadEntity, progress: WatchProgress, selected: Boolean, modifier: Modifier, onClick: () -> Unit, onLong: () -> Unit, onPlayAudio: () -> Unit) {
     val cs = MaterialTheme.colorScheme
     val shape = RoundedCornerShape(16.dp)
+    var menu by remember { mutableStateOf(false) }
+    val tileFocus = remember { FocusRequester() }
+    val menuFocus = remember { FocusRequester() }
     val sub = listOfNotNull(e.formatLabel().takeIf { it.isNotEmpty() }, formatSize(e.filesize).takeIf { e.filesize > 0 }).joinToString(" · ")
     val channel = e.artist?.takeIf { it.isNotBlank() }
     val stateText = when (progress) {
@@ -657,7 +662,7 @@ private fun VideoTile(e: DownloadEntity, progress: WatchProgress, selected: Bool
         is WatchProgress.InProgress -> stringResource(R.string.media_watched_percent, progress.percent)
         WatchProgress.Finished -> null
     }
-    Column(modifier.mediaClickable(shape, selected, onClick, onLong).padding(4.dp).then(if (stateText != null) Modifier.semantics { stateDescription = stateText } else Modifier)) {
+    Column(modifier.focusRequester(tileFocus).focusProperties { right = menuFocus }.mediaClickable(shape, selected, onClick, onLong).padding(4.dp).then(if (stateText != null) Modifier.semantics { stateDescription = stateText } else Modifier)) {
         Box {
             Art(e, Modifier.fillMaxWidth().aspectRatio(16f / 9f).clip(shape), e.filename.substringAfterLast('.', "").uppercase())
             Icon(
@@ -682,7 +687,24 @@ private fun VideoTile(e: DownloadEntity, progress: WatchProgress, selected: Bool
             }
             if (selected) Icon(Icons.Rounded.CheckCircle, null, tint = cs.primary, modifier = Modifier.align(Alignment.TopStart).padding(8.dp).size(24.dp).background(cs.surface, androidx.compose.foundation.shape.CircleShape))
         }
-        Text(e.displayTitle(), style = MaterialTheme.typography.titleSmall, maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(horizontal = 4.dp, vertical = 6.dp))
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(e.displayTitle(), style = MaterialTheme.typography.titleSmall, maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f).padding(start = 4.dp, top = 6.dp, bottom = 6.dp))
+            Box {
+                val menuSource = remember { MutableInteractionSource() }
+                IconButton(
+                    onClick = { menu = true },
+                    modifier = Modifier.size(32.dp).focusRequester(menuFocus).focusProperties { left = tileFocus }.focusRing(menuSource, CircleShape),
+                    interactionSource = menuSource
+                ) { Icon(Icons.Rounded.MoreVert, stringResource(R.string.media_more)) }
+                DropdownMenu(menu, { menu = false }) {
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.media_play_as_audio)) },
+                        leadingIcon = { Icon(Icons.Rounded.MusicNote, null) },
+                        onClick = { menu = false; onPlayAudio() }
+                    )
+                }
+            }
+        }
         if (sub.isNotEmpty()) Text(sub, style = MaterialTheme.typography.bodySmall, color = cs.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(horizontal = 4.dp).padding(bottom = if (channel == null) 4.dp else 0.dp))
         if (channel != null) Text(channel, style = MaterialTheme.typography.bodySmall, color = cs.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(horizontal = 4.dp).padding(bottom = 4.dp))
     }
@@ -941,7 +963,7 @@ private fun previewState(kind: FileKind, empty: Boolean = false, query: String =
 
 @Composable
 private fun PreviewHost(s: MediaUiState, playingId: String? = null) = DebforgeTheme {
-    MediaContent(s, playingId, {}, {}, {}, {}, {}, {}, {}, {}, { _, _ -> }, {}, {}, {}, {})
+    MediaContent(s, playingId, {}, {}, {}, {}, {}, {}, {}, {}, {}, { _, _ -> }, {}, {}, {}, {})
 }
 
 @Preview(showBackground = true, heightDp = 700) @Composable private fun VideoPreview() = PreviewHost(previewState(FileKind.Video))

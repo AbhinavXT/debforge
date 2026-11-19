@@ -56,6 +56,7 @@ import androidx.compose.material.icons.rounded.Replay10
 import androidx.compose.material.icons.rounded.Repeat
 import androidx.compose.material.icons.rounded.RepeatOne
 import androidx.compose.material.icons.rounded.Shuffle
+import androidx.compose.material.icons.rounded.Videocam
 import androidx.compose.material.icons.rounded.SkipNext
 import androidx.compose.material.icons.rounded.SkipPrevious
 import androidx.compose.material3.DropdownMenu
@@ -122,6 +123,16 @@ import com.abhinavxt.debforge.player.formatClock
 import com.abhinavxt.debforge.player.upNextOrder
 import com.abhinavxt.debforge.ui.theme.DebforgeTheme
 
+/** "Watch video": a D-pad focusable icon button that shows a spinner while the video is looked up. */
+@Composable
+internal fun WatchVideoButton(busy: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    val source = remember { MutableInteractionSource() }
+    IconButton(onClick, modifier.size(48.dp).focusRing(source, CircleShape), enabled = !busy, interactionSource = source) {
+        if (busy) androidx.compose.material3.CircularProgressIndicator(Modifier.size(22.dp), strokeWidth = 2.dp)
+        else Icon(Icons.Rounded.Videocam, stringResource(R.string.audio_watch_video))
+    }
+}
+
 /** Full-screen "now playing": artwork, title, seek bar, transport, shuffle/repeat and the queue. */
 @OptIn(androidx.compose.ui.ExperimentalComposeUiApi::class)
 @Composable
@@ -152,7 +163,10 @@ fun NowPlaying(
     /** Length of the skip back / forward buttons. */
     skipSeconds: Int = DEFAULT_SKIP_SECONDS,
     /** Turns autoplay of related YouTube videos on or off; mirrors the setting. */
-    onAutoplay: (Boolean) -> Unit = {}
+    onAutoplay: (Boolean) -> Unit = {},
+    /** Continues this item as video; the button shows only when the track can be watched. */
+    onWatch: (() -> Unit)? = null,
+    watchBusy: Boolean = false
 ) {
     val track = state.track ?: return
     val surface = MaterialTheme.colorScheme.surface
@@ -173,9 +187,12 @@ fun NowPlaying(
                     IconButton(onClose, Modifier.size(48.dp).focusRing(s, CircleShape), interactionSource = s) {
                         Icon(Icons.Rounded.KeyboardArrowDown, stringResource(R.string.audio_close))
                     }
-                    val sx = remember { MutableInteractionSource() }
-                    IconButton(onStop, Modifier.size(48.dp).focusRing(sx, CircleShape), interactionSource = sx) {
-                        Icon(Icons.Rounded.Close, stringResource(R.string.audio_stop_close))
+                    Row {
+                        if (onWatch != null && track.canWatch) WatchVideoButton(watchBusy, onWatch)
+                        val sx = remember { MutableInteractionSource() }
+                        IconButton(onStop, Modifier.size(48.dp).focusRing(sx, CircleShape), interactionSource = sx) {
+                            Icon(Icons.Rounded.Close, stringResource(R.string.audio_stop_close))
+                        }
                     }
                 }
                 if (wide) {

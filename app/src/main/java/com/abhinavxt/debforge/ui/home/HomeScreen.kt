@@ -88,6 +88,8 @@ import com.abhinavxt.debforge.ui.setup.SetupScreen
 import com.abhinavxt.debforge.ui.media.MediaScreen
 import com.abhinavxt.debforge.ui.media.displayTitle
 import com.abhinavxt.debforge.ui.player.MiniPlayer
+import com.abhinavxt.debforge.player.VideoStart
+import com.abhinavxt.debforge.player.VideoStartExtras
 import com.abhinavxt.debforge.ui.player.NowPlaying
 import com.abhinavxt.debforge.ui.youtube.YouTubeScreen
 import com.abhinavxt.debforge.ui.youtube.YouTubeViewModel
@@ -171,10 +173,32 @@ fun HomeScreen(signedIn: Boolean) {
     val artColor by shell.playerArtColor.collectAsStateWithLifecycle()
     val skipSeconds by shell.audioSkipSeconds.collectAsStateWithLifecycle()
     val activeCount by shell.activeCount.collectAsStateWithLifecycle()
+    val watchBusy by shell.watchBusy.collectAsStateWithLifecycle()
+    val homeContext = androidx.compose.ui.platform.LocalContext.current
+    val msgFileMissing = stringResource(R.string.dl_file_missing)
+    val msgStreamFailed = stringResource(R.string.media_stream_failed)
     var nowPlaying by rememberSaveable { mutableStateOf(false) }
     val expandRequested by NowPlayingRequest.expand.collectAsStateWithLifecycle()
     LaunchedEffect(expandRequested) {
         if (expandRequested) { nowPlaying = true; NowPlayingRequest.expand.value = false }
+    }
+    // "Watch video": open the video where the audio is, and minimise the full player.
+    LaunchedEffect(Unit) {
+        shell.watchEvents.collect { e ->
+            when (e) {
+                is WatchEvent.Launch -> {
+                    nowPlaying = false
+                    homeContext.startActivity(
+                        VideoStartExtras.put(
+                            com.abhinavxt.debforge.player.PlayerActivity.intent(homeContext, e.request),
+                            VideoStart(e.startMs, e.speed)
+                        )
+                    )
+                }
+                WatchEvent.FileMissing -> android.widget.Toast.makeText(homeContext, msgFileMissing, android.widget.Toast.LENGTH_LONG).show()
+                WatchEvent.StreamFailed -> android.widget.Toast.makeText(homeContext, msgStreamFailed, android.widget.Toast.LENGTH_LONG).show()
+            }
+        }
     }
     // The queue ended or was cleared: nothing left to show.
     LaunchedEffect(audio.track == null) { if (audio.track == null) nowPlaying = false }
@@ -408,6 +432,8 @@ fun HomeScreen(signedIn: Boolean) {
                 onNext = shell.audio::next,
                 onExpand = { nowPlaying = true },
                 onClose = shell.audio::clear,
+                onWatch = shell::watchVideo,
+                watchBusy = watchBusy,
                 onChannel = openChannel,
                 modifier = Modifier.onFocusChanged { if (it.hasFocus) miniHasFocus = true },
                 sharedScope = if (sharedMotion) sharedScope else null,
@@ -526,6 +552,8 @@ fun HomeScreen(signedIn: Boolean) {
                     onAutoplay = shell.audio::setAutoplay,
                     onClose = { nowPlaying = false },
                     onStop = { nowPlaying = false; shell.audio.clear() },
+                    onWatch = shell::watchVideo,
+                    watchBusy = watchBusy,
                     onChannel = openChannel,
                     playFocus = playFocus,
                     share = if (sharedMotion && sharedScope != null) ArtworkShare(sharedScope, this@AnimatedVisibility) else null

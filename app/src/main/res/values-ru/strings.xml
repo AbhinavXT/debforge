@@ -679,6 +679,7 @@
 
     <!-- Player extras: sleep timer, screenshot, A-B loop, background -->
     <string name="player_more">Ещё</string>
+    <string name="player_play_as_audio">Слушать как аудио</string>
     <string name="player_sleep_timer">Таймер сна</string>
     <string name="player_sleep_off">Выкл.</string>
     <string name="player_sleep_end">В конце серии</string>
@@ -1051,6 +1052,7 @@
     <string name="audio_repeat_all">Повторять все</string>
     <string name="audio_repeat_one">Повторять трек</string>
     <string name="audio_close">Закрыть плеер</string>
+    <string name="audio_watch_video">Смотреть видео</string>
     <string name="audio_stop_close">Остановить и закрыть плеер</string>
     <string name="audio_expand">Открыть плеер</string>
     <string name="audio_up_next">Далее в очереди</string>

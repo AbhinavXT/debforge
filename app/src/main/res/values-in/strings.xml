@@ -583,6 +583,7 @@
 
     <!-- Player extras: sleep timer, screenshot, A-B loop, background -->
     <string name="player_more">Lainnya</string>
+    <string name="player_play_as_audio">Putar sebagai audio</string>
     <string name="player_sleep_timer">Timer tidur</string>
     <string name="player_sleep_off">Nonaktif</string>
     <string name="player_sleep_end">Akhir episode</string>
@@ -910,6 +911,7 @@
     <string name="audio_repeat_all">Ulangi semua</string>
     <string name="audio_repeat_one">Ulangi satu</string>
     <string name="audio_close">Tutup yang sedang diputar</string>
+    <string name="audio_watch_video">Tonton video</string>
     <string name="audio_stop_close">Hentikan dan tutup pemutar</string>
     <string name="audio_expand">Buka yang sedang diputar</string>
     <string name="audio_up_next">Berikutnya</string>

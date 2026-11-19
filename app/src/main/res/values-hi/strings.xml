@@ -615,6 +615,7 @@
 
     <!-- Player extras: sleep timer, screenshot, A-B loop, background -->
     <string name="player_more">और</string>
+    <string name="player_play_as_audio">ऑडियो के रूप में चलाएँ</string>
     <string name="player_sleep_timer">स्लीप टाइमर</string>
     <string name="player_sleep_off">बंद</string>
     <string name="player_sleep_end">एपिसोड के अंत में</string>
@@ -957,6 +958,7 @@
     <string name="audio_repeat_all">सभी रिपीट करें</string>
     <string name="audio_repeat_one">एक रिपीट करें</string>
     <string name="audio_close">अभी चल रहा बंद करें</string>
+    <string name="audio_watch_video">वीडियो देखें</string>
     <string name="audio_stop_close">रोकें और प्लेयर बंद करें</string>
     <string name="audio_expand">अभी चल रहा खोलें</string>
     <string name="audio_up_next">आगे</string>

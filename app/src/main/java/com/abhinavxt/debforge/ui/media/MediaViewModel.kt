@@ -71,6 +71,10 @@ data class MediaUiState(
 /** Why a tap on a file did nothing. */
 enum class MediaMessage { FILE_MISSING, STREAM_FAILED, DOWNLOAD_ALL_FAILED, DOWNLOAD_ALL_ALREADY }
 
+/** Where "Play as audio" starts for a downloaded video: its saved watch position, or the beginning when unwatched or finished. */
+internal fun playAsAudioStartMs(saved: com.abhinavxt.debforge.data.playback.PlaybackEntity?): Long =
+    if (saved == null || saved.finished) 0L else saved.positionMs.coerceAtLeast(0L)
+
 /** The selection restricted to rows that are still on screen, so the count always matches what an action touches. */
 internal fun pruneSelection(selected: Set<String>, visibleIds: Collection<String>): Set<String> =
     if (selected.isEmpty()) selected else selected.intersect(visibleIds.toSet())
@@ -100,7 +104,7 @@ class MediaViewModel @Inject constructor(
     private val ytEnqueuer: YouTubeEnqueuer,
     private val audioLists: AudioLists,
     private val localImporter: com.abhinavxt.debforge.download.LocalImporter,
-    playbackPositions: com.abhinavxt.debforge.data.playback.PlaybackPositions
+    private val playbackPositions: com.abhinavxt.debforge.data.playback.PlaybackPositions
 ) : ViewModel() {
 
     private data class Ui(val query: String, val sort: SortOrder, val kind: FileKind, val selected: Set<String>, val audioList: String? = null)
@@ -225,6 +229,16 @@ class MediaViewModel @Inject constructor(
     fun playPlaylist(rows: List<PlaylistRow>, startRow: Int) {
         val (entries, start) = mixedQueueFor(rows, startRow) { audioTrackFor(context, it) }
         if (entries.isNotEmpty()) audioPlayer.playMixed(entries, start)
+    }
+
+    /** Plays a downloaded video as audio from its saved watch position (or the start). */
+    fun playAsAudio(entity: DownloadEntity) {
+        viewModelScope.launch {
+            val track = videoHandoff.audioTrackForVideo(entity.id, null, entity.displayTitle())
+            if (track == null) { _messages.send(MediaMessage.FILE_MISSING); return@launch }
+            val saved = watch.value?.get(entity.id) ?: playbackPositions.get(entity.id)
+            audioPlayer.playHandoff(track, playAsAudioStartMs(saved), audioPlayer.state.value.speed)
+        }
     }
 
     private var videoJob: Job? = null

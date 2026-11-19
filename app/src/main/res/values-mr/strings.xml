@@ -615,6 +615,7 @@
 
     <!-- Player extras: sleep timer, screenshot, A-B loop, background -->
     <string name="player_more">आणखी</string>
+    <string name="player_play_as_audio">ऑडिओ म्हणून प्ले करा</string>
     <string name="player_sleep_timer">स्लीप टायमर</string>
     <string name="player_sleep_off">बंद</string>
     <string name="player_sleep_end">एपिसोडच्या शेवटी</string>
@@ -957,6 +958,7 @@
     <string name="audio_repeat_all">सर्व रिपीट करा</string>
     <string name="audio_repeat_one">एक रिपीट करा</string>
     <string name="audio_close">आता सुरू असलेले बंद करा</string>
+    <string name="audio_watch_video">व्हिडिओ पहा</string>
     <string name="audio_stop_close">थांबवा आणि प्लेयर बंद करा</string>
     <string name="audio_expand">आता सुरू असलेले उघडा</string>
     <string name="audio_up_next">पुढे</string>

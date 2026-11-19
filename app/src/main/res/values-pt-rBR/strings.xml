@@ -647,6 +647,7 @@
 
     <!-- Player extras: sleep timer, screenshot, A-B loop, background -->
     <string name="player_more">Mais</string>
+    <string name="player_play_as_audio">Reproduzir como áudio</string>
     <string name="player_sleep_timer">Timer de desligamento</string>
     <string name="player_sleep_off">Desativado</string>
     <string name="player_sleep_end">Fim do episódio</string>
@@ -1004,6 +1005,7 @@
     <string name="audio_repeat_all">Repetir todas</string>
     <string name="audio_repeat_one">Repetir uma</string>
     <string name="audio_close">Fechar reprodução atual</string>
+    <string name="audio_watch_video">Assistir ao vídeo</string>
     <string name="audio_stop_close">Parar e fechar o player</string>
     <string name="audio_expand">Abrir reprodução atual</string>
     <string name="audio_up_next">A seguir</string>

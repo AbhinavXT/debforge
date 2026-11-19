@@ -615,6 +615,7 @@
 
     <!-- Player extras: sleep timer, screenshot, A-B loop, background -->
     <string name="player_more">Mehr</string>
+    <string name="player_play_as_audio">Als Audio abspielen</string>
     <string name="player_sleep_timer">Sleep-Timer</string>
     <string name="player_sleep_off">Aus</string>
     <string name="player_sleep_end">Ende der Folge</string>
@@ -957,6 +958,7 @@
     <string name="audio_repeat_all">Alle wiederholen</string>
     <string name="audio_repeat_one">Titel wiederholen</string>
     <string name="audio_close">Wiedergabe schließen</string>
+    <string name="audio_watch_video">Video ansehen</string>
     <string name="audio_stop_close">Stoppen und Player schließen</string>
     <string name="audio_expand">Wiedergabe öffnen</string>
     <string name="audio_up_next">Als Nächstes</string>

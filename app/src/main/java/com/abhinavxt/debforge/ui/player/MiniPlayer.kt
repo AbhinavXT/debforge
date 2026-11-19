@@ -216,6 +216,9 @@ fun MiniPlayer(
     onExpand: () -> Unit,
     onClose: () -> Unit,
     modifier: Modifier = Modifier,
+    /** Continues this item as video; the button shows only when the track can be watched. */
+    onWatch: (() -> Unit)? = null,
+    watchBusy: Boolean = false,
     /** Opens the artist's channel page: (name, url). Only offered for a track that has a channel url. */
     onChannel: (String, String) -> Unit = { _, _ -> },
     /** The shared transition scope; null when no shared transition runs. */
@@ -320,6 +323,7 @@ fun MiniPlayer(
                 IconButton(onToggle, Modifier.size(48.dp).focusRequester(toggleFocus).focusProperties { left = if (hasLink) linkFocus else rowFocus }.focusRing(s1, RoundedCornerShape(24.dp)), interactionSource = s1) {
                     PlayPauseIcon(state.isPlaying)
                 }
+                if (onWatch != null && track.canWatch) WatchVideoButton(watchBusy, onWatch)
                 val s2 = remember { MutableInteractionSource() }
                 IconButton(onNext, Modifier.size(48.dp).focusRing(s2, RoundedCornerShape(24.dp)), enabled = state.hasNext, interactionSource = s2) {
                     Icon(Icons.Rounded.SkipNext, stringResource(R.string.audio_next))

@@ -615,6 +615,7 @@
 
     <!-- Player extras: sleep timer, screenshot, A-B loop, background -->
     <string name="player_more">மேலும்</string>
+    <string name="player_play_as_audio">ஆடியோவாக இயக்கு</string>
     <string name="player_sleep_timer">தூக்க நேரக் கட்டுப்பாடு</string>
     <string name="player_sleep_off">முடக்கம்</string>
     <string name="player_sleep_end">எபிசோட் முடிவில்</string>
@@ -957,6 +958,7 @@
     <string name="audio_repeat_all">அனைத்தையும் மீண்டும் இயக்கு</string>
     <string name="audio_repeat_one">ஒன்றை மீண்டும் இயக்கு</string>
     <string name="audio_close">இப்போது இயங்குவதை மூடு</string>
+    <string name="audio_watch_video">வீடியோவைப் பார்க்கவும்</string>
     <string name="audio_stop_close">நிறுத்தி பிளேயரை மூடு</string>
     <string name="audio_expand">இப்போது இயங்குவதைத் திற</string>
     <string name="audio_up_next">அடுத்து</string>
