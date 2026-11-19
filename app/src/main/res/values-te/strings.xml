@@ -1023,4 +1023,24 @@
     <string name="wait_storage">నిల్వ పరిమితి చేరుకుంది</string>
     <string name="notif_storage_title">డౌన్‌లోడ్‌లు వేచి ఉన్నాయి</string>
     <string name="notif_storage_text">నిల్వ పరిమితి చేరుకుంది. డౌన్‌లోడ్‌లను తొలగించండి లేదా సెట్టింగ్‌లలో పరిమితిని పెంచండి.</string>
+    <string name="yt_follow">ఫాలో</string>
+    <string name="yt_following">ఫాలో అవుతున్నారు</string>
+    <string name="yt_follow_failed">ఈ ఛానల్‌ను ఫాలో చేయలేకపోయాం. కనెక్షన్ చూసి మళ్లీ ప్రయత్నించండి.</string>
+    <string name="yt_new">కొత్త</string>
+    <string name="yt_new_mark_seen">అన్నీ చూసినవిగా గుర్తించండి</string>
+    <string name="set_following">ఫాలో అవుతున్నవి</string>
+    <string name="set_following_none">ఇంకా ఏమీ లేదు. లైబ్రరీలో ఒక షోను లేదా YouTube ట్యాబ్‌లో ఒక ఛానల్‌ను ఫాలో చేయండి.</string>
+    <string name="set_following_channels">YouTube ఛానల్స్</string>
+    <string name="set_following_auto">ఆటో-డౌన్‌లోడ్</string>
+    <string name="set_auto_dl_off">ఆఫ్</string>
+    <string name="set_auto_dl_audio">ఆడియో</string>
+    <string name="set_auto_dl_video">వీడియో</string>
+    <string name="set_sponsorblock">స్పాన్సర్లను దాటవేయండి (SponsorBlock)</string>
+    <string name="set_sponsorblock_detail">YouTube వీడియోల్లో స్పాన్సర్ భాగాలను దాటవేస్తుంది. వీడియో ID యొక్క చిన్న హాష్‌ను sponsor.ajay.app కి పంపుతుంది.</string>
+    <string name="set_sb_sponsor">స్పాన్సర్</string>
+    <string name="set_sb_selfpromo">స్వీయ ప్రచారం</string>
+    <string name="set_sb_interaction">ఇంటరాక్షన్ రిమైండర్</string>
+    <string name="set_sb_intro">ఇంట్రో</string>
+    <string name="set_sb_outro">అవుట్రో</string>
+    <string name="set_sb_preview">ప్రివ్యూ</string>
 </resources>

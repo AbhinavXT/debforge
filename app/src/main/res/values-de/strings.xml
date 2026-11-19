@@ -1023,4 +1023,24 @@
     <string name="wait_storage">Speicherlimit erreicht</string>
     <string name="notif_storage_title">Downloads warten</string>
     <string name="notif_storage_text">Speicherlimit erreicht. Lösche Downloads oder erhöhe das Limit in den Einstellungen.</string>
+    <string name="yt_follow">Folgen</string>
+    <string name="yt_following">Gefolgt</string>
+    <string name="yt_follow_failed">Dieser Kanal konnte nicht abonniert werden. Prüfe deine Verbindung und versuche es erneut.</string>
+    <string name="yt_new">Neu</string>
+    <string name="yt_new_mark_seen">Alle als gesehen markieren</string>
+    <string name="set_following">Gefolgt</string>
+    <string name="set_following_none">Noch nichts. Folge einer Serie in der Bibliothek oder einem Kanal im YouTube-Tab.</string>
+    <string name="set_following_channels">YouTube-Kanäle</string>
+    <string name="set_following_auto">Automatischer Download</string>
+    <string name="set_auto_dl_off">Aus</string>
+    <string name="set_auto_dl_audio">Audio</string>
+    <string name="set_auto_dl_video">Video</string>
+    <string name="set_sponsorblock">Sponsoren überspringen (SponsorBlock)</string>
+    <string name="set_sponsorblock_detail">Überspringt Sponsorenabschnitte in YouTube-Videos. Sendet einen kurzen Hash der Video-ID an sponsor.ajay.app.</string>
+    <string name="set_sb_sponsor">Sponsor</string>
+    <string name="set_sb_selfpromo">Eigenwerbung</string>
+    <string name="set_sb_interaction">Interaktionshinweis</string>
+    <string name="set_sb_intro">Intro</string>
+    <string name="set_sb_outro">Outro</string>
+    <string name="set_sb_preview">Vorschau</string>
 </resources>

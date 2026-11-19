@@ -49,6 +49,7 @@ class SettingsViewModel @Inject constructor(
     private val downloadDao: com.abhinavxt.debforge.data.local.DownloadDao,
     private val housekeeper: com.abhinavxt.debforge.download.Housekeeper,
     private val followStore: com.abhinavxt.debforge.data.follow.FollowStore,
+    private val subscriptionRepo: com.abhinavxt.debforge.data.subscriptions.SubscriptionRepository,
     @dagger.hilt.android.qualifiers.ApplicationContext private val appContext: android.content.Context
 ) : ViewModel() {
 
@@ -179,6 +180,26 @@ class SettingsViewModel @Inject constructor(
         followStore.unfollow(f.provider, f.showKey)
         com.abhinavxt.debforge.download.follow.FollowJobService.sync(appContext, followStore.all().isNotEmpty())
     }
+
+    /** Followed YouTube channels, by title. */
+    val channels: StateFlow<List<com.abhinavxt.debforge.data.subscriptions.SubscriptionEntity>> = subscriptionRepo.subscriptions
+        .map { list -> list.filter { it.kind == com.abhinavxt.debforge.data.subscriptions.SubscriptionKind.YT_CHANNEL }.sortedBy { it.title.lowercase() } }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    fun setChannelAutoDownload(id: Long, mode: com.abhinavxt.debforge.data.subscriptions.AutoDownload) =
+        viewModelScope.launch { subscriptionRepo.setAutoDownload(id, mode) }
+
+    fun unfollowChannel(id: Long) = viewModelScope.launch { subscriptionRepo.unfollow(id) }
+
+    val sponsorBlock: StateFlow<Boolean> = settingsStore.sponsorBlockEnabledFlow.stateIn(
+        viewModelScope, SharingStarted.WhileSubscribed(5_000), false
+    )
+    fun setSponsorBlock(v: Boolean) = viewModelScope.launch { settingsStore.setSponsorBlockEnabled(v) }
+
+    val sponsorCategories: StateFlow<Set<String>> = settingsStore.sponsorBlockCategoriesFlow.stateIn(
+        viewModelScope, SharingStarted.WhileSubscribed(5_000), com.abhinavxt.debforge.data.prefs.DEFAULT_SPONSOR_CATEGORIES
+    )
+    fun setSponsorCategories(v: Set<String>) = viewModelScope.launch { settingsStore.setSponsorBlockCategories(v) }
 
     fun providerName(id: ProviderId): String = auth.info(id).displayName
 

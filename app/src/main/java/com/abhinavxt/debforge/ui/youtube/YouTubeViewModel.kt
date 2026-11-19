@@ -31,6 +31,7 @@ import com.abhinavxt.debforge.ui.browse.youTubePlayRequest
 import com.abhinavxt.debforge.domain.StreamKind
 import com.abhinavxt.debforge.data.prefs.SettingsStore
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CancellationException
@@ -80,6 +81,8 @@ sealed interface YouTubeEvent {
     data object SUBTITLE_ADDED : YouTubeEvent
     /** A playlist batch finished (not cancelled). */
     data class BatchDone(val added: Int, val already: Int, val failed: Int) : YouTubeEvent
+    /** Following a channel failed (unreadable channel or no connection). */
+    data object FollowFailed : YouTubeEvent
     /** Playing without downloading failed before it started. */
     data class StreamFailed(val kind: YouTubeErrorKind) : YouTubeEvent
 }
@@ -106,6 +109,8 @@ class YouTubeViewModel @Inject constructor(
     private val saved: SavedStateHandle,
     @ApiHttpClient private val http: OkHttpClient,
     private val audioPlayer: AudioPlayer,
+    private val subscriptions: com.abhinavxt.debforge.data.subscriptions.SubscriptionRepository,
+    private val subscriptionDao: com.abhinavxt.debforge.data.subscriptions.SubscriptionDao,
 ) : ViewModel() {
     private val _ui = MutableStateFlow<YouTubeUi>(YouTubeUi.Empty)
     val ui: StateFlow<YouTubeUi> = _ui.asStateFlow()
@@ -140,6 +145,48 @@ class YouTubeViewModel @Inject constructor(
     private var moreJob: Job? = null
     /** Extractor cursor for the shown search results; null when there are no more. */
     private var nextPage: Page? = null
+
+    /** New uploads from followed channels, for the empty screen's "New" row. */
+    val newItems: StateFlow<List<com.abhinavxt.debforge.data.subscriptions.NewFeedItem>> = subscriptions.newItems(20)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    /** Canonical urls of the followed channels. */
+    val followedUrls: StateFlow<Set<String>> = subscriptions.subscriptions
+        .map { list -> list.map { it.url }.toSet() }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptySet())
+
+    private val _followBusy = MutableStateFlow(false)
+    /** A follow request is running (reading the channel's feed). */
+    val followBusy: StateFlow<Boolean> = _followBusy.asStateFlow()
+
+    /** Follows the channel page's channel, or unfollows it when it is already followed. */
+    fun toggleFollow(channelUrl: String) {
+        if (_followBusy.value) return
+        _followBusy.value = true
+        viewModelScope.launch {
+            try {
+                val canonical = com.abhinavxt.debforge.domain.YouTubeChannelLinks.canonicalUrl(channelUrl)
+                val existing = canonical?.let { c -> subscriptionDao.getByUrl(c) }
+                if (existing != null) subscriptions.unfollow(existing.id)
+                else subscriptions.follow(channelUrl)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                _events.trySend(YouTubeEvent.FollowFailed)
+            } finally {
+                _followBusy.value = false
+            }
+        }
+    }
+
+    /** Opens a "New" tile like a search result, and marks it seen. */
+    fun openNew(item: com.abhinavxt.debforge.data.subscriptions.NewFeedItem) {
+        val url = item.mediaUrl ?: return
+        viewModelScope.launch { subscriptionDao.markSeen(item.subId, item.itemKey) }
+        pick(YouTubeSearchResult(url, item.title, item.subTitle, item.durationSec ?: 0, item.thumbUrl))
+    }
+
+    fun markAllSeen() { viewModelScope.launch { subscriptionDao.markEverythingSeen() } }
 
     private val _trending = MutableStateFlow<List<YouTubeSearchResult>>(emptyList())
     /** Videos for the empty screen; stays empty when loading failed. */

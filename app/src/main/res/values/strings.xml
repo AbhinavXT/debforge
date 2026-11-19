@@ -1025,4 +1025,24 @@
     <string name="wait_storage">Storage limit reached</string>
     <string name="notif_storage_title">Downloads waiting</string>
     <string name="notif_storage_text">Storage limit reached. Delete downloads or raise the limit in Settings.</string>
+    <string name="yt_follow">Follow</string>
+    <string name="yt_following">Following</string>
+    <string name="yt_follow_failed">Couldn\'t follow this channel. Check your connection and try again.</string>
+    <string name="yt_new">New</string>
+    <string name="yt_new_mark_seen">Mark all seen</string>
+    <string name="set_following">Following</string>
+    <string name="set_following_none">None yet. Follow a show in the Library or a channel on the YouTube tab.</string>
+    <string name="set_following_channels">YouTube channels</string>
+    <string name="set_following_auto">Auto-download</string>
+    <string name="set_auto_dl_off">Off</string>
+    <string name="set_auto_dl_audio">Audio</string>
+    <string name="set_auto_dl_video">Video</string>
+    <string name="set_sponsorblock">Skip sponsors (SponsorBlock)</string>
+    <string name="set_sponsorblock_detail">Skips sponsor segments in YouTube videos. Sends a short hash of the video ID to sponsor.ajay.app.</string>
+    <string name="set_sb_sponsor">Sponsor</string>
+    <string name="set_sb_selfpromo">Self-promotion</string>
+    <string name="set_sb_interaction">Interaction reminder</string>
+    <string name="set_sb_intro">Intro</string>
+    <string name="set_sb_outro">Outro</string>
+    <string name="set_sb_preview">Preview</string>
 </resources>

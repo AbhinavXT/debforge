@@ -1023,4 +1023,24 @@
     <string name="wait_storage">சேமிப்பக வரம்பு எட்டப்பட்டது</string>
     <string name="notif_storage_title">பதிவிறக்கங்கள் காத்திருக்கின்றன</string>
     <string name="notif_storage_text">சேமிப்பக வரம்பு எட்டப்பட்டது. பதிவிறக்கங்களை நீக்கவும் அல்லது அமைப்புகளில் வரம்பை உயர்த்தவும்.</string>
+    <string name="yt_follow">பின்தொடர்</string>
+    <string name="yt_following">பின்தொடர்கிறீர்கள்</string>
+    <string name="yt_follow_failed">இந்தச் சேனலைப் பின்தொடர முடியவில்லை. இணைப்பைச் சரிபார்த்து மீண்டும் முயலவும்.</string>
+    <string name="yt_new">புதியது</string>
+    <string name="yt_new_mark_seen">அனைத்தையும் பார்த்ததாகக் குறி</string>
+    <string name="set_following">பின்தொடர்பவை</string>
+    <string name="set_following_none">இன்னும் எதுவும் இல்லை. நூலகத்தில் ஒரு நிகழ்ச்சியை அல்லது YouTube தாவலில் ஒரு சேனலைப் பின்தொடரவும்.</string>
+    <string name="set_following_channels">YouTube சேனல்கள்</string>
+    <string name="set_following_auto">தானியங்கி பதிவிறக்கம்</string>
+    <string name="set_auto_dl_off">முடக்கம்</string>
+    <string name="set_auto_dl_audio">ஆடியோ</string>
+    <string name="set_auto_dl_video">வீடியோ</string>
+    <string name="set_sponsorblock">ஸ்பான்சரைத் தவிர் (SponsorBlock)</string>
+    <string name="set_sponsorblock_detail">YouTube வீடியோக்களில் ஸ்பான்சர் பகுதிகளைத் தவிர்க்கும். வீடியோ ID-யின் சிறிய ஹாஷை sponsor.ajay.app-க்கு அனுப்பும்.</string>
+    <string name="set_sb_sponsor">ஸ்பான்சர்</string>
+    <string name="set_sb_selfpromo">சுய விளம்பரம்</string>
+    <string name="set_sb_interaction">தொடர்பு நினைவூட்டல்</string>
+    <string name="set_sb_intro">இன்ட்ரோ</string>
+    <string name="set_sb_outro">அவுட்ரோ</string>
+    <string name="set_sb_preview">முன்னோட்டம்</string>
 </resources>

@@ -1072,4 +1072,24 @@
     <string name="wait_storage">Límite de almacenamiento alcanzado</string>
     <string name="notif_storage_title">Descargas en espera</string>
     <string name="notif_storage_text">Límite de almacenamiento alcanzado. Borra descargas o súbelo en Ajustes.</string>
+    <string name="yt_follow">Seguir</string>
+    <string name="yt_following">Siguiendo</string>
+    <string name="yt_follow_failed">No se pudo seguir este canal. Revisa tu conexión e inténtalo de nuevo.</string>
+    <string name="yt_new">Nuevo</string>
+    <string name="yt_new_mark_seen">Marcar todo como visto</string>
+    <string name="set_following">Siguiendo</string>
+    <string name="set_following_none">Nada todavía. Sigue una serie en la Biblioteca o un canal en la pestaña de YouTube.</string>
+    <string name="set_following_channels">Canales de YouTube</string>
+    <string name="set_following_auto">Descarga automática</string>
+    <string name="set_auto_dl_off">No</string>
+    <string name="set_auto_dl_audio">Audio</string>
+    <string name="set_auto_dl_video">Vídeo</string>
+    <string name="set_sponsorblock">Saltar patrocinios (SponsorBlock)</string>
+    <string name="set_sponsorblock_detail">Salta los segmentos de patrocinio en los vídeos de YouTube. Envía un hash corto del ID del vídeo a sponsor.ajay.app.</string>
+    <string name="set_sb_sponsor">Patrocinio</string>
+    <string name="set_sb_selfpromo">Autopromoción</string>
+    <string name="set_sb_interaction">Recordatorio de interacción</string>
+    <string name="set_sb_intro">Intro</string>
+    <string name="set_sb_outro">Final</string>
+    <string name="set_sb_preview">Avance</string>
 </resources>

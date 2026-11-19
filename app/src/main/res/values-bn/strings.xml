@@ -1023,4 +1023,24 @@
     <string name="wait_storage">স্টোরেজ সীমা পূর্ণ</string>
     <string name="notif_storage_title">ডাউনলোড অপেক্ষায়</string>
     <string name="notif_storage_text">স্টোরেজ সীমা পূর্ণ। ডাউনলোড মুছুন বা সেটিংসে সীমা বাড়ান।</string>
+    <string name="yt_follow">ফলো করুন</string>
+    <string name="yt_following">ফলো করা হয়েছে</string>
+    <string name="yt_follow_failed">এই চ্যানেল ফলো করা যায়নি। সংযোগ দেখে আবার চেষ্টা করুন।</string>
+    <string name="yt_new">নতুন</string>
+    <string name="yt_new_mark_seen">সব দেখা হিসেবে চিহ্নিত করুন</string>
+    <string name="set_following">ফলো করা</string>
+    <string name="set_following_none">এখনও কিছু নেই। লাইব্রেরিতে কোনো শো বা YouTube ট্যাবে কোনো চ্যানেল ফলো করুন।</string>
+    <string name="set_following_channels">YouTube চ্যানেল</string>
+    <string name="set_following_auto">স্বয়ংক্রিয় ডাউনলোড</string>
+    <string name="set_auto_dl_off">বন্ধ</string>
+    <string name="set_auto_dl_audio">অডিও</string>
+    <string name="set_auto_dl_video">ভিডিও</string>
+    <string name="set_sponsorblock">স্পনসর বাদ দিন (SponsorBlock)</string>
+    <string name="set_sponsorblock_detail">YouTube ভিডিওর স্পনসর অংশ বাদ দেয়। ভিডিও ID-র একটি ছোট হ্যাশ sponsor.ajay.app-এ পাঠায়।</string>
+    <string name="set_sb_sponsor">স্পনসর</string>
+    <string name="set_sb_selfpromo">নিজের প্রচার</string>
+    <string name="set_sb_interaction">ইন্টারঅ্যাকশন রিমাইন্ডার</string>
+    <string name="set_sb_intro">ইন্ট্রো</string>
+    <string name="set_sb_outro">আউট্রো</string>
+    <string name="set_sb_preview">প্রিভিউ</string>
 </resources>

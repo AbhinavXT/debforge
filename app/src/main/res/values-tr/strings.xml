@@ -1023,4 +1023,24 @@
     <string name="wait_storage">Depolama sınırına ulaşıldı</string>
     <string name="notif_storage_title">İndirmeler bekliyor</string>
     <string name="notif_storage_text">Depolama sınırına ulaşıldı. İndirmeleri silin veya sınırı Ayarlar\'dan artırın.</string>
+    <string name="yt_follow">Takip et</string>
+    <string name="yt_following">Takip ediliyor</string>
+    <string name="yt_follow_failed">Bu kanal takip edilemedi. Bağlantını kontrol edip tekrar dene.</string>
+    <string name="yt_new">Yeni</string>
+    <string name="yt_new_mark_seen">Tümünü görüldü işaretle</string>
+    <string name="set_following">Takip edilenler</string>
+    <string name="set_following_none">Henüz yok. Kitaplıkta bir diziyi veya YouTube sekmesinde bir kanalı takip et.</string>
+    <string name="set_following_channels">YouTube kanalları</string>
+    <string name="set_following_auto">Otomatik indirme</string>
+    <string name="set_auto_dl_off">Kapalı</string>
+    <string name="set_auto_dl_audio">Ses</string>
+    <string name="set_auto_dl_video">Video</string>
+    <string name="set_sponsorblock">Sponsorları atla (SponsorBlock)</string>
+    <string name="set_sponsorblock_detail">YouTube videolarındaki sponsor bölümlerini atlar. Video kimliğinin kısa bir özetini sponsor.ajay.app adresine gönderir.</string>
+    <string name="set_sb_sponsor">Sponsor</string>
+    <string name="set_sb_selfpromo">Kendi tanıtımı</string>
+    <string name="set_sb_interaction">Etkileşim hatırlatması</string>
+    <string name="set_sb_intro">Giriş</string>
+    <string name="set_sb_outro">Bitiş</string>
+    <string name="set_sb_preview">Önizleme</string>
 </resources>

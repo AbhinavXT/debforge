@@ -1023,4 +1023,24 @@
     <string name="wait_storage">स्टोरेज सीमा पूरी हो गई</string>
     <string name="notif_storage_title">डाउनलोड इंतज़ार में हैं</string>
     <string name="notif_storage_text">स्टोरेज सीमा पूरी हो गई। डाउनलोड हटाएँ या सेटिंग्स में सीमा बढ़ाएँ।</string>
+    <string name="yt_follow">फ़ॉलो करें</string>
+    <string name="yt_following">फ़ॉलो किया</string>
+    <string name="yt_follow_failed">इस चैनल को फ़ॉलो नहीं कर सके। कनेक्शन जाँचकर फिर कोशिश करें।</string>
+    <string name="yt_new">नया</string>
+    <string name="yt_new_mark_seen">सभी देखे हुए मार्क करें</string>
+    <string name="set_following">फ़ॉलो किए गए</string>
+    <string name="set_following_none">अभी कुछ नहीं। लाइब्रेरी में कोई शो या YouTube टैब में कोई चैनल फ़ॉलो करें।</string>
+    <string name="set_following_channels">YouTube चैनल</string>
+    <string name="set_following_auto">ऑटो-डाउनलोड</string>
+    <string name="set_auto_dl_off">बंद</string>
+    <string name="set_auto_dl_audio">ऑडियो</string>
+    <string name="set_auto_dl_video">वीडियो</string>
+    <string name="set_sponsorblock">स्पॉन्सर छोड़ें (SponsorBlock)</string>
+    <string name="set_sponsorblock_detail">YouTube वीडियो में स्पॉन्सर वाले हिस्से छोड़ता है। वीडियो ID का छोटा हैश sponsor.ajay.app को भेजता है।</string>
+    <string name="set_sb_sponsor">स्पॉन्सर</string>
+    <string name="set_sb_selfpromo">खुद का प्रचार</string>
+    <string name="set_sb_interaction">इंटरैक्शन रिमाइंडर</string>
+    <string name="set_sb_intro">इंट्रो</string>
+    <string name="set_sb_outro">आउट्रो</string>
+    <string name="set_sb_preview">प्रिव्यू</string>
 </resources>

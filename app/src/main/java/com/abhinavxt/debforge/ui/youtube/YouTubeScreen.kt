@@ -76,6 +76,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -126,6 +127,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
+import com.abhinavxt.debforge.data.subscriptions.NewFeedItem
 import kotlinx.coroutines.launch
 import com.abhinavxt.debforge.R
 import com.abhinavxt.debforge.domain.Container
@@ -156,6 +158,9 @@ fun YouTubeScreen(
     val input by viewModel.input.collectAsStateWithLifecycle()
     val trending by viewModel.trending.collectAsStateWithLifecycle()
     val recent by viewModel.recent.collectAsStateWithLifecycle()
+    val newItems by viewModel.newItems.collectAsStateWithLifecycle()
+    val followedUrls by viewModel.followedUrls.collectAsStateWithLifecycle()
+    val followBusy by viewModel.followBusy.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
     val context = LocalContext.current
     // Android only lets the focused window read the clipboard, so read when focus arrives, and again on tapping Paste.
@@ -186,6 +191,7 @@ fun YouTubeScreen(
     val msgFailed = stringResource(R.string.yt_err_queue)
     val msgNoSubtitle = stringResource(R.string.yt_queued_no_subtitle)
     val msgSubtitleAdded = stringResource(R.string.yt_subtitle_added)
+    val msgFollowFailed = stringResource(R.string.yt_follow_failed)
     val viewDownloads = stringResource(R.string.yt_view_downloads)
 
     LaunchedEffect(Unit) {
@@ -205,6 +211,7 @@ fun YouTubeScreen(
                     YouTubeEvent.QUEUE_FAILED -> msgFailed
                     YouTubeEvent.QUEUED_NO_SUBTITLE -> msgNoSubtitle
                     YouTubeEvent.SUBTITLE_ADDED -> msgSubtitleAdded
+                    YouTubeEvent.FollowFailed -> msgFollowFailed
                     is YouTubeEvent.StreamFailed -> res.getString(errorText(e.kind))
                     is YouTubeEvent.BatchDone -> listOfNotNull(
                         e.added.takeIf { it > 0 }?.let { res.getQuantityString(R.plurals.yt_batch_added, it, it) },
@@ -212,7 +219,7 @@ fun YouTubeScreen(
                         e.failed.takeIf { it > 0 }?.let { res.getQuantityString(R.plurals.yt_batch_failed, it, it) },
                     ).joinToString(" · ")
                 },
-                actionLabel = if (e == YouTubeEvent.QUEUE_FAILED || e is YouTubeEvent.StreamFailed) null else viewDownloads,
+                actionLabel = if (e == YouTubeEvent.QUEUE_FAILED || e == YouTubeEvent.FollowFailed || e is YouTubeEvent.StreamFailed) null else viewDownloads,
                 duration = if (queuedOk) SnackbarDuration.Long else SnackbarDuration.Short,
             )
             if (r == SnackbarResult.ActionPerformed) onOpenDownloads()
@@ -261,6 +268,12 @@ fun YouTubeScreen(
                     onClearRecent = viewModel::clearRecent,
                     onChannel = viewModel::openChannel,
                     onLoadTrending = viewModel::loadTrending,
+                    newItems = newItems,
+                    onNew = viewModel::openNew,
+                    onMarkAllSeen = viewModel::markAllSeen,
+                    followedUrls = followedUrls,
+                    followBusy = followBusy,
+                    onToggleFollow = viewModel::toggleFollow,
                 )
             }
         }
@@ -305,6 +318,12 @@ internal fun YouTubeContent(
     onPlay: () -> Unit = {},
     onPlayResult: (YouTubeSearchResult) -> Unit = {},
     streamingUrl: String? = null,
+    newItems: List<NewFeedItem> = emptyList(),
+    onNew: (NewFeedItem) -> Unit = {},
+    onMarkAllSeen: () -> Unit = {},
+    followedUrls: Set<String> = emptySet(),
+    followBusy: Boolean = false,
+    onToggleFollow: (String) -> Unit = {},
 ) {
     val cfg = androidx.compose.ui.platform.LocalConfiguration.current
     val landscapeWide = cfg.screenWidthDp > cfg.screenHeightDp && cfg.screenWidthDp >= 600
@@ -320,9 +339,9 @@ internal fun YouTubeContent(
         }),
     ) { state ->
         when (state) {
-            YouTubeUi.Empty -> EmptyState(input, clipLink, onInput, onSubmit, onPaste, trending, recent, onRemoveRecent, onClearRecent, onPick, onChannel, onLoadTrending, onPlayResult, streamingUrl)
+            YouTubeUi.Empty -> EmptyState(input, clipLink, onInput, onSubmit, onPaste, trending, recent, onRemoveRecent, onClearRecent, onPick, onChannel, onLoadTrending, onPlayResult, streamingUrl, newItems, onNew, onMarkAllSeen)
             YouTubeUi.Resolving -> Skeleton()
-            is YouTubeUi.Results -> ResultsState(state, input, onInput, onSubmit, onPaste, onPick, onChannel, onLoadMore, resultsList, onPlayResult, streamingUrl)
+            is YouTubeUi.Results -> ResultsState(state, input, onInput, onSubmit, onPaste, onPick, onChannel, onLoadMore, resultsList, onPlayResult, streamingUrl, followedUrls, followBusy, onToggleFollow)
             is YouTubeUi.Preview -> PreviewState(state, onReset, onMode, onSelect, onSubtitle, onDownload, onPlay, onChannel)
             is YouTubeUi.Playlist -> PlaylistState(state, onReset, onToggle, onSelectAll, onQuality, onDownloadPlaylist, onCancelBatch, onChannel)
             is YouTubeUi.Error -> MessageState(
@@ -416,8 +435,12 @@ private fun ResultsState(
     listState: LazyListState,
     onPlay: (YouTubeSearchResult) -> Unit,
     streamingUrl: String?,
+    followedUrls: Set<String>,
+    followBusy: Boolean,
+    onToggleFollow: (String) -> Unit,
 ) {
     val focus = remember { FocusRequester() }
+    val followFocus = remember { FocusRequester() }
     // D-pad: the screen it replaced held focus (the Skeleton, the field); keep it on this screen instead of letting it fall to the first tab.
     val keys = androidx.compose.ui.platform.LocalInputModeManager.current.inputMode == androidx.compose.ui.input.InputMode.Keyboard
     LaunchedEffect(Unit) { if (keys) runCatching { focus.requestFocus() } }
@@ -459,9 +482,23 @@ private fun ResultsState(
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        item { LinkOrSearchField(input, onInput, onSubmit, onPaste, focus, down = if (r.items.isEmpty()) FocusRequester.Default else firstRow) }
+        item { LinkOrSearchField(input, onInput, onSubmit, onPaste, focus, down = if (r.channelUrl != null) followFocus else if (r.items.isEmpty()) FocusRequester.Default else firstRow) }
         if (r.channelUrl != null) {
-            item { Text(r.query, style = MaterialTheme.typography.titleMedium, maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.semantics { heading() }) }
+            item {
+                val channelUrl = r.channelUrl
+                val following = com.abhinavxt.debforge.domain.YouTubeChannelLinks.canonicalUrl(channelUrl)?.let { it in followedUrls } == true
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text(r.query, style = MaterialTheme.typography.titleMedium, maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f).semantics { heading() })
+                    val btnMod = Modifier.heightIn(min = 48.dp).focusRequester(followFocus)
+                        .focusProperties { down = if (r.items.isEmpty()) FocusRequester.Default else firstRow }
+                    val label: @Composable () -> Unit = {
+                        if (followBusy) CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
+                        else Text(stringResource(if (following) R.string.yt_following else R.string.yt_follow))
+                    }
+                    if (following) OutlinedButton(onClick = { onToggleFollow(channelUrl) }, enabled = !followBusy, modifier = btnMod, content = { label() })
+                    else Button(onClick = { onToggleFollow(channelUrl) }, enabled = !followBusy, modifier = btnMod, content = { label() })
+                }
+            }
         }
         if (r.items.isEmpty()) {
             item {
@@ -731,6 +768,9 @@ private fun EmptyState(
     onLoadTrending: () -> Unit,
     onPlayResult: (YouTubeSearchResult) -> Unit,
     streamingUrl: String?,
+    newItems: List<NewFeedItem>,
+    onNew: (NewFeedItem) -> Unit,
+    onMarkAllSeen: () -> Unit,
 ) {
     LaunchedEffect(Unit) { onLoadTrending() }
     val keyboard = LocalSoftwareKeyboardController.current
@@ -771,6 +811,7 @@ private fun EmptyState(
                 modifier = Modifier.heightIn(min = if (trending.isEmpty()) 280.dp else 160.dp),
             )
         }
+        if (newItems.isNotEmpty()) NewRow(newItems, onNew, onMarkAllSeen)
         if (trending.isNotEmpty()) {
             Text(stringResource(R.string.yt_trending), style = MaterialTheme.typography.titleMedium, modifier = Modifier.semantics { heading() })
             BoxWithConstraints(Modifier.fillMaxWidth()) {
@@ -786,6 +827,43 @@ private fun EmptyState(
 }
 
 private const val RECENT_SHOWN = 6
+
+/** Unseen uploads from followed channels: a header with "Mark all seen" above tiles that scroll sideways. */
+@Composable
+private fun NewRow(items: List<NewFeedItem>, onOpen: (NewFeedItem) -> Unit, onMarkAllSeen: () -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(stringResource(R.string.yt_new), style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f).semantics { heading() })
+            TextButton(onClick = onMarkAllSeen, modifier = Modifier.heightIn(min = 48.dp)) { Text(stringResource(R.string.yt_new_mark_seen)) }
+        }
+        androidx.compose.foundation.lazy.LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            contentPadding = PaddingValues(vertical = 4.dp),
+            modifier = Modifier.focusGroup(),
+        ) {
+            items(items, key = { it.subId to it.itemKey }) { item ->
+                val interaction = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+                Column(
+                    Modifier.width(200.dp).clip(RoundedCornerShape(12.dp))
+                        .focusRing(interaction, RoundedCornerShape(12.dp))
+                        .clickable(interactionSource = interaction, indication = null, onClick = { onOpen(item) })
+                        .padding(4.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp),
+                ) {
+                    Box(Modifier.fillMaxWidth().aspectRatio(16f / 9f).clip(RoundedCornerShape(10.dp)).background(MaterialTheme.colorScheme.surfaceContainerHigh)) {
+                        AsyncImage(model = item.thumbUrl, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
+                        val d = item.durationSec ?: 0L
+                        if (d > 0) Surface(color = Color.Black.copy(alpha = 0.75f), contentColor = Color.White, shape = RoundedCornerShape(6.dp), modifier = Modifier.align(Alignment.BottomEnd).padding(4.dp)) {
+                            Text(durationText(d), style = MaterialTheme.typography.labelSmall, modifier = Modifier.padding(horizontal = 6.dp, vertical = 1.dp))
+                        }
+                    }
+                    Text(item.title, style = MaterialTheme.typography.bodyMedium, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                    Text(item.subTitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                }
+            }
+        }
+    }
+}
 
 /** The user's last YouTube searches on the empty screen: tap to run one again, remove one, or clear all. */
 @Composable

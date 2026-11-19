@@ -11,6 +11,7 @@ import android.provider.Settings
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material3.IconButton
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -139,6 +140,9 @@ fun SettingsScreen(onConnect: () -> Unit, onBack: (() -> Unit)? = null, viewMode
     val youTubeQuality by viewModel.youTubeQuality.collectAsStateWithLifecycle()
     val autoDeleteConfirm by viewModel.autoDeleteConfirm.collectAsStateWithLifecycle()
     val follows by viewModel.follows.collectAsStateWithLifecycle()
+    val channels by viewModel.channels.collectAsStateWithLifecycle()
+    val sponsorBlock by viewModel.sponsorBlock.collectAsStateWithLifecycle()
+    val sponsorCategories by viewModel.sponsorCategories.collectAsStateWithLifecycle()
     val internalPlayer by viewModel.internalPlayer.collectAsStateWithLifecycle()
     val autoplayNext by viewModel.autoplayNext.collectAsStateWithLifecycle()
     val pip by viewModel.pip.collectAsStateWithLifecycle()
@@ -417,6 +421,35 @@ fun SettingsScreen(onConnect: () -> Unit, onBack: (() -> Unit)? = null, viewMode
                         )
                         RowDivider()
                         SwitchSettingRow(
+                            icon = Icons.Rounded.FastForward,
+                            title = stringResource(R.string.set_sponsorblock),
+                            subtitle = stringResource(R.string.set_sponsorblock_detail),
+                            checked = sponsorBlock,
+                            onChange = viewModel::setSponsorBlock
+                        )
+                        if (sponsorBlock) {
+                            val cats = listOf(
+                                "sponsor" to R.string.set_sb_sponsor, "selfpromo" to R.string.set_sb_selfpromo,
+                                "interaction" to R.string.set_sb_interaction, "intro" to R.string.set_sb_intro,
+                                "outro" to R.string.set_sb_outro, "preview" to R.string.set_sb_preview,
+                            )
+                            androidx.compose.foundation.layout.FlowRow(
+                                Modifier.padding(start = 16.dp, end = 16.dp, bottom = 12.dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                cats.forEach { (key, label) ->
+                                    val on = key in sponsorCategories
+                                    androidx.compose.material3.FilterChip(
+                                        selected = on,
+                                        onClick = { viewModel.setSponsorCategories(if (on) sponsorCategories - key else sponsorCategories + key) },
+                                        label = { Text(stringResource(label)) },
+                                        modifier = Modifier.heightIn(min = 48.dp),
+                                    )
+                                }
+                            }
+                        }
+                        RowDivider()
+                        SwitchSettingRow(
                             icon = Icons.Rounded.Image,
                             title = stringResource(R.string.set_stream_previews),
                             subtitle = stringResource(R.string.set_stream_previews_detail),
@@ -487,10 +520,10 @@ fun SettingsScreen(onConnect: () -> Unit, onBack: (() -> Unit)? = null, viewMode
                     RowDivider()
                     SettingRow(
                         icon = Icons.Rounded.NotificationsActive,
-                        title = stringResource(R.string.set_follows),
-                        subtitle = if (follows.isEmpty()) stringResource(R.string.set_follows_none)
-                        else follows.joinToString(", ") { it.title },
-                        onClick = if (follows.isEmpty()) null else ({ followsOpen = true })
+                        title = stringResource(R.string.set_following),
+                        subtitle = if (follows.isEmpty() && channels.isEmpty()) stringResource(R.string.set_following_none)
+                        else (follows.map { it.title } + channels.map { it.title }).joinToString(", "),
+                        onClick = if (follows.isEmpty() && channels.isEmpty()) null else ({ followsOpen = true })
                     )
                     RowDivider()
                     TmdbKeyRow(
@@ -518,10 +551,10 @@ fun SettingsScreen(onConnect: () -> Unit, onBack: (() -> Unit)? = null, viewMode
         AlertDialog(
             onDismissRequest = { followsOpen = false },
             icon = { Icon(Icons.Rounded.NotificationsActive, contentDescription = null) },
-            title = { Text(stringResource(R.string.set_follows)) },
+            title = { Text(stringResource(R.string.set_following)) },
             text = {
-                Column {
-                    Text(
+                Column(Modifier.verticalScroll(rememberScrollState())) {
+                    if (follows.isNotEmpty()) Text(
                         stringResource(R.string.set_follows_detail),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -540,6 +573,32 @@ fun SettingsScreen(onConnect: () -> Unit, onBack: (() -> Unit)? = null, viewMode
                                 }
                             }
                             TextButton(onClick = { viewModel.unfollow(f) }) { Text(stringResource(R.string.follow_unfollow)) }
+                        }
+                    }
+                    if (channels.isNotEmpty()) {
+                        if (follows.isNotEmpty()) Spacer(Modifier.height(16.dp))
+                        Text(stringResource(R.string.set_following_channels), style = MaterialTheme.typography.titleSmall)
+                        channels.forEach { c ->
+                            Spacer(Modifier.height(8.dp))
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(c.title, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
+                                TextButton(onClick = { viewModel.unfollowChannel(c.id) }) { Text(stringResource(R.string.follow_unfollow)) }
+                            }
+                            Text(stringResource(R.string.set_following_auto), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                listOf(
+                                    com.abhinavxt.debforge.data.subscriptions.AutoDownload.OFF to R.string.set_auto_dl_off,
+                                    com.abhinavxt.debforge.data.subscriptions.AutoDownload.AUDIO to R.string.set_auto_dl_audio,
+                                    com.abhinavxt.debforge.data.subscriptions.AutoDownload.VIDEO to R.string.set_auto_dl_video,
+                                ).forEach { (mode, label) ->
+                                    androidx.compose.material3.FilterChip(
+                                        selected = c.autoDownload == mode,
+                                        onClick = { viewModel.setChannelAutoDownload(c.id, mode) },
+                                        label = { Text(stringResource(label)) },
+                                        modifier = Modifier.heightIn(min = 48.dp),
+                                    )
+                                }
+                            }
                         }
                     }
                 }

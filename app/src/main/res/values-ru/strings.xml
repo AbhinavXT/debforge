@@ -1121,4 +1121,24 @@
     <string name="wait_storage">Достигнут лимит хранилища</string>
     <string name="notif_storage_title">Загрузки ожидают</string>
     <string name="notif_storage_text">Достигнут лимит хранилища. Удалите загрузки или увеличьте лимит в настройках.</string>
+    <string name="yt_follow">Подписаться</string>
+    <string name="yt_following">Вы подписаны</string>
+    <string name="yt_follow_failed">Не удалось подписаться на канал. Проверьте подключение и повторите попытку.</string>
+    <string name="yt_new">Новое</string>
+    <string name="yt_new_mark_seen">Отметить всё просмотренным</string>
+    <string name="set_following">Подписки</string>
+    <string name="set_following_none">Пока ничего. Подпишитесь на сериал в Библиотеке или на канал во вкладке YouTube.</string>
+    <string name="set_following_channels">Каналы YouTube</string>
+    <string name="set_following_auto">Автозагрузка</string>
+    <string name="set_auto_dl_off">Выкл.</string>
+    <string name="set_auto_dl_audio">Аудио</string>
+    <string name="set_auto_dl_video">Видео</string>
+    <string name="set_sponsorblock">Пропускать рекламу (SponsorBlock)</string>
+    <string name="set_sponsorblock_detail">Пропускает рекламные фрагменты в видео YouTube. Отправляет на sponsor.ajay.app короткий хеш ID видео.</string>
+    <string name="set_sb_sponsor">Реклама</string>
+    <string name="set_sb_selfpromo">Самореклама</string>
+    <string name="set_sb_interaction">Призыв к действию</string>
+    <string name="set_sb_intro">Заставка</string>
+    <string name="set_sb_outro">Концовка</string>
+    <string name="set_sb_preview">Анонс</string>
 </resources>
