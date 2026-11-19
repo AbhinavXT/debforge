@@ -850,6 +850,8 @@
     <string name="yt_subtitles_auto">%s (automatisch)</string>
     <string name="yt_mode_audio">Audio</string>
     <string name="yt_best">Beste</string>
+    <string name="yt_up_next">Als Nächstes</string>
+    <string name="yt_add_to_queue_cd">Zur Warteschlange hinzufügen</string>
     <string name="yt_download_format">Herunterladen · %1$s · %2$s</string>
     <string name="yt_another_link">Anderen Link verwenden</string>
     <string name="yt_queued">Zu Downloads hinzugefügt</string>
@@ -868,6 +870,7 @@
     <string name="yt_err_sign_in">Dieses Video ist altersbeschränkt oder erfordert eine Anmeldung und kann nicht heruntergeladen werden.</string>
     <string name="yt_err_unavailable">Dieses Video ist nicht verfügbar oder privat.</string>
     <string name="yt_err_network">Prüfe deine Verbindung und versuche es erneut.</string>
+    <string name="yt_skipped_unavailable">Nicht verfügbares Video übersprungen</string>
     <string name="yt_err_generic">Beim Lesen dieses Videos ist etwas schiefgelaufen. Versuche es gleich noch einmal.</string>
     <string name="yt_err_queue">Download konnte nicht hinzugefügt werden. Versuche es erneut.</string>
     <string name="yt_playlist">Playlist</string>

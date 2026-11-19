@@ -246,6 +246,9 @@ class YouTubeViewModel @Inject constructor(
     /** The results a tapped result came from, so Back returns there; cleared by any new submit. */
     private var fromResults: YouTubeUi.Results? = null
 
+    /** Previews left through an "Up next" tap (with the link in the field), newest last: Back steps through them before [fromResults]. */
+    private val previewBack = ArrayDeque<Pair<YouTubeUi.Preview, String>>()
+
     /** An open channel list: [back] is the screen it was opened from (null: the empty screen). */
     private class ChannelNav(val name: String, val url: String, val back: Back?, val origin: String? = null)
     /** A screen to return to: its state, the field and saved link that went with it, and the results a preview came from. */
@@ -261,6 +264,7 @@ class YouTubeViewModel @Inject constructor(
     /** [record]: a word search is added to the recent searches (not when restoring after process death). */
     private fun run(text: String, record: Boolean) {
         fromResults = null
+        previewBack.clear()
         channel = null
         _input.value = text
         saved[LINK_KEY] = text
@@ -371,6 +375,7 @@ class YouTubeViewModel @Inject constructor(
             else -> null // empty, loading or an error
         }
         fromResults = null
+        previewBack.clear()
         loadChannel(ChannelNav(name, url, back, origin))
         return true
     }
@@ -405,7 +410,18 @@ class YouTubeViewModel @Inject constructor(
         _input.value = result.url
         saved[LINK_KEY] = result.url
         resolve(result.url)
+        previewBack.clear()
         fromResults = results?.copy(loadingMore = false) // a cancelled page load must not leave the spinner on
+    }
+
+    /** A tapped "Up next" video: opens its preview, and Back returns to the preview it was tapped on. */
+    fun openRelated(result: YouTubeSearchResult) {
+        val cur = _ui.value as? YouTubeUi.Preview ?: return
+        job?.cancel()
+        previewBack.addLast(cur to _input.value)
+        _input.value = result.url
+        saved[LINK_KEY] = result.url
+        resolve(result.url)
     }
 
     private fun resolve(text: String) {
@@ -428,7 +444,7 @@ class YouTubeViewModel @Inject constructor(
     // A failed tapped result retries in place: submit() would drop fromResults and lose Back-to-results.
     fun retry() {
         val nav = channel
-        if (fromResults != null) { job?.cancel(); resolve(_input.value) }
+        if (fromResults != null || previewBack.isNotEmpty()) { job?.cancel(); resolve(_input.value) }
         else if (nav != null) { job?.cancel(); loadChannel(nav) }
         else submit(_input.value)
     }
@@ -438,6 +454,12 @@ class YouTubeViewModel @Inject constructor(
         moreJob?.cancel()
         batchJob?.cancel()
         pending = null // a download waiting on the folder prompt belongs to the screen being left
+        previewBack.removeLastOrNull()?.let { (preview, link) ->
+            _input.value = link
+            saved[LINK_KEY] = link
+            _ui.value = preview
+            return
+        }
         fromResults?.let {
             fromResults = null
             _input.value = if (it.channelUrl == null) it.query else ""

@@ -890,6 +890,8 @@
     <string name="yt_subtitles_auto">%s (auto)</string>
     <string name="yt_mode_audio">Audio</string>
     <string name="yt_best">Meilleure</string>
+    <string name="yt_up_next">À suivre</string>
+    <string name="yt_add_to_queue_cd">Ajouter à la file d’attente</string>
     <string name="yt_download_format">Télécharger · %1$s · %2$s</string>
     <string name="yt_another_link">Utiliser un autre lien</string>
     <string name="yt_queued">Ajouté aux téléchargements</string>
@@ -908,6 +910,7 @@
     <string name="yt_err_sign_in">Cette vidéo est soumise à une limite d\'âge ou nécessite une connexion ; elle ne peut pas être téléchargée.</string>
     <string name="yt_err_unavailable">Cette vidéo est indisponible ou privée.</string>
     <string name="yt_err_network">Vérifiez votre connexion et réessayez.</string>
+    <string name="yt_skipped_unavailable">Vidéo indisponible ignorée</string>
     <string name="yt_err_generic">Une erreur est survenue à la lecture de cette vidéo. Réessayez dans un instant.</string>
     <string name="yt_err_queue">Impossible d\'ajouter le téléchargement. Réessayez.</string>
     <string name="yt_playlist">Playlist</string>

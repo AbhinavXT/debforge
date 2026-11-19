@@ -41,6 +41,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material3.Checkbox
@@ -53,6 +54,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.PlaylistAdd
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.ContentPaste
 import androidx.compose.material.icons.rounded.Download
@@ -249,6 +251,7 @@ fun YouTubeScreen(
                         else scope.launch { snackbar.currentSnackbarData?.dismiss(); snackbar.showSnackbar(msgNoLink) }
                     },
                     onPick = viewModel::pick,
+                    onOpenRelated = viewModel::openRelated,
                     onReset = viewModel::reset,
                     onRetry = viewModel::retry,
                     onMode = viewModel::selectMode,
@@ -329,6 +332,7 @@ internal fun YouTubeContent(
     followBusy: String? = null,
     canonicalByPage: Map<String, String> = emptyMap(),
     onToggleFollow: (String) -> Unit = {},
+    onOpenRelated: (YouTubeSearchResult) -> Unit = {},
 ) {
     val cfg = androidx.compose.ui.platform.LocalConfiguration.current
     val landscapeWide = cfg.screenWidthDp > cfg.screenHeightDp && cfg.screenWidthDp >= 600
@@ -347,7 +351,7 @@ internal fun YouTubeContent(
             YouTubeUi.Empty -> EmptyState(input, clipLink, onInput, onSubmit, onPaste, trending, recent, onRemoveRecent, onClearRecent, onPick, onChannel, onLoadTrending, onPlayResult, streamingUrl, newItems, onNew, onMarkAllSeen)
             YouTubeUi.Resolving -> Skeleton()
             is YouTubeUi.Results -> ResultsState(state, input, onInput, onSubmit, onPaste, onPick, onChannel, onLoadMore, resultsList, onPlayResult, streamingUrl, followedUrls, followBusy, canonicalByPage, onToggleFollow)
-            is YouTubeUi.Preview -> PreviewState(state, onReset, onMode, onSelect, onSubtitle, onDownload, onPlay, onChannel)
+            is YouTubeUi.Preview -> PreviewState(state, onReset, onMode, onSelect, onSubtitle, onDownload, onPlay, onChannel, onOpenRelated)
             is YouTubeUi.Playlist -> PlaylistState(state, onReset, onToggle, onSelectAll, onQuality, onDownloadPlaylist, onCancelBatch, onChannel)
             is YouTubeUi.Error -> MessageState(
                 icon = Icons.Rounded.ErrorOutline,
@@ -605,6 +609,43 @@ private fun ResultRow(
                 interactionSource = playSource
             ) {
                 Icon(Icons.Rounded.PlayCircle, contentDescription = stringResource(R.string.yt_play_cd))
+            }
+        }
+    }
+}
+
+/**
+ * A related video: the body opens its preview. [onAddToQueue] is a separate trailing button, shown only when given
+ * (not wired yet: the player queue API comes later).
+ */
+@Composable
+private fun RelatedRow(
+    r: YouTubeSearchResult,
+    onClick: () -> Unit,
+    onAddToQueue: ((YouTubeSearchResult) -> Unit)? = null,
+) {
+    val source = remember { MutableInteractionSource() }
+    val queueSource = remember { MutableInteractionSource() }
+    Row(Modifier.fillMaxWidth().heightIn(min = 56.dp), verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            Modifier.weight(1f).clip(RowShape).focusRing(source, RowShape)
+                .clickable(interactionSource = source, indication = androidx.compose.foundation.LocalIndication.current, role = Role.Button, onClick = onClick)
+                .semantics(mergeDescendants = true) {}
+                .padding(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            ResultThumb(r)
+            Column(Modifier.weight(1f)) {
+                Text(r.title, style = MaterialTheme.typography.titleSmall, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                if (!r.channel.isNullOrBlank()) {
+                    Text(r.channel, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                }
+            }
+        }
+        if (onAddToQueue != null) {
+            IconButton(onClick = { onAddToQueue(r) }, modifier = Modifier.focusRing(queueSource, CircleShape), interactionSource = queueSource) {
+                Icon(Icons.Rounded.PlaylistAdd, contentDescription = stringResource(R.string.yt_add_to_queue_cd))
             }
         }
     }
@@ -923,6 +964,7 @@ private fun PreviewState(
     onDownload: () -> Unit,
     onPlay: () -> Unit,
     onChannel: (String, String) -> Unit,
+    onOpenRelated: (YouTubeSearchResult) -> Unit = {},
 ) {
     val audio = p.selected.isAudio
     val rows = p.choices.filter { it.isAudio == audio }
@@ -976,6 +1018,19 @@ private fun PreviewState(
         }
         if (!audio && p.video.subtitles.isNotEmpty()) SubtitleRow(p.video.subtitles, p.subtitle, onSubtitle)
     }
+    // Part of the preview's own scroll (no nested list), so swipe-down-to-close still only starts at the top.
+    val upNext: @Composable () -> Unit = {
+        if (p.video.related.isNotEmpty()) {
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(stringResource(R.string.yt_up_next), style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(bottom = 4.dp))
+                p.video.related.forEach { r -> RelatedRow(r, onClick = { onOpenRelated(r) }) }
+            }
+        }
+    }
+    // A different video starts at the top, not where the previous one was scrolled to.
+    val scrollMain = remember(p.video.id) { ScrollState(0) }
+    val scrollLeft = remember(p.video.id) { ScrollState(0) }
+    val scrollRight = remember(p.video.id) { ScrollState(0) }
     // Pinned: the list scrolls, the primary action does not.
     val bar: @Composable (Modifier) -> Unit = { mod ->
         Surface(color = MaterialTheme.colorScheme.surfaceContainer, tonalElevation = 3.dp, shadowElevation = 6.dp, modifier = mod.fillMaxWidth()) {
@@ -1005,7 +1060,7 @@ private fun PreviewState(
             // Wide: picture and title on the left, choices and the action bar on the right.
             Row(Modifier.fillMaxSize()) {
                 Column(
-                    Modifier.weight(1f).fillMaxHeight().verticalScroll(rememberScrollState())
+                    Modifier.weight(1f).fillMaxHeight().verticalScroll(scrollLeft)
                         .padding(start = 16.dp, end = 8.dp, top = 8.dp, bottom = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
@@ -1014,23 +1069,24 @@ private fun PreviewState(
                 }
                 Column(Modifier.weight(1f).fillMaxHeight()) {
                     Column(
-                        Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()).animateContentSize()
+                        Modifier.weight(1f).fillMaxWidth().verticalScroll(scrollRight).animateContentSize()
                             .padding(start = 8.dp, end = 16.dp, top = 8.dp, bottom = 16.dp),
                         verticalArrangement = Arrangement.spacedBy(16.dp),
-                    ) { choices() }
+                    ) { choices(); upNext() }
                     bar(Modifier.padding(start = 8.dp, end = 16.dp).clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)))
                 }
             }
         } else {
             Column(Modifier.fillMaxSize()) {
                 Column(
-                    Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()).animateContentSize()
+                    Modifier.weight(1f).fillMaxWidth().verticalScroll(scrollMain).animateContentSize()
                         .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
                     thumb(Modifier.fillMaxWidth())
                     header()
                     choices()
+                    upNext()
                 }
                 bar(Modifier)
             }

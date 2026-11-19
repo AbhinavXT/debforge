@@ -852,6 +852,8 @@
     <string name="yt_subtitles_auto">%s (auto)</string>
     <string name="yt_mode_audio">Audio</string>
     <string name="yt_best">Best</string>
+    <string name="yt_up_next">Up next</string>
+    <string name="yt_add_to_queue_cd">Add to queue</string>
     <string name="yt_download_format">Download · %1$s · %2$s</string>
     <string name="yt_another_link">Use another link</string>
     <string name="yt_queued">Added to downloads</string>
@@ -870,6 +872,7 @@
     <string name="yt_err_sign_in">This video is age restricted or needs a sign-in, so it can\'t be downloaded.</string>
     <string name="yt_err_unavailable">This video is unavailable or private.</string>
     <string name="yt_err_network">Check your connection and try again.</string>
+    <string name="yt_skipped_unavailable">Skipped unavailable video</string>
     <string name="yt_err_generic">Something went wrong reading this video. Try again in a moment.</string>
     <string name="yt_err_queue">Couldn\'t add the download. Try again.</string>
     <string name="yt_playlist">Playlist</string>

@@ -850,6 +850,8 @@
     <string name="yt_subtitles_auto">%s (স্বয়ংক্রিয়)</string>
     <string name="yt_mode_audio">অডিও</string>
     <string name="yt_best">সেরা</string>
+    <string name="yt_up_next">পরবর্তী</string>
+    <string name="yt_add_to_queue_cd">সারিতে যোগ করুন</string>
     <string name="yt_download_format">ডাউনলোড · %1$s · %2$s</string>
     <string name="yt_another_link">অন্য লিংক ব্যবহার করুন</string>
     <string name="yt_queued">ডাউনলোডে যোগ করা হয়েছে</string>
@@ -868,6 +870,7 @@
     <string name="yt_err_sign_in">এই ভিডিওতে বয়সসীমা আছে বা সাইন-ইন লাগবে, তাই এটি ডাউনলোড করা যাবে না।</string>
     <string name="yt_err_unavailable">এই ভিডিও পাওয়া যাচ্ছে না বা প্রাইভেট।</string>
     <string name="yt_err_network">আপনার সংযোগ পরীক্ষা করে আবার চেষ্টা করুন।</string>
+    <string name="yt_skipped_unavailable">অনুপলব্ধ ভিডিও বাদ দেওয়া হয়েছে</string>
     <string name="yt_err_generic">এই ভিডিও পড়তে গিয়ে কিছু ভুল হয়েছে। একটু পরে আবার চেষ্টা করুন।</string>
     <string name="yt_err_queue">ডাউনলোড যোগ করা যায়নি। আবার চেষ্টা করুন।</string>
     <string name="yt_playlist">প্লেলিস্ট</string>

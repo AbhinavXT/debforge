@@ -850,6 +850,8 @@
     <string name="yt_subtitles_auto">%s (otomatik)</string>
     <string name="yt_mode_audio">Ses</string>
     <string name="yt_best">En iyi</string>
+    <string name="yt_up_next">Sıradaki</string>
+    <string name="yt_add_to_queue_cd">Kuyruğa ekle</string>
     <string name="yt_download_format">İndir · %1$s · %2$s</string>
     <string name="yt_another_link">Başka bağlantı kullan</string>
     <string name="yt_queued">İndirilenlere eklendi</string>
@@ -868,6 +870,7 @@
     <string name="yt_err_sign_in">Bu videoda yaş sınırı var veya oturum açmak gerekiyor, bu yüzden indirilemez.</string>
     <string name="yt_err_unavailable">Bu video kullanılamıyor veya gizli.</string>
     <string name="yt_err_network">Bağlantınızı kontrol edip tekrar deneyin.</string>
+    <string name="yt_skipped_unavailable">Kullanılamayan video atlandı</string>
     <string name="yt_err_generic">Bu video okunurken bir sorun oluştu. Biraz sonra tekrar deneyin.</string>
     <string name="yt_err_queue">İndirme eklenemedi. Tekrar deneyin.</string>
     <string name="yt_playlist">Oynatma listesi</string>

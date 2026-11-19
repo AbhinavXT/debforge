@@ -850,6 +850,8 @@
     <string name="yt_subtitles_auto">%s (தானியங்கி)</string>
     <string name="yt_mode_audio">ஆடியோ</string>
     <string name="yt_best">சிறந்தது</string>
+    <string name="yt_up_next">அடுத்து</string>
+    <string name="yt_add_to_queue_cd">வரிசையில் சேர்</string>
     <string name="yt_download_format">பதிவிறக்கு · %1$s · %2$s</string>
     <string name="yt_another_link">வேறு இணைப்பைப் பயன்படுத்து</string>
     <string name="yt_queued">பதிவிறக்கங்களில் சேர்க்கப்பட்டது</string>
@@ -868,6 +870,7 @@
     <string name="yt_err_sign_in">இந்த வீடியோவுக்கு வயது வரம்பு உள்ளது அல்லது உள்நுழைவு தேவை, எனவே இதைப் பதிவிறக்க முடியாது.</string>
     <string name="yt_err_unavailable">இந்த வீடியோ கிடைக்கவில்லை அல்லது தனிப்பட்டது.</string>
     <string name="yt_err_network">இணைப்பைச் சரிபார்த்து மீண்டும் முயலவும்.</string>
+    <string name="yt_skipped_unavailable">கிடைக்காத வீடியோ தவிர்க்கப்பட்டது</string>
     <string name="yt_err_generic">இந்த வீடியோவைப் படிப்பதில் ஏதோ தவறு நேர்ந்தது. சிறிது நேரம் கழித்து மீண்டும் முயலவும்.</string>
     <string name="yt_err_queue">பதிவிறக்கத்தைச் சேர்க்க முடியவில்லை. மீண்டும் முயலவும்.</string>
     <string name="yt_playlist">பிளேலிஸ்ட்</string>
