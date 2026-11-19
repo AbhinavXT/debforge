@@ -871,6 +871,7 @@
     <string name="yt_err_unavailable">यह वीडियो उपलब्ध नहीं है या निजी है।</string>
     <string name="yt_err_network">अपना कनेक्शन जाँचें और फिर कोशिश करें।</string>
     <string name="yt_skipped_unavailable">अनुपलब्ध वीडियो छोड़ दिया गया</string>
+    <string name="yt_skipped_unavailable">अनुपलब्ध वीडियो छोड़ दिया गया</string>
     <string name="yt_err_generic">यह वीडियो पढ़ते समय कुछ गड़बड़ हो गई। थोड़ी देर बाद फिर कोशिश करें।</string>
     <string name="yt_err_queue">डाउनलोड जोड़ा नहीं जा सका। फिर कोशिश करें।</string>
     <string name="yt_playlist">प्लेलिस्ट</string>

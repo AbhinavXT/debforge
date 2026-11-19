@@ -911,6 +911,7 @@
     <string name="yt_err_unavailable">Este vídeo no está disponible o es privado.</string>
     <string name="yt_err_network">Comprueba tu conexión e inténtalo de nuevo.</string>
     <string name="yt_skipped_unavailable">Se omitió un vídeo no disponible</string>
+    <string name="yt_skipped_unavailable">Se omitió un vídeo no disponible</string>
     <string name="yt_err_generic">Algo salió mal al leer este vídeo. Inténtalo de nuevo en un momento.</string>
     <string name="yt_err_queue">No se pudo añadir la descarga. Inténtalo de nuevo.</string>
     <string name="yt_playlist">Lista de reproducción</string>

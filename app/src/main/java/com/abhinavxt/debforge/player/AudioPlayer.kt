@@ -26,6 +26,8 @@ import com.abhinavxt.debforge.data.history.PlayHistory
 import com.abhinavxt.debforge.data.playback.AudioQueueStore
 import com.abhinavxt.debforge.data.playback.AudioResume
 import com.abhinavxt.debforge.data.playback.QueueSnapshot
+import com.abhinavxt.debforge.data.playback.YouTubeMeta
+import com.abhinavxt.debforge.domain.YouTubeSearchResult
 import com.abhinavxt.debforge.data.playback.SavedPosition
 import com.abhinavxt.debforge.data.playback.SavedTrack
 import com.abhinavxt.debforge.data.playback.Snapshot
@@ -349,6 +351,7 @@ class AudioPlayer @Inject constructor(
             sponsorDone.clear() // a new item or a repeat-one restart skips afresh
             // Repeat-one keeps the same item, so the timer still applies; any other change of item drops it.
             if (sleepAtEnd && !sleepEndStillApplies(sleepItemId, mediaItem?.mediaId)) cancelSleep()
+            resolveAhead()
             if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED || reason == Player.MEDIA_ITEM_TRANSITION_REASON_REPEAT) return
             applyResume(mediaItem?.mediaId ?: return)
         }
@@ -377,6 +380,11 @@ class AudioPlayer @Inject constructor(
         }
     }
 
+    private val relatedCache = RelatedCache()
+
+    /** The related videos of [videoId] from the last time the player resolved it (null if not among the last 20). For autoplay. */
+    fun relatedFor(videoId: String): List<YouTubeSearchResult>? = relatedCache.get(videoId)
+
     private val recoverAttempts = HashMap<String, Long>()
     private val recoverCounts = HashMap<String, Int>()
     private var recoverJob: Job? = null
@@ -400,6 +408,7 @@ class AudioPlayer @Inject constructor(
         } catch (e: Exception) {
             return if (linkFailure(e, isOnline()) == LinkFailure.OFFLINE) Refresh.Offline else Refresh.Broken
         }
+        relatedCache.put(yt.videoId, video.related)
         val stream = freshAudioStream(video, yt.audioItag, android.os.Build.VERSION.SDK_INT) ?: return Refresh.Broken
         return Refresh.Fresh(track.copy(uri = Uri.parse(stream.url), youtube = yt.copy(audioItag = stream.itag)))
     }
@@ -431,7 +440,7 @@ class AudioPlayer @Inject constructor(
         val p = player ?: return true // cleared meanwhile: nothing to drop
         if (tracks.getOrNull(index)?.id != track.id) return true // the queue changed under us
         tracks = tracks.toMutableList().also { it[index] = fresh }
-        p.replaceMediaItem(index, fresh.toMediaItem())
+        replaceKeepingOrder(p, index, fresh)
         p.seekTo(index, positionMs)
         p.prepare()
         p.play()
@@ -445,12 +454,64 @@ class AudioPlayer @Inject constructor(
         // The queue may have changed since the error: find the track again by id.
         val at = if (id == null) bad else tracks.indexOfFirst { it.id == id }
         if (at < 0) return
-        if (p.mediaItemCount <= 1) { clear(); return }
+        val wasStreamed = tracks[at].youtube != null
+        if (p.mediaItemCount <= 1) { clear(); if (wasStreamed) showSkipped(); return }
+        val wasCurrent = at == p.currentMediaItemIndex
         tracks = tracks.filterIndexed { i, _ -> i != at }
         p.removeMediaItem(at)
-        p.prepare()
-        p.play()
+        if (wasCurrent) { p.prepare(); p.play() }
         queueChanged.value++
+        if (wasStreamed) showSkipped()
+    }
+
+    private fun showSkipped() = Toast.makeText(context, R.string.yt_skipped_unavailable, Toast.LENGTH_SHORT).show()
+
+    /** Swaps the item at [index] for [track]; with shuffle on, the replace would put it at a random spot, so the old order is put back. */
+    private fun replaceKeepingOrder(p: ExoPlayer, index: Int, track: AudioTrack) {
+        val order = if (p.shuffleModeEnabled && p.mediaItemCount == tracks.size) shuffleOrderOf(p) else null
+        p.replaceMediaItem(index, track.toMediaItem())
+        if (order != null && p.mediaItemCount == order.size) p.setShuffleOrder(DefaultShuffleOrder(order.toIntArray(), System.nanoTime()))
+    }
+
+    private var aheadJob: Job? = null
+    private var aheadId: String? = null
+
+    /** Looks up the link of the next streamed item that has none, so it starts without an error; one at a time, as links expire. */
+    private fun resolveAhead() {
+        val p = player ?: return
+        if (restoredPending) return
+        val tl = p.currentTimeline
+        val mode = if (p.repeatMode == Player.REPEAT_MODE_ALL) Player.REPEAT_MODE_ALL else Player.REPEAT_MODE_OFF
+        val order = if (tl.windowCount == tracks.size) playOrder(tracks.size, p.currentMediaItemIndex) { tl.getNextWindowIndex(it, mode, p.shuffleModeEnabled) }
+            else tracks.indices.toList().drop(p.currentMediaItemIndex)
+        val track = nextToResolve(tracks, order)?.let { tracks[it] } ?: return
+        if (aheadId == track.id && aheadJob?.isActive == true) return
+        aheadJob?.cancel()
+        aheadId = track.id
+        aheadJob = scope.launch { applyAhead(track, p) }
+    }
+
+    private suspend fun applyAhead(track: AudioTrack, p: ExoPlayer) {
+        val r = refreshed(track)
+        if (player !== p) return
+        val at = tracks.indexOfFirst { it.id == track.id }
+        if (at < 0) return
+        when (r) {
+            Refresh.Offline -> Unit // the error path keeps it for when the connection is back
+            Refresh.Broken -> dropTrack(at, track.id)
+            is Refresh.Fresh -> {
+                tracks = tracks.toMutableList().also { it[at] = r.track }
+                if (at == p.currentMediaItemIndex) {
+                    val pos = p.currentPosition // it became current while looking up: the replace resets it
+                    replaceKeepingOrder(p, at, r.track)
+                    p.seekTo(at, pos)
+                    p.prepare()
+                } else replaceKeepingOrder(p, at, r.track)
+                queueChanged.value++
+                publish()
+            }
+        }
+        if (r is Refresh.Fresh) resolveAhead()
     }
 
     init {
@@ -576,6 +637,79 @@ class AudioPlayer @Inject constructor(
         startPlaybackService()
         publish()
         queueChanged.value++
+        resolveAhead()
+    }
+
+    /**
+     * Replaces the queue with downloaded tracks and YouTube items (streamed, unless a completed download of the video
+     * exists: then that file plays), starting at [startIndex]. A first item that cannot be looked up is skipped.
+     */
+    fun playMixed(entries: List<MixedEntry>, startIndex: Int) {
+        if (entries.isEmpty()) return
+        playJob?.cancel()
+        playJob = scope.launch {
+            val local = localDownloadsFor(entries)
+            var queue = entries.map { buildTrack(it, local) }.distinctBy { it.id }
+            val startId = buildTrack(entries[startIndex.coerceIn(entries.indices)], local).id
+            var at = queue.indexOfFirst { it.id == startId }.coerceAtLeast(0)
+            val first = queue[at]
+            if (first.youtube != null && first.uri == Uri.EMPTY) {
+                when (val r = refreshed(first)) {
+                    is Refresh.Fresh -> queue = queue.toMutableList().also { it[at] = r.track }
+                    Refresh.Offline -> Unit // starts and keeps itself for later, see onPlayerError
+                    Refresh.Broken -> {
+                        showSkipped()
+                        queue = queue.filterIndexed { i, _ -> i != at }
+                        if (queue.isEmpty()) return@launch
+                        at = at.coerceAtMost(queue.lastIndex)
+                    }
+                }
+            }
+            start(queue, at, resumeFor(queue[at].resumeId))
+        }
+    }
+
+    /** The video ids of [entries] that have a completed download on disk, mapped to the track that plays it. */
+    private suspend fun localDownloadsFor(entries: List<MixedEntry>): Map<String, AudioTrack> {
+        val wanted = entries.filterIsInstance<MixedEntry.YouTube>().mapTo(HashSet()) { it.videoId }
+        if (wanted.isEmpty()) return emptyMap()
+        return withContext(Dispatchers.IO) {
+            val rows = downloads.completed().filter { row ->
+                YouTubeLinks.parseSourceRef(row.sourceRef)?.videoId in wanted && row.finalFilePath?.let { LocalFiles.exists(it) } == true
+            }
+            val byId = rows.associateBy { it.id }
+            preferredLocalDownloads(rows.map { YouTubeDownloadRow(it.id, it.sourceRef) }).mapNotNull { (video, id) ->
+                byId[id]?.let { audioTrackFor(context, it) }?.let { video to it }
+            }.toMap()
+        }
+    }
+
+    private fun buildTrack(e: MixedEntry, local: Map<String, AudioTrack>): AudioTrack = when (e) {
+        is MixedEntry.Local -> e.track
+        is MixedEntry.YouTube -> local[e.videoId] ?: lazyYouTubeTrack(e.videoId, e.meta)
+    }
+
+    /** Adds a YouTube video to the end of the queue (starts it when nothing is queued); plays the downloaded file if there is one. */
+    suspend fun enqueueYouTube(videoId: String, meta: YouTubeMeta): EnqueueOutcome = addYouTube(videoId, meta, next = false)
+
+    /** Like [enqueueYouTube], but right after the current item. */
+    suspend fun enqueueYouTubeNext(videoId: String, meta: YouTubeMeta): EnqueueOutcome = addYouTube(videoId, meta, next = true)
+
+    private suspend fun addYouTube(videoId: String, meta: YouTubeMeta, next: Boolean): EnqueueOutcome {
+        val entry = MixedEntry.YouTube(videoId, meta)
+        val track = buildTrack(entry, localDownloadsFor(listOf(entry)))
+        return withContext(Dispatchers.Main.immediate) {
+            val p = player
+            if (p == null || tracks.isEmpty()) { playMixed(listOf(MixedEntry.Local(track)), 0); return@withContext EnqueueOutcome.STARTED }
+            if (tracks.any { it.id == track.id }) return@withContext EnqueueOutcome.ALREADY_QUEUED
+            val at = if (next) (p.currentMediaItemIndex + 1).coerceAtMost(tracks.size) else tracks.size
+            tracks = tracks.toMutableList().also { it.add(at, track) }
+            p.addMediaItem(at, track.toMediaItem())
+            queueChanged.value++
+            publish()
+            resolveAhead()
+            EnqueueOutcome.ADDED
+        }
     }
 
     /**

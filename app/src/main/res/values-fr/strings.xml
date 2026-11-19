@@ -911,6 +911,7 @@
     <string name="yt_err_unavailable">Cette vidéo est indisponible ou privée.</string>
     <string name="yt_err_network">Vérifiez votre connexion et réessayez.</string>
     <string name="yt_skipped_unavailable">Vidéo indisponible ignorée</string>
+    <string name="yt_skipped_unavailable">Vidéo indisponible ignorée</string>
     <string name="yt_err_generic">Une erreur est survenue à la lecture de cette vidéo. Réessayez dans un instant.</string>
     <string name="yt_err_queue">Impossible d\'ajouter le téléchargement. Réessayez.</string>
     <string name="yt_playlist">Playlist</string>
