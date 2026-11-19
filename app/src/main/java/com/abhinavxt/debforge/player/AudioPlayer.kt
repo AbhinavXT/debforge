@@ -86,8 +86,13 @@ data class AudioTrack(
     /** Set for a streamed YouTube track: [uri] is then the audio stream URL, which expires. */
     val youtube: YouTubeAudio? = null,
     /** The artist's channel page, for a streamed YouTube track; not stored anywhere, so a downloaded file has none. */
-    val artistUrl: String? = null
+    val artistUrl: String? = null,
+    /** A downloaded video file: the same item can be watched (see [canWatch]). Set by [audioTrackFor], so a restore keeps it. */
+    val isVideoFile: Boolean = false
 ) {
+    /** The video of this item can be opened: a downloaded video file or a streamed YouTube video; never a podcast or audio file. */
+    val canWatch: Boolean get() = isVideoFile || youtube != null
+
     /** A podcast episode streamed from its feed's url: a network [uri] with no YouTube stream behind it. */
     val isRemoteStream: Boolean get() = youtube == null && (uri.scheme == "http" || uri.scheme == "https")
 
@@ -365,6 +370,7 @@ class AudioPlayer @Inject constructor(
             resolveAhead()
             maybeAutoplay()
             if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED || reason == Player.MEDIA_ITEM_TRANSITION_REASON_REPEAT) return
+            if (handoffSkipsResume(mediaItem?.mediaId, handoffId)) { handoffId = null; return } // the video's own position wins
             applyResume(mediaItem?.mediaId ?: return)
         }
 
@@ -706,9 +712,95 @@ class AudioPlayer @Inject constructor(
         .setHandleAudioBecomingNoisy(true)
         .setWakeMode(C.WAKE_MODE_LOCAL)
         .build()
-        .also { it.addListener(listener); player = it }
+        .also {
+            // A downloaded video file plays here as sound only: no frames are decoded.
+            it.trackSelectionParameters = it.trackSelectionParameters.buildUpon().setTrackTypeDisabled(C.TRACK_TYPE_VIDEO, true).build()
+            it.addListener(listener); player = it
+        }
 
     private var playJob: Job? = null
+    /** The item a video handed over at its own position: its saved audio spot must not override that. */
+    private var handoffId: String? = null
+
+    private fun setOpenIntent() {
+        BackgroundPlayback.openIntent = Intent(context, MainActivity::class.java)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+            .putExtra(BackgroundPlayback.EXTRA_EXPAND_NOW_PLAYING, true)
+    }
+
+    /**
+     * Plays [track] (the item a video was showing) from [startMs] at [speed]. The same item already current just seeks;
+     * one already queued is jumped to; any other is inserted right after the current item (or starts a one-item
+     * queue). A saved audio resume spot never overrides [startMs].
+     */
+    fun playHandoff(track: AudioTrack, startMs: Long, speed: Float) {
+        playJob?.cancel()
+        playJob = scope.launch {
+            fun planNow(): HandoffPlan {
+                val cur = player
+                return if (cur == null || tracks.isEmpty()) HandoffPlan.StartNew else handoffPlan(tracks, cur.currentMediaItemIndex, track)
+            }
+            var t = track
+            handoffId = null
+            if (planNow() !is HandoffPlan.JumpTo && !restoredPending && t.youtube != null && t.uri == Uri.EMPTY) {
+                when (val r = refreshed(t)) {
+                    is Refresh.Fresh -> t = r.track
+                    Refresh.Offline -> { showOffline(); return@launch }
+                    Refresh.Blocked -> return@launch
+                    Refresh.Broken -> { showSkipped(); return@launch }
+                }
+            }
+            when (val plan = planNow()) {
+                HandoffPlan.StartNew -> {
+                    start(listOf(t), 0, startMs.coerceAtLeast(0))
+                    player?.setPlaybackSpeed(speed)
+                    queueChanged.value++
+                    return@launch
+                }
+                is HandoffPlan.JumpTo -> {
+                    val p = player ?: return@launch
+                    if (plan.index != p.currentMediaItemIndex) { handoffId = tracks[plan.index].id; p.seekTo(plan.index, startMs.coerceAtLeast(0)) }
+                    else p.seekTo(startMs.coerceAtLeast(0))
+                }
+                is HandoffPlan.InsertAt -> {
+                    val p = player ?: return@launch
+                    handoffId = t.id
+                    insertKeepingShuffle(p, plan.index, t, next = true)
+                    p.seekTo(plan.index, startMs.coerceAtLeast(0))
+                }
+            }
+            val p = player ?: return@launch
+            p.setPlaybackSpeed(speed)
+            if (restoredPending) {
+                if (!activate()) return@launch
+            } else {
+                pauseBackgroundedVideo()
+                setOpenIntent()
+                BackgroundPlayback.player = p
+                startPlaybackService()
+                if (p.playbackState == Player.STATE_IDLE) p.prepare()
+                p.play()
+                resolveAhead()
+            }
+            queueChanged.value++
+            publish()
+        }
+    }
+
+    /**
+     * A video is about to play: pause the audio queue and keep it. The player and the service are released, and the
+     * queue comes back as a restored, paused one (see [restore]); play on the mini player resumes it.
+     */
+    fun parkForVideo() {
+        val p = player ?: return
+        if (restoredPending || tracks.isEmpty()) return // nothing playing, or already parked
+        p.pause()
+        saveCurrent()
+        val snap = currentSnapshot(p) ?: return
+        playJob?.cancel()
+        release()
+        scope.launch { queueStore.saveQueue(snap); restore() }
+    }
 
     /**
      * Replaces the queue and starts at [startIndex], where it was left if it is a remembered long track.
@@ -1195,13 +1287,17 @@ class AudioPlayer @Inject constructor(
 
     private fun saveQueueNow() {
         val p = player ?: return
-        if (tracks.isEmpty()) return
+        currentSnapshot(p)?.let { snap -> scope.launch { queueStore.saveQueue(snap) } }
+    }
+
+    private fun currentSnapshot(p: ExoPlayer): Snapshot? {
+        if (tracks.isEmpty()) return null
         val queue = QueueSnapshot(
             tracks.map { it.toSaved() }, p.shuffleModeEnabled, repeatFromPlayerMode(p.repeatMode), p.playbackParameters.speed,
             shuffleOrder = if (p.shuffleModeEnabled) shuffleOrderOf(p) else null
         )
         val position = SavedPosition(tracks.getOrNull(p.currentMediaItemIndex)?.id, p.currentPosition, currentDurationMs(p))
-        scope.launch { queueStore.saveQueue(Snapshot(queue, position)) }
+        return Snapshot(queue, position)
     }
 
     /** The play order with shuffle on, read from the timeline (the player does not expose its ShuffleOrder). */
@@ -1257,14 +1353,20 @@ class AudioPlayer @Inject constructor(
     /** Stops, releases the player and the notification. */
     fun clear() {
         saveCurrent()
+        scope.launch { queueStore.forget(); queueForgotten.tryEmit(Unit) } // closing the queue (or a video taking over) forgets it
+        release()
+    }
+
+    /** Lets go of the player, the service and the queue in memory; what is saved on disk stays as it is. */
+    private fun release() {
         recoverJob?.cancel()
         cancelLookups()
         lastTransitionId = null
+        handoffId = null
         activateJob?.cancel()
         pendingAction = null
         restoredPending = false
         activating = false
-        scope.launch { queueStore.forget(); queueForgotten.tryEmit(Unit) } // closing the queue (or a video taking over) forgets it
         playing.value = false
         BackgroundPlayback.openIntent = null // only audio sets it; a later video must open itself
         sponsorJob?.cancel(); sponsorId = null; sponsorList = emptyList(); sponsorDone.clear()

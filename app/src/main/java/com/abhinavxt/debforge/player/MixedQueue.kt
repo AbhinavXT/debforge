@@ -31,6 +31,40 @@ fun preferredLocalDownloads(rows: List<YouTubeDownloadRow>): Map<String, String>
     return video + audio // audio overrides video for the same video id
 }
 
+/** The id of the first download in [rows] that holds [videoId] with a video stream (an audio-only one does not count); null when none. */
+fun preferredVideoDownload(rows: List<YouTubeDownloadRow>, videoId: String): String? =
+    rows.firstOrNull { row ->
+        val ref = YouTubeLinks.parseSourceRef(row.sourceRef)
+        ref != null && ref.videoId == videoId && ref.videoItag != null
+    }?.id
+
+/** What a video handing over to audio does to the queue. */
+sealed interface HandoffPlan {
+    /** The item is already queued at [index]: seek there. */
+    data class JumpTo(val index: Int) : HandoffPlan
+    /** Insert the item at [index], right after the current one. */
+    data class InsertAt(val index: Int) : HandoffPlan
+    /** Nothing is queued: a one-item queue. */
+    object StartNew : HandoffPlan
+}
+
+/** The same item: the same id, or the same YouTube video (a stream and its audio stream differ only in link or itag). */
+fun sameHandoffItem(a: AudioTrack, b: AudioTrack): Boolean =
+    a.id == b.id || (a.youtube != null && a.youtube.videoId == b.youtube?.videoId)
+
+/** Where [track] goes in [queue] (play position [current]): the current item or an already queued one is reused. */
+fun handoffPlan(queue: List<AudioTrack>, current: Int, track: AudioTrack): HandoffPlan {
+    if (queue.isEmpty()) return HandoffPlan.StartNew
+    val cur = current.coerceIn(queue.indices)
+    if (sameHandoffItem(queue[cur], track)) return HandoffPlan.JumpTo(cur)
+    val at = queue.indexOfFirst { sameHandoffItem(it, track) }
+    if (at >= 0) return HandoffPlan.JumpTo(at)
+    return HandoffPlan.InsertAt(cur + 1)
+}
+
+/** Whether the resume-spot seek on reaching [mediaId] is skipped: it is the item a handoff just placed at its own position. */
+fun handoffSkipsResume(mediaId: String?, handoffId: String?): Boolean = handoffId != null && mediaId == handoffId
+
 /** A streamed YouTube track that is not resolved yet: its id is `ytaudio:<id>`, itag 0 and an empty uri until looked up. */
 fun lazyYouTubeTrack(videoId: String, meta: YouTubeMeta) = AudioTrack(
     id = YouTubeStreaming.streamPositionKey(videoId, audioOnly = true),
