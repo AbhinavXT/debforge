@@ -262,7 +262,8 @@ class AudioPlayer @Inject constructor(
     private val youtubeResolver: YouTubeResolver,
     private val queueStore: AudioQueueStore,
     private val downloads: DownloadDao,
-    private val history: PlayHistory
+    private val history: PlayHistory,
+    private val sponsorSegments: com.abhinavxt.debforge.data.sponsor.SponsorSegmentRepository
 ) {
 
     private val _state = MutableStateFlow(AudioState())
@@ -280,6 +281,12 @@ class AudioPlayer @Inject constructor(
     private var restoredDurationId: String? = null
     private var restoredDurationMs = 0L
     private var player: ExoPlayer? = null
+
+    /** SponsorBlock segments of the current YouTube track, loaded off the main thread; [sponsorId] is the track they belong to. */
+    private var sponsorId: String? = null
+    private var sponsorList: List<com.abhinavxt.debforge.domain.SponsorSegment> = emptyList()
+    private val sponsorDone = HashSet<Long>()
+    private var sponsorJob: Job? = null
 
     private val listener = object : Player.Listener {
         override fun onEvents(player: Player, events: Player.Events) {
@@ -316,6 +323,7 @@ class AudioPlayer @Inject constructor(
 
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
             savePositionNow()
+            sponsorDone.clear() // a new item or a repeat-one restart skips afresh
             // Repeat-one keeps the same item, so the timer still applies; any other change of item drops it.
             if (sleepAtEnd && !sleepEndStillApplies(sleepItemId, mediaItem?.mediaId)) cancelSleep()
             if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED || reason == Player.MEDIA_ITEM_TRANSITION_REASON_REPEAT) return
@@ -428,12 +436,54 @@ class AudioPlayer @Inject constructor(
         // Play history: the same cadence as the video player (about every 5 s while playing); pause and track changes record too.
         scope.launch { playing.collectLatest { if (it) while (true) { delay(5_000); recordCurrent() } } }
         // The queue itself, saved a moment after it stops changing.
+        // SponsorBlock: independent of the UI publish loop so it also works with the screen off.
+        scope.launch { playing.collectLatest { if (it) while (true) { sponsorTick(); delay(500) } } }
         scope.launch { queueChanged.debounce(500).collect { saveQueueNow() } }
         // Republish the position only while playing and somebody is watching.
         scope.launch {
             combine(_state.subscriptionCount.map { it > 0 }, playing) { watched, on -> watched && on }
                 .distinctUntilChanged()
                 .collectLatest { if (it) while (true) { publish(); delay(500) } }
+        }
+    }
+
+    private fun sponsorTick() {
+        val p = player ?: return
+        if (restoredPending || p.playbackState != Player.STATE_READY) return
+        val id = p.currentMediaItem?.mediaId ?: return
+        if (sponsorId != id) { loadSponsor(id); return }
+        if (sponsorList.isEmpty()) return
+        when (val d = AudioSponsorSkip.decide(sponsorList, p.currentPosition, currentDurationMs(p), sponsorDone)) {
+            AudioSkip.None -> {}
+            is AudioSkip.Seek -> { sponsorDone += d.startMs; p.seekTo(d.toMs); publish() }
+            is AudioSkip.EndTrack -> {
+                sponsorDone += d.startMs
+                if (p.hasNextMediaItem()) p.seekToNextMediaItem() else p.seekTo(currentDurationMs(p))
+            }
+        }
+    }
+
+    /** Starts loading the segments of track [id]; an empty list stands for "none", so the load runs once per item. */
+    private fun loadSponsor(id: String) {
+        sponsorJob?.cancel()
+        sponsorId = id
+        sponsorList = emptyList()
+        sponsorDone.clear()
+        val track = tracks.firstOrNull { it.id == id } ?: return
+        sponsorJob = scope.launch {
+            val videoId = track.youtube?.videoId ?: withContext(Dispatchers.IO) {
+                downloads.getById(id)?.sourceRef?.let { com.abhinavxt.debforge.domain.YouTubeLinks.parseSourceRef(it)?.videoId }
+            } ?: return@launch
+            val found = try {
+                withContext(Dispatchers.IO) { sponsorSegments.segmentsFor(videoId) }
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
+            } catch (_: Exception) {
+                emptyList()
+            }
+            if (AudioSponsorSkip.loadStillCurrent(id, sponsorId)) {
+                sponsorList = com.abhinavxt.debforge.domain.SponsorSkip.normalise(found, 0)
+            }
         }
     }
 
@@ -882,6 +932,7 @@ class AudioPlayer @Inject constructor(
         }
         p.removeListener(listener)
         p.release()
+        sponsorJob?.cancel(); sponsorId = null; sponsorList = emptyList(); sponsorDone.clear()
         tracks = emptyList()
         _state.value = AudioState()
     }
