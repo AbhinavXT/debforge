@@ -141,6 +141,6 @@ class MainActivity : ComponentActivity() {
         // "Delete downloads after N days", if the user turned it on.
         lifecycleScope.launch { runCatching { housekeeper.run() } }
         // Audio and video already in the download folder show up in Media.
-        lifecycleScope.launch { localImporter.scan() }
+        lifecycleScope.launch { localImporter.scanIfStale() }
     }
 }

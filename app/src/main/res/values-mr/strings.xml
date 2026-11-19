@@ -922,7 +922,10 @@
     <string name="media_close_selection">निवड बंद करा</string>
     <string name="media_delete">हटवा</string>
     <string name="media_delete_selected_title">या डिव्हाइसवरून हटवायचे?</string>
-    <string name="media_delete_not_ours">ही फाइल DebForge ने डाउनलोड केलेली नाही.</string>
+    <plurals name="media_delete_not_ours_n">
+        <item quantity="one">ही फाइल DebForge ने डाउनलोड केलेली नाही आणि फोल्डरमधून हटवली जाईल.</item>
+        <item quantity="other">यापैकी %1$d फाइल्स DebForge ने डाउनलोड केलेल्या नाहीत आणि फोल्डरमधून हटवल्या जातील.</item>
+    </plurals>
     <plurals name="media_delete_selected_body">
         <item quantity="one">%1$d फाइल या डिव्हाइसच्या स्टोरेजमधून हटवली जाईल. हे पूर्ववत करता येणार नाही.</item>
         <item quantity="other">%1$d फाइल्स या डिव्हाइसच्या स्टोरेजमधून हटवल्या जातील. हे पूर्ववत करता येणार नाही.</item>

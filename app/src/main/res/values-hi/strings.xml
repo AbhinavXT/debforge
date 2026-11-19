@@ -922,7 +922,10 @@
     <string name="media_close_selection">चयन बंद करें</string>
     <string name="media_delete">मिटाएं</string>
     <string name="media_delete_selected_title">इस डिवाइस से मिटाएं?</string>
-    <string name="media_delete_not_ours">यह फ़ाइल DebForge ने डाउनलोड नहीं की थी।</string>
+    <plurals name="media_delete_not_ours_n">
+        <item quantity="one">यह फ़ाइल DebForge ने डाउनलोड नहीं की थी और फ़ोल्डर से मिटा दी जाएगी।</item>
+        <item quantity="other">इनमें से %1$d फ़ाइलें DebForge ने डाउनलोड नहीं की थीं और फ़ोल्डर से मिटा दी जाएँगी।</item>
+    </plurals>
     <plurals name="media_delete_selected_body">
         <item quantity="one">%1$d फ़ाइल इस डिवाइस की स्टोरेज से मिटा दी जाएगी। इसे वापस नहीं लाया जा सकता।</item>
         <item quantity="other">%1$d फ़ाइलें इस डिवाइस की स्टोरेज से मिटा दी जाएँगी। इन्हें वापस नहीं लाया जा सकता।</item>

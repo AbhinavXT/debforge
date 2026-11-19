@@ -25,15 +25,15 @@ class HousekeepingTest {
     @Test fun nothingNeeded() = assertNull(Housekeeping.shortfall(needed = 0, available = 0))
 
     @Test fun offDeletesNothing() {
-        val old = Housekeeping.Finished("a", "/x", finishedAt = 0)
+        val old = Housekeeping.Finished("a", "/x", finishedAt = 0, provider = ProviderId.DIRECT)
         assertEquals(emptyList<Housekeeping.Finished>(), Housekeeping.expired(listOf(old), now = 1000 * DAY, days = 0))
     }
 
     @Test fun onlyOldEnough() {
         val now = 100 * DAY
-        val old = Housekeeping.Finished("old", "/a", finishedAt = now - 8 * DAY)
-        val exact = Housekeeping.Finished("exact", "/b", finishedAt = now - 7 * DAY)
-        val recent = Housekeeping.Finished("recent", "/c", finishedAt = now - 6 * DAY)
+        val old = Housekeeping.Finished("old", "/a", finishedAt = now - 8 * DAY, provider = ProviderId.DIRECT)
+        val exact = Housekeeping.Finished("exact", "/b", finishedAt = now - 7 * DAY, provider = ProviderId.DIRECT)
+        val recent = Housekeeping.Finished("recent", "/c", finishedAt = now - 6 * DAY, provider = ProviderId.DIRECT)
         assertEquals(listOf("old", "exact"), Housekeeping.expired(listOf(old, exact, recent), now, days = 7).map { it.id })
     }
 

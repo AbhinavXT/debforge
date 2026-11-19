@@ -967,7 +967,11 @@
     <string name="media_close_selection">Fermer la sélection</string>
     <string name="media_delete">Supprimer</string>
     <string name="media_delete_selected_title">Supprimer de cet appareil ?</string>
-    <string name="media_delete_not_ours">Ce fichier n\'a pas été téléchargé par DebForge.</string>
+    <plurals name="media_delete_not_ours_n">
+        <item quantity="one">Ce fichier n\'a pas été téléchargé par DebForge et sera supprimé du dossier.</item>
+        <item quantity="many">%1$d de ces fichiers n\'ont pas été téléchargés par DebForge et seront supprimés du dossier.</item>
+        <item quantity="other">%1$d de ces fichiers n\'ont pas été téléchargés par DebForge et seront supprimés du dossier.</item>
+    </plurals>
     <plurals name="media_delete_selected_body">
         <item quantity="one">%1$d fichier sera supprimé du stockage de cet appareil. Cette action est irréversible.</item>
         <item quantity="many">%1$d fichiers seront supprimés du stockage de cet appareil. Cette action est irréversible.</item>

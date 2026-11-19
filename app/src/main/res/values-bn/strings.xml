@@ -922,7 +922,10 @@
     <string name="media_close_selection">বাছাই বন্ধ করুন</string>
     <string name="media_delete">মুছুন</string>
     <string name="media_delete_selected_title">এই ডিভাইস থেকে মুছবেন?</string>
-    <string name="media_delete_not_ours">এই ফাইলটি DebForge ডাউনলোড করেনি।</string>
+    <plurals name="media_delete_not_ours_n">
+        <item quantity="one">এই ফাইলটি DebForge ডাউনলোড করেনি এবং ফোল্ডার থেকে মুছে ফেলা হবে।</item>
+        <item quantity="other">এগুলোর %1$dটি ফাইল DebForge ডাউনলোড করেনি এবং ফোল্ডার থেকে মুছে ফেলা হবে।</item>
+    </plurals>
     <plurals name="media_delete_selected_body">
         <item quantity="one">%1$dটি ফাইল এই ডিভাইসের স্টোরেজ থেকে মুছে ফেলা হবে। এটি আর ফেরানো যাবে না।</item>
         <item quantity="other">%1$dটি ফাইল এই ডিভাইসের স্টোরেজ থেকে মুছে ফেলা হবে। এটি আর ফেরানো যাবে না।</item>

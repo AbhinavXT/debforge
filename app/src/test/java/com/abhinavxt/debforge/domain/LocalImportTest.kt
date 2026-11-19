@@ -9,11 +9,11 @@ import org.junit.Test
 class LocalImportTest {
     private val root = "/a/b"
 
-    private fun f(path: String, size: Long = 100, name: String = path.substringAfterLast('/')) =
-        ScannedFile(path, name, size, 1L)
+    private fun f(path: String, size: Long = 100, name: String = path.substringAfterLast('/'), mtime: Long = 1L) =
+        ScannedFile(path, name, size, mtime)
 
-    private fun row(path: String, size: Long = 100, ext: String = "mp3") =
-        LocalRow(localId(path), path, size, ext)
+    private fun row(path: String, size: Long = 100, ext: String = "mp3", mtime: Long = 1L) =
+        LocalRow(localId(path), path, size, ext, mtime)
 
     @Test fun classifiesKinds() {
         assertEquals(FileKind.Audio, classifyScanned("a.mp3", 1))
@@ -73,6 +73,50 @@ class LocalImportTest {
         assertTrue(d.moves.isEmpty())
         assertEquals(1, d.inserts.size)
         assertEquals(listOf(r.id), d.removes)
+    }
+
+    @Test fun differentModifiedTimeIsNotMove() {
+        val r = row("/a/b/x.mp3")
+        val d = diffScan(listOf(f("/a/b/y.mp3", mtime = 2L)), listOf(r), emptySet(), root)
+        assertTrue(d.moves.isEmpty())
+        assertEquals(1, d.inserts.size)
+        assertEquals(listOf(r.id), d.removes)
+    }
+
+    @Test fun changedSizeOrModifiedTimeIsUpdate() {
+        val a = row("/a/b/x.mp3")
+        val b = row("/a/b/y.mp3")
+        val c = row("/a/b/z.mp3")
+        val d = diffScan(
+            listOf(f("/a/b/x.mp3", size = 200), f("/a/b/y.mp3", mtime = 9L), f("/a/b/z.mp3")),
+            listOf(a, b, c), emptySet(), root
+        )
+        assertEquals(setOf(a.id, b.id), d.updates.keys)
+        assertEquals(200L, d.updates[a.id]!!.size)
+        assertEquals(9L, d.updates[b.id]!!.lastModified)
+        assertTrue(d.inserts.isEmpty() && d.removes.isEmpty() && d.moves.isEmpty())
+    }
+
+    @Test fun newFileAtAMovedRowsOldPathGetsAFallbackId() {
+        // x.mp3 moved to y.mp3 (row keeps the id made from x.mp3); a new, different file now sits at x.mp3.
+        val moved = LocalRow(localId("/a/b/x.mp3"), "/a/b/y.mp3", 100, "mp3", 1L)
+        val newcomer = f("/a/b/x.mp3", size = 555, mtime = 7L)
+        val d = diffScan(listOf(f("/a/b/y.mp3"), newcomer), listOf(moved), emptySet(), root)
+        assertEquals(listOf(newcomer), d.inserts)
+        val id = d.insertIds.getValue("/a/b/x.mp3")
+        assertNotEquals(moved.id, id)
+        assertTrue(id.matches(Regex("local:[0-9a-f]{40}")))
+        // deterministic
+        assertEquals(id, diffScan(listOf(f("/a/b/y.mp3"), newcomer), listOf(moved), emptySet(), root).insertIds["/a/b/x.mp3"])
+    }
+
+    @Test fun freeIdIsKeptAndRemovedRowsIdsAreReusable() {
+        val d = diffScan(listOf(f("/a/b/x.mp3")), emptyList(), emptySet(), root)
+        assertEquals(localId("/a/b/x.mp3"), d.insertIds["/a/b/x.mp3"])
+        // the row holding the id is being removed (outside root), so the id is free again
+        val stale = LocalRow(localId("/a/b/x.mp3"), "/z/x.mp3", 100, "mp3", 1L)
+        val d2 = diffScan(listOf(f("/a/b/x.mp3")), listOf(stale), emptySet(), root)
+        assertEquals(localId("/a/b/x.mp3"), d2.insertIds["/a/b/x.mp3"])
     }
 
     @Test fun rowsOutsideRootRemoved() {

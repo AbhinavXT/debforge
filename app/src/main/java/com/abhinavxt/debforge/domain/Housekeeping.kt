@@ -31,7 +31,7 @@ object Housekeeping {
     }
 
     /** A download that finished; [finishedAt] is epoch millis. */
-    data class Finished(val id: String, val path: String?, val finishedAt: Long, val provider: ProviderId? = null)
+    data class Finished(val id: String, val path: String?, val finishedAt: Long, val provider: ProviderId?)
 
     /** Finished downloads at least [days] old at [now]. Empty when [days] <= 0 (off). */
     fun expired(files: List<Finished>, now: Long, days: Int): List<Finished> {

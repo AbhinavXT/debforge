@@ -125,6 +125,10 @@ interface DownloadDao {
     @Query("UPDATE downloads SET finalFilePath = :path, originalLink = :path, filename = :name, updatedAt = :at WHERE rdId = :id AND provider = 'LOCAL'")
     suspend fun moveLocal(id: String, path: String, name: String, at: Long)
 
+    /** An imported file whose size or modification time changed. */
+    @Query("UPDATE downloads SET filesize = :size, bytesDownloaded = :size, updatedAt = :at WHERE rdId = :id AND provider = 'LOCAL'")
+    suspend fun updateLocalStat(id: String, size: Long, at: Long)
+
     @Query("DELETE FROM downloads WHERE rdId IN (:ids) AND provider = 'LOCAL'")
     suspend fun deleteByIds(ids: List<String>)
 

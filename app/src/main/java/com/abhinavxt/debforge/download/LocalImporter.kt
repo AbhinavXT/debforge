@@ -5,6 +5,8 @@ import android.net.Uri
 import android.provider.DocumentsContract
 import android.provider.DocumentsContract.Document
 import android.util.Log
+import androidx.room.withTransaction
+import com.abhinavxt.debforge.data.local.DebForgeDatabase
 import com.abhinavxt.debforge.data.local.DownloadDao
 import com.abhinavxt.debforge.data.prefs.SettingsStore
 import com.abhinavxt.debforge.domain.LocalRow
@@ -13,6 +15,7 @@ import com.abhinavxt.debforge.domain.MAX_FILES
 import com.abhinavxt.debforge.domain.ScannedFile
 import com.abhinavxt.debforge.domain.classifyScanned
 import com.abhinavxt.debforge.domain.diffScan
+import com.abhinavxt.debforge.domain.localId
 import com.abhinavxt.debforge.domain.toLocalEntity
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CancellationException
@@ -41,6 +44,7 @@ class LocalImporter @Inject constructor(
     @ApplicationContext private val context: Context,
     private val settings: SettingsStore,
     private val dao: DownloadDao,
+    private val db: DebForgeDatabase,
     private val metadata: LocalMetadata
 ) {
     private val lock = Mutex()
@@ -78,7 +82,7 @@ class LocalImporter @Inject constructor(
         val saf = SafPaths.isTreeUri(dir)
         if (saf && !SafStore.hasAccess(context, dir)) return // access revoked: keep what we have
         val root = if (saf) "${SafPaths.PREFIX}$dir#" else File(dir).absolutePath
-        val found = if (saf) walkSaf(dir) else walkFiles(File(dir)) ?: return
+        val found = (if (saf) walkSaf(dir) else walkFiles(File(dir))) ?: return // unreadable: keep what we have
 
         val claimed = HashSet<String>().apply {
             addAll(dao.claimedFinalPaths())
@@ -89,14 +93,20 @@ class LocalImporter @Inject constructor(
             scanned = found,
             localRows = rows.map { r ->
                 val path = r.finalFilePath ?: r.sourceRef
-                LocalRow(r.id, path, r.filesize, r.filename.substringAfterLast('.', "").lowercase(Locale.ROOT))
+                LocalRow(r.id, path, r.filesize, r.filename.substringAfterLast('.', "").lowercase(Locale.ROOT), r.updatedAt)
             },
             claimedPaths = claimed,
             root = root
         )
-        if (diff.removes.isNotEmpty()) dao.deleteByIds(diff.removes)
-        for ((id, file) in diff.moves) dao.moveLocal(id, file.path, file.name, file.lastModified)
-        if (diff.inserts.isNotEmpty()) dao.insertAll(diff.inserts.map { it.toLocalEntity() })
+        // One transaction: a cancelled scan leaves the rows as they were.
+        db.withTransaction {
+            if (diff.removes.isNotEmpty()) dao.deleteByIds(diff.removes)
+            for ((id, file) in diff.moves) dao.moveLocal(id, file.path, file.name, file.lastModified)
+            for ((id, file) in diff.updates) dao.updateLocalStat(id, file.size, file.lastModified)
+            if (diff.inserts.isNotEmpty()) {
+                dao.insertAll(diff.inserts.map { it.toLocalEntity(diff.insertIds[it.path] ?: localId(it.path)) })
+            }
+        }
         metadata.kick() // reads tags in the background
     }
 
@@ -118,23 +128,33 @@ class LocalImporter @Inject constructor(
         return out
     }
 
-    private suspend fun walkSaf(tree: String): List<ScannedFile> {
+    /** Null when any directory can't be listed (provider unavailable), so nothing is removed. */
+    private suspend fun walkSaf(tree: String): List<ScannedFile>? {
         val treeUri = Uri.parse(tree)
         val out = ArrayList<ScannedFile>()
         var visited = 0
+        var failed = false
 
         suspend fun visit(docId: String, relative: String, depth: Int) {
             kotlin.coroutines.coroutineContext.ensureActive()
             val children = DocumentsContract.buildChildDocumentsUriUsingTree(treeUri, docId)
             val dirs = ArrayList<Pair<String, String>>()
-            context.contentResolver.query(
+            val cursor = try {
+                context.contentResolver.query(
                 children,
                 arrayOf(
                     Document.COLUMN_DOCUMENT_ID, Document.COLUMN_DISPLAY_NAME, Document.COLUMN_MIME_TYPE,
                     Document.COLUMN_SIZE, Document.COLUMN_LAST_MODIFIED
                 ),
                 null, null, null
-            )?.use { c ->
+                )
+            } catch (ce: CancellationException) {
+                throw ce
+            } catch (e: Exception) {
+                null
+            }
+            if (cursor == null) { failed = true; return }
+            cursor.use { c ->
                 while (c.moveToNext()) {
                     kotlin.coroutines.coroutineContext.ensureActive()
                     val name = c.getString(1) ?: continue
@@ -159,7 +179,7 @@ class LocalImporter @Inject constructor(
         }
 
         visit(DocumentsContract.getTreeDocumentId(treeUri), "", 0)
-        return out
+        return if (failed) null else out
     }
 
     private companion object {

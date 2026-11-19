@@ -472,9 +472,10 @@ internal fun MediaContent(
                         if (list.size == 1) stringResource(R.string.media_delete_one_body, list[0].displayTitle(), list[0].formatLabel())
                         else pluralStringResource(R.plurals.media_delete_selected_body, list.size, list.size)
                     )
-                    if (list.any { it.provider == com.abhinavxt.debforge.domain.ProviderId.LOCAL }) {
+                    val notOurs = list.count { it.provider == com.abhinavxt.debforge.domain.ProviderId.LOCAL }
+                    if (notOurs > 0) {
                         Spacer(Modifier.height(8.dp))
-                        Text(stringResource(R.string.media_delete_not_ours))
+                        Text(pluralStringResource(R.plurals.media_delete_not_ours_n, notOurs, notOurs))
                     }
                 }
             },

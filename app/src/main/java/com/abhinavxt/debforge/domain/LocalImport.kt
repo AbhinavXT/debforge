@@ -22,12 +22,17 @@ data class LocalRow(
     val path: String,
     val size: Long,
     val extension: String,
+    val lastModified: Long = 0L,
 )
 
 data class ScanDiff(
     val inserts: List<ScannedFile>,
     val removes: List<String>,
     val moves: Map<String, ScannedFile>,
+    /** Existing rows (id) whose file changed size or modification time. */
+    val updates: Map<String, ScannedFile> = emptyMap(),
+    /** Row id for each insert, by path; differs from [localId] when that id is still taken by another row. */
+    val insertIds: Map<String, String> = emptyMap(),
 )
 
 private val TEMP_SUFFIXES = listOf(".part", ".part.audio", ".part.mux", ".tmp")
@@ -85,9 +90,10 @@ fun diffScan(
     val movedFiles = HashSet<String>()
     val movedRows = HashSet<String>()
     for (row in vanished) {
-        val key = row.size to row.extension.lowercase(Locale.ROOT)
-        val sameRows = vanished.filter { it.size to it.extension.lowercase(Locale.ROOT) == key }
-        val sameFiles = fresh.filter { it.size to extensionOf(it.name) == key }
+        // A rename keeps size, extension and modification time.
+        val key = Triple(row.size, row.extension.lowercase(Locale.ROOT), row.lastModified)
+        val sameRows = vanished.filter { Triple(it.size, it.extension.lowercase(Locale.ROOT), it.lastModified) == key }
+        val sameFiles = fresh.filter { Triple(it.size, extensionOf(it.name), it.lastModified) == key }
         if (sameRows.size == 1 && sameFiles.size == 1) {
             moves[row.id] = sameFiles[0]
             movedFiles += sameFiles[0].path
@@ -95,13 +101,34 @@ fun diffScan(
         }
     }
     vanished.filter { it.id !in movedRows }.forEach { removes += it.id }
-    return ScanDiff(fresh.filter { it.path !in movedFiles }, removes, moves)
+
+    val byPath = wanted.associateBy { it.path }
+    val updates = LinkedHashMap<String, ScannedFile>()
+    for (row in localRows) {
+        val file = byPath[row.path] ?: continue
+        if (row.id in removes) continue
+        if (file.size != row.size || file.lastModified != row.lastModified) updates[row.id] = file
+    }
+
+    val inserts = fresh.filter { it.path !in movedFiles }
+    // Ids still held by surviving rows (a moved row keeps its old id) can't be reused.
+    val removed = removes.toHashSet()
+    val taken = localRows.filter { it.id !in removed }.mapTo(HashSet()) { it.id }
+    val insertIds = LinkedHashMap<String, String>()
+    for (file in inserts) {
+        var id = localId(file.path)
+        var n = 1
+        while (id in taken) id = localId("${file.path}\u0000${n++}")
+        taken += id
+        insertIds[file.path] = id
+    }
+    return ScanDiff(inserts, removes, moves, updates, insertIds)
 }
 
 /** The finished-download row for an imported file; [path] is also the row's source reference. */
-fun ScannedFile.toLocalEntity(): DownloadEntity =
+fun ScannedFile.toLocalEntity(id: String = localId(path)): DownloadEntity =
     DownloadEntity(
-        id = localId(path),
+        id = id,
         provider = ProviderId.LOCAL,
         filename = name,
         sourceRef = path,

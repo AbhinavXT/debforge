@@ -257,7 +257,8 @@ class BrowseViewModel @Inject constructor(
         downloadDao.observeByState(DownloadState.COMPLETED).collect { rows ->
             _state.update { s ->
                 s.copy(
-                    items = rows.map { e ->
+                    // Imported files aren't cloud items, and deleting them here would skip the warning.
+                    items = rows.filter { it.provider != ProviderId.LOCAL }.map { e ->
                         DownloadItem(
                             id = e.id, provider = e.provider, filename = e.filename, sourceRef = e.sourceRef,
                             downloadUrl = null, host = e.host, filesize = e.filesize, maxConnections = 1,
