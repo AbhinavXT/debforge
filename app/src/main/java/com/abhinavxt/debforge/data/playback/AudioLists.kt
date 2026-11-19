@@ -19,10 +19,44 @@ private val Context.audioListsStore by preferencesDataStore(name = "debforge_aud
 
 data class Playlist(val id: String, val name: String, val trackIds: List<String>)
 
-data class AudioListsState(val favourites: Set<String> = emptySet(), val playlists: List<Playlist> = emptyList())
+data class AudioListsState(
+    val favourites: Set<String> = emptySet(),
+    val playlists: List<Playlist> = emptyList(),
+    /** YouTube item metadata by video id; only ids some playlist references are kept. */
+    val ytMeta: Map<String, YouTubeMeta> = emptyMap()
+) {
+    /** Playlists as typed entries; malformed tokens are dropped. */
+    fun typedPlaylists(): List<TypedPlaylist> =
+        playlists.map { p -> TypedPlaylist(p.id, p.name, p.trackIds.mapNotNull { PlaylistEntry.parse(it) }) }
+}
 
+const val MAX_YOUTUBE_ITEMS = 2000
+
+/** Favourites stay download-only: YouTube tokens are ignored. */
 internal fun AudioListsState.toggleFavourite(id: String) =
-    copy(favourites = if (id in favourites) favourites - id else favourites + id)
+    if (PlaylistEntry.isYouTubeToken(id)) this
+    else copy(favourites = if (id in favourites) favourites - id else favourites + id)
+
+private fun AudioListsState.youTubeCount() = playlists.sumOf { p -> p.trackIds.count { PlaylistEntry.isYouTubeToken(it) } }
+
+/** Drops metadata for video ids no playlist references. */
+internal fun AudioListsState.pruneMeta(): AudioListsState {
+    if (ytMeta.isEmpty()) return this
+    val used = playlists.flatMapTo(HashSet()) { p -> p.trackIds.mapNotNull { PlaylistEntry.parseYouTube(it)?.videoId } }
+    return if (used.containsAll(ytMeta.keys)) this else copy(ytMeta = ytMeta.filterKeys { it in used })
+}
+
+internal fun AudioListsState.addYouTube(
+    listId: String, videoId: String, mode: YouTubeMode, meta: YouTubeMeta
+): Pair<AudioListsState, YouTubeAddResult> {
+    if (!PlaylistEntry.isValidVideoId(videoId)) return this to YouTubeAddResult.INVALID_ID
+    val list = playlists.firstOrNull { it.id == listId } ?: return this to YouTubeAddResult.NO_SUCH_LIST
+    val token = PlaylistEntry.format(PlaylistEntry.YouTube(videoId, mode))
+    if (token in list.trackIds) return this to YouTubeAddResult.ALREADY_IN_LIST
+    if (youTubeCount() >= MAX_YOUTUBE_ITEMS) return this to YouTubeAddResult.LIMIT_REACHED
+    val next = mapList(listId) { it.copy(trackIds = it.trackIds + token) }
+    return next.copy(ytMeta = next.ytMeta + (videoId to meta)) to YouTubeAddResult.ADDED
+}
 
 /** Blank names are ignored (state unchanged). */
 internal fun AudioListsState.create(listId: String, name: String): AudioListsState {
@@ -48,15 +82,17 @@ private fun AudioListsState.uniqueName(name: String, ownId: String?): String {
 internal fun AudioListsState.pruneTracks(ids: Set<String>) = copy(
     favourites = favourites - ids,
     playlists = playlists.map { it.copy(trackIds = it.trackIds.filter { t -> t !in ids }) }
-)
+).pruneMeta()
 
-internal fun AudioListsState.delete(listId: String) = copy(playlists = playlists.filter { it.id != listId })
+internal fun AudioListsState.delete(listId: String) = copy(playlists = playlists.filter { it.id != listId }).pruneMeta()
 
 internal fun AudioListsState.add(listId: String, ids: Collection<String>) =
     mapList(listId) { it.copy(trackIds = (it.trackIds + ids).distinct()) }
 
 internal fun AudioListsState.remove(listId: String, id: String) =
-    mapList(listId) { it.copy(trackIds = it.trackIds - id) }
+    mapList(listId) { it.copy(trackIds = it.trackIds - id) }.pruneMeta()
+
+internal fun AudioListsState.removeEntry(listId: String, entry: PlaylistEntry) = remove(listId, PlaylistEntry.format(entry))
 
 private fun AudioListsState.mapList(listId: String, f: (Playlist) -> Playlist) =
     copy(playlists = playlists.map { if (it.id == listId) f(it) else it })
@@ -67,8 +103,23 @@ internal fun encodePlaylists(s: AudioListsState): String = JSONArray().also { a 
     s.playlists.forEach { a.put(JSONObject().put("i", it.id).put("n", it.name).put("t", JSONArray(it.trackIds))) }
 }.toString()
 
+internal fun encodeYouTubeMeta(s: AudioListsState): String =
+    JSONObject().also { o -> s.ytMeta.forEach { (k, v) -> o.put(k, v.toJson()) } }.toString()
+
+private fun decodeYouTubeMeta(json: String?): Map<String, YouTubeMeta> = runCatching {
+    val o = JSONObject(json)
+    o.keys().asSequence().mapNotNull { k ->
+        runCatching {
+            val m = o.getJSONObject(k)
+            val t = m.getString("t").takeIf { it.isNotBlank() } ?: return@runCatching null
+            k to YouTubeMeta(t, m.optString("c").takeIf { m.has("c") && it.isNotEmpty() },
+                m.optInt("d", 0).takeIf { it > 0 })
+        }.getOrNull()
+    }.toMap()
+}.getOrDefault(emptyMap())
+
 /** Corrupt or missing JSON gives an empty state, never throws; one bad playlist or id is skipped, the rest kept. */
-internal fun decodeAudioLists(fav: String?, lists: String?): AudioListsState = AudioListsState(
+internal fun decodeAudioLists(fav: String?, lists: String?, ym: String? = null): AudioListsState = AudioListsState(
     favourites = runCatching {
         JSONArray(fav).let { a -> (0 until a.length()).mapNotNull { runCatching { a.get(it) as? String }.getOrNull() }.toSet() }
     }.getOrDefault(emptySet()),
@@ -82,7 +133,8 @@ internal fun decodeAudioLists(fav: String?, lists: String?): AudioListsState = A
                 }.getOrNull()
             }
         }
-    }.getOrDefault(emptyList())
+    }.getOrDefault(emptyList()),
+    ytMeta = decodeYouTubeMeta(ym)
 )
 
 /** Favourites and playlists of downloaded audio, by download id. Ids whose file is gone are filtered at read time. */
@@ -91,21 +143,27 @@ class AudioLists @Inject constructor(@ApplicationContext private val context: Co
 
     private val favKey = stringPreferencesKey("fav")
     private val listsKey = stringPreferencesKey("lists")
+    private val ymKey = stringPreferencesKey("ym")
 
-    val state: Flow<AudioListsState> = context.audioListsStore.data.map { decodeAudioLists(it[favKey], it[listsKey]) }
+    private fun androidx.datastore.preferences.core.Preferences.decode() = decodeAudioLists(this[favKey], this[listsKey], this[ymKey])
+    private fun androidx.datastore.preferences.core.MutablePreferences.write(s: AudioListsState) {
+        this[favKey] = encodeFavourites(s)
+        this[listsKey] = encodePlaylists(s)
+        this[ymKey] = encodeYouTubeMeta(s)
+    }
+
+    val state: Flow<AudioListsState> = context.audioListsStore.data.map { it.decode() }
 
     suspend fun snapshot(): AudioListsState {
-        val prefs = context.audioListsStore.data.first()
-        return decodeAudioLists(prefs[favKey], prefs[listsKey])
+        return context.audioListsStore.data.first().decode()
     }
 
     /** Backup restore: union with [incoming], nothing removed. Returns what was added. */
     suspend fun mergeFromBackup(incoming: AudioListsState): AudioListsBackup.Merged {
         var result = AudioListsBackup.Merged(AudioListsState(), 0, 0)
         context.audioListsStore.edit { prefs ->
-            result = AudioListsBackup.merge(decodeAudioLists(prefs[favKey], prefs[listsKey]), incoming)
-            prefs[favKey] = encodeFavourites(result.state)
-            prefs[listsKey] = encodePlaylists(result.state)
+            result = AudioListsBackup.merge(prefs.decode(), incoming)
+            prefs.write(result.state)
         }
         return result
     }
@@ -128,12 +186,29 @@ class AudioLists @Inject constructor(@ApplicationContext private val context: Co
     suspend fun add(listId: String, ids: Collection<String>) = update { it.add(listId, ids) }
     suspend fun remove(listId: String, id: String) = update { it.remove(listId, id) }
 
+    /** Adds a YouTube item with its metadata; a duplicate token is not added twice, and at [MAX_YOUTUBE_ITEMS] adds are refused. */
+    suspend fun addYouTube(listId: String, videoId: String, mode: YouTubeMode, meta: YouTubeMeta): YouTubeAddResult {
+        var result = YouTubeAddResult.NO_SUCH_LIST
+        runCatching {
+            context.audioListsStore.edit { prefs ->
+                val (next, r) = prefs.decode().addYouTube(listId, videoId, mode, meta)
+                result = r
+                if (r == YouTubeAddResult.ADDED) prefs.write(next)
+            }
+        }
+        return result
+    }
+
+    suspend fun removeEntry(listId: String, entry: PlaylistEntry) = update { it.removeEntry(listId, entry) }
+
+    /** Playlists as typed entries, with the YouTube metadata by video id. */
+    suspend fun typedSnapshot(): Pair<List<TypedPlaylist>, Map<String, YouTubeMeta>> =
+        snapshot().let { it.typedPlaylists() to it.ytMeta }
+
     private suspend fun update(change: (AudioListsState) -> AudioListsState) {
         runCatching {
             context.audioListsStore.edit { prefs ->
-                val next = change(decodeAudioLists(prefs[favKey], prefs[listsKey]))
-                prefs[favKey] = encodeFavourites(next)
-                prefs[listsKey] = encodePlaylists(next)
+                prefs.write(change(prefs.decode()))
             }
         }
     }
