@@ -52,4 +52,25 @@ class AutoplayTest {
     @Test fun noTriggerWhenSleepAtEndArmed() = assertFalse(shouldAutoplay(true, true, AudioRepeat.OFF, true, true))
 
     @Test fun noTriggerForNonYouTubeLastItem() = assertFalse(shouldAutoplay(true, false, AudioRepeat.OFF, true, false))
+
+    @Test fun appendPutsNewItemLastInPlayOrder() {
+        assertEquals(listOf(2, 0, 1, 3), orderWithAppend(listOf(2, 0, 1), 3))
+        assertEquals(listOf(0), orderWithAppend(emptyList(), 0))
+    }
+
+    @Test fun pickedIdIsMarkedTried() {
+        val played = HashSet<String>()
+        val first = pickAutoplayMarked(listOf(r("aaaaaaaaaaa"), r("bbbbbbbbbbb")), played, emptySet())
+        assertEquals("aaaaaaaaaaa", first?.url?.substringAfter("v="))
+        assertTrue("aaaaaaaaaaa" in played)
+        // Dropped as unavailable (never queued): the next pick moves on instead of looping.
+        val second = pickAutoplayMarked(listOf(r("aaaaaaaaaaa"), r("bbbbbbbbbbb")), played, emptySet())
+        assertEquals("bbbbbbbbbbb", second?.url?.substringAfter("v="))
+        assertNull(pickAutoplayMarked(listOf(r("aaaaaaaaaaa"), r("bbbbbbbbbbb")), played.also { it.add("bbbbbbbbbbb") }, emptySet()))
+    }
+
+    @Test fun noTriggerWhenSleepCancelledOnlyAfterwards() {
+        assertFalse(shouldAutoplay(true, true, AudioRepeat.OFF, true, true))
+        assertTrue(shouldAutoplay(true, true, AudioRepeat.OFF, true, false)) // re-evaluated once the timer is off
+    }
 }

@@ -99,6 +99,10 @@ fun orderWithPlayNext(order: List<Int>, current: Int, at: Int): List<Int> {
     return shifted.toMutableList().also { it.add(if (pos < 0) 0 else pos + 1, at) }
 }
 
+/** The shuffle order after a new item is appended at queue index [at] (the old size): it plays last. */
+fun orderWithAppend(order: List<Int>, at: Int): List<Int> =
+    order.map { if (it >= at) it + 1 else it } + at
+
 /** True when a YouTube video is already queued, as a stream ([ytaudio] id) or as its download, whichever [builtId] is. */
 fun youTubeAlreadyQueued(queueIds: Collection<String>, videoId: String, builtId: String): Boolean =
     builtId in queueIds || YouTubeStreaming.streamPositionKey(videoId, audioOnly = true) in queueIds
@@ -131,6 +135,16 @@ fun pickAutoplay(related: List<YouTubeSearchResult>, playedThisSession: Set<Stri
         val id = YouTubeLinks.videoId(r.url) ?: return@firstOrNull false
         r.durationSec > 0 && id !in playedThisSession && id !in queuedIds
     }
+
+/**
+ * [pickAutoplay], and the picked id is marked in [playedThisSession] at once: if the item is later dropped as
+ * unavailable it is not picked again, which would loop.
+ */
+fun pickAutoplayMarked(related: List<YouTubeSearchResult>, playedThisSession: MutableSet<String>, queuedIds: Set<String>): YouTubeSearchResult? {
+    val pick = pickAutoplay(related, playedThisSession, queuedIds) ?: return null
+    YouTubeLinks.videoId(pick.url)?.let { playedThisSession.add(it) }
+    return pick
+}
 
 /**
  * Whether reaching the current item should append a related video: the item is the last in play order and streams

@@ -397,7 +397,10 @@ class AudioPlayer @Inject constructor(
     // Autoplay: when the last item of a streamed queue becomes current, append a related video (radio style).
     private var autoplayEnabled = true
     private val autoplayIds = HashSet<String>()
-    /** Video ids that played this session (not persisted), so autoplay does not loop back. */
+    /**
+     * Video ids that played or were picked this session (not persisted), so autoplay does not loop back. Deliberately
+     * not cleared with the queue: closing it and starting again should not repeat what was just heard.
+     */
     private val playedVideos = HashSet<String>()
     private var autoplayJob: Job? = null
     private var autoplayFor: String? = null
@@ -436,7 +439,7 @@ class AudioPlayer @Inject constructor(
         if (player !== p || tracks.getOrNull(p.currentMediaItemIndex)?.id != track.id) return
         if (!shouldAutoplay(isLastInOrder(p), true, repeatFromPlayerMode(p.repeatMode), autoplayEnabled, sleepAtEnd)) return
         val queued = tracks.mapNotNullTo(HashSet()) { it.youtube?.videoId }
-        val pick = pickAutoplay(related, playedVideos, queued) ?: return
+        val pick = pickAutoplayMarked(related, playedVideos, queued) ?: return
         val id = YouTubeLinks.videoId(pick.url) ?: return
         val outcome = enqueueYouTube(id, YouTubeMeta(pick.title, pick.channel, pick.durationSec.toInt()))
         if (outcome == EnqueueOutcome.ADDED) {
@@ -607,11 +610,11 @@ class AudioPlayer @Inject constructor(
         aheadJob = scope.launch { applyAhead(track, p) }
     }
 
-    private suspend fun applyAhead(track: AudioTrack, p: ExoPlayer) {
+    private suspend fun applyAhead(track: AudioTrack, p: ExoPlayer): Refresh? {
         val r = refreshed(track)
-        if (player !== p) return
+        if (player !== p) return null
         val at = tracks.indexOfFirst { it.id == track.id }
-        if (at < 0) return
+        if (at < 0) return null
         when (r) {
             Refresh.Offline, Refresh.Blocked -> Unit // the error path keeps it for when the connection is back
             Refresh.Broken -> { dropTrack(at, track.id); resolveAhead() }
@@ -628,10 +631,11 @@ class AudioPlayer @Inject constructor(
             }
         }
         if (r is Refresh.Fresh) resolveAhead()
+        return r
     }
 
     init {
-        scope.launch { settings.youTubeAutoplayFlow.collect { autoplayEnabled = it; publish() } }
+        scope.launch { settings.youTubeAutoplayFlow.collect { autoplayEnabled = it; publish(); if (it) maybeAutoplay() } }
         // Save the position now and then while playing, so a killed process loses little.
         scope.launch { playing.collectLatest { if (it) while (true) { delay(15_000); saveSpot(); savePositionNow() } } }
         // Play history: the same cadence as the video player (about every 5 s while playing); pause and track changes record too.
@@ -815,6 +819,21 @@ class AudioPlayer @Inject constructor(
     /** Like [enqueueYouTube], but right after the current item. */
     suspend fun enqueueYouTubeNext(videoId: String, meta: YouTubeMeta): EnqueueOutcome = addYouTube(videoId, meta, next = true)
 
+    /**
+     * Inserts [track] at queue index [at]. Under shuffle the player puts it at a random spot in the play order, so it
+     * is placed right after the current item ([next]) or at the end of the play order instead.
+     */
+    private fun insertKeepingShuffle(p: ExoPlayer, at: Int, track: AudioTrack, next: Boolean) {
+        val current = p.currentMediaItemIndex
+        val order = if (p.shuffleModeEnabled && p.mediaItemCount == tracks.size) shuffleOrderOf(p) else null
+        tracks = tracks.toMutableList().also { it.add(at, track) }
+        p.addMediaItem(at, track.toMediaItem())
+        if (order != null && p.mediaItemCount == order.size + 1) {
+            val fixed = if (next) orderWithPlayNext(order, current, at) else orderWithAppend(order, at)
+            p.setShuffleOrder(DefaultShuffleOrder(fixed.toIntArray(), System.nanoTime()))
+        }
+    }
+
     private suspend fun addYouTube(videoId: String, meta: YouTubeMeta, next: Boolean): EnqueueOutcome {
         val entry = MixedEntry.YouTube(videoId, meta)
         val track = buildTrack(entry, localDownloadsFor(listOf(entry)))
@@ -823,14 +842,7 @@ class AudioPlayer @Inject constructor(
             if (p == null || tracks.isEmpty()) { playMixed(listOf(MixedEntry.Local(track)), 0); return@withContext EnqueueOutcome.STARTED }
             if (youTubeAlreadyQueued(tracks.map { it.id }, videoId, track.id)) return@withContext EnqueueOutcome.ALREADY_QUEUED
             val at = if (next) (p.currentMediaItemIndex + 1).coerceAtMost(tracks.size) else tracks.size
-            // Under shuffle the insert lands at a random spot in the play order: put it right after the current item.
-            val current = p.currentMediaItemIndex
-            val order = if (next && p.shuffleModeEnabled && p.mediaItemCount == tracks.size) shuffleOrderOf(p) else null
-            tracks = tracks.toMutableList().also { it.add(at, track) }
-            p.addMediaItem(at, track.toMediaItem())
-            if (order != null && p.mediaItemCount == order.size + 1) {
-                p.setShuffleOrder(DefaultShuffleOrder(orderWithPlayNext(order, current, at).toIntArray(), System.nanoTime()))
-            }
+            insertKeepingShuffle(p, at, track, next)
             queueChanged.value++
             publish()
             resolveAhead()
@@ -942,6 +954,7 @@ class AudioPlayer @Inject constructor(
             p.prepare()
             p.play()
             resolveAhead()
+            maybeAutoplay() // a restored queue may end on its last item
             return true
         } finally {
             activating = false
@@ -1009,6 +1022,7 @@ class AudioPlayer @Inject constructor(
                 p.pause(); cancelSleep()
             }
         }
+        maybeAutoplay() // turning "End of track" off while on the last item
         publish()
     }
 
@@ -1084,10 +1098,16 @@ class AudioPlayer @Inject constructor(
                     // Never resolved (the breaker stopped it): look it up, then prepare and play in this one press.
                     it.playWhenReady = true
                     scope.launch {
-                        applyAhead(cur, it)
-                        if (player === it && tracks.getOrNull(it.currentMediaItemIndex)?.uri != Uri.EMPTY) {
+                        val r = applyAhead(cur, it)
+                        if (player !== it) return@launch
+                        if (tracks.getOrNull(it.currentMediaItemIndex)?.uri != Uri.EMPTY) {
                             if (it.playbackState == Player.STATE_IDLE) it.prepare()
                             it.play()
+                        } else {
+                            // Nothing to play (offline, blocked, or gone): do not leave the UI showing playing while idle.
+                            it.playWhenReady = false
+                            if (r === Refresh.Offline) showOffline() // Blocked already said so
+                            publish()
                         }
                     }
                     return
@@ -1132,8 +1152,7 @@ class AudioPlayer @Inject constructor(
         val p = player
         if (p == null || tracks.isEmpty()) { play(listOf(track), 0); return EnqueueOutcome.STARTED }
         if (tracks.any { it.id == track.id }) return EnqueueOutcome.ALREADY_QUEUED
-        tracks = tracks + track
-        p.addMediaItem(track.toMediaItem())
+        insertKeepingShuffle(p, tracks.size, track, next = false)
         queueChanged.value++
         publish()
         return EnqueueOutcome.ADDED
