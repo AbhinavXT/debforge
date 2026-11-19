@@ -176,7 +176,7 @@ fun NowPlaying(
                 if (wide) {
                     Row(Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(32.dp)) {
                         Column(Modifier.weight(1f).fillMaxHeight(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-                            Artwork(state, share, Modifier.fillMaxWidth(0.7f).widthIn(max = 360.dp))
+                            Artwork(state, share, onNext, onPrevious, Modifier.fillMaxWidth(0.7f).widthIn(max = 360.dp))
                         }
                         Column(Modifier.weight(1f).fillMaxHeight(), verticalArrangement = Arrangement.Center) {
                             Controls(state, onToggle, onNext, onPrevious, onSeek, onSkip, onShuffle, onRepeat, onSpeed, onSleep, playFocus = playFocus, onChannel = onChannel, skipSeconds = skipSeconds)
@@ -195,7 +195,7 @@ fun NowPlaying(
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
                                 // Capped by the screen height so tall tablets keep the controls and Up next on screen.
-                                Artwork(state, share, Modifier.widthIn(max = this@BoxWithConstraints.maxHeight * 0.4f / 0.85f).fillMaxWidth(0.85f))
+                                Artwork(state, share, onNext, onPrevious, Modifier.widthIn(max = this@BoxWithConstraints.maxHeight * 0.4f / 0.85f).fillMaxWidth(0.85f))
                                 Controls(state, onToggle, onNext, onPrevious, onSeek, onSkip, onShuffle, onRepeat, onSpeed, onSleep, Modifier.padding(top = 24.dp), playFocus, onChannel, skipSeconds)
                             }
                         }
@@ -208,7 +208,7 @@ fun NowPlaying(
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-private fun Artwork(state: AudioState, share: ArtworkShare?, modifier: Modifier) {
+private fun Artwork(state: AudioState, share: ArtworkShare?, onNext: () -> Unit, onPrevious: () -> Unit, modifier: Modifier) {
     val cs = MaterialTheme.colorScheme
     val shape = ArtShape
     // The shadow waits for the flight to land so it never frames an empty slot.
@@ -221,7 +221,17 @@ private fun Artwork(state: AudioState, share: ArtworkShare?, modifier: Modifier)
         label = "artShadow"
     )
     val visible = share?.visibility?.transition?.targetState != EnterExitState.PostExit
-    Crossfade(state.track, modifier.aspectRatio(1f), label = "art") { t ->
+    val context = LocalContext.current
+    var sliding by remember { mutableStateOf(false) }
+    // Same actions as the buttons: next only when there is one, previous always.
+    val swipe = Modifier.artworkSwipe(
+        canSwipe = { it < 0 || state.hasNext },
+        animate = animatorDurationScale(context) > 0f,
+        onSliding = { sliding = it },
+        onSwipe = { if (it > 0) onNext() else onPrevious() }
+    )
+    // While the carousel slides the new artwork must arrive at full opacity, not fade in.
+    Crossfade(state.track, modifier.aspectRatio(1f).then(swipe), animationSpec = if (sliding) snap() else tween(), label = "art") { t ->
         if (t != null) TrackArt(
             t,
             Modifier.fillMaxSize().shadow(elevation, shape, ambientColor = cs.surfaceTint, spotColor = cs.surfaceTint)
