@@ -46,4 +46,19 @@ object AudioFinish {
      */
     fun mustRestart(doneBytes: Long, privateLength: Long?): Boolean =
         doneBytes > 0 && (privateLength == null || privateLength < doneBytes)
+
+    /**
+     * Whether a failed extraction is final (the video is dropped) or retried (the video is kept):
+     * only a file the extractor can't read, or whose first audio track isn't AAC, is final.
+     */
+    fun isPermanent(readable: Boolean, audioMime: String?): Boolean = !readable || !AudioExtract.supports(audioMime)
+
+    /**
+     * The .m4a is already in place and the video is gone: an extraction that finished but was cut off
+     * before the state was saved. Nothing is left to download or extract.
+     */
+    fun alreadyExtracted(finalExists: Boolean, partExists: Boolean): Boolean = finalExists && !partExists
+
+    /** Free space to look for: the rest of the download, plus room for the extracted audio (at most the video's size). */
+    fun spaceNeeded(stillNeeded: Long, videoSize: Long, audio: Boolean): Long = if (audio) stillNeeded + videoSize else stillNeeded
 }

@@ -11,7 +11,6 @@ import com.abhinavxt.debforge.data.provider.ResolvedLink
 import com.abhinavxt.debforge.di.DownloadHttpClient
 import com.abhinavxt.debforge.domain.AddKind
 import com.abhinavxt.debforge.domain.AddRequest
-import com.abhinavxt.debforge.download.AudioExtract
 import com.abhinavxt.debforge.domain.DirectLinkParser
 import com.abhinavxt.debforge.domain.DirectLinkParser.Target
 import com.abhinavxt.debforge.domain.DownloadItem
@@ -19,6 +18,7 @@ import com.abhinavxt.debforge.domain.HlsPlaylist
 import com.abhinavxt.debforge.domain.Page
 import com.abhinavxt.debforge.domain.PageVideos
 import com.abhinavxt.debforge.domain.ProviderId
+import com.abhinavxt.debforge.download.AudioExtract
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async

@@ -56,7 +56,7 @@ object DownloadFiles {
 
     /** Removes the private working file of [id]. Safe if absent. */
     fun deletePending(id: String) {
-        runCatching { File(pendingPathFor(id)).delete() }
+        runCatching { deletePart(pendingPathFor(id)) } // with the .mux an audio extraction leaves beside it
     }
 
     /**
@@ -261,7 +261,7 @@ object DownloadFiles {
         } ?: throw IOException("Could not open the download file")
     }
 
-    private inline fun <T> ioErrno(block: () -> T): T = try {
+    internal inline fun <T> ioErrno(block: () -> T): T = try {
         block()
     } catch (e: ErrnoException) {
         throw IOException(e.message, e)

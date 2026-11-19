@@ -86,4 +86,23 @@ class PrivateAudioPartTest {
             DownloadFiles.copyStream(ByteArray(10).inputStream(), java.io.ByteArrayOutputStream(), 10) { error("cancelled") }
         }
     }
+
+    @Test fun onlyUnreadableOrNonAacIsPermanent() {
+        assertTrue(AudioFinish.isPermanent(readable = false, audioMime = null))
+        assertTrue(AudioFinish.isPermanent(readable = true, audioMime = null))
+        assertTrue(AudioFinish.isPermanent(readable = true, audioMime = "audio/opus"))
+        assertFalse(AudioFinish.isPermanent(readable = true, audioMime = "audio/mp4a-latm"))
+    }
+
+    @Test fun extractedWhenFinalIsThereAndVideoGone() {
+        assertTrue(AudioFinish.alreadyExtracted(finalExists = true, partExists = false))
+        assertFalse(AudioFinish.alreadyExtracted(finalExists = true, partExists = true))
+        assertFalse(AudioFinish.alreadyExtracted(finalExists = false, partExists = false))
+        assertFalse(AudioFinish.alreadyExtracted(finalExists = false, partExists = true))
+    }
+
+    @Test fun audioNeedsRoomForTheExtractedFileToo() {
+        assertEquals(300L, AudioFinish.spaceNeeded(100, 200, audio = true))
+        assertEquals(100L, AudioFinish.spaceNeeded(100, 200, audio = false))
+    }
 }
