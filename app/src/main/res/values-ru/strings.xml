@@ -1188,4 +1188,6 @@
     </plurals>
     <string name="podcasts_unfollow_q">Отписаться от %1$s?</string>
     <string name="set_following_podcasts">Подкасты</string>
+    <string name="audio_err_no_aac">В этом видео нет звука AAC, который можно сохранить.</string>
+    <string name="audio_err_not_mp4">Этот файл не является видео MP4, поэтому его звук нельзя сохранить.</string>
 </resources>

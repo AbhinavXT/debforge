@@ -1086,4 +1086,6 @@
     </plurals>
     <string name="podcasts_unfollow_q">%1$s ని అనుసరించడం ఆపాలా?</string>
     <string name="set_following_podcasts">పాడ్‌కాస్ట్‌లు</string>
+    <string name="audio_err_no_aac">ఈ వీడియోలో సేవ్ చేయడానికి AAC ఆడియో లేదు.</string>
+    <string name="audio_err_not_mp4">ఈ ఫైల్ MP4 వీడియో కాదు, కాబట్టి దాని ఆడియోను సేవ్ చేయలేము.</string>
 </resources>

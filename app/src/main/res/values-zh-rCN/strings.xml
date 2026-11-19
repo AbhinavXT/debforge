@@ -1035,4 +1035,6 @@
     </plurals>
     <string name="podcasts_unfollow_q">取消关注 %1$s？</string>
     <string name="set_following_podcasts">播客</string>
+    <string name="audio_err_no_aac">此视频没有可保存的 AAC 音频。</string>
+    <string name="audio_err_not_mp4">此文件不是 MP4 视频，无法保存其音频。</string>
 </resources>

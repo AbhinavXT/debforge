@@ -1086,4 +1086,6 @@
     </plurals>
     <string name="podcasts_unfollow_q">%1$s अनफॉलो करायचे?</string>
     <string name="set_following_podcasts">पॉडकास्ट</string>
+    <string name="audio_err_no_aac">या व्हिडिओमध्ये जतन करण्यासाठी AAC ऑडिओ नाही.</string>
+    <string name="audio_err_not_mp4">ही फाइल MP4 व्हिडिओ नाही, त्यामुळे तिचा ऑडिओ जतन करता येत नाही.</string>
 </resources>

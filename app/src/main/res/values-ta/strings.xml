@@ -1086,4 +1086,6 @@
     </plurals>
     <string name="podcasts_unfollow_q">%1$s பின்தொடர்வதை நிறுத்தவா?</string>
     <string name="set_following_podcasts">பாட்காஸ்ட்கள்</string>
+    <string name="audio_err_no_aac">இந்த வீடியோவில் சேமிக்க AAC ஆடியோ இல்லை.</string>
+    <string name="audio_err_not_mp4">இந்தக் கோப்பு MP4 வீடியோ அல்ல, அதனால் அதன் ஆடியோவைச் சேமிக்க முடியாது.</string>
 </resources>

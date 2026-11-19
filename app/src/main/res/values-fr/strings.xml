@@ -1137,4 +1137,6 @@
     </plurals>
     <string name="podcasts_unfollow_q">Ne plus suivre %1$s ?</string>
     <string name="set_following_podcasts">Podcasts</string>
+    <string name="audio_err_no_aac">Cette vidéo n’a pas d’audio AAC à enregistrer.</string>
+    <string name="audio_err_not_mp4">Ce fichier n’est pas une vidéo MP4 : son audio ne peut pas être enregistré.</string>
 </resources>

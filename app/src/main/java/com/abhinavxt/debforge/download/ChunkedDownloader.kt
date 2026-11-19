@@ -1,6 +1,9 @@
 package com.abhinavxt.debforge.download
 
+import android.system.Os
+import com.abhinavxt.debforge.R
 import com.abhinavxt.debforge.domain.Housekeeping
+import java.io.File
 import com.abhinavxt.debforge.ui.browse.formatSize
 import com.abhinavxt.debforge.data.local.ChunkDao
 import com.abhinavxt.debforge.data.local.ChunkEntity
@@ -53,6 +56,9 @@ sealed interface DownloadOutcome {
 }
 
 /** Thrown inside an attempt when a download condition stops holding mid-file. */
+/** The downloaded video has no audio the .m4a can take: [message] is the string resource to show. */
+private class AudioRejected(val res: Int) : IOException()
+
 private class ConditionLostException(message: String) : IOException(message)
 
 /**
@@ -75,7 +81,8 @@ class ChunkedDownloader @Inject constructor(
     private val conditions: DownloadConditions,
     private val rateLimiter: RateLimiter,
     private val usage: com.abhinavxt.debforge.data.usage.UsageRecorder,
-    private val hls: HlsDownloader
+    private val hls: HlsDownloader,
+    @dagger.hilt.android.qualifiers.ApplicationContext private val context: android.content.Context
 ) {
     private companion object {
         const val BUFFER = 256 * 1024
@@ -167,10 +174,22 @@ class ChunkedDownloader @Inject constructor(
     }
 
     private suspend fun attemptDownload(entity: DownloadEntity): DownloadOutcome {
-        val partPath = entity.partFilePath
+        val destPart = entity.partFilePath
         val finalPath = entity.finalFilePath
-        if (partPath == null || finalPath == null) {
+        if (destPart == null || finalPath == null) {
             return DownloadOutcome.Failure("Missing destination path")
+        }
+        // Audio taken from a video for a picked folder: downloaded and extracted in app-private storage,
+        // then copied in one go (the muxer needs a plain file and is slow through the folder picker).
+        val audio = DirectLinkParser.isAudioRef(entity.sourceRef)
+        val partPath = if (audio && SafPaths.isSaf(finalPath)) DownloadFiles.pendingPathFor(entity.id) else destPart
+        if (partPath != destPart) {
+            val rows = chunkDao.getForDownload(entity.id).sumOf { it.bytesWritten }
+            val have = File(partPath).takeIf { it.exists() }?.length()
+            if (AudioFinish.mustRestart(rows, have)) {
+                chunkDao.deleteForDownload(entity.id)
+                DownloadFiles.deletePart(destPart)
+            }
         }
         // A stream is a playlist of small pieces joined in order: its own path.
         if (entity.sourceRef.startsWith(DirectLinkParser.HLS_PREFIX) || YouTubeLinks.isSourceRef(entity.sourceRef)) return hls.download(entity, partPath, finalPath)
@@ -187,7 +206,7 @@ class ChunkedDownloader @Inject constructor(
         if (totalSize <= 0) {
             // Size unknown (e.g. a zip the service builds on the fly): no
             // preallocation or parallel chunks possible — stream it.
-            return streamUnknownLength(entity, probe.url, partPath, finalPath)
+            return streamUnknownLength(entity, probe.url, partPath, destPart, finalPath)
         }
         // Keep the row's size authoritative (listings can omit or round it),
         // so the Active screen's progress fraction is correct.
@@ -286,21 +305,29 @@ class ChunkedDownloader @Inject constructor(
         }
 
         // 6) Verify size and atomically promote .part -> final.
-        val promoted = try {
-            withContext(Dispatchers.IO) {
-                DownloadFiles.verifyAndPromote(partPath, finalPath, totalSize)
+        var doneSize = totalSize
+        if (audio) {
+            when (val r = finishAudioExtract(entity, partPath, destPart, finalPath, totalSize)) {
+                is DownloadOutcome.Failure -> return r
+                else -> doneSize = downloadDao.getById(entity.id)?.filesize ?: totalSize
             }
-        } catch (e: IOException) {
-            return DownloadOutcome.Failure("Finalize failed: ${e.message}")
+        } else {
+            val promoted = try {
+                withContext(Dispatchers.IO) {
+                    DownloadFiles.verifyAndPromote(partPath, finalPath, totalSize)
+                }
+            } catch (e: IOException) {
+                return DownloadOutcome.Failure("Finalize failed: ${e.message}")
+            }
+            if (!promoted) return DownloadOutcome.Failure("Size verification failed")
         }
-        if (!promoted) return DownloadOutcome.Failure("Size verification failed")
 
         // 7) Mark complete (durable) and update the live view, then drop it.
         withContext(NonCancellable) {
-            downloadDao.updateBytes(entity.id, totalSize)
+            downloadDao.updateBytes(entity.id, doneSize)
             downloadDao.updateState(entity.id, DownloadState.COMPLETED)
         }
-        progressTracker.update(entity.id, totalSize, totalSize, DownloadState.COMPLETED)
+        progressTracker.update(entity.id, doneSize, doneSize, DownloadState.COMPLETED)
         progressTracker.clear(entity.id)
         return DownloadOutcome.Success
     }
@@ -316,6 +343,7 @@ class ChunkedDownloader @Inject constructor(
         entity: DownloadEntity,
         url: String,
         partPath: String,
+        destPart: String,
         finalPath: String
     ): DownloadOutcome = withContext(Dispatchers.IO) {
         val call = client.newCall(entity.request(url).build())
@@ -359,12 +387,17 @@ class ChunkedDownloader @Inject constructor(
                     return@cancellableCall DownloadOutcome.Failure("Truncated download: $written/$announced bytes")
                 }
                 if (written == 0L) return@cancellableCall DownloadOutcome.Failure("Server sent an empty file")
-                if (!DownloadFiles.verifyAndPromote(partPath, finalPath, written)) {
+                var doneSize = written
+                if (DirectLinkParser.isAudioRef(entity.sourceRef)) {
+                    val r = finishAudioExtract(entity, partPath, destPart, finalPath, written)
+                    if (r is DownloadOutcome.Failure) return@cancellableCall r
+                    doneSize = downloadDao.getById(entity.id)?.filesize ?: written
+                } else if (!DownloadFiles.verifyAndPromote(partPath, finalPath, written)) {
                     return@cancellableCall DownloadOutcome.Failure("Size verification failed")
                 }
                 withContext(NonCancellable) {
-                    downloadDao.updateLink(entity.id, url, 1, written)
-                    downloadDao.updateBytes(entity.id, written)
+                    downloadDao.updateLink(entity.id, url, 1, doneSize)
+                    downloadDao.updateBytes(entity.id, doneSize)
                     downloadDao.updateState(entity.id, DownloadState.COMPLETED)
                 }
                 progressTracker.update(entity.id, written, written, DownloadState.COMPLETED)
@@ -375,6 +408,80 @@ class ChunkedDownloader @Inject constructor(
     }
 
     // --- internals ---------------------------------------------------------
+
+    /**
+     * Turns the downloaded video in [partPath] into an .m4a at [finalPath]: the AAC track is copied out
+     * (no re-encode) into ".mux", which is moved into place and replaces the video. For a picked folder
+     * [partPath] is private and the result is copied into [destPart] first. On success the row's size
+     * is the audio file's size. A video without AAC audio, or that isn't an MP4, fails for good.
+     */
+    private suspend fun finishAudioExtract(
+        entity: DownloadEntity,
+        partPath: String,
+        destPart: String,
+        finalPath: String,
+        videoSize: Long
+    ): DownloadOutcome {
+        // The extraction can take a while with the bar at 100%: say so.
+        progressTracker.update(entity.id, videoSize, videoSize, DownloadState.DOWNLOADING, finishing = true)
+        val muxPath = "$partPath.mux"
+        suspend fun giveUp(message: Int): DownloadOutcome {
+            withContext(NonCancellable) {
+                DownloadFiles.deletePart(partPath)
+                if (destPart != partPath) DownloadFiles.deletePart(destPart)
+                chunkDao.deleteForDownload(entity.id)
+            }
+            return DownloadOutcome.Failure(context.getString(message), permanent = true)
+        }
+        val size = try {
+            withContext(Dispatchers.IO) {
+                val mime = try {
+                    DownloadFiles.openFd(partPath).use { AudioExtract.audioMime(it.fileDescriptor) }
+                } catch (e: IOException) {
+                    throw AudioRejected(R.string.audio_err_not_mp4)
+                }
+                if (!AudioExtract.supports(mime)) throw AudioRejected(R.string.audio_err_no_aac)
+                val muxed = try {
+                    DownloadFiles.openFd(partPath).use { input ->
+                        DownloadFiles.openFd(muxPath).use { out ->
+                            // An extraction cut short last time leaves its bytes behind.
+                            Os.ftruncate(out.fileDescriptor, 0)
+                            StreamMuxer.mux(null, input.fileDescriptor, out.fileDescriptor, StreamMuxer.Output.MP4)
+                            out.statSize
+                        }
+                    }
+                } catch (e: IOException) {
+                    throw AudioRejected(R.string.audio_err_not_mp4)
+                }
+                if (destPart != partPath) {
+                    try {
+                        DownloadFiles.copyTo(File(muxPath), destPart) { coroutineContext.ensureActive() }
+                    } catch (e: IOException) {
+                        runCatching { DownloadFiles.deletePart(destPart) }
+                        throw e
+                    }
+                    if (!DownloadFiles.verifyAndPromote(destPart, finalPath, muxed)) throw IOException("Size verification failed")
+                } else if (!DownloadFiles.verifyAndPromote(muxPath, finalPath, muxed)) {
+                    throw IOException("Size verification failed")
+                }
+                muxed
+            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: AudioRejected) {
+            return giveUp(e.res)
+        } catch (e: IOException) {
+            return DownloadOutcome.Failure("Finalize failed: ${e.message}")
+        }
+        // The video is no longer needed (and the private copy of the result with it).
+        runCatching { DownloadFiles.deletePart(partPath) }
+        withContext(NonCancellable) {
+            val row = downloadDao.getById(entity.id)
+            downloadDao.updateLink(entity.id, row?.downloadUrl ?: entity.downloadUrl, row?.chunksAllowed ?: 1, size)
+            downloadDao.updateBytes(entity.id, size)
+        }
+        return DownloadOutcome.Success
+    }
 
     private data class Probe(
         val url: String,

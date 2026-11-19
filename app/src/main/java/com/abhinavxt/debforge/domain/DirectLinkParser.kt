@@ -191,6 +191,14 @@ object DirectLinkParser {
     /** Source ref of a stream download: this prefix, then its media playlist URL. */
     const val HLS_PREFIX = "hls:"
 
+    /** Source ref of an audio-only download of a video: this prefix, then the video's own source ref. */
+    const val AUDIO_PREFIX = "audio:"
+
+    /** [sourceRef] without the audio-only marker: the link the video itself is at. */
+    fun withoutAudioPrefix(sourceRef: String): String = sourceRef.removePrefix(AUDIO_PREFIX)
+
+    fun isAudioRef(sourceRef: String): Boolean = sourceRef.startsWith(AUDIO_PREFIX)
+
     /** "pixeldrain.com" for the Downloads list. */
     fun hostOf(url: String): String =
         runCatching { URI(url.trim()).host }.getOrNull()?.lowercase()?.removePrefix("www.") ?: url

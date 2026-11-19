@@ -1088,4 +1088,6 @@
     </plurals>
     <string name="podcasts_unfollow_q">Unfollow %1$s?</string>
     <string name="set_following_podcasts">Podcasts</string>
+    <string name="audio_err_no_aac">This video has no AAC audio to save.</string>
+    <string name="audio_err_not_mp4">This file isn\'t an MP4 video, so its audio can\'t be saved.</string>
 </resources>

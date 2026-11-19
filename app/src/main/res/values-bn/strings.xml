@@ -1086,4 +1086,6 @@
     </plurals>
     <string name="podcasts_unfollow_q">%1$s আনফলো করবেন?</string>
     <string name="set_following_podcasts">পডকাস্ট</string>
+    <string name="audio_err_no_aac">এই ভিডিওতে সংরক্ষণ করার মতো AAC অডিও নেই।</string>
+    <string name="audio_err_not_mp4">এই ফাইলটি MP4 ভিডিও নয়, তাই এর অডিও সংরক্ষণ করা যাবে না।</string>
 </resources>

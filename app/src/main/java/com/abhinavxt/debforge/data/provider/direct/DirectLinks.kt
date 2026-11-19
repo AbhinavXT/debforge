@@ -11,6 +11,7 @@ import com.abhinavxt.debforge.data.provider.ResolvedLink
 import com.abhinavxt.debforge.di.DownloadHttpClient
 import com.abhinavxt.debforge.domain.AddKind
 import com.abhinavxt.debforge.domain.AddRequest
+import com.abhinavxt.debforge.download.AudioExtract
 import com.abhinavxt.debforge.domain.DirectLinkParser
 import com.abhinavxt.debforge.domain.DirectLinkParser.Target
 import com.abhinavxt.debforge.domain.DownloadItem
@@ -89,7 +90,9 @@ class DirectLinks @Inject constructor(
         )
     }
 
-    override suspend fun resolveLink(sourceRef: String): ResolvedLink = BlockingCalls.run {
+    override suspend fun resolveLink(sourceRef: String): ResolvedLink = resolveVideoLink(DirectLinkParser.withoutAudioPrefix(sourceRef))
+
+    private suspend fun resolveVideoLink(sourceRef: String): ResolvedLink = BlockingCalls.run {
         when {
             sourceRef.startsWith(PIXELDRAIN) ->
                 ResolvedLink(DirectLinkParser.pixeldrainDownloadUrl(sourceRef.removePrefix(PIXELDRAIN)), null, null)
@@ -185,6 +188,15 @@ class DirectLinks @Inject constructor(
     /** A file the in-app browser started downloading: it already knows the name and size. */
     fun browserFile(url: String, name: String, size: Long, referer: String?, userAgent: String?): DownloadItem =
         item(sourceRef = url, url = url, name = name, size = size, host = DirectLinkParser.hostOf(url), referer = referer, userAgent = userAgent)
+
+    /**
+     * [v] (a video found on a page) as an audio-only download: the same link, saved as "<name>.m4a"
+     * with only the audio track (the engine extracts it, see AudioExtract). Its id differs from the video's.
+     */
+    fun audioOf(v: DownloadItem): DownloadItem {
+        val ref = DirectLinkParser.AUDIO_PREFIX + v.sourceRef
+        return v.copy(id = DirectLinkParser.itemId(ref), sourceRef = ref, filename = AudioExtract.m4aName(v.filename))
+    }
 
     // --- videos on a web page ---------------------------------------------------
 
