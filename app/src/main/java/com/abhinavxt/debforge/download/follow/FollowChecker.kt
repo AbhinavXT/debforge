@@ -146,11 +146,12 @@ class FollowChecker @Inject constructor(
 
 private const val CACHE_CHECK_MAX = 100
 
-/** Every couple of hours while at least one show is followed. */
+/** Every couple of hours while at least one show, channel or podcast is followed. */
 @AndroidEntryPoint
 class FollowJobService : JobService() {
 
     @Inject lateinit var checker: FollowChecker
+    @Inject lateinit var subscriptionChecker: SubscriptionChecker
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var work: Job? = null
@@ -160,6 +161,8 @@ class FollowJobService : JobService() {
             try {
                 runCatching { checker.checkAccounts(fromBackground = true) }
                     .onFailure { android.util.Log.w("FollowJob", "Follow check failed", it) }
+                runCatching { subscriptionChecker.check(fromBackground = true) }
+                    .onFailure { android.util.Log.w("FollowJob", "Subscription check failed", it) }
             } finally {
                 jobFinished(params, false)
             }
@@ -199,8 +202,11 @@ class FollowJobService : JobService() {
             context.getSystemService(JobScheduler::class.java)?.cancel(JOB_ID)
         }
 
-        /** Runs the job only while something is followed. */
+        /** Whether any channel or podcast is followed; kept current by the app start and [com.abhinavxt.debforge.data.subscriptions.SubscriptionRepository]. */
+        @Volatile var subscriptionsActive = false
+
+        /** Runs the job only while a show, channel or podcast is followed. */
         fun sync(context: Context, anyFollows: Boolean) =
-            if (anyFollows) schedule(context) else cancel(context)
+            if (anyFollows || subscriptionsActive) schedule(context) else cancel(context)
     }
 }

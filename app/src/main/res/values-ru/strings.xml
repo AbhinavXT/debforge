@@ -526,6 +526,14 @@
         <item quantity="many">%d новых серий</item>
         <item quantity="other">%d новой серии</item>
     </plurals>
+    <string name="notif_sub_one">Новое видео: %1$s</string>
+    <string name="notif_sub_body">С каналов, на которые вы подписаны.</string>
+    <plurals name="notif_sub_many">
+        <item quantity="one">%d новое видео</item>
+        <item quantity="few">%d новых видео</item>
+        <item quantity="many">%d новых видео</item>
+        <item quantity="other">%d нового видео</item>
+    </plurals>
 
     <!-- In-app player -->
     <string name="player_unsupported_title">Здесь не воспроизвести</string>

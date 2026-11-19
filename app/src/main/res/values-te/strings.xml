@@ -480,6 +480,12 @@
         <item quantity="one">%d కొత్త ఎపిసోడ్</item>
         <item quantity="other">%d కొత్త ఎపిసోడ్‌లు</item>
     </plurals>
+    <string name="notif_sub_one">కొత్త అప్‌లోడ్: %1$s</string>
+    <string name="notif_sub_body">మీరు అనుసరిస్తున్న ఛానెళ్ల నుండి.</string>
+    <plurals name="notif_sub_many">
+        <item quantity="one">%d కొత్త అప్‌లోడ్</item>
+        <item quantity="other">%d కొత్త అప్‌లోడ్‌లు</item>
+    </plurals>
 
     <!-- In-app player -->
     <string name="player_unsupported_title">ఇక్కడ ప్లే చేయలేము</string>

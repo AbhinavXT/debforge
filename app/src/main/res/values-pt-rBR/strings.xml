@@ -503,6 +503,13 @@
         <item quantity="many">%d episódios novos</item>
         <item quantity="other">%d episódios novos</item>
     </plurals>
+    <string name="notif_sub_one">Envio novo: %1$s</string>
+    <string name="notif_sub_body">De canais que você segue.</string>
+    <plurals name="notif_sub_many">
+        <item quantity="one">%d envio novo</item>
+        <item quantity="many">%d envios novos</item>
+        <item quantity="other">%d envios novos</item>
+    </plurals>
 
     <!-- In-app player -->
     <string name="player_unsupported_title">Não dá para reproduzir aqui</string>

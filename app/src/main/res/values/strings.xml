@@ -481,6 +481,12 @@
         <item quantity="one">%d new episode</item>
         <item quantity="other">%d new episodes</item>
     </plurals>
+    <string name="notif_sub_one">New upload: %1$s</string>
+    <string name="notif_sub_body">From channels you follow.</string>
+    <plurals name="notif_sub_many">
+        <item quantity="one">%d new upload</item>
+        <item quantity="other">%d new uploads</item>
+    </plurals>
 
     <!-- In-app player -->
     <string name="player_unsupported_title">Can\'t play this here</string>

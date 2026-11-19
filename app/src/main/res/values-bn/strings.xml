@@ -480,6 +480,12 @@
         <item quantity="one">%dটি নতুন এপিসোড</item>
         <item quantity="other">%dটি নতুন এপিসোড</item>
     </plurals>
+    <string name="notif_sub_one">নতুন আপলোড: %1$s</string>
+    <string name="notif_sub_body">আপনার অনুসরণ করা চ্যানেল থেকে।</string>
+    <plurals name="notif_sub_many">
+        <item quantity="one">%dটি নতুন আপলোড</item>
+        <item quantity="other">%dটি নতুন আপলোড</item>
+    </plurals>
 
     <!-- In-app player -->
     <string name="player_unsupported_title">এখানে চালানো যাচ্ছে না</string>

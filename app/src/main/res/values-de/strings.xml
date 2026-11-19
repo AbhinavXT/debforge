@@ -480,6 +480,12 @@
         <item quantity="one">%d neue Folge</item>
         <item quantity="other">%d neue Folgen</item>
     </plurals>
+    <string name="notif_sub_one">Neuer Upload: %1$s</string>
+    <string name="notif_sub_body">Von Kanälen, denen du folgst.</string>
+    <plurals name="notif_sub_many">
+        <item quantity="one">%d neuer Upload</item>
+        <item quantity="other">%d neue Uploads</item>
+    </plurals>
 
     <!-- In-app player -->
     <string name="player_unsupported_title">Hier nicht abspielbar</string>

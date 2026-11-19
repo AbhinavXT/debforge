@@ -457,6 +457,11 @@
     <plurals name="notif_follow_many">
         <item quantity="other">%d episode baru</item>
     </plurals>
+    <string name="notif_sub_one">Unggahan baru: %1$s</string>
+    <string name="notif_sub_body">Dari kanal yang Anda ikuti.</string>
+    <plurals name="notif_sub_many">
+        <item quantity="other">%d unggahan baru</item>
+    </plurals>
 
     <!-- In-app player -->
     <string name="player_unsupported_title">Tidak bisa diputar di sini</string>

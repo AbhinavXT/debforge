@@ -17,6 +17,7 @@ class DebForgeApp : Application() {
     @Inject lateinit var widgetSync: com.abhinavxt.debforge.widget.WidgetSync
     @Inject lateinit var playerWidgetSync: com.abhinavxt.debforge.widget.PlayerWidgetSync
     @Inject lateinit var followStore: com.abhinavxt.debforge.data.follow.FollowStore
+    @Inject lateinit var subscriptionDao: com.abhinavxt.debforge.data.subscriptions.SubscriptionDao
 
     private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
@@ -36,6 +37,7 @@ class DebForgeApp : Application() {
         // store): make sure the episode check is scheduled exactly when needed.
         appScope.launch {
             runCatching {
+                com.abhinavxt.debforge.download.follow.FollowJobService.subscriptionsActive = subscriptionDao.all().isNotEmpty()
                 com.abhinavxt.debforge.download.follow.FollowJobService.sync(this@DebForgeApp, followStore.all().isNotEmpty())
             }
         }

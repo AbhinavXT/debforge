@@ -457,6 +457,11 @@
     <plurals name="notif_follow_many">
         <item quantity="other">%d 集新剧集</item>
     </plurals>
+    <string name="notif_sub_one">新上传：%1$s</string>
+    <string name="notif_sub_body">来自你关注的频道。</string>
+    <plurals name="notif_sub_many">
+        <item quantity="other">%d 个新上传</item>
+    </plurals>
 
     <!-- In-app player -->
     <string name="player_unsupported_title">无法在此播放</string>

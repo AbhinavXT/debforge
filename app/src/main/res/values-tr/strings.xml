@@ -480,6 +480,12 @@
         <item quantity="one">%d yeni bölüm</item>
         <item quantity="other">%d yeni bölüm</item>
     </plurals>
+    <string name="notif_sub_one">Yeni yükleme: %1$s</string>
+    <string name="notif_sub_body">Takip ettiğiniz kanallardan.</string>
+    <plurals name="notif_sub_many">
+        <item quantity="one">%d yeni yükleme</item>
+        <item quantity="other">%d yeni yükleme</item>
+    </plurals>
 
     <!-- In-app player -->
     <string name="player_unsupported_title">Burada oynatılamıyor</string>

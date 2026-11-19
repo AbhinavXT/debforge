@@ -27,6 +27,7 @@ object DownloadNotifications {
     private const val INFO_ID = 1002
     private const val READY_ID = 1003
     private const val FOLLOW_ID = 1004
+    private const val SUBSCRIPTION_ID = 1010
     private const val STOPPED_ID = 1005
     private const val STORAGE_ID = 1006
 
@@ -180,6 +181,25 @@ object DownloadNotifications {
             .setContentIntent(openAppIntent(context))
             .build()
         runCatching { context.getSystemService(NotificationManager::class.java).notify(FOLLOW_ID, n) }
+    }
+
+    /** New uploads from followed channels were found in the background. */
+    fun notifyNewUploads(context: Context, labels: List<String>) {
+        ensureChannel(context)
+        val title = if (labels.size == 1) {
+            context.getString(R.string.notif_sub_one, labels.first())
+        } else {
+            context.resources.getQuantityString(R.plurals.notif_sub_many, labels.size, labels.size)
+        }
+        val n = NotificationCompat.Builder(context, CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_notification_download)
+            .setContentTitle(title)
+            .setContentText(context.getString(R.string.notif_sub_body))
+            .setStyle(NotificationCompat.BigTextStyle().bigText(labels.take(8).joinToString("\n")))
+            .setAutoCancel(true)
+            .setContentIntent(openAppIntent(context))
+            .build()
+        runCatching { context.getSystemService(NotificationManager::class.java).notify(SUBSCRIPTION_ID, n) }
     }
 
     /**

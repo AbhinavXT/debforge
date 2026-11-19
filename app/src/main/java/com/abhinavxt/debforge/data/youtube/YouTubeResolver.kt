@@ -12,6 +12,7 @@ import com.abhinavxt.debforge.domain.YouTubeSubtitle
 import com.abhinavxt.debforge.domain.onePerLanguage
 import com.abhinavxt.debforge.domain.withVttFormat
 import com.abhinavxt.debforge.domain.YouTubeVideo
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
@@ -22,6 +23,9 @@ import org.schabi.newpipe.extractor.Page
 import org.schabi.newpipe.extractor.ServiceList
 import org.schabi.newpipe.extractor.channel.ChannelInfo
 import org.schabi.newpipe.extractor.channel.tabs.ChannelTabInfo
+import org.schabi.newpipe.extractor.feed.FeedInfo
+import com.abhinavxt.debforge.domain.FeedEntry
+import com.abhinavxt.debforge.domain.YouTubeChannelLinks
 import org.schabi.newpipe.extractor.channel.tabs.ChannelTabs
 import org.schabi.newpipe.extractor.kiosk.KioskInfo
 import org.schabi.newpipe.extractor.linkhandler.ListLinkHandler
@@ -135,6 +139,54 @@ class YouTubeResolver @Inject constructor(@ApiHttpClient private val client: OkH
             SearchPage(searchResults(info.relatedItems), info.nextPage)
         } catch (e: Exception) {
             throw map(e)
+        }
+    }
+
+    /** A channel as followed: its canonical url (by channel id), name and picture. */
+    class ChannelRef(val url: String, val title: String, val artworkUrl: String?)
+
+    /** Looks up a channel page url (canonical, @handle, /c/ or /user/) and returns its canonical identity. */
+    suspend fun channelRef(channelUrl: String): ChannelRef = withContext(Dispatchers.IO) {
+        try {
+            init
+            val info = ChannelInfo.getInfo(ServiceList.YouTube, channelUrl)
+            ChannelRef(
+                url = YouTubeChannelLinks.canonical(info.id),
+                title = info.name.orEmpty().ifBlank { info.id },
+                artworkUrl = info.avatars.maxByOrNull { it.height }?.url,
+            )
+        } catch (e: Exception) {
+            throw map(e)
+        }
+    }
+
+    /**
+     * The channel's latest uploads with dates: the extractor's RSS feed (about 15). If the feed fails, the
+     * first page of the Videos tab (no dates, so [FeedEntry.publishedAt] is null).
+     */
+    suspend fun channelFeed(channelUrl: String): List<FeedEntry> {
+        val fromFeed = try {
+            withContext(Dispatchers.IO) {
+                init
+                FeedInfo.getInfo(ServiceList.YouTube, channelUrl).relatedItems.mapNotNull { item ->
+                    val id = YouTubeLinks.videoId(item.url.orEmpty()) ?: return@mapNotNull null
+                    FeedEntry(
+                        key = id, title = item.name.orEmpty(), url = "https://www.youtube.com/watch?v=$id",
+                        publishedAt = item.uploadDate?.instant?.toEpochMilli(),
+                        durationSec = item.duration.takeIf { it > 0 },
+                        thumbUrl = item.thumbnails.maxByOrNull { t -> t.height }?.url,
+                    )
+                }
+            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            null
+        }
+        if (!fromFeed.isNullOrEmpty()) return fromFeed
+        return channelVideos(channelUrl).items.mapNotNull { r ->
+            val id = YouTubeLinks.videoId(r.url) ?: return@mapNotNull null
+            FeedEntry(id, r.title, "https://www.youtube.com/watch?v=$id", null, r.durationSec.takeIf { it > 0 }, r.thumbnailUrl)
         }
     }
 
