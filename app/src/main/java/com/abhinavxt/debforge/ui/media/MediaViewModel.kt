@@ -75,7 +75,7 @@ data class MediaUiState(
 }
 
 /** Why a tap on a file did nothing. */
-enum class MediaMessage { FILE_MISSING, STREAM_FAILED, DOWNLOAD_ALL_FAILED }
+enum class MediaMessage { FILE_MISSING, STREAM_FAILED, DOWNLOAD_ALL_FAILED, DOWNLOAD_ALL_ALREADY }
 
 /** The selection restricted to rows that are still on screen, so the count always matches what an action touches. */
 internal fun pruneSelection(selected: Set<String>, visibleIds: Collection<String>): Set<String> =
@@ -95,7 +95,7 @@ fun DownloadEntity.displayTitle(): String = title?.takeIf { it.isNotBlank() } ?:
 
 @HiltViewModel
 class MediaViewModel @Inject constructor(
-    dao: DownloadDao,
+    private val dao: DownloadDao,
     progress: DownloadProgressTracker,
     private val controller: DownloadController,
     private val localPlayback: LocalPlayback,
@@ -165,7 +165,7 @@ class MediaViewModel @Inject constructor(
 
     /** Every YouTube download of any state, for the "Download all" selection. */
     private val ytDownloads = dao.observeAll()
-        .map { all -> all.mapNotNull { e -> YouTubeLinks.parseSourceRef(e.sourceRef)?.let { YouTubeDownloadState(it.videoId, e.state) } } }
+        .map { all -> youTubeDownloadStates(all) }
         .distinctUntilChanged()
 
     private val completed = dao.observeCompleted().distinctUntilChanged()
@@ -261,13 +261,17 @@ class MediaViewModel @Inject constructor(
     /** How many items a "Download all" actually queued. */
     val bulkQueued = _bulkQueued.receiveAsFlow()
 
-    /** Queues [items] one by one, each in its own mode at the default quality. */
+    /** Queues [items] one by one, each in its own mode at the default quality; a failed one is re-queued, as a retry does. */
     fun downloadAll(items: List<PlaylistEntry.YouTube>) {
         if (items.isEmpty() || !_bulkRunning.compareAndSet(expect = false, update = true)) return
         viewModelScope.launch {
             try {
+                val existing = youTubeDownloadStates(dao.observeAll().first())
                 var queued = 0
+                var already = 0
                 for (item in items) {
+                    val failedId = failedDownloadId(item, existing)
+                    if (failedId != null && ytEnqueuer.retryIfFailed(failedId)) { queued++; continue }
                     val result = try {
                         ytEnqueuer.enqueue(item.videoId, item.enqueueMode())
                     } catch (e: CancellationException) {
@@ -275,9 +279,17 @@ class MediaViewModel @Inject constructor(
                     } catch (e: Exception) {
                         EnqueueResult.FAILED
                     }
-                    if (result == EnqueueResult.QUEUED) queued++
+                    when (result) {
+                        EnqueueResult.QUEUED -> queued++
+                        EnqueueResult.ALREADY_QUEUED -> already++
+                        else -> Unit
+                    }
                 }
-                if (queued > 0) _bulkQueued.send(queued) else _messages.send(MediaMessage.DOWNLOAD_ALL_FAILED)
+                when (bulkOutcome(queued, already)) {
+                    BulkOutcome.QUEUED -> _bulkQueued.send(queued)
+                    BulkOutcome.ALREADY -> _messages.send(MediaMessage.DOWNLOAD_ALL_ALREADY)
+                    BulkOutcome.FAILED -> _messages.send(MediaMessage.DOWNLOAD_ALL_FAILED)
+                }
             } finally {
                 _bulkRunning.value = false
             }

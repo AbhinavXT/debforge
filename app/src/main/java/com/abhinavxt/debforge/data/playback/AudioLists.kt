@@ -53,6 +53,12 @@ internal fun AudioListsState.addYouTube(
     val list = playlists.firstOrNull { it.id == listId } ?: return this to YouTubeAddResult.NO_SUCH_LIST
     val token = PlaylistEntry.format(PlaylistEntry.YouTube(videoId, mode))
     if (token in list.trackIds) return this to YouTubeAddResult.ALREADY_IN_LIST
+    // The video is already here in the other mode: switch it in place (same position) rather than hold two entries.
+    val other = PlaylistEntry.format(PlaylistEntry.YouTube(videoId, if (mode == YouTubeMode.AUDIO) YouTubeMode.VIDEO else YouTubeMode.AUDIO))
+    if (other in list.trackIds) {
+        val switched = mapList(listId) { l -> l.copy(trackIds = l.trackIds.map { if (it == other) token else it }) }
+        return switched.copy(ytMeta = switched.ytMeta + (videoId to meta)) to YouTubeAddResult.MODE_CHANGED
+    }
     if (youTubeCount() >= MAX_YOUTUBE_ITEMS) return this to YouTubeAddResult.LIMIT_REACHED
     val next = mapList(listId) { it.copy(trackIds = it.trackIds + token) }
     return next.copy(ytMeta = next.ytMeta + (videoId to meta)) to YouTubeAddResult.ADDED
@@ -193,7 +199,7 @@ class AudioLists @Inject constructor(@ApplicationContext private val context: Co
             context.audioListsStore.edit { prefs ->
                 val (next, r) = prefs.decode().addYouTube(listId, videoId, mode, meta)
                 result = r
-                if (r == YouTubeAddResult.ADDED) prefs.write(next)
+                if (r == YouTubeAddResult.ADDED || r == YouTubeAddResult.MODE_CHANGED) prefs.write(next)
             }
         }
         return result

@@ -814,6 +814,10 @@
     <string name="yt_add_to_queue_cd">添加到队列</string>
     <string name="yt_pl_added">已添加到%1$s</string>
     <string name="yt_pl_already">已在%1$s中</string>
+    <string name="yt_pl_changed_video">已在%1$s中改为视频</string>
+    <string name="yt_pl_changed_audio">已在%1$s中改为音频</string>
+    <string name="yt_queue_added">已添加到队列</string>
+    <string name="yt_queue_already">已在队列中</string>
     <string name="yt_pl_limit">播放列表已满</string>
     <string name="yt_pl_failed">无法添加此视频</string>
     <string name="yt_pl_add_as">添加为</string>
@@ -1065,6 +1069,10 @@
     <string name="media_play_as_audio">以音频播放</string>
     <string name="media_stream_failed">无法打开视频</string>
     <string name="media_download_all_failed">无法开始下载</string>
+    <string name="media_download_all_already">已下载或已在队列中</string>
+    <plurals name="media_download_all_body_n">
+        <item quantity="other">将下载此播放列表中的 %1$d 个视频：音频项目按音频下载，视频项目使用你的默认画质。</item>
+    </plurals>
     <plurals name="media_download_all_n">
         <item quantity="other">下载 %1$d 个视频？</item>
     </plurals>

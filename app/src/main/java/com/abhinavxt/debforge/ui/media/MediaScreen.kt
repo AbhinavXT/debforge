@@ -150,12 +150,14 @@ fun MediaScreen(
     }
     val msgStream = stringResource(R.string.media_stream_failed)
     val msgBulkFailed = stringResource(R.string.media_download_all_failed)
+    val msgBulkAlready = stringResource(R.string.media_download_all_already)
     LaunchedEffect(Unit) {
         viewModel.messages.collect {
             tell(when (it) {
                 MediaMessage.FILE_MISSING -> msgMissing
                 MediaMessage.STREAM_FAILED -> msgStream
                 MediaMessage.DOWNLOAD_ALL_FAILED -> msgBulkFailed
+                MediaMessage.DOWNLOAD_ALL_ALREADY -> msgBulkAlready
             })
         }
     }
@@ -472,7 +474,7 @@ internal fun MediaContent(
                                     else lists.onPlayRows(listRows, listRows.indexOf(row))
                                 },
                                 onPlayAudio = { lists.onPlayRows(listRows, listRows.indexOf(row)) },
-                                onDownload = if (row.isDownloaded) null else ({ lists.onDownloadAll(listOf(row.entry)) }),
+                                onDownload = if (row.entry in state.ytToDownload) ({ lists.onDownloadAll(listOf(row.entry)) }) else null,
                                 onRemove = { lists.onRemoveEntry(pickedList.id, row.entry) }
                             )
                         }
@@ -541,6 +543,7 @@ internal fun MediaContent(
         AlertDialog(
             onDismissRequest = { confirmDownloadAll = null },
             title = { Text(pluralStringResource(R.plurals.media_download_all_n, targets.size, targets.size)) },
+            text = { Text(pluralStringResource(R.plurals.media_download_all_body_n, targets.size, targets.size)) },
             confirmButton = {
                 TextButton(onClick = { confirmDownloadAll = null; lists.onDownloadAll(targets) }) { Text(stringResource(R.string.action_download)) }
             },

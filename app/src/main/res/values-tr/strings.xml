@@ -854,6 +854,10 @@
     <string name="yt_add_to_queue_cd">Kuyruğa ekle</string>
     <string name="yt_pl_added">%1$s listesine eklendi</string>
     <string name="yt_pl_already">Zaten %1$s listesinde</string>
+    <string name="yt_pl_changed_video">%1$s içinde videoya çevrildi</string>
+    <string name="yt_pl_changed_audio">%1$s içinde sese çevrildi</string>
+    <string name="yt_queue_added">Kuyruğa eklendi</string>
+    <string name="yt_queue_already">Zaten kuyrukta</string>
     <string name="yt_pl_limit">Oynatma listeleri dolu</string>
     <string name="yt_pl_failed">Bu video eklenemedi</string>
     <string name="yt_pl_add_as">Şu olarak ekle</string>
@@ -1118,6 +1122,11 @@
     <string name="media_play_as_audio">Ses olarak oynat</string>
     <string name="media_stream_failed">Video açılamadı</string>
     <string name="media_download_all_failed">İndirmeler başlatılamadı</string>
+    <string name="media_download_all_already">Zaten indirildi veya sırada</string>
+    <plurals name="media_download_all_body_n">
+        <item quantity="one">Bu çalma listesinden %1$d video indirilir: ses öğeleri ses olarak, video öğeleri varsayılan kalitenizde.</item>
+        <item quantity="other">Bu çalma listesinden %1$d video indirilir: ses öğeleri ses olarak, video öğeleri varsayılan kalitenizde.</item>
+    </plurals>
     <plurals name="media_download_all_n">
         <item quantity="one">%1$d video indirilsin mi?</item>
         <item quantity="other">%1$d video indirilsin mi?</item>

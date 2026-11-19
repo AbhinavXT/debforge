@@ -35,7 +35,7 @@ class PlaylistRowsTest {
     @Test fun keepsPlaylistOrderMixed() {
         val entries = listOf(ytA(a), PlaylistEntry.Download("d1"), ytV(b), PlaylistEntry.Download("gone"))
         val rows = playlistRows(entries, mapOf("d1" to dl("d1")), meta, YouTubeLocals.of(emptyList()))
-        assertEquals(listOf("y:$a", "d:d1", "y:$b"), rows.map { it.key })
+        assertEquals(listOf("y:yt:a:$a", "d:d1", "y:yt:v:$b"), rows.map { it.key })
     }
 
     @Test fun missingMetadataFallsBackToVideoId() {
@@ -60,7 +60,7 @@ class PlaylistRowsTest {
 
     @Test fun queryFiltersYouTubeRowsAndDuplicatesAreDropped() {
         val rows = playlistRows(listOf(ytA(a), ytA(b), ytA(a)), emptyMap(), meta, YouTubeLocals.of(emptyList()), "alp")
-        assertEquals(listOf("y:$a"), rows.map { it.key })
+        assertEquals(listOf("y:yt:a:$a"), rows.map { it.key })
     }
 
     private fun track(id: String) = AudioTrack(id, Uri.parse("file:///$id"), id, null, null)
@@ -89,15 +89,54 @@ class PlaylistRowsTest {
         assertEquals(0, startOnSkipped)
     }
 
-    @Test fun downloadAllSkipsCompletedAndActiveButRetriesFailed() {
+    private fun ds(id: String, v: String, state: DownloadState, audioOnly: Boolean) = YouTubeDownloadState(id, v, state, audioOnly)
+
+    @Test fun downloadAllSkipsCompletedAndActiveButKeepsFailed() {
         val entries = listOf(ytA(a), ytV(b), ytA(c), PlaylistEntry.Download("d1"), ytA(c))
         val have = listOf(
-            YouTubeDownloadState(a, DownloadState.COMPLETED),
-            YouTubeDownloadState(b, DownloadState.FAILED),
+            ds("1", a, DownloadState.COMPLETED, true),
+            ds("2", b, DownloadState.FAILED, false),
         )
+        // the failed one stays selected (it is retried), c is once
         assertEquals(listOf(ytV(b), ytA(c)), youTubeToDownload(entries, have))
-        val active = have + YouTubeDownloadState(b, DownloadState.DOWNLOADING)
-        assertEquals(listOf(ytA(c)), youTubeToDownload(entries, active))
+        assertEquals(listOf(ytA(c)), youTubeToDownload(entries, have + ds("3", b, DownloadState.DOWNLOADING, false)))
+        assertEquals("2", failedDownloadId(ytV(b), have))
+        assertNull(failedDownloadId(ytA(a), have))
+    }
+
+    @Test fun downloadAllMatchesByMode() {
+        val audioOnly = listOf(ds("1", a, DownloadState.COMPLETED, true))
+        assertEquals(listOf(ytV(a)), youTubeToDownload(listOf(ytV(a)), audioOnly))
+        assertTrue(youTubeToDownload(listOf(ytA(a)), audioOnly).isEmpty())
+        val video = listOf(ds("2", a, DownloadState.QUEUED, false))
+        assertEquals(listOf(ytA(a)), youTubeToDownload(listOf(ytA(a)), video))
+        assertTrue(youTubeToDownload(listOf(ytV(a)), video).isEmpty())
+        // a failed audio download does not stand in for the video one
+        assertNull(failedDownloadId(ytV(a), listOf(ds("3", a, DownloadState.FAILED, true))))
+        // both tokens of one video are both considered
+        assertEquals(listOf(ytA(a), ytV(a)), youTubeToDownload(listOf(ytA(a), ytV(a)), emptyList()))
+    }
+
+    @Test fun downloadStatesComeFromSourceRefs() {
+        val audio = dl("x", YouTubeLinks.sourceRef(a, null, 140))
+        val vid = dl("y", YouTubeLinks.sourceRef(b, 137, 140), DownloadState.FAILED)
+        val other = dl("z", "https://example.com")
+        assertEquals(
+            listOf(YouTubeDownloadState("x", a, DownloadState.COMPLETED, true), YouTubeDownloadState("y", b, DownloadState.FAILED, false)),
+            youTubeDownloadStates(listOf(audio, vid, other)),
+        )
+    }
+
+    @Test fun bulkOutcomeMapping() {
+        assertEquals(BulkOutcome.QUEUED, bulkOutcome(1, 3))
+        assertEquals(BulkOutcome.ALREADY, bulkOutcome(0, 2))
+        assertEquals(BulkOutcome.FAILED, bulkOutcome(0, 0))
+    }
+
+    @Test fun bothModesOfOneVideoShowBothRows() {
+        val rows = playlistRows(listOf(ytA(a), ytV(a)), emptyMap(), meta, YouTubeLocals.of(emptyList()))
+        assertEquals(2, rows.size)
+        assertEquals(2, rows.map { it.key }.toSet().size)
     }
 
     @Test fun downloadAllUsesEachItemsOwnMode() {

@@ -59,7 +59,7 @@ data class YouTubeMeta(val title: String, val channel: String?, val durationSec:
     }
 }
 
-enum class YouTubeAddResult { ADDED, ALREADY_IN_LIST, LIMIT_REACHED, NO_SUCH_LIST, INVALID_ID }
+enum class YouTubeAddResult { ADDED, MODE_CHANGED, ALREADY_IN_LIST, LIMIT_REACHED, NO_SUCH_LIST, INVALID_ID }
 
 /** A playlist read as typed entries plus the metadata of its YouTube items. */
 data class TypedPlaylist(val id: String, val name: String, val entries: List<PlaylistEntry>)

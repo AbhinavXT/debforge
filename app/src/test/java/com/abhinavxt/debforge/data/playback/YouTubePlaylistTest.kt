@@ -52,8 +52,23 @@ class YouTubePlaylistTest {
         assertEquals(YouTubeAddResult.ADDED, r1)
         assertEquals(YouTubeAddResult.ALREADY_IN_LIST, r2)
         assertEquals(s, s2)
-        // other mode is a different token
-        assertEquals(YouTubeAddResult.ADDED, s.addYouTube("p", v1, YouTubeMode.VIDEO, meta).second)
+    }
+
+    @Test fun otherModeSwitchesInPlaceKeepingPosition() {
+        var s = base.addYouTube("p", v1, YouTubeMode.AUDIO, meta).first
+        s = s.addYouTube("p", v2, YouTubeMode.AUDIO, meta).first
+        val (next, r) = s.addYouTube("p", v1, YouTubeMode.VIDEO, YouTubeMeta("New", null, null))
+        assertEquals(YouTubeAddResult.MODE_CHANGED, r)
+        assertEquals(listOf("yt:v:$v1", "yt:a:$v2"), next.playlists.single().trackIds)
+        assertEquals("New", next.ytMeta[v1]?.title)
+        // and back again
+        assertEquals(listOf("yt:a:$v1", "yt:a:$v2"), next.addYouTube("p", v1, YouTubeMode.AUDIO, meta).first.playlists.single().trackIds)
+    }
+
+    @Test fun existingBothModesStayAndExactAddIsAlready() {
+        val both = base.copy(playlists = listOf(Playlist("p", "P", listOf("yt:a:$v1", "yt:v:$v1"))))
+        assertEquals(YouTubeAddResult.ALREADY_IN_LIST, both.addYouTube("p", v1, YouTubeMode.VIDEO, meta).second)
+        assertEquals(YouTubeAddResult.ALREADY_IN_LIST, both.addYouTube("p", v1, YouTubeMode.AUDIO, meta).second)
     }
 
     @Test fun invalidIdAndMissingList() {
@@ -70,7 +85,7 @@ class YouTubePlaylistTest {
     }
 
     @Test fun metaPrunedWhenUnreferenced() {
-        val s = base.addYouTube("p", v1, YouTubeMode.AUDIO, meta).first.addYouTube("p", v1, YouTubeMode.VIDEO, meta).first
+        val s = base.copy(playlists = listOf(Playlist("p", "P", listOf("yt:a:$v1", "yt:v:$v1"))), ytMeta = mapOf(v1 to meta))
         val one = s.removeEntry("p", PlaylistEntry.YouTube(v1, YouTubeMode.AUDIO))
         assertTrue(v1 in one.ytMeta)
         assertTrue(one.removeEntry("p", PlaylistEntry.YouTube(v1, YouTubeMode.VIDEO)).ytMeta.isEmpty())

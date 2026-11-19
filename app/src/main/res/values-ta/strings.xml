@@ -854,6 +854,10 @@
     <string name="yt_add_to_queue_cd">வரிசையில் சேர்</string>
     <string name="yt_pl_added">%1$s இல் சேர்க்கப்பட்டது</string>
     <string name="yt_pl_already">ஏற்கனவே %1$s இல் உள்ளது</string>
+    <string name="yt_pl_changed_video">%1$s இல் வீடியோவாக மாற்றப்பட்டது</string>
+    <string name="yt_pl_changed_audio">%1$s இல் ஆடியோவாக மாற்றப்பட்டது</string>
+    <string name="yt_queue_added">வரிசையில் சேர்க்கப்பட்டது</string>
+    <string name="yt_queue_already">ஏற்கனவே வரிசையில் உள்ளது</string>
     <string name="yt_pl_limit">பிளேலிஸ்ட்கள் நிரம்பிவிட்டன</string>
     <string name="yt_pl_failed">இந்த வீடியோவைச் சேர்க்க முடியவில்லை</string>
     <string name="yt_pl_add_as">இவ்வாறு சேர்</string>
@@ -1118,6 +1122,11 @@
     <string name="media_play_as_audio">ஆடியோவாக இயக்கு</string>
     <string name="media_stream_failed">வீடியோவைத் திறக்க முடியவில்லை</string>
     <string name="media_download_all_failed">பதிவிறக்கங்களைத் தொடங்க முடியவில்லை</string>
+    <string name="media_download_all_already">ஏற்கனவே பதிவிறக்கப்பட்டது அல்லது வரிசையில் உள்ளது</string>
+    <plurals name="media_download_all_body_n">
+        <item quantity="one">இந்த பிளேலிஸ்ட்டிலிருந்து %1$d வீடியோ பதிவிறக்கப்படும்: ஆடியோ உருப்படிகள் ஆடியோவாக, வீடியோ உருப்படிகள் உங்கள் இயல்புநிலை தரத்தில்.</item>
+        <item quantity="other">இந்த பிளேலிஸ்ட்டிலிருந்து %1$d வீடியோக்கள் பதிவிறக்கப்படும்: ஆடியோ உருப்படிகள் ஆடியோவாக, வீடியோ உருப்படிகள் உங்கள் இயல்புநிலை தரத்தில்.</item>
+    </plurals>
     <plurals name="media_download_all_n">
         <item quantity="one">%1$d வீடியோவைப் பதிவிறக்கவா?</item>
         <item quantity="other">%1$d வீடியோக்களைப் பதிவிறக்கவா?</item>

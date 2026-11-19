@@ -51,8 +51,9 @@ internal fun playlistAddMode(audio: Boolean) = if (audio) YouTubeMode.AUDIO else
 
 /** The snackbar text for an add result; the `%1$s` ones take the playlist name. */
 @StringRes
-internal fun playlistAddMessage(r: YouTubeAddResult): Int = when (r) {
+internal fun playlistAddMessage(r: YouTubeAddResult, mode: YouTubeMode = YouTubeMode.AUDIO): Int = when (r) {
     YouTubeAddResult.ADDED -> R.string.yt_pl_added
+    YouTubeAddResult.MODE_CHANGED -> if (mode == YouTubeMode.VIDEO) R.string.yt_pl_changed_video else R.string.yt_pl_changed_audio
     YouTubeAddResult.ALREADY_IN_LIST -> R.string.yt_pl_already
     YouTubeAddResult.LIMIT_REACHED -> R.string.yt_pl_limit
     YouTubeAddResult.NO_SUCH_LIST, YouTubeAddResult.INVALID_ID -> R.string.yt_pl_failed

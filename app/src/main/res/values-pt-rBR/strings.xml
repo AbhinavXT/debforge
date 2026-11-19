@@ -894,6 +894,10 @@
     <string name="yt_add_to_queue_cd">Adicionar à fila</string>
     <string name="yt_pl_added">Adicionado a %1$s</string>
     <string name="yt_pl_already">Já está em %1$s</string>
+    <string name="yt_pl_changed_video">Alterado para vídeo em %1$s</string>
+    <string name="yt_pl_changed_audio">Alterado para áudio em %1$s</string>
+    <string name="yt_queue_added">Adicionado à fila</string>
+    <string name="yt_queue_already">Já está na fila</string>
     <string name="yt_pl_limit">As playlists estão cheias</string>
     <string name="yt_pl_failed">Não foi possível adicionar este vídeo</string>
     <string name="yt_pl_add_as">Adicionar como</string>
@@ -1171,6 +1175,12 @@
     <string name="media_play_as_audio">Reproduzir como áudio</string>
     <string name="media_stream_failed">Não foi possível abrir o vídeo</string>
     <string name="media_download_all_failed">Não foi possível iniciar os downloads</string>
+    <string name="media_download_all_already">Já baixado ou na fila</string>
+    <plurals name="media_download_all_body_n">
+        <item quantity="one">Baixa %1$d vídeo desta playlist: itens de áudio como áudio e itens de vídeo na sua qualidade padrão.</item>
+        <item quantity="many">Baixa %1$d de vídeos desta playlist: itens de áudio como áudio e itens de vídeo na sua qualidade padrão.</item>
+        <item quantity="other">Baixa %1$d vídeos desta playlist: itens de áudio como áudio e itens de vídeo na sua qualidade padrão.</item>
+    </plurals>
     <plurals name="media_download_all_n">
         <item quantity="one">Baixar %1$d vídeo?</item>
         <item quantity="many">Baixar %1$d de vídeos?</item>

@@ -854,6 +854,10 @@
     <string name="yt_add_to_queue_cd">Zur Warteschlange hinzufügen</string>
     <string name="yt_pl_added">Zu %1$s hinzugefügt</string>
     <string name="yt_pl_already">Bereits in %1$s</string>
+    <string name="yt_pl_changed_video">In %1$s zu Video geändert</string>
+    <string name="yt_pl_changed_audio">In %1$s zu Audio geändert</string>
+    <string name="yt_queue_added">Zur Warteschlange hinzugefügt</string>
+    <string name="yt_queue_already">Bereits in der Warteschlange</string>
     <string name="yt_pl_limit">Playlists sind voll</string>
     <string name="yt_pl_failed">Dieses Video konnte nicht hinzugefügt werden</string>
     <string name="yt_pl_add_as">Hinzufügen als</string>
@@ -1118,6 +1122,11 @@
     <string name="media_play_as_audio">Als Audio abspielen</string>
     <string name="media_stream_failed">Das Video konnte nicht geöffnet werden</string>
     <string name="media_download_all_failed">Die Downloads konnten nicht gestartet werden</string>
+    <string name="media_download_all_already">Bereits heruntergeladen oder in der Warteschlange</string>
+    <plurals name="media_download_all_body_n">
+        <item quantity="one">Lädt %1$d Video aus dieser Playlist herunter: Audio-Einträge als Audio, Video-Einträge in deiner Standardqualität.</item>
+        <item quantity="other">Lädt %1$d Videos aus dieser Playlist herunter: Audio-Einträge als Audio, Video-Einträge in deiner Standardqualität.</item>
+    </plurals>
     <plurals name="media_download_all_n">
         <item quantity="one">%1$d Video herunterladen?</item>
         <item quantity="other">%1$d Videos herunterladen?</item>

@@ -854,6 +854,10 @@
     <string name="yt_add_to_queue_cd">रांगेत जोडा</string>
     <string name="yt_pl_added">%1$s मध्ये जोडले</string>
     <string name="yt_pl_already">आधीच %1$s मध्ये आहे</string>
+    <string name="yt_pl_changed_video">%1$s मध्ये व्हिडिओमध्ये बदलले</string>
+    <string name="yt_pl_changed_audio">%1$s मध्ये ऑडिओमध्ये बदलले</string>
+    <string name="yt_queue_added">रांगेत जोडले</string>
+    <string name="yt_queue_already">आधीच रांगेत आहे</string>
     <string name="yt_pl_limit">प्लेलिस्ट भरल्या आहेत</string>
     <string name="yt_pl_failed">हा व्हिडिओ जोडता आला नाही</string>
     <string name="yt_pl_add_as">या स्वरूपात जोडा</string>
@@ -1118,6 +1122,11 @@
     <string name="media_play_as_audio">ऑडिओ म्हणून प्ले करा</string>
     <string name="media_stream_failed">व्हिडिओ उघडता आला नाही</string>
     <string name="media_download_all_failed">डाउनलोड सुरू करता आले नाहीत</string>
+    <string name="media_download_all_already">आधीच डाउनलोड केले आहे किंवा रांगेत आहे</string>
+    <plurals name="media_download_all_body_n">
+        <item quantity="one">या प्लेलिस्टमधील %1$d व्हिडिओ डाउनलोड होईल: ऑडिओ आयटम ऑडिओ म्हणून, व्हिडिओ आयटम तुमच्या डिफॉल्ट गुणवत्तेत.</item>
+        <item quantity="other">या प्लेलिस्टमधील %1$d व्हिडिओ डाउनलोड होतील: ऑडिओ आयटम ऑडिओ म्हणून, व्हिडिओ आयटम तुमच्या डिफॉल्ट गुणवत्तेत.</item>
+    </plurals>
     <plurals name="media_download_all_n">
         <item quantity="one">%1$d व्हिडिओ डाउनलोड करायचा?</item>
         <item quantity="other">%1$d व्हिडिओ डाउनलोड करायचे?</item>

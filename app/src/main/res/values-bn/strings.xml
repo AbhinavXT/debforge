@@ -854,6 +854,10 @@
     <string name="yt_add_to_queue_cd">সারিতে যোগ করুন</string>
     <string name="yt_pl_added">%1$s-এ যোগ করা হয়েছে</string>
     <string name="yt_pl_already">ইতিমধ্যে %1$s-এ আছে</string>
+    <string name="yt_pl_changed_video">%1$s-এ ভিডিওতে বদলানো হয়েছে</string>
+    <string name="yt_pl_changed_audio">%1$s-এ অডিওতে বদলানো হয়েছে</string>
+    <string name="yt_queue_added">সারিতে যোগ করা হয়েছে</string>
+    <string name="yt_queue_already">ইতিমধ্যে সারিতে আছে</string>
     <string name="yt_pl_limit">প্লেলিস্ট ভরে গেছে</string>
     <string name="yt_pl_failed">এই ভিডিও যোগ করা যায়নি</string>
     <string name="yt_pl_add_as">এভাবে যোগ করুন</string>
@@ -1118,6 +1122,11 @@
     <string name="media_play_as_audio">অডিও হিসেবে চালান</string>
     <string name="media_stream_failed">ভিডিওটি খোলা যায়নি</string>
     <string name="media_download_all_failed">ডাউনলোড শুরু করা যায়নি</string>
+    <string name="media_download_all_already">ইতিমধ্যে ডাউনলোড হয়েছে বা সারিতে আছে</string>
+    <plurals name="media_download_all_body_n">
+        <item quantity="one">এই প্লেলিস্ট থেকে %1$dটি ভিডিও ডাউনলোড হবে: অডিও আইটেম অডিও হিসেবে, ভিডিও আইটেম আপনার ডিফল্ট মানে।</item>
+        <item quantity="other">এই প্লেলিস্ট থেকে %1$dটি ভিডিও ডাউনলোড হবে: অডিও আইটেম অডিও হিসেবে, ভিডিও আইটেম আপনার ডিফল্ট মানে।</item>
+    </plurals>
     <plurals name="media_download_all_n">
         <item quantity="one">%1$d টি ভিডিও ডাউনলোড করবেন?</item>
         <item quantity="other">%1$d টি ভিডিও ডাউনলোড করবেন?</item>

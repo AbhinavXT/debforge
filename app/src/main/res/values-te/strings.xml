@@ -854,6 +854,10 @@
     <string name="yt_add_to_queue_cd">క్యూకు జోడించు</string>
     <string name="yt_pl_added">%1$sకి జోడించబడింది</string>
     <string name="yt_pl_already">ఇప్పటికే %1$sలో ఉంది</string>
+    <string name="yt_pl_changed_video">%1$sలో వీడియోగా మార్చబడింది</string>
+    <string name="yt_pl_changed_audio">%1$sలో ఆడియోగా మార్చబడింది</string>
+    <string name="yt_queue_added">క్యూలో జోడించబడింది</string>
+    <string name="yt_queue_already">ఇప్పటికే క్యూలో ఉంది</string>
     <string name="yt_pl_limit">ప్లేలిస్ట్‌లు నిండిపోయాయి</string>
     <string name="yt_pl_failed">ఈ వీడియోను జోడించలేకపోయాం</string>
     <string name="yt_pl_add_as">ఇలా జోడించు</string>
@@ -1118,6 +1122,11 @@
     <string name="media_play_as_audio">ఆడియోగా ప్లే చేయి</string>
     <string name="media_stream_failed">వీడియోను తెరవలేకపోయాం</string>
     <string name="media_download_all_failed">డౌన్‌లోడ్‌లను ప్రారంభించలేకపోయాం</string>
+    <string name="media_download_all_already">ఇప్పటికే డౌన్‌లోడ్ అయింది లేదా క్యూలో ఉంది</string>
+    <plurals name="media_download_all_body_n">
+        <item quantity="one">ఈ ప్లేలిస్ట్ నుండి %1$d వీడియో డౌన్‌లోడ్ అవుతుంది: ఆడియో అంశాలు ఆడియోగా, వీడియో అంశాలు మీ డిఫాల్ట్ నాణ్యతలో.</item>
+        <item quantity="other">ఈ ప్లేలిస్ట్ నుండి %1$d వీడియోలు డౌన్‌లోడ్ అవుతాయి: ఆడియో అంశాలు ఆడియోగా, వీడియో అంశాలు మీ డిఫాల్ట్ నాణ్యతలో.</item>
+    </plurals>
     <plurals name="media_download_all_n">
         <item quantity="one">%1$d వీడియోను డౌన్‌లోడ్ చేయాలా?</item>
         <item quantity="other">%1$d వీడియోలను డౌన్‌లోడ్ చేయాలా?</item>

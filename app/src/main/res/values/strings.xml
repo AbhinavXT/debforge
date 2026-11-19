@@ -856,6 +856,10 @@
     <string name="yt_add_to_queue_cd">Add to queue</string>
     <string name="yt_pl_added">Added to %1$s</string>
     <string name="yt_pl_already">Already in %1$s</string>
+    <string name="yt_pl_changed_video">Changed to video in %1$s</string>
+    <string name="yt_pl_changed_audio">Changed to audio in %1$s</string>
+    <string name="yt_queue_added">Added to queue</string>
+    <string name="yt_queue_already">Already in queue</string>
     <string name="yt_pl_limit">Playlists are full</string>
     <string name="yt_pl_failed">Couldn\'t add this video</string>
     <string name="yt_pl_add_as">Add as</string>
@@ -1120,6 +1124,11 @@
     <string name="media_play_as_audio">Play as audio</string>
     <string name="media_stream_failed">Couldn\'t open the video</string>
     <string name="media_download_all_failed">Couldn\'t start the downloads</string>
+    <string name="media_download_all_already">Already downloaded or queued</string>
+    <plurals name="media_download_all_body_n">
+        <item quantity="one">Downloads %1$d video from this playlist: audio items as audio, video items at your default quality.</item>
+        <item quantity="other">Downloads %1$d videos from this playlist: audio items as audio, video items at your default quality.</item>
+    </plurals>
     <plurals name="media_download_all_n">
         <item quantity="one">Download %1$d video?</item>
         <item quantity="other">Download %1$d videos?</item>

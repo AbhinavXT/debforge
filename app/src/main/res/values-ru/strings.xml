@@ -934,6 +934,10 @@
     <string name="yt_add_to_queue_cd">Добавить в очередь</string>
     <string name="yt_pl_added">Добавлено в %1$s</string>
     <string name="yt_pl_already">Уже в %1$s</string>
+    <string name="yt_pl_changed_video">В %1$s изменено на видео</string>
+    <string name="yt_pl_changed_audio">В %1$s изменено на аудио</string>
+    <string name="yt_queue_added">Добавлено в очередь</string>
+    <string name="yt_queue_already">Уже в очереди</string>
     <string name="yt_pl_limit">Плейлисты заполнены</string>
     <string name="yt_pl_failed">Не удалось добавить это видео</string>
     <string name="yt_pl_add_as">Добавить как</string>
@@ -1224,6 +1228,13 @@
     <string name="media_play_as_audio">Воспроизвести как аудио</string>
     <string name="media_stream_failed">Не удалось открыть видео</string>
     <string name="media_download_all_failed">Не удалось начать загрузки</string>
+    <string name="media_download_all_already">Уже загружено или в очереди</string>
+    <plurals name="media_download_all_body_n">
+        <item quantity="one">Будет загружено %1$d видео из этого плейлиста: аудио-элементы как аудио, видео-элементы в качестве по умолчанию.</item>
+        <item quantity="few">Будет загружено %1$d видео из этого плейлиста: аудио-элементы как аудио, видео-элементы в качестве по умолчанию.</item>
+        <item quantity="many">Будет загружено %1$d видео из этого плейлиста: аудио-элементы как аудио, видео-элементы в качестве по умолчанию.</item>
+        <item quantity="other">Будет загружено %1$d видео из этого плейлиста: аудио-элементы как аудио, видео-элементы в качестве по умолчанию.</item>
+    </plurals>
     <plurals name="media_download_all_n">
         <item quantity="one">Скачать %1$d видео?</item>
         <item quantity="few">Скачать %1$d видео?</item>

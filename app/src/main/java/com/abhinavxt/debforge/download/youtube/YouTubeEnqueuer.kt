@@ -78,6 +78,16 @@ class YouTubeEnqueuer @Inject constructor(
         url = video.streams.firstOrNull { it.itag == (c.videoItag ?: c.audioItag) }?.url,
     )
 
+    /** Re-queues the download [id] when it exists and FAILED (the downloads screen's retry). True when it did. */
+    suspend fun retryIfFailed(id: String): Boolean = try {
+        if (dao.getById(id)?.state != com.abhinavxt.debforge.domain.DownloadState.FAILED) false
+        else { downloads.retry(id); true }
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: Exception) {
+        false
+    }
+
     /** Queues [item] and says what happened: QUEUED, ALREADY_QUEUED or FAILED. */
     suspend fun tryEnqueue(item: DownloadItem, thumbnailUrl: String?, foreground: Boolean = true): EnqueueResult {
         try {

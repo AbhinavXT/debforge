@@ -33,6 +33,8 @@ import com.abhinavxt.debforge.data.prefs.SettingsStore
 import com.abhinavxt.debforge.data.playback.AudioLists
 import com.abhinavxt.debforge.data.playback.Playlist
 import com.abhinavxt.debforge.data.playback.YouTubeAddResult
+import com.abhinavxt.debforge.data.playback.YouTubeMeta
+import com.abhinavxt.debforge.player.EnqueueOutcome
 import com.abhinavxt.debforge.data.playback.YouTubeMode
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -89,8 +91,12 @@ sealed interface YouTubeEvent {
     data object FollowFailed : YouTubeEvent
     /** Playing without downloading failed before it started. */
     data class StreamFailed(val kind: YouTubeErrorKind) : YouTubeEvent
+    /** A related video went to the end of the play queue. */
+    data object AddedToPlayQueue : YouTubeEvent
+    /** A related video was already in the play queue. */
+    data object AlreadyInPlayQueue : YouTubeEvent
     /** Result of adding a video to playlist [listName]. */
-    data class PlaylistAdd(val result: YouTubeAddResult, val listName: String) : YouTubeEvent
+    data class PlaylistAdd(val result: YouTubeAddResult, val listName: String, val mode: YouTubeMode = YouTubeMode.AUDIO) : YouTubeEvent
 }
 
 /** What to tell the user after the video's own enqueue [video] and the chosen subtitle's [sub] (null: none chosen). */
@@ -259,7 +265,9 @@ class YouTubeViewModel @Inject constructor(
     /** An open channel list: [back] is the screen it was opened from (null: the empty screen). */
     private class ChannelNav(val name: String, val url: String, val back: Back?, val origin: String? = null)
     /** A screen to return to: its state, the field and saved link that went with it, and the results a preview came from. */
-    private class Back(val ui: YouTubeUi, val input: String, val link: String?, val fromResults: YouTubeUi.Results?, val channel: ChannelNav?, val next: Page?, val list: LazyListState)
+    private class Back(val ui: YouTubeUi, val input: String, val link: String?, val fromResults: YouTubeUi.Results?, val channel: ChannelNav?, val next: Page?, val list: LazyListState,
+        /** The "Up next" previews that were behind a preview when a channel was opened from it. */
+        val previews: List<Pair<YouTubeUi.Preview, String>> = emptyList())
     private var channel: ChannelNav? = null
 
     private val _returnTo = Channel<String>(Channel.BUFFERED)
@@ -378,7 +386,7 @@ class YouTubeViewModel @Inject constructor(
             cur is YouTubeUi.Results ->
                 Back(cur.copy(loadingMore = false), _input.value, saved.get<String>(LINK_KEY), null, channel, nextPage, resultsList)
             cur is YouTubeUi.Preview || cur is YouTubeUi.Playlist ->
-                Back(cur, _input.value, saved.get<String>(LINK_KEY), fromResults, channel, nextPage, resultsList)
+                Back(cur, _input.value, saved.get<String>(LINK_KEY), fromResults, channel, nextPage, resultsList, previewBack.toList())
             else -> null // empty, loading or an error
         }
         fromResults = null
@@ -456,6 +464,12 @@ class YouTubeViewModel @Inject constructor(
         else submit(_input.value)
     }
 
+    /** X and swipe-down: all the way back to where the first preview was opened from, dropping any "Up next" steps. Back (reset) is one step. */
+    fun closePreview() {
+        previewBack.clear()
+        reset()
+    }
+
     fun reset() {
         job?.cancel()
         moreJob?.cancel()
@@ -482,6 +496,8 @@ class YouTubeViewModel @Inject constructor(
             if (back != null) {
                 resultsList = back.list
                 fromResults = back.fromResults
+                previewBack.clear()
+                previewBack.addAll(back.previews)
                 _input.value = back.input
                 if (back.link != null) saved[LINK_KEY] = back.link else saved.remove<String>(LINK_KEY)
                 _ui.value = back.ui
@@ -531,13 +547,29 @@ class YouTubeViewModel @Inject constructor(
         return _playRequests.trySend(req).isSuccess
     }
 
-    /** A results row's Play icon: resolves, then plays at the default quality; "ask every time" opens the preview. */
+    /** The playlists, for the add-to-playlist dialog. */
     suspend fun playlists(): List<Playlist> = audioLists.snapshot().playlists
+
+    /** An "Up next" row's Add to queue: appends to the play queue and says whether it was new. */
+    fun addToQueue(result: YouTubeSearchResult) {
+        val id = YouTubeLinks.videoId(result.url) ?: return
+        viewModelScope.launch {
+            val meta = YouTubeMeta(result.title, result.channel?.takeIf { it.isNotBlank() }, result.durationSec.toInt().takeIf { it > 0 })
+            val outcome = try {
+                audioPlayer.enqueueYouTube(id, meta)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                _events.send(YouTubeEvent.StreamFailed(YouTubeErrorKind.GENERIC)); return@launch
+            }
+            _events.send(if (outcome == EnqueueOutcome.ALREADY_QUEUED) YouTubeEvent.AlreadyInPlayQueue else YouTubeEvent.AddedToPlayQueue)
+        }
+    }
 
     fun addToPlaylist(req: AddToPlaylistRequest, listId: String, mode: YouTubeMode) {
         viewModelScope.launch {
             val name = audioLists.snapshot().playlists.firstOrNull { it.id == listId }?.name.orEmpty()
-            _events.send(YouTubeEvent.PlaylistAdd(audioLists.addYouTube(listId, req.videoId, mode, req.meta), name))
+            _events.send(YouTubeEvent.PlaylistAdd(audioLists.addYouTube(listId, req.videoId, mode, req.meta), name, mode))
         }
     }
 
@@ -549,6 +581,7 @@ class YouTubeViewModel @Inject constructor(
         }
     }
 
+    /** A results row's Play icon: resolves, then plays at the default quality; "ask every time" opens the preview. */
     fun playResult(result: YouTubeSearchResult) {
         if (streamJob?.isActive == true) return
         _streamingUrl.value = result.url

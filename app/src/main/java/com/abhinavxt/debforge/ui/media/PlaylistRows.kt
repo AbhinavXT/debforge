@@ -30,7 +30,7 @@ sealed interface PlaylistRow {
         val download: DownloadEntity?,
         val videoDownload: DownloadEntity?,
     ) : PlaylistRow {
-        override val key get() = "y:${entry.videoId}"
+        override val key get() = "y:${PlaylistEntry.format(entry)}"
         val videoId get() = entry.videoId
         val isDownloaded get() = download != null
     }
@@ -53,7 +53,7 @@ internal class YouTubeLocals(val any: Map<String, DownloadEntity>, val video: Ma
 
 /**
  * The rows of a playlist: downloads from [downloadsById] (ids not in it are hidden, as before) and YouTube items
- * in entry order. A non-blank [query] keeps YouTube items whose title, channel or id contains it. Duplicate rows are dropped.
+ * in entry order. A non-blank [query] keeps YouTube items whose title, channel or id contains it. Rows are keyed by token, so a video held in both modes shows both; an identical row is dropped.
  */
 internal fun playlistRows(
     entries: List<PlaylistEntry>,
@@ -107,16 +107,40 @@ internal fun mixedQueueFor(
     return out to start.coerceAtMost((out.size - 1).coerceAtLeast(0))
 }
 
-/** A YouTube download row reduced to what "Download all" needs. */
-internal data class YouTubeDownloadState(val videoId: String, val state: DownloadState)
+/** A YouTube download row reduced to what "Download all" needs: [audioOnly] is true for an audio-only download. */
+internal data class YouTubeDownloadState(val id: String, val videoId: String, val state: DownloadState, val audioOnly: Boolean)
+
+/** The YouTube downloads among [rows], reduced for "Download all". Subtitle and other rows are ignored. */
+internal fun youTubeDownloadStates(rows: List<DownloadEntity>): List<YouTubeDownloadState> =
+    rows.mapNotNull { e ->
+        YouTubeLinks.parseSourceRef(e.sourceRef)?.let { YouTubeDownloadState(e.id, it.videoId, e.state, it.videoItag == null) }
+    }
+
+private fun PlaylistEntry.YouTube.matches(d: YouTubeDownloadState) =
+    d.videoId == videoId && d.audioOnly == (mode == YouTubeMode.AUDIO)
 
 /**
- * The YouTube entries "Download all" would queue: those with no completed or active download of the video (a failed
- * one counts as none, so it is retried), each once, in playlist order. They keep their own mode.
+ * The YouTube entries "Download all" would act on, in playlist order, each token once: those with no completed or
+ * active download of their own mode (audio entry: an audio download, video entry: one with video). A failed one counts
+ * as none: it is retried, see [failedDownloadId].
  */
-internal fun youTubeToDownload(entries: List<PlaylistEntry>, downloads: List<YouTubeDownloadState>): List<PlaylistEntry.YouTube> {
-    val have = downloads.filter { it.state != DownloadState.FAILED }.mapTo(HashSet()) { it.videoId }
-    return entries.filterIsInstance<PlaylistEntry.YouTube>().filter { it.videoId !in have }.distinctBy { it.videoId }
+internal fun youTubeToDownload(entries: List<PlaylistEntry>, downloads: List<YouTubeDownloadState>): List<PlaylistEntry.YouTube> =
+    entries.filterIsInstance<PlaylistEntry.YouTube>().distinctBy { PlaylistEntry.format(it) }.filter { e ->
+        downloads.none { e.matches(it) && it.state != DownloadState.FAILED }
+    }
+
+/** The id of [entry]'s failed download, if any: re-queued rather than added again. */
+internal fun failedDownloadId(entry: PlaylistEntry.YouTube, downloads: List<YouTubeDownloadState>): String? =
+    downloads.firstOrNull { entry.matches(it) && it.state == DownloadState.FAILED }?.id
+
+/** What a "Download all" run says afterwards. */
+internal enum class BulkOutcome { QUEUED, ALREADY, FAILED }
+
+/** [queued] items started (new or retried), [already] were already queued or downloaded, the rest failed. */
+internal fun bulkOutcome(queued: Int, already: Int): BulkOutcome = when {
+    queued > 0 -> BulkOutcome.QUEUED
+    already > 0 -> BulkOutcome.ALREADY
+    else -> BulkOutcome.FAILED
 }
 
 /** The modes a queued batch maps to: audio items download audio only, video items the best video. */

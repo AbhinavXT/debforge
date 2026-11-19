@@ -854,6 +854,10 @@
     <string name="yt_add_to_queue_cd">कतार में जोड़ें</string>
     <string name="yt_pl_added">%1$s में जोड़ा गया</string>
     <string name="yt_pl_already">पहले से %1$s में है</string>
+    <string name="yt_pl_changed_video">%1$s में वीडियो में बदला गया</string>
+    <string name="yt_pl_changed_audio">%1$s में ऑडियो में बदला गया</string>
+    <string name="yt_queue_added">कतार में जोड़ा गया</string>
+    <string name="yt_queue_already">पहले से कतार में है</string>
     <string name="yt_pl_limit">प्लेलिस्ट भर गई हैं</string>
     <string name="yt_pl_failed">यह वीडियो जोड़ा नहीं जा सका</string>
     <string name="yt_pl_add_as">इस रूप में जोड़ें</string>
@@ -1118,6 +1122,11 @@
     <string name="media_play_as_audio">ऑडियो के रूप में चलाएं</string>
     <string name="media_stream_failed">वीडियो नहीं खुल सका</string>
     <string name="media_download_all_failed">डाउनलोड शुरू नहीं हो सके</string>
+    <string name="media_download_all_already">पहले से डाउनलोड या कतार में है</string>
+    <plurals name="media_download_all_body_n">
+        <item quantity="one">इस प्लेलिस्ट से %1$d वीडियो डाउनलोड होगा: ऑडियो आइटम ऑडियो के रूप में, वीडियो आइटम आपकी डिफ़ॉल्ट गुणवत्ता में।</item>
+        <item quantity="other">इस प्लेलिस्ट से %1$d वीडियो डाउनलोड होंगे: ऑडियो आइटम ऑडियो के रूप में, वीडियो आइटम आपकी डिफ़ॉल्ट गुणवत्ता में।</item>
+    </plurals>
     <plurals name="media_download_all_n">
         <item quantity="one">%1$d वीडियो डाउनलोड करें?</item>
         <item quantity="other">%1$d वीडियो डाउनलोड करें?</item>

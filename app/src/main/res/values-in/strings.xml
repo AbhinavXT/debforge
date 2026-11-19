@@ -814,6 +814,10 @@
     <string name="yt_add_to_queue_cd">Tambahkan ke antrean</string>
     <string name="yt_pl_added">Ditambahkan ke %1$s</string>
     <string name="yt_pl_already">Sudah ada di %1$s</string>
+    <string name="yt_pl_changed_video">Diubah ke video di %1$s</string>
+    <string name="yt_pl_changed_audio">Diubah ke audio di %1$s</string>
+    <string name="yt_queue_added">Ditambahkan ke antrean</string>
+    <string name="yt_queue_already">Sudah ada di antrean</string>
     <string name="yt_pl_limit">Playlist penuh</string>
     <string name="yt_pl_failed">Tidak dapat menambahkan video ini</string>
     <string name="yt_pl_add_as">Tambahkan sebagai</string>
@@ -1065,6 +1069,10 @@
     <string name="media_play_as_audio">Putar sebagai audio</string>
     <string name="media_stream_failed">Tidak dapat membuka video</string>
     <string name="media_download_all_failed">Tidak dapat memulai unduhan</string>
+    <string name="media_download_all_already">Sudah diunduh atau diantrekan</string>
+    <plurals name="media_download_all_body_n">
+        <item quantity="other">Mengunduh %1$d video dari playlist ini: item audio sebagai audio, item video dengan kualitas default Anda.</item>
+    </plurals>
     <plurals name="media_download_all_n">
         <item quantity="other">Unduh %1$d video?</item>
     </plurals>

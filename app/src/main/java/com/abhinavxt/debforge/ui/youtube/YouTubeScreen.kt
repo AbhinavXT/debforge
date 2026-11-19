@@ -197,6 +197,8 @@ fun YouTubeScreen(
     val msgNoSubtitle = stringResource(R.string.yt_queued_no_subtitle)
     val msgSubtitleAdded = stringResource(R.string.yt_subtitle_added)
     val msgFollowFailed = stringResource(R.string.yt_follow_failed)
+    val msgQueueAdded = stringResource(R.string.yt_queue_added)
+    val msgQueueAlready = stringResource(R.string.yt_queue_already)
     val viewDownloads = stringResource(R.string.yt_view_downloads)
 
     LaunchedEffect(Unit) {
@@ -217,15 +219,17 @@ fun YouTubeScreen(
                     YouTubeEvent.QUEUED_NO_SUBTITLE -> msgNoSubtitle
                     YouTubeEvent.SUBTITLE_ADDED -> msgSubtitleAdded
                     YouTubeEvent.FollowFailed -> msgFollowFailed
+                    YouTubeEvent.AddedToPlayQueue -> msgQueueAdded
+                    YouTubeEvent.AlreadyInPlayQueue -> msgQueueAlready
                     is YouTubeEvent.StreamFailed -> res.getString(errorText(e.kind))
-                    is YouTubeEvent.PlaylistAdd -> res.getString(playlistAddMessage(e.result), e.listName)
+                    is YouTubeEvent.PlaylistAdd -> res.getString(playlistAddMessage(e.result, e.mode), e.listName)
                     is YouTubeEvent.BatchDone -> listOfNotNull(
                         e.added.takeIf { it > 0 }?.let { res.getQuantityString(R.plurals.yt_batch_added, it, it) },
                         e.already.takeIf { it > 0 }?.let { res.getQuantityString(R.plurals.yt_batch_already, it, it) },
                         e.failed.takeIf { it > 0 }?.let { res.getQuantityString(R.plurals.yt_batch_failed, it, it) },
                     ).joinToString(" · ")
                 },
-                actionLabel = if (e == YouTubeEvent.QUEUE_FAILED || e == YouTubeEvent.FollowFailed || e is YouTubeEvent.StreamFailed || e is YouTubeEvent.PlaylistAdd) null else viewDownloads,
+                actionLabel = if (e == YouTubeEvent.QUEUE_FAILED || e == YouTubeEvent.FollowFailed || e is YouTubeEvent.StreamFailed || e is YouTubeEvent.PlaylistAdd || e == YouTubeEvent.AddedToPlayQueue || e == YouTubeEvent.AlreadyInPlayQueue) null else viewDownloads,
                 duration = if (queuedOk) SnackbarDuration.Long else SnackbarDuration.Short,
             )
             if (r == SnackbarResult.ActionPerformed) onOpenDownloads()
@@ -265,6 +269,8 @@ fun YouTubeScreen(
                     },
                     onPick = viewModel::pick,
                     onOpenRelated = viewModel::openRelated,
+                    onAddToQueue = viewModel::addToQueue,
+                    onClosePreview = viewModel::closePreview,
                     onReset = viewModel::reset,
                     onRetry = viewModel::retry,
                     onMode = viewModel::selectMode,
@@ -347,6 +353,8 @@ internal fun YouTubeContent(
     canonicalByPage: Map<String, String> = emptyMap(),
     onToggleFollow: (String) -> Unit = {},
     onOpenRelated: (YouTubeSearchResult) -> Unit = {},
+    onAddToQueue: (YouTubeSearchResult) -> Unit = {},
+    onClosePreview: () -> Unit = {},
 ) {
     val cfg = androidx.compose.ui.platform.LocalConfiguration.current
     val landscapeWide = cfg.screenWidthDp > cfg.screenHeightDp && cfg.screenWidthDp >= 600
@@ -365,7 +373,7 @@ internal fun YouTubeContent(
             YouTubeUi.Empty -> EmptyState(input, clipLink, onInput, onSubmit, onPaste, trending, recent, onRemoveRecent, onClearRecent, onPick, onChannel, onLoadTrending, onPlayResult, streamingUrl, newItems, onNew, onMarkAllSeen)
             YouTubeUi.Resolving -> Skeleton()
             is YouTubeUi.Results -> ResultsState(state, input, onInput, onSubmit, onPaste, onPick, onChannel, onLoadMore, resultsList, onPlayResult, streamingUrl, followedUrls, followBusy, canonicalByPage, onToggleFollow)
-            is YouTubeUi.Preview -> PreviewState(state, onReset, onMode, onSelect, onSubtitle, onDownload, onPlay, onChannel, onOpenRelated)
+            is YouTubeUi.Preview -> PreviewState(state, onReset, onMode, onSelect, onSubtitle, onDownload, onPlay, onChannel, onOpenRelated, onAddToQueue, onClosePreview)
             is YouTubeUi.Playlist -> PlaylistState(state, onReset, onToggle, onSelectAll, onQuality, onDownloadPlaylist, onCancelBatch, onChannel)
             is YouTubeUi.Error -> MessageState(
                 icon = Icons.Rounded.ErrorOutline,
@@ -642,7 +650,7 @@ private fun ResultRow(
 
 /**
  * A related video: the body opens its preview. [onAddToQueue] is a separate trailing button, shown only when given
- * (not wired yet: the player queue API comes later).
+ * (it queues the video for audio playback).
  */
 @Composable
 private fun RelatedRow(
@@ -991,6 +999,8 @@ private fun PreviewState(
     onPlay: () -> Unit,
     onChannel: (String, String) -> Unit,
     onOpenRelated: (YouTubeSearchResult) -> Unit = {},
+    onAddToQueue: (YouTubeSearchResult) -> Unit = {},
+    onClosePreview: () -> Unit = {},
 ) {
     val audio = p.selected.isAudio
     val rows = p.choices.filter { it.isAudio == audio }
@@ -1030,7 +1040,7 @@ private fun PreviewState(
                     modifier = if (uploaderUrl != null) Modifier.channelLink(stringResource(R.string.yt_open_channel, p.video.uploader)) { onChannel(p.video.uploader, uploaderUrl) } else Modifier,
                 )
             }
-            IconButton(onClick = onReset) { Icon(Icons.Rounded.Close, contentDescription = stringResource(R.string.yt_another_link)) }
+            IconButton(onClick = onClosePreview) { Icon(Icons.Rounded.Close, contentDescription = stringResource(R.string.yt_another_link)) }
         }
     }
     val choices: @Composable () -> Unit = {
@@ -1049,7 +1059,7 @@ private fun PreviewState(
         if (p.video.related.isNotEmpty()) {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(stringResource(R.string.yt_up_next), style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(bottom = 4.dp))
-                p.video.related.forEach { r -> RelatedRow(r, onClick = { onOpenRelated(r) }) }
+                p.video.related.forEach { r -> RelatedRow(r, onClick = { onOpenRelated(r) }, onAddToQueue = onAddToQueue) }
             }
         }
     }
@@ -1084,7 +1094,7 @@ private fun PreviewState(
         }
     }
     // Drag down to close, like Back / X; scrolled lists only start it once they are at the top.
-    val dismiss = rememberSwipeDown(onReset)
+    val dismiss = rememberSwipeDown(onClosePreview)
     BoxWithConstraints(Modifier.fillMaxSize().swipeDownToDismiss(dismiss)) {
         if (maxWidth > maxHeight && maxWidth >= 600.dp) {
             // Wide: picture and title on the left, choices and the action bar on the right.

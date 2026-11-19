@@ -894,6 +894,10 @@
     <string name="yt_add_to_queue_cd">Añadir a la cola</string>
     <string name="yt_pl_added">Añadido a %1$s</string>
     <string name="yt_pl_already">Ya está en %1$s</string>
+    <string name="yt_pl_changed_video">Cambiado a vídeo en %1$s</string>
+    <string name="yt_pl_changed_audio">Cambiado a audio en %1$s</string>
+    <string name="yt_queue_added">Añadido a la cola</string>
+    <string name="yt_queue_already">Ya está en la cola</string>
     <string name="yt_pl_limit">Las listas están llenas</string>
     <string name="yt_pl_failed">No se pudo añadir este vídeo</string>
     <string name="yt_pl_add_as">Añadir como</string>
@@ -1171,6 +1175,12 @@
     <string name="media_play_as_audio">Reproducir como audio</string>
     <string name="media_stream_failed">No se pudo abrir el vídeo</string>
     <string name="media_download_all_failed">No se pudieron iniciar las descargas</string>
+    <string name="media_download_all_already">Ya descargado o en cola</string>
+    <plurals name="media_download_all_body_n">
+        <item quantity="one">Descarga %1$d vídeo de esta lista: los elementos de audio como audio y los de vídeo con tu calidad predeterminada.</item>
+        <item quantity="many">Descarga %1$d de vídeos de esta lista: los elementos de audio como audio y los de vídeo con tu calidad predeterminada.</item>
+        <item quantity="other">Descarga %1$d vídeos de esta lista: los elementos de audio como audio y los de vídeo con tu calidad predeterminada.</item>
+    </plurals>
     <plurals name="media_download_all_n">
         <item quantity="one">¿Descargar %1$d vídeo?</item>
         <item quantity="many">¿Descargar %1$d de vídeos?</item>

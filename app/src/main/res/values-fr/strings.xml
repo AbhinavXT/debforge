@@ -894,6 +894,10 @@
     <string name="yt_add_to_queue_cd">Ajouter à la file d’attente</string>
     <string name="yt_pl_added">Ajouté à %1$s</string>
     <string name="yt_pl_already">Déjà dans %1$s</string>
+    <string name="yt_pl_changed_video">Passé en vidéo dans %1$s</string>
+    <string name="yt_pl_changed_audio">Passé en audio dans %1$s</string>
+    <string name="yt_queue_added">Ajouté à la file</string>
+    <string name="yt_queue_already">Déjà dans la file</string>
     <string name="yt_pl_limit">Les playlists sont pleines</string>
     <string name="yt_pl_failed">Impossible d\'ajouter cette vidéo</string>
     <string name="yt_pl_add_as">Ajouter en tant que</string>
@@ -1171,6 +1175,12 @@
     <string name="media_play_as_audio">Lire en audio</string>
     <string name="media_stream_failed">Impossible d\'ouvrir la vidéo</string>
     <string name="media_download_all_failed">Impossible de lancer les téléchargements</string>
+    <string name="media_download_all_already">Déjà téléchargé ou en file d\'attente</string>
+    <plurals name="media_download_all_body_n">
+        <item quantity="one">Télécharge %1$d vidéo de cette playlist : les éléments audio en audio, les éléments vidéo dans votre qualité par défaut.</item>
+        <item quantity="many">Télécharge %1$d de vidéos de cette playlist : les éléments audio en audio, les éléments vidéo dans votre qualité par défaut.</item>
+        <item quantity="other">Télécharge %1$d vidéos de cette playlist : les éléments audio en audio, les éléments vidéo dans votre qualité par défaut.</item>
+    </plurals>
     <plurals name="media_download_all_n">
         <item quantity="one">Télécharger %1$d vidéo ?</item>
         <item quantity="many">Télécharger %1$d de vidéos ?</item>
