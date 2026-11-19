@@ -922,6 +922,7 @@
     <string name="media_close_selection">தேர்வை மூடு</string>
     <string name="media_delete">நீக்கு</string>
     <string name="media_delete_selected_title">இந்தச் சாதனத்திலிருந்து நீக்கவா?</string>
+    <string name="media_delete_not_ours">இந்தக் கோப்பை DebForge பதிவிறக்கவில்லை.</string>
     <plurals name="media_delete_selected_body">
         <item quantity="one">%1$d கோப்பு இந்தச் சாதனத்தின் சேமிப்பகத்திலிருந்து நீக்கப்படும். இதைத் திரும்பப் பெற முடியாது.</item>
         <item quantity="other">%1$d கோப்புகள் இந்தச் சாதனத்தின் சேமிப்பகத்திலிருந்து நீக்கப்படும். இதைத் திரும்பப் பெற முடியாது.</item>

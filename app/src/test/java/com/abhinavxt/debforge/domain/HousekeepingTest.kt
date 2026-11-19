@@ -36,4 +36,11 @@ class HousekeepingTest {
         val recent = Housekeeping.Finished("recent", "/c", finishedAt = now - 6 * DAY)
         assertEquals(listOf("old", "exact"), Housekeeping.expired(listOf(old, exact, recent), now, days = 7).map { it.id })
     }
+
+    @Test fun importedFilesAreNeverExpired() {
+        val now = 100 * DAY
+        val own = Housekeeping.Finished("own", "/a", finishedAt = 0, provider = ProviderId.DIRECT)
+        val local = Housekeeping.Finished("local", "/b", finishedAt = 0, provider = ProviderId.LOCAL)
+        assertEquals(listOf("own"), Housekeeping.expired(listOf(own, local), now, days = 7).map { it.id })
+    }
 }

@@ -4,6 +4,7 @@ import com.abhinavxt.debforge.R
 
 import com.abhinavxt.debforge.domain.DataResult
 import com.abhinavxt.debforge.domain.ProviderId
+import com.abhinavxt.debforge.data.provider.local.LocalFilesProvider
 import com.squareup.moshi.JsonDataException
 import com.squareup.moshi.JsonEncodingException
 import kotlinx.coroutines.CancellationException
@@ -23,7 +24,8 @@ import javax.inject.Singleton
 @Singleton
 class ProviderRegistry @Inject constructor(
     providers: Set<@JvmSuppressWildcards DebridProvider>,
-    direct: com.abhinavxt.debforge.data.provider.direct.DirectLinks
+    direct: com.abhinavxt.debforge.data.provider.direct.DirectLinks,
+    local: LocalFilesProvider
 ) {
     private val byId: Map<ProviderId, DebridProvider> = providers.associateBy { it.info.id }
 
@@ -31,7 +33,7 @@ class ProviderRegistry @Inject constructor(
     val all: List<DebridProvider> = ProviderId.entries.mapNotNull { byId[it] }
 
     /** Every service plus direct links, for downloads that name their owner. */
-    private val withDirect: Map<ProviderId, DebridProvider> = byId + (ProviderId.DIRECT to direct)
+    private val withDirect: Map<ProviderId, DebridProvider> = byId + (ProviderId.DIRECT to direct) + (ProviderId.LOCAL to local)
 
     operator fun get(id: ProviderId): DebridProvider =
         withDirect[id] ?: error("No DebridProvider bound for $id — add it to ProviderModule")

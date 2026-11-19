@@ -34,7 +34,7 @@ class Housekeeper @Inject constructor(
         val days = settings.autoDeleteDaysFlow.first()
         if (days <= 0) return 0
         val finished = downloadDao.completed().map {
-            Housekeeping.Finished(it.id, it.finalFilePath, finishedAt = it.updatedAt)
+            Housekeeping.Finished(it.id, it.finalFilePath, finishedAt = it.updatedAt, provider = it.provider)
         }
         var deleted = 0
         withContext(Dispatchers.IO) {

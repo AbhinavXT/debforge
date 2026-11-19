@@ -922,6 +922,7 @@
     <string name="media_close_selection">Seçimi kapat</string>
     <string name="media_delete">Sil</string>
     <string name="media_delete_selected_title">Bu cihazdan silinsin mi?</string>
+    <string name="media_delete_not_ours">Bu dosya DebForge tarafından indirilmedi.</string>
     <plurals name="media_delete_selected_body">
         <item quantity="one">%1$d dosya bu cihazın depolama alanından silinecek. Bu işlem geri alınamaz.</item>
         <item quantity="other">%1$d dosya bu cihazın depolama alanından silinecek. Bu işlem geri alınamaz.</item>

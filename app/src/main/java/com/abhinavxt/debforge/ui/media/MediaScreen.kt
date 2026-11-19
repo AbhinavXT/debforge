@@ -458,10 +458,16 @@ internal fun MediaContent(
             icon = { Icon(Icons.Rounded.DeleteOutline, null, tint = cs.error) },
             title = { Text(stringResource(R.string.media_delete_selected_title)) },
             text = {
-                Text(
-                    if (list.size == 1) stringResource(R.string.media_delete_one_body, list[0].displayTitle(), list[0].formatLabel())
-                    else pluralStringResource(R.plurals.media_delete_selected_body, list.size, list.size)
-                )
+                Column {
+                    Text(
+                        if (list.size == 1) stringResource(R.string.media_delete_one_body, list[0].displayTitle(), list[0].formatLabel())
+                        else pluralStringResource(R.plurals.media_delete_selected_body, list.size, list.size)
+                    )
+                    if (list.any { it.provider == com.abhinavxt.debforge.domain.ProviderId.LOCAL }) {
+                        Spacer(Modifier.height(8.dp))
+                        Text(stringResource(R.string.media_delete_not_ours))
+                    }
+                }
             },
             confirmButton = {
                 TextButton(onClick = { confirm = null; onDelete(list.map { it.id }) }) {

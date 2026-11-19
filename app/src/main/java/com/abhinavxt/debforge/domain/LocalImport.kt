@@ -1,5 +1,6 @@
 package com.abhinavxt.debforge.domain
 
+import com.abhinavxt.debforge.data.local.DownloadEntity
 import java.security.MessageDigest
 import java.util.Locale
 
@@ -55,7 +56,7 @@ private fun extensionOf(name: String): String =
 /** True when [path] is [root] or lies under it, matched on a path-segment boundary. */
 fun isUnderRoot(path: String, root: String): Boolean {
     if (path == root) return true
-    val base = if (root.endsWith("/")) root else "$root/"
+    val base = if (root.endsWith("/") || root.endsWith("#")) root else "$root/"
     return path.startsWith(base)
 }
 
@@ -96,3 +97,22 @@ fun diffScan(
     vanished.filter { it.id !in movedRows }.forEach { removes += it.id }
     return ScanDiff(fresh.filter { it.path !in movedFiles }, removes, moves)
 }
+
+/** The finished-download row for an imported file; [path] is also the row's source reference. */
+fun ScannedFile.toLocalEntity(): DownloadEntity =
+    DownloadEntity(
+        id = localId(path),
+        provider = ProviderId.LOCAL,
+        filename = name,
+        sourceRef = path,
+        downloadUrl = "",
+        host = "",
+        filesize = size,
+        chunksAllowed = 1,
+        state = DownloadState.COMPLETED,
+        bytesDownloaded = size,
+        finalFilePath = path,
+        title = "",
+        createdAt = lastModified,
+        updatedAt = lastModified,
+    )

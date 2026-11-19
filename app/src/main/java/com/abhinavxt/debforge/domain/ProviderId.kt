@@ -21,7 +21,14 @@ enum class ProviderId {
      * Google Drive, plain file URLs). Never signed in, never the active
      * service; only a "Send to" choice and the owner of those downloads.
      */
-    DIRECT;
+    DIRECT,
+
+    /**
+     * Not a service either: audio and video found in the download folder that
+     * DebForge did not download. Linked in place, never signed in, never
+     * selectable; the owner of those rows only.
+     */
+    LOCAL;
 
     companion object {
         fun fromName(name: String?): ProviderId? = entries.firstOrNull { it.name == name }

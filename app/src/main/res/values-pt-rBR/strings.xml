@@ -967,6 +967,7 @@
     <string name="media_close_selection">Fechar seleção</string>
     <string name="media_delete">Excluir</string>
     <string name="media_delete_selected_title">Excluir deste dispositivo?</string>
+    <string name="media_delete_not_ours">Este arquivo não foi baixado pelo DebForge.</string>
     <plurals name="media_delete_selected_body">
         <item quantity="one">%1$d arquivo será excluído do armazenamento deste dispositivo. Não é possível desfazer.</item>
         <item quantity="many">%1$d arquivos serão excluídos do armazenamento deste dispositivo. Não é possível desfazer.</item>

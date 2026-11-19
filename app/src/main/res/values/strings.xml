@@ -924,6 +924,7 @@
     <string name="media_close_selection">Close selection</string>
     <string name="media_delete">Delete</string>
     <string name="media_delete_selected_title">Delete from this device?</string>
+    <string name="media_delete_not_ours">This file wasn\'t downloaded by DebForge.</string>
     <plurals name="media_delete_selected_body">
         <item quantity="one">%1$d file will be deleted from this device\'s storage. This can\'t be undone.</item>
         <item quantity="other">%1$d files will be deleted from this device\'s storage. This can\'t be undone.</item>

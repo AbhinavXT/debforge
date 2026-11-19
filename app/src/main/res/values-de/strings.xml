@@ -922,6 +922,7 @@
     <string name="media_close_selection">Auswahl schließen</string>
     <string name="media_delete">Löschen</string>
     <string name="media_delete_selected_title">Von diesem Gerät löschen?</string>
+    <string name="media_delete_not_ours">Diese Datei wurde nicht von DebForge heruntergeladen.</string>
     <plurals name="media_delete_selected_body">
         <item quantity="one">%1$d Datei wird aus dem Speicher dieses Geräts gelöscht. Das lässt sich nicht rückgängig machen.</item>
         <item quantity="other">%1$d Dateien werden aus dem Speicher dieses Geräts gelöscht. Das lässt sich nicht rückgängig machen.</item>

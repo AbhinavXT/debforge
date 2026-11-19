@@ -1012,6 +1012,7 @@
     <string name="media_close_selection">Закрыть выбор</string>
     <string name="media_delete">Удалить</string>
     <string name="media_delete_selected_title">Удалить с этого устройства?</string>
+    <string name="media_delete_not_ours">Этот файл скачан не в DebForge.</string>
     <plurals name="media_delete_selected_body">
         <item quantity="one">%1$d файл будет удалён из памяти этого устройства. Это нельзя отменить.</item>
         <item quantity="few">%1$d файла будут удалены из памяти этого устройства. Это нельзя отменить.</item>

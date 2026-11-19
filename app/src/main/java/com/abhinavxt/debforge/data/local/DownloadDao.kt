@@ -100,12 +100,36 @@ interface DownloadDao {
     @Query("SELECT * FROM downloads WHERE state = 'COMPLETED'")
     suspend fun completed(): List<DownloadEntity>
 
+    /** Rows for files found in the download folder (see LocalImporter). */
+    @Query("SELECT * FROM downloads WHERE provider = 'LOCAL'")
+    suspend fun localRows(): List<DownloadEntity>
+
+    /** Every path a DebForge download uses, in any state, so the scan never imports one. */
+    @Query("SELECT finalFilePath FROM downloads WHERE provider != 'LOCAL' AND finalFilePath IS NOT NULL")
+    suspend fun claimedFinalPaths(): List<String>
+
+    @Query("SELECT partFilePath FROM downloads WHERE provider != 'LOCAL' AND partFilePath IS NOT NULL")
+    suspend fun claimedPartPaths(): List<String>
+
+    @Query("DELETE FROM downloads WHERE provider = 'LOCAL'")
+    suspend fun deleteLocal()
+
+    /** An imported file that moved or was renamed: same row (and id), new location. */
+    @Query("UPDATE downloads SET finalFilePath = :path, originalLink = :path, filename = :name, updatedAt = :at WHERE rdId = :id AND provider = 'LOCAL'")
+    suspend fun moveLocal(id: String, path: String, name: String, at: Long)
+
+    @Query("DELETE FROM downloads WHERE rdId IN (:ids) AND provider = 'LOCAL'")
+    suspend fun deleteByIds(ids: List<String>)
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertAll(rows: List<DownloadEntity>)
+
     /** Finished downloads, newest first (Media screen). */
     @Query("SELECT * FROM downloads WHERE state = 'COMPLETED' ORDER BY updatedAt DESC")
     fun observeCompleted(): Flow<List<DownloadEntity>>
 
-    /** "Clear finished": forget completed rows (files stay on disk). */
-    @Query("DELETE FROM downloads WHERE state = 'COMPLETED'")
+    /** "Clear finished": forget completed rows (files stay on disk). Imported files stay: a scan would only bring them back. */
+    @Query("DELETE FROM downloads WHERE state = 'COMPLETED' AND provider != 'LOCAL'")
     suspend fun deleteCompleted()
 
     /** "Pause all": queued rows stop waiting. The running one is interrupted by the runner. */
@@ -136,13 +160,13 @@ interface DownloadDao {
      */
     @Query(
         "SELECT COALESCE(SUM(MAX(filesize, bytesDownloaded)), 0) FROM downloads " +
-            "WHERE state IN ('COMPLETED', 'DOWNLOADING') OR bytesDownloaded > 0"
+            " WHERE provider != 'LOCAL' AND (state IN ('COMPLETED', 'DOWNLOADING') OR bytesDownloaded > 0)"
     )
     fun observeReservedBytes(): Flow<Long>
 
     @Query(
         "SELECT COALESCE(SUM(MAX(filesize, bytesDownloaded)), 0) FROM downloads " +
-            "WHERE state IN ('COMPLETED', 'DOWNLOADING') OR bytesDownloaded > 0"
+            " WHERE provider != 'LOCAL' AND (state IN ('COMPLETED', 'DOWNLOADING') OR bytesDownloaded > 0)"
     )
     suspend fun reservedBytes(): Long
 

@@ -10,6 +10,10 @@ import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.drop
 import com.abhinavxt.debforge.domain.ThemeMode
 import com.abhinavxt.debforge.download.DownloadController
 import com.abhinavxt.debforge.download.DownloadNotifications
@@ -31,11 +35,23 @@ class MainActivity : ComponentActivity() {
     @Inject lateinit var downloadScheduler: DownloadScheduler
     @Inject lateinit var downloadController: DownloadController
     @Inject lateinit var housekeeper: com.abhinavxt.debforge.download.Housekeeper
+    @Inject lateinit var localImporter: com.abhinavxt.debforge.download.LocalImporter
+    @Inject lateinit var settingsStore: com.abhinavxt.debforge.data.prefs.SettingsStore
     @Inject lateinit var audioPlayer: com.abhinavxt.debforge.player.AudioPlayer
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        // A new download folder (or the import switch) is scanned right away; this also drops
+        // imported rows outside the new folder. The first value is covered by onStart.
+        lifecycleScope.launch {
+            repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
+                kotlinx.coroutines.flow.combine(settingsStore.downloadDirFlow, settingsStore.importLocalFilesFlow) { d, i -> d to i }
+                    .distinctUntilChanged()
+                    .drop(1)
+                    .collectLatest { localImporter.scan() }
+            }
+        }
         // Only on a fresh launch — after rotation the same intent would be
         // re-delivered and re-open the Add dialog.
         if (savedInstanceState == null) {
@@ -124,5 +140,7 @@ class MainActivity : ComponentActivity() {
         lifecycleScope.launch { downloadScheduler.ensureRunning(foreground = true) }
         // "Delete downloads after N days", if the user turned it on.
         lifecycleScope.launch { runCatching { housekeeper.run() } }
+        // Audio and video already in the download folder show up in Media.
+        lifecycleScope.launch { localImporter.scan() }
     }
 }

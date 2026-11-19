@@ -877,6 +877,7 @@
     <string name="media_close_selection">Tutup pilihan</string>
     <string name="media_delete">Hapus</string>
     <string name="media_delete_selected_title">Hapus dari perangkat ini?</string>
+    <string name="media_delete_not_ours">File ini tidak diunduh oleh DebForge.</string>
     <plurals name="media_delete_selected_body">
         <item quantity="other">%1$d file akan dihapus dari penyimpanan perangkat ini. Tindakan ini tidak bisa dibatalkan.</item>
     </plurals>

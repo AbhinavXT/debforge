@@ -108,7 +108,8 @@ class SettingsViewModel @Inject constructor(
     val storageInfo: StateFlow<StorageInfo?> = combine(
         settingsStore.downloadDirFlow,
         downloadDao.observeByState(com.abhinavxt.debforge.domain.DownloadState.COMPLETED)
-    ) { dir, done ->
+    ) { dir, all ->
+        val done = all.filter { it.provider != com.abhinavxt.debforge.domain.ProviderId.LOCAL }
         StorageInfo(
             freeBytes = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
                 com.abhinavxt.debforge.download.StorageSpace.availableBytes(appContext, dir)
@@ -140,7 +141,7 @@ class SettingsViewModel @Inject constructor(
         }
         val done = downloadDao.completed()
         val expiredIds = com.abhinavxt.debforge.domain.Housekeeping.expired(
-            done.map { com.abhinavxt.debforge.domain.Housekeeping.Finished(it.id, it.finalFilePath, it.updatedAt) },
+            done.map { com.abhinavxt.debforge.domain.Housekeeping.Finished(it.id, it.finalFilePath, it.updatedAt, it.provider) },
             now = System.currentTimeMillis(),
             days = days
         ).mapTo(HashSet()) { it.id }

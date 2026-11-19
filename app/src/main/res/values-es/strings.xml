@@ -967,6 +967,7 @@
     <string name="media_close_selection">Cerrar selección</string>
     <string name="media_delete">Eliminar</string>
     <string name="media_delete_selected_title">¿Eliminar de este dispositivo?</string>
+    <string name="media_delete_not_ours">DebForge no descargó este archivo.</string>
     <plurals name="media_delete_selected_body">
         <item quantity="one">%1$d archivo se eliminará del almacenamiento de este dispositivo. No se puede deshacer.</item>
         <item quantity="many">%1$d archivos se eliminarán del almacenamiento de este dispositivo. No se puede deshacer.</item>

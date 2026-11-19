@@ -922,6 +922,7 @@
     <string name="media_close_selection">ఎంపికను మూసివేయి</string>
     <string name="media_delete">తొలగించు</string>
     <string name="media_delete_selected_title">ఈ పరికరం నుండి తొలగించాలా?</string>
+    <string name="media_delete_not_ours">ఈ ఫైల్‌ను DebForge డౌన్‌లోడ్ చేయలేదు.</string>
     <plurals name="media_delete_selected_body">
         <item quantity="one">%1$d ఫైల్ ఈ పరికరం స్టోరేజ్ నుండి తొలగించబడుతుంది. దీన్ని రద్దు చేయలేరు.</item>
         <item quantity="other">%1$d ఫైళ్లు ఈ పరికరం స్టోరేజ్ నుండి తొలగించబడతాయి. దీన్ని రద్దు చేయలేరు.</item>

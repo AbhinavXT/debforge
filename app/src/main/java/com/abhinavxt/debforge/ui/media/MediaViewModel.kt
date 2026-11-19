@@ -84,10 +84,16 @@ class MediaViewModel @Inject constructor(
     private val audioPlayer: AudioPlayer,
     settings: SettingsStore,
     private val audioLists: AudioLists,
+    private val localImporter: com.abhinavxt.debforge.download.LocalImporter,
     playbackPositions: com.abhinavxt.debforge.data.playback.PlaybackPositions
 ) : ViewModel() {
 
     private data class Ui(val query: String, val sort: SortOrder, val kind: FileKind, val selected: Set<String>, val audioList: String? = null)
+
+    init {
+        // Pick up files added to the folder since the last scan (at most every 30 s).
+        viewModelScope.launch { localImporter.scanIfStale() }
+    }
 
     private val ui = MutableStateFlow(Ui("", SortOrder.DATE_DESC, FileKind.Video, emptySet()))
 

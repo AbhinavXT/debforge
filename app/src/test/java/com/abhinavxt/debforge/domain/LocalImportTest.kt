@@ -89,4 +89,24 @@ class LocalImportTest {
         assertNotEquals(localId("/a/b/x.mp3"), localId("/a/b/y.mp3"))
         assertTrue(localId("/p").matches(Regex("local:[0-9a-f]{40}")))
     }
+
+    @Test fun safRootMatchesOnItsHashBoundary() {
+        val root = "saf:content://x/tree/a#"
+        assertEquals(true, isUnderRoot("saf:content://x/tree/a#Shows/ep.mkv", root))
+        assertEquals(true, isUnderRoot("saf:content://x/tree/a#ep.mkv", root))
+        assertEquals(false, isUnderRoot("saf:content://x/tree/b#ep.mkv", root))
+    }
+
+    @Test fun scannedFileBecomesACompletedLocalRow() {
+        val f = ScannedFile("/m/a.mkv", "a.mkv", 123, 456)
+        val e = f.toLocalEntity()
+        assertEquals(localId("/m/a.mkv"), e.id)
+        assertEquals(ProviderId.LOCAL, e.provider)
+        assertEquals(DownloadState.COMPLETED, e.state)
+        assertEquals("/m/a.mkv", e.finalFilePath)
+        assertEquals("/m/a.mkv", e.sourceRef)
+        assertEquals(456L, e.updatedAt)
+        assertEquals(123L, e.filesize)
+        assertEquals("", e.title)
+    }
 }

@@ -75,6 +75,12 @@ class SettingsStore @Inject constructor(
     private val keyAdBlock = booleanPreferencesKey("browser_adblock")
     private val keyAdBlockOffSites = stringPreferencesKey("browser_adblock_off_sites")
 
+    private val keyImportLocal = booleanPreferencesKey("import_local_files")
+
+    /** Show audio and video already in the download folder in Media. */
+    val importLocalFilesFlow: Flow<Boolean> = context.settingsDataStore.data.map { it[keyImportLocal] ?: true }
+    suspend fun setImportLocalFiles(v: Boolean) = context.settingsDataStore.edit { it[keyImportLocal] = v }
+
     /** Blank until the user chooses a folder. */
     val downloadDirFlow: Flow<String> = context.settingsDataStore.data
         .map { it[keyDownloadDir] ?: DEFAULT_DOWNLOAD_DIR }
