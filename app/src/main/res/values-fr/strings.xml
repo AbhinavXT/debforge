@@ -778,6 +778,10 @@
     <string name="browser_queued">Téléchargement de %1$s</string>
     <string name="browser_err_blob">Ce fichier est créé dans la page, DebForge ne peut pas le récupérer.</string>
     <string name="browser_videos_title">Vidéos de cette page</string>
+    <string name="browser_yt_download">Télécharger</string>
+    <string name="browser_yt_title">Télécharger cette vidéo YouTube</string>
+    <string name="browser_yt_audio">Télécharger l\'audio</string>
+    <string name="browser_yt_video">Télécharger la vidéo</string>
     <plurals name="browser_videos_n">
         <item quantity="one">%d vidéo</item>
         <item quantity="many">%d vidéos</item>

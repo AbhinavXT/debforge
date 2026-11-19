@@ -17,6 +17,25 @@ object YouTubeLinks {
     fun watchUrl(itemKey: String, mediaUrl: String? = null): String =
         mediaUrl?.takeIf { videoId(it) != null } ?: "https://www.youtube.com/watch?v=$itemKey"
 
+    private val pageHosts = setOf("youtube.com", "www.youtube.com", "m.youtube.com", "music.youtube.com")
+
+    /**
+     * Whether a browser page at [url] shows one video: a watch page (a `list=` beside the `v=` is still that video),
+     * a short, or a youtu.be link. Channel, playlist-only, search and other sites' pages are not.
+     */
+    fun isVideoPage(url: String): Boolean {
+        val uri = try { java.net.URI(url.trim()) } catch (e: java.net.URISyntaxException) { return false }
+        if (uri.scheme?.lowercase() !in setOf("http", "https")) return false
+        val host = uri.host?.lowercase() ?: return false
+        val path = uri.rawPath.orEmpty()
+        val onPath = when (host) {
+            "youtu.be" -> path.length > 1
+            in pageHosts -> path == "/watch" || path.startsWith("/shorts/")
+            else -> false
+        }
+        return onPath && videoId(url) != null
+    }
+
     fun isPlaylistOnly(text: String): Boolean = videoId(text) == null && playlist.containsMatchIn(text)
 
     private val listParam = Regex("[?&]list=([A-Za-z0-9_-]+)")

@@ -741,6 +741,10 @@
     <string name="browser_queued">Lade %1$s herunter</string>
     <string name="browser_err_blob">Diese Datei entsteht in der Seite selbst, DebForge kann sie nicht abrufen.</string>
     <string name="browser_videos_title">Videos auf dieser Seite</string>
+    <string name="browser_yt_download">Herunterladen</string>
+    <string name="browser_yt_title">Dieses YouTube-Video herunterladen</string>
+    <string name="browser_yt_audio">Audio herunterladen</string>
+    <string name="browser_yt_video">Video herunterladen</string>
     <plurals name="browser_videos_n">
         <item quantity="one">%d Video</item>
         <item quantity="other">%d Videos</item>

@@ -704,6 +704,10 @@
     <string name="browser_queued">Mengunduh %1$s</string>
     <string name="browser_err_blob">File ini dibuat di dalam halaman, DebForge tidak bisa mengambilnya.</string>
     <string name="browser_videos_title">Video di halaman ini</string>
+    <string name="browser_yt_download">Unduh</string>
+    <string name="browser_yt_title">Unduh video YouTube ini</string>
+    <string name="browser_yt_audio">Unduh audio</string>
+    <string name="browser_yt_video">Unduh video</string>
     <plurals name="browser_videos_n">
         <item quantity="other">%d video</item>
     </plurals>

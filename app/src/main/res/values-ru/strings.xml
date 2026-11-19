@@ -815,6 +815,10 @@
     <string name="browser_queued">Загрузка %1$s</string>
     <string name="browser_err_blob">Этот файл создаётся внутри страницы, DebForge не может его получить.</string>
     <string name="browser_videos_title">Видео на этой странице</string>
+    <string name="browser_yt_download">Скачать</string>
+    <string name="browser_yt_title">Скачать это видео с YouTube</string>
+    <string name="browser_yt_audio">Скачать аудио</string>
+    <string name="browser_yt_video">Скачать видео</string>
     <plurals name="browser_videos_n">
         <item quantity="one">%d видео</item>
         <item quantity="few">%d видео</item>

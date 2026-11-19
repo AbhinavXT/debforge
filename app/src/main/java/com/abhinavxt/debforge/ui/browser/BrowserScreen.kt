@@ -38,6 +38,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -115,6 +116,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.abhinavxt.debforge.R
 import com.abhinavxt.debforge.domain.DirectLinkParser
+import com.abhinavxt.debforge.domain.YouTubeLinks
 import com.abhinavxt.debforge.ui.browse.formatSize
 
 /**
@@ -138,6 +140,9 @@ fun BrowserScreen(onMagnet: (String) -> Unit, onOpenDownloads: () -> Unit, onOpe
     var progress by remember { mutableIntStateOf(100) }
     var canGoBack by remember { mutableStateOf(false) }
     var showVideos by remember { mutableStateOf(false) }
+    var showYouTube by remember { mutableStateOf(false) }
+    // YouTube changes the URL without loading a page; `committed` follows it (doUpdateVisitedHistory).
+    val onYouTubeVideo = remember(committed) { YouTubeLinks.isVideoPage(committed) }
     var webView by remember { mutableStateOf<WebView?>(null) }
     var fullscreen by remember { mutableStateOf<Pair<View, WebChromeClient.CustomViewCallback>?>(null) }
     val activity = LocalContext.current as Activity
@@ -170,12 +175,21 @@ fun BrowserScreen(onMagnet: (String) -> Unit, onOpenDownloads: () -> Unit, onOpe
     Scaffold(
         snackbarHost = { SnackbarHost(snackbar) },
         floatingActionButton = {
-            if (videos.isNotEmpty()) {
-                ExtendedFloatingActionButton(
-                    onClick = { showVideos = true },
-                    icon = { Icon(Icons.Filled.Download, contentDescription = null) },
-                    text = { Text(pluralStringResource(R.plurals.browser_videos_n, videos.size, videos.size)) }
-                )
+            Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                if (onYouTubeVideo) {
+                    ExtendedFloatingActionButton(
+                        onClick = { showYouTube = true },
+                        icon = { Icon(Icons.Filled.Download, contentDescription = null) },
+                        text = { Text(stringResource(R.string.browser_yt_download)) }
+                    )
+                }
+                if (videos.isNotEmpty()) {
+                    ExtendedFloatingActionButton(
+                        onClick = { showVideos = true },
+                        icon = { Icon(Icons.Filled.Download, contentDescription = null) },
+                        text = { Text(pluralStringResource(R.plurals.browser_videos_n, videos.size, videos.size)) }
+                    )
+                }
             }
         }
     ) { padding ->
@@ -339,6 +353,32 @@ fun BrowserScreen(onMagnet: (String) -> Unit, onOpenDownloads: () -> Unit, onOpe
             onHere = { viewModel.setAdBlockHere(it); webView?.reload() },
             onUpdate = viewModel::updateFilterLists
         )
+    }
+
+    if (showYouTube && onYouTubeVideo) {
+        ModalBottomSheet(onDismissRequest = { showYouTube = false }) {
+            Text(
+                stringResource(R.string.browser_yt_title),
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+            )
+            ListItem(
+                headlineContent = { Text(stringResource(R.string.browser_yt_audio)) },
+                trailingContent = { Icon(Icons.Filled.Download, contentDescription = null) },
+                modifier = Modifier.clickable {
+                    viewModel.downloadYouTube(committed, audio = true)
+                    showYouTube = false
+                }
+            )
+            ListItem(
+                headlineContent = { Text(stringResource(R.string.browser_yt_video)) },
+                trailingContent = { Icon(Icons.Filled.Download, contentDescription = null) },
+                modifier = Modifier.clickable {
+                    viewModel.downloadYouTube(committed, audio = false)
+                    showYouTube = false
+                }
+            )
+        }
     }
 
     if (showVideos) {

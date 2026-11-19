@@ -16,6 +16,12 @@ import com.abhinavxt.debforge.domain.adblock.PageFlags
 import com.abhinavxt.debforge.domain.adblock.RequestType
 import com.abhinavxt.debforge.download.DownloadController
 import com.abhinavxt.debforge.download.StorageAccess
+import com.abhinavxt.debforge.download.youtube.EnqueueMode
+import com.abhinavxt.debforge.download.youtube.EnqueueResult
+import com.abhinavxt.debforge.download.youtube.YouTubeEnqueuer
+import com.abhinavxt.debforge.ui.youtube.errorKind
+import com.abhinavxt.debforge.ui.youtube.YouTubeErrorKind
+import kotlinx.coroutines.CancellationException
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.channels.Channel
@@ -49,6 +55,7 @@ class BrowserViewModel @Inject constructor(
     private val controller: DownloadController,
     private val settings: SettingsStore,
     private val directLinks: DirectLinks,
+    private val youTube: YouTubeEnqueuer,
     private val filterLists: FilterLists
 ) : ViewModel() {
 
@@ -211,6 +218,36 @@ class BrowserViewModel @Inject constructor(
 
     fun downloadVideo(video: DownloadItem) {
         viewModelScope.launch { queue(listOf(video)) }
+    }
+
+    /** Downloads the YouTube video on the page at [pageUrl] as audio or video, at the default quality. */
+    fun downloadYouTube(pageUrl: String, audio: Boolean) {
+        viewModelScope.launch {
+            if (!StorageAccess.canWrite(context, settings.downloadDirFlow.first())) {
+                _messages.send(context.getString(R.string.add_needs_storage))
+                return@launch
+            }
+            val msg = try {
+                when (youTube.enqueue(pageUrl, if (audio) EnqueueMode.AUDIO else EnqueueMode.VIDEO, foreground = true)) {
+                    EnqueueResult.QUEUED -> R.string.yt_queued
+                    EnqueueResult.ALREADY_QUEUED -> R.string.yt_already_queued
+                    EnqueueResult.FAILED -> R.string.yt_err_queue
+                    EnqueueResult.NO_FORMAT -> R.string.yt_err_unavailable
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                when (errorKind(e)) {
+                    YouTubeErrorKind.NOT_LINK -> R.string.yt_err_not_link
+                    YouTubeErrorKind.PLAYLIST -> R.string.yt_err_playlist
+                    YouTubeErrorKind.SIGN_IN -> R.string.yt_err_sign_in
+                    YouTubeErrorKind.UNAVAILABLE -> R.string.yt_err_unavailable
+                    YouTubeErrorKind.NETWORK -> R.string.yt_err_network
+                    YouTubeErrorKind.GENERIC -> R.string.yt_err_generic
+                }
+            }
+            _messages.send(context.getString(msg))
+        }
     }
 
     private suspend fun queue(files: List<DownloadItem>) {

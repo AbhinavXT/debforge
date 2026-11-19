@@ -704,6 +704,10 @@
     <string name="browser_queued">正在下载 %1$s</string>
     <string name="browser_err_blob">此文件在页面内部生成，DebForge 无法获取。</string>
     <string name="browser_videos_title">此页面上的视频</string>
+    <string name="browser_yt_download">下载</string>
+    <string name="browser_yt_title">下载此 YouTube 视频</string>
+    <string name="browser_yt_audio">下载音频</string>
+    <string name="browser_yt_video">下载视频</string>
     <plurals name="browser_videos_n">
         <item quantity="other">%d 个视频</item>
     </plurals>

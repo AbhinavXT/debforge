@@ -741,6 +741,10 @@
     <string name="browser_queued">%1$s ডাউনলোড হচ্ছে</string>
     <string name="browser_err_blob">এই ফাইলটি পেজের ভেতরে তৈরি হয়, DebForge এটি আনতে পারে না।</string>
     <string name="browser_videos_title">এই পেজের ভিডিও</string>
+    <string name="browser_yt_download">ডাউনলোড</string>
+    <string name="browser_yt_title">এই YouTube ভিডিও ডাউনলোড করুন</string>
+    <string name="browser_yt_audio">অডিও ডাউনলোড করুন</string>
+    <string name="browser_yt_video">ভিডিও ডাউনলোড করুন</string>
     <plurals name="browser_videos_n">
         <item quantity="one">%dটি ভিডিও</item>
         <item quantity="other">%dটি ভিডিও</item>

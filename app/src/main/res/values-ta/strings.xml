@@ -741,6 +741,10 @@
     <string name="browser_queued">%1$s பதிவிறக்கப்படுகிறது</string>
     <string name="browser_err_blob">இந்தக் கோப்பு பக்கத்தின் உள்ளேயே உருவாகிறது, DebForge அதைப் பெற முடியாது.</string>
     <string name="browser_videos_title">இந்தப் பக்கத்திலுள்ள வீடியோக்கள்</string>
+    <string name="browser_yt_download">பதிவிறக்கு</string>
+    <string name="browser_yt_title">இந்த YouTube வீடியோவைப் பதிவிறக்கு</string>
+    <string name="browser_yt_audio">ஆடியோவைப் பதிவிறக்கு</string>
+    <string name="browser_yt_video">வீடியோவைப் பதிவிறக்கு</string>
     <plurals name="browser_videos_n">
         <item quantity="one">%d வீடியோ</item>
         <item quantity="other">%d வீடியோக்கள்</item>

@@ -741,6 +741,10 @@
     <string name="browser_queued">%1$s డౌన్‌లోడ్ అవుతోంది</string>
     <string name="browser_err_blob">ఈ ఫైల్ పేజీ లోపలే తయారవుతుంది, DebForge దాన్ని తీసుకురాలేదు.</string>
     <string name="browser_videos_title">ఈ పేజీలోని వీడియోలు</string>
+    <string name="browser_yt_download">డౌన్‌లోడ్</string>
+    <string name="browser_yt_title">ఈ YouTube వీడియోను డౌన్‌లోడ్ చేయండి</string>
+    <string name="browser_yt_audio">ఆడియోను డౌన్‌లోడ్ చేయండి</string>
+    <string name="browser_yt_video">వీడియోను డౌన్‌లోడ్ చేయండి</string>
     <plurals name="browser_videos_n">
         <item quantity="one">%d వీడియో</item>
         <item quantity="other">%d వీడియోలు</item>

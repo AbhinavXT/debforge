@@ -90,4 +90,29 @@ class YouTubeLinksTest {
         val e = com.abhinavxt.debforge.data.youtube.YouTubeException.NotAVideoLink()
         assertFalse(e is com.abhinavxt.debforge.data.youtube.YouTubeException.Unavailable)
     }
+
+    @Test fun videoPages() {
+        listOf(
+            "https://www.youtube.com/watch?v=$id",
+            "https://m.youtube.com/watch?v=$id&list=PL123",
+            "https://music.youtube.com/watch?v=$id",
+            "https://youtu.be/$id?si=x",
+            "https://www.youtube.com/shorts/$id",
+        ).forEach { assertTrue(it, YouTubeLinks.isVideoPage(it)) }
+    }
+
+    @Test fun notVideoPages() {
+        listOf(
+            "https://www.youtube.com/",
+            "https://www.youtube.com/@somechannel",
+            "https://www.youtube.com/channel/UCabcdefghijklmnopqrstuv",
+            "https://www.youtube.com/playlist?list=PL123",
+            "https://www.youtube.com/watch?list=PL123",
+            "https://www.youtube.com/results?search_query=$id",
+            "https://example.com/watch?v=$id",
+            "https://example.com/?u=youtube.com/watch?v=$id",
+            "https://duckduckgo.com/",
+            "not a url",
+        ).forEach { assertFalse(it, YouTubeLinks.isVideoPage(it)) }
+    }
 }
