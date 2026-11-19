@@ -539,7 +539,8 @@ private fun Modifier.mediaClickable(
 @Composable
 private fun Art(e: DownloadEntity, modifier: Modifier, tag: String) {
     val context = LocalContext.current
-    val file = remember(e.id) { artworkFile(context, e.id).takeIf { it.exists() } }
+    // The metadata pass saves art before it sets the title, so a changed title/artist re-checks the file.
+    val file = remember(e.id, e.title, e.artist, e.updatedAt) { artworkFile(context, e.id).takeIf { it.exists() } }
     if (file != null) AsyncImage(file, null, modifier, contentScale = ContentScale.Crop)
     else GeneratedArt(e.displayTitle(), tag, modifier, showTitle = false)
 }

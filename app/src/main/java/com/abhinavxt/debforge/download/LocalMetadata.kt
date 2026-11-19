@@ -14,7 +14,9 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.async
 import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.coroutines.launch
 import java.io.File
 import java.util.concurrent.atomic.AtomicBoolean
@@ -23,16 +25,19 @@ import javax.inject.Singleton
 
 /** Pure decisions of the metadata pass (unit-tested). */
 object LocalMetadataLogic {
-    /** Files checked per pass; the rest wait for the next scan. */
+    /** Files checked per batch; a run keeps taking batches until none are left. */
     const val MAX_PER_PASS = 60
 
     /** Longest side of a saved picture, in pixels. */
     const val ART_SIZE = 512
 
+    /** How long one file may take before the pass moves on. */
+    const val FILE_TIMEOUT_MS = 15_000L
+
     /**
      * A LOCAL row is inserted with a blank title (and no artist), so a blank title means "not checked yet".
-     * Checking always stores a non-blank title (the file's tag, else the cleaned file name), so a file
-     * without tags, or one that can't be read, is not checked again.
+     * A file that opened but has no tags gets the cleaned file name; one that failed to open stays blank
+     * (retried on a later scan, skipped for the rest of the current run).
      */
     fun needsCheck(title: String?): Boolean = title.isNullOrBlank()
 
@@ -40,10 +45,18 @@ object LocalMetadataLogic {
     fun titleFor(tag: String?, fallback: String): String =
         tag?.trim()?.takeIf { it.isNotEmpty() } ?: fallback.ifBlank { "-" }
 
+    /** Title to store after a read: null (leave blank) when the file could not be opened. */
+    fun titleToStore(opened: Boolean, tag: String?, fallback: String): String? =
+        if (opened) titleFor(tag, fallback) else null
+
     fun artistFor(tag: String?): String? = tag?.trim()?.takeIf { it.isNotEmpty() }
 
-    /** Rows to look at this pass, in order, never more than [MAX_PER_PASS]. */
-    fun <T> batch(unchecked: List<T>): List<T> = unchecked.take(MAX_PER_PASS)
+    /** Rows to look at next, in order, never more than [MAX_PER_PASS], without those in [skipped]. Empty means the run is done. */
+    fun <T> batch(unchecked: List<T>, skipped: Set<T> = emptySet()): List<T> =
+        unchecked.filter { it !in skipped }.take(MAX_PER_PASS)
+
+    /** Rows to ask the database for so skipped ones can't crowd out the rest. */
+    fun fetchLimit(skippedCount: Int): Int = MAX_PER_PASS + skippedCount
 
     /** Sample size so a decoded picture isn't much larger than [ART_SIZE]. */
     fun sampleSize(width: Int, height: Int): Int {
@@ -65,34 +78,62 @@ class LocalMetadata @Inject constructor(
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val running = AtomicBoolean(false)
+    private val pending = AtomicBoolean(false)
 
+    /** Returns at once. A kick during a run makes the run look again before it ends. */
     fun kick() {
+        pending.set(true)
         if (!running.compareAndSet(false, true)) return
         scope.launch {
             try {
-                pass()
+                val skipped = HashSet<String>() // failed to open: not retried until the next run
+                while (pending.getAndSet(false)) runBatches(skipped)
             } catch (ce: CancellationException) {
                 throw ce
             } catch (e: Throwable) {
                 Log.w(TAG, "Metadata pass failed", e)
             } finally {
                 running.set(false)
+                if (pending.get()) kick() // a kick landed between the last check and the reset
             }
         }
     }
 
-    private suspend fun pass() {
-        val todo = LocalMetadataLogic.batch(dao.localUnchecked(LocalMetadataLogic.MAX_PER_PASS))
-        for (row in todo) {
-            kotlin.coroutines.coroutineContext.ensureActive()
-            val read = runCatching { read(row) }.getOrNull()
-            val fallback = releaseLabels(row.filename).title
-            dao.setLocalMeta(row.id, LocalMetadataLogic.titleFor(read?.first, fallback), LocalMetadataLogic.artistFor(read?.second))
+    private suspend fun runBatches(skipped: MutableSet<String>) {
+        while (true) {
+            val unchecked = dao.localUnchecked(LocalMetadataLogic.fetchLimit(skipped.size))
+            val todo = LocalMetadataLogic.batch(unchecked.map { it.id }, skipped)
+            if (todo.isEmpty()) return
+            val byId = unchecked.associateBy { it.id }
+            for (id in todo) {
+                kotlin.coroutines.coroutineContext.ensureActive()
+                val row = byId.getValue(id)
+                val read = readWithTimeout(row)
+                if (read == null) { skipped += id; continue }
+                val fallback = releaseLabels(row.filename).title
+                val title = LocalMetadataLogic.titleToStore(true, read.title, fallback) ?: continue
+                dao.setLocalMeta(id, title, LocalMetadataLogic.artistFor(read.artist))
+                // The row may have been removed while the picture was written: don't leave it behind.
+                if (dao.getById(id) == null) artworkFile(context, id).delete()
+            }
         }
     }
 
-    /** (title tag, artist tag); also saves the artwork. Null when the file can't be read. */
-    private fun read(row: DownloadEntity): Pair<String?, String?>? {
+    /**
+     * Reads on its own coroutine so a file that hangs can't block the pass. The retriever call can't be
+     * interrupted: on timeout the pass moves on and that thread finishes (and releases the retriever) on its own.
+     */
+    private suspend fun readWithTimeout(row: DownloadEntity): Tags? {
+        val job = scope.async { runCatching { read(row) }.getOrNull() }
+        val result = withTimeoutOrNull(LocalMetadataLogic.FILE_TIMEOUT_MS) { job.await() }
+        if (result == null) job.cancel()
+        return result
+    }
+
+    private class Tags(val title: String?, val artist: String?)
+
+    /** Tags of the file, also saving the artwork. Null when the file can't be opened. */
+    private fun read(row: DownloadEntity): Tags? {
         val path = row.finalFilePath ?: row.sourceRef
         val retriever = MediaMetadataRetriever()
         try {
@@ -108,7 +149,9 @@ class LocalMetadata @Inject constructor(
             val hasVideo = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_HAS_VIDEO) == "yes"
             val bitmap = runCatching { picture(retriever, hasVideo) }.getOrNull()
             if (bitmap != null) saveArtwork(row.id, bitmap)
-            return title to artist
+            return Tags(title, artist)
+        } catch (e: Exception) {
+            return null
         } finally {
             runCatching { retriever.release() }
         }
@@ -124,8 +167,8 @@ class LocalMetadata @Inject constructor(
             return BitmapFactory.decodeByteArray(bytes, 0, bytes.size, opts)
         }
         if (!hasVideo) return null
+        // minSdk 30, so the scaled variant (API 27) is always there: no full-size frame is decoded.
         return r.getScaledFrameAtTime(1_000_000L, MediaMetadataRetriever.OPTION_CLOSEST_SYNC, max, max)
-            ?: r.getFrameAtTime(-1, MediaMetadataRetriever.OPTION_CLOSEST_SYNC)
     }
 
     private fun saveArtwork(id: String, bitmap: Bitmap) {
@@ -135,9 +178,14 @@ class LocalMetadata @Inject constructor(
             val max = LocalMetadataLogic.ART_SIZE
             val scale = minOf(1f, max.toFloat() / maxOf(bitmap.width, bitmap.height))
             val out = if (scale < 1f) Bitmap.createScaledBitmap(bitmap, (bitmap.width * scale).toInt().coerceAtLeast(1), (bitmap.height * scale).toInt().coerceAtLeast(1), true) else bitmap
-            tmp.outputStream().use { out.compress(Bitmap.CompressFormat.JPEG, 85, it) }
+            try {
+                tmp.outputStream().use { out.compress(Bitmap.CompressFormat.JPEG, 85, it) }
+            } finally {
+                if (out !== bitmap) out.recycle()
+            }
             if (!tmp.renameTo(file)) tmp.delete()
         } finally {
+            bitmap.recycle()
             tmp.delete()
         }
     }

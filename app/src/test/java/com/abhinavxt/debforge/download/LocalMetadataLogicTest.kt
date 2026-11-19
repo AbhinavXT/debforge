@@ -40,4 +40,24 @@ class LocalMetadataLogicTest {
         assertEquals(2, LocalMetadataLogic.sampleSize(1024, 1024))
         assertEquals(4, LocalMetadataLogic.sampleSize(2400, 2400))
     }
+
+    @Test fun openedWithoutTagsStoresFallbackButFailedToOpenStaysBlank() {
+        assertEquals("Movie", LocalMetadataLogic.titleToStore(true, null, "Movie"))
+        assertEquals("Tag", LocalMetadataLogic.titleToStore(true, "Tag", "Movie"))
+        assertNull(LocalMetadataLogic.titleToStore(false, "Tag", "Movie"))
+    }
+
+    @Test fun batchSkipsFailedAndEndsWhenNothingLeft() {
+        assertEquals(listOf("b"), LocalMetadataLogic.batch(listOf("a", "b"), setOf("a")))
+        assertTrue(LocalMetadataLogic.batch(listOf("a"), setOf("a")).isEmpty())
+        assertTrue(LocalMetadataLogic.batch(emptyList<String>()).isEmpty())
+    }
+
+    @Test fun skippedRowsDoNotCrowdOutTheRest() {
+        assertEquals(LocalMetadataLogic.MAX_PER_PASS + 5, LocalMetadataLogic.fetchLimit(5))
+        val ids = (1..100).map { "r$it" }
+        val skipped = ids.take(5).toSet()
+        val fetched = ids.take(LocalMetadataLogic.fetchLimit(skipped.size))
+        assertEquals(LocalMetadataLogic.MAX_PER_PASS, LocalMetadataLogic.batch(fetched, skipped).size)
+    }
 }

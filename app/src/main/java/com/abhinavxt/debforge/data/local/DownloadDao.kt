@@ -115,8 +115,9 @@ interface DownloadDao {
     @Query("SELECT * FROM downloads WHERE provider = 'LOCAL' AND (title IS NULL OR title = '') LIMIT :limit")
     suspend fun localUnchecked(limit: Int): List<DownloadEntity>
 
-    @Query("UPDATE downloads SET title = :title, artist = :artist WHERE rdId = :id AND provider = 'LOCAL'")
-    suspend fun setLocalMeta(id: String, title: String, artist: String?)
+    /** Only while the title is still blank, so a title set after the snapshot isn't overwritten. Returns rows changed. */
+    @Query("UPDATE downloads SET title = :title, artist = :artist WHERE rdId = :id AND provider = 'LOCAL' AND (title IS NULL OR title = '')")
+    suspend fun setLocalMeta(id: String, title: String, artist: String?): Int
 
     @Query("DELETE FROM downloads WHERE provider = 'LOCAL'")
     suspend fun deleteLocal()

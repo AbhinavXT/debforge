@@ -71,12 +71,12 @@ class LocalImporter @Inject constructor(
 
     private suspend fun scanLocked() {
         if (!settings.importLocalFilesFlow.first()) {
-            dao.deleteLocal()
+            deleteAllLocal()
             return
         }
         val dir = settings.downloadDirFlow.first()
         if (dir.isBlank()) {
-            dao.deleteLocal()
+            deleteAllLocal()
             return
         }
         val saf = SafPaths.isTreeUri(dir)
@@ -107,7 +107,14 @@ class LocalImporter @Inject constructor(
                 dao.insertAll(diff.inserts.map { it.toLocalEntity(diff.insertIds[it.path] ?: localId(it.path)) })
             }
         }
+        diff.removes.forEach { artworkFile(context, it).delete() }
         metadata.kick() // reads tags in the background
+    }
+
+    private suspend fun deleteAllLocal() {
+        val ids = dao.localRows().map { it.id }
+        dao.deleteLocal()
+        ids.forEach { artworkFile(context, it).delete() }
     }
 
     /** Null when the folder can't be read, so nothing is removed on a transient failure. */
