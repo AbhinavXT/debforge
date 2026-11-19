@@ -58,4 +58,12 @@ object SponsorSkip {
     /** Where to seek when [positionMs] is inside a segment, else null. */
     fun skipTarget(segments: List<SponsorSegment>, positionMs: Long): Long? =
         segmentAt(segments, positionMs)?.endMs
+
+    /**
+     * The segment to auto-skip now: the one containing [positionMs] unless its
+     * start is in [done]. The caller adds the start to [done] when it skips, so a
+     * user who seeks back into it is left alone (once per segment per playback).
+     */
+    fun autoSkip(segments: List<SponsorSegment>, positionMs: Long, done: Set<Long>): SponsorSegment? =
+        segmentAt(segments, positionMs)?.takeIf { it.startMs !in done }
 }

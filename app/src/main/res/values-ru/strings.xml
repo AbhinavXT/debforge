@@ -790,6 +790,7 @@
     <string name="player_skip_interaction">Пропустить напоминание</string>
     <string name="player_skipped_intro">Заставка пропущена</string>
     <string name="player_skipped_recap">Пересказ пропущен</string>
+    <string name="player_skipped_sponsor">Рекламная вставка пропущена</string>
     <string name="set_auto_skip_intro">Пропускать заставки автоматически</string>
     <string name="set_auto_skip_intro_detail">Если главы файла отмечают заставку или пересказ, перескакивать их вместо показа кнопки.</string>
     <string name="player_previous_episode">Предыдущая серия</string>

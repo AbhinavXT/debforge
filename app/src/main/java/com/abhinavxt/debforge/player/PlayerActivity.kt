@@ -116,6 +116,7 @@ class PlayerActivity : ComponentActivity() {
     @Inject lateinit var subtitleResolver: SubtitleResolver
     @Inject lateinit var repository: DownloadsRepository
     @Inject lateinit var settings: com.abhinavxt.debforge.data.prefs.SettingsStore
+    @Inject lateinit var sponsorRepo: com.abhinavxt.debforge.data.sponsor.SponsorSegmentRepository
     @Inject lateinit var trackMemory: com.abhinavxt.debforge.data.playback.TrackMemory
     @Inject lateinit var scrobbler: TraktScrobbler
     @Inject lateinit var openSubtitles: com.abhinavxt.debforge.data.subtitles.OpenSubtitlesRepository
@@ -238,6 +239,12 @@ class PlayerActivity : ComponentActivity() {
     /** Start of each segment already skipped or passed on in this file ([LEARNT_SKIP] for the learnt one). */
     private val doneSkips = HashSet<Long>()
     private var autoSkipIntro = false
+    /** SponsorBlock segments of the playing YouTube video (merged, clamped), skipped by [updateSkip]. */
+    private var sponsorSegments: List<com.abhinavxt.debforge.domain.SponsorSegment> = emptyList()
+    private var sponsorRaw: List<com.abhinavxt.debforge.domain.SponsorSegment> = emptyList()
+    private var sponsorFor = -1L
+    /** Start of each sponsor segment already skipped in this file: skipped once, not again after a seek back. */
+    private val sponsorDone = HashSet<Long>()
     /** Bumped per file, so a slow chapter read for the last one is dropped. */
     private var fileGeneration = 0
     private lateinit var skipView: TextView
@@ -553,6 +560,20 @@ class PlayerActivity : ComponentActivity() {
             segmentsFor = duration
         }
         val position = p.currentPosition
+        if (sponsorRaw.isNotEmpty()) {
+            if (sponsorFor != duration) {
+                sponsorSegments = com.abhinavxt.debforge.domain.SponsorSkip.normalise(sponsorRaw, duration)
+                sponsorFor = duration
+            }
+            val sponsor = com.abhinavxt.debforge.domain.SponsorSkip.autoSkip(sponsorSegments, position, sponsorDone)
+            if (sponsor != null) {
+                sponsorDone += sponsor.startMs
+                hideSkip()
+                skipSegment(IntroSkip.Segment(IntroSkip.Kind.SPONSOR, sponsor.startMs, sponsor.endMs))
+                showMessage(getString(R.string.player_skipped_sponsor))
+                return
+            }
+        }
         val segment = IntroSkip.at(segments, position)?.takeIf { it.startMs !in doneSkips }
         if (segment != null) {
             if (autoSkipIntro && (segment.kind == IntroSkip.Kind.INTRO || segment.kind == IntroSkip.Kind.RECAP)) {
@@ -1150,6 +1171,17 @@ class PlayerActivity : ComponentActivity() {
         segmentsFor = -1L
         learntIntroAt = null
         doneSkips.clear()
+        sponsorDone.clear()
+        sponsorRaw = emptyList()
+        sponsorSegments = emptyList()
+        sponsorFor = -1L
+        val generation0 = fileGeneration + 1
+        val videoId = youtube?.videoId
+            ?: identity?.sourceRef?.let { com.abhinavxt.debforge.domain.YouTubeLinks.parseSourceRef(it)?.videoId }
+        if (videoId != null) lifecycleScope.launch {
+            val found = runCatching { sponsorRepo.segmentsFor(videoId) }.getOrDefault(emptyList())
+            if (generation0 == fileGeneration) sponsorRaw = found
+        }
         val file = identity?.filename?.takeIf { it.isNotBlank() } ?: uri.lastPathSegment.orEmpty()
         val source = uri
         val generation = ++fileGeneration

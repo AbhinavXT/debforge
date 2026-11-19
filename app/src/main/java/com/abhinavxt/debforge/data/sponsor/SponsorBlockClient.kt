@@ -42,12 +42,19 @@ data class SponsorSegmentDto(
     val actionType: String = "skip"
 )
 
+/** What [SponsorSegmentRepository] needs from the network side (a seam for tests). */
+interface SponsorLookup {
+    suspend fun segments(videoId: String, categories: Collection<String>): List<SponsorSegment>
+    fun toJson(segments: List<SponsorSegment>): String
+    fun fromJson(json: String): List<SponsorSegment>
+}
+
 /** SponsorBlock lookups. Throws IOException on network or server errors; 404 is "no segments". */
 @Singleton
 class SponsorBlockClient @Inject constructor(
     @ApiHttpClient base: OkHttpClient,
     private val moshi: Moshi
-) {
+) : SponsorLookup {
     private val api: SponsorBlockApi = Retrofit.Builder()
         .baseUrl(SponsorBlockApi.BASE_URL)
         .client(base)
@@ -55,7 +62,7 @@ class SponsorBlockClient @Inject constructor(
         .build()
         .create(SponsorBlockApi::class.java)
 
-    suspend fun segments(videoId: String, categories: Collection<String>): List<SponsorSegment> {
+    override suspend fun segments(videoId: String, categories: Collection<String>): List<SponsorSegment> {
         if (videoId.isBlank() || categories.isEmpty()) return emptyList()
         val res = try {
             api.skipSegments(hashPrefix(videoId), categoriesParam(categories))
@@ -74,9 +81,9 @@ class SponsorBlockClient @Inject constructor(
     }
 
     /** For caching a lookup result. */
-    fun toJson(segments: List<SponsorSegment>): String = listAdapter.toJson(segments)
+    override fun toJson(segments: List<SponsorSegment>): String = listAdapter.toJson(segments)
 
-    fun fromJson(json: String): List<SponsorSegment> = runCatching { listAdapter.fromJson(json) }.getOrNull().orEmpty()
+    override fun fromJson(json: String): List<SponsorSegment> = runCatching { listAdapter.fromJson(json) }.getOrNull().orEmpty()
 
     companion object {
         /** First 4 hex chars of sha256(videoId). */

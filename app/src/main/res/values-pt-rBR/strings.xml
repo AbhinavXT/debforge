@@ -753,6 +753,7 @@
     <string name="player_skip_interaction">Pular lembrete</string>
     <string name="player_skipped_intro">Abertura pulada</string>
     <string name="player_skipped_recap">Recapitulação pulada</string>
+    <string name="player_skipped_sponsor">Trecho patrocinado pulado</string>
     <string name="set_auto_skip_intro">Pular aberturas automaticamente</string>
     <string name="set_auto_skip_intro_detail">Quando os capítulos do arquivo marcam a abertura ou a recapitulação, pula direto em vez de mostrar um botão.</string>
     <string name="player_previous_episode">Episódio anterior</string>

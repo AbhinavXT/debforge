@@ -716,6 +716,7 @@
     <string name="player_skip_interaction">অনুরোধ বাদ দিন</string>
     <string name="player_skipped_intro">ইন্ট্রো বাদ দেওয়া হয়েছে</string>
     <string name="player_skipped_recap">রিক্যাপ বাদ দেওয়া হয়েছে</string>
+    <string name="player_skipped_sponsor">স্পনসর অংশ বাদ দেওয়া হয়েছে</string>
     <string name="set_auto_skip_intro">ইন্ট্রো নিজে থেকে বাদ দিন</string>
     <string name="set_auto_skip_intro_detail">ফাইলের চ্যাপ্টারে ইন্ট্রো বা রিক্যাপ চিহ্নিত থাকলে বোতাম না দেখিয়ে সেটি বাদ দিন।</string>
     <string name="player_previous_episode">আগের পর্ব</string>

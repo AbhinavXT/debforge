@@ -753,6 +753,7 @@
     <string name="player_skip_interaction">Saltar recordatorio</string>
     <string name="player_skipped_intro">Intro saltada</string>
     <string name="player_skipped_recap">Resumen saltado</string>
+    <string name="player_skipped_sponsor">Segmento patrocinado saltado</string>
     <string name="set_auto_skip_intro">Saltar intros automáticamente</string>
     <string name="set_auto_skip_intro_detail">Si los capítulos del archivo marcan la intro o el resumen, sáltalos en vez de mostrar un botón.</string>
     <string name="player_previous_episode">Episodio anterior</string>

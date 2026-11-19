@@ -716,6 +716,7 @@
     <string name="player_skip_interaction">Hatırlatmayı atla</string>
     <string name="player_skipped_intro">Giriş atlandı</string>
     <string name="player_skipped_recap">Özet atlandı</string>
+    <string name="player_skipped_sponsor">Sponsor bölümü atlandı</string>
     <string name="set_auto_skip_intro">Girişleri otomatik atla</string>
     <string name="set_auto_skip_intro_detail">Dosyanın bölümleri girişi veya özeti işaretliyorsa düğme göstermek yerine atla.</string>
     <string name="player_previous_episode">Önceki bölüm</string>

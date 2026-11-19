@@ -716,6 +716,7 @@
     <string name="player_skip_interaction">अनुरोध छोड़ें</string>
     <string name="player_skipped_intro">इंट्रो छोड़ दिया</string>
     <string name="player_skipped_recap">रीकैप छोड़ दिया</string>
+    <string name="player_skipped_sponsor">प्रायोजक हिस्सा छोड़ दिया</string>
     <string name="set_auto_skip_intro">इंट्रो अपने-आप छोड़ें</string>
     <string name="set_auto_skip_intro_detail">जब फ़ाइल के चैप्टर इंट्रो या रीकैप बताते हैं, तो बटन दिखाने के बजाय उसे छोड़ दें।</string>
     <string name="player_previous_episode">पिछला एपिसोड</string>

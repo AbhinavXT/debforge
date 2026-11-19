@@ -716,6 +716,7 @@
     <string name="player_skip_interaction">நினைவூட்டலைத் தவிர்</string>
     <string name="player_skipped_intro">அறிமுகம் தவிர்க்கப்பட்டது</string>
     <string name="player_skipped_recap">முன்கதை தவிர்க்கப்பட்டது</string>
+    <string name="player_skipped_sponsor">ஸ்பான்சர் பகுதி தவிர்க்கப்பட்டது</string>
     <string name="set_auto_skip_intro">அறிமுகங்களைத் தானாகத் தவிர்</string>
     <string name="set_auto_skip_intro_detail">கோப்பின் அத்தியாயங்கள் அறிமுகம் அல்லது முன்கதையைக் குறித்தால், பொத்தானைக் காட்டாமல் அதைத் தாண்டிச் செல்லவும்.</string>
     <string name="player_previous_episode">முந்தைய எபிசோடு</string>

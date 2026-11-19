@@ -753,6 +753,7 @@
     <string name="player_skip_interaction">Passer le rappel</string>
     <string name="player_skipped_intro">Générique passé</string>
     <string name="player_skipped_recap">Résumé passé</string>
+    <string name="player_skipped_sponsor">Segment sponsorisé passé</string>
     <string name="set_auto_skip_intro">Passer les génériques automatiquement</string>
     <string name="set_auto_skip_intro_detail">Quand les chapitres du fichier indiquent le générique ou le résumé, les passer au lieu d’afficher un bouton.</string>
     <string name="player_previous_episode">Épisode précédent</string>

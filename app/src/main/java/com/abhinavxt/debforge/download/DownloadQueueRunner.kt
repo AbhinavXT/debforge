@@ -53,6 +53,7 @@ class DownloadQueueRunner @Inject constructor(
     private val conditions: DownloadConditions,
     private val completionNotifier: CompletionNotifier,
     private val serviceCleaner: ServiceCleaner,
+    private val sponsorSegments: com.abhinavxt.debforge.data.sponsor.SponsorSegmentRepository,
     @ApplicationContext private val context: Context
 ) {
     /**
@@ -317,6 +318,7 @@ class DownloadQueueRunner @Inject constructor(
                     is DownloadOutcome.Success -> {
                         completionNotifier.notifyCompleted(entity)
                         serviceCleaner.onCompleted(entity)
+                        prefetchSponsorSegments(entity)
                     }
                     null -> Unit
                 }
@@ -325,6 +327,12 @@ class DownloadQueueRunner @Inject constructor(
         }
         unpublish()
         return if (interrupt == null) outcome else null
+    }
+
+    /** A finished YouTube download gets its SponsorBlock segments cached so it skips offline. Best effort, off the queue. */
+    private fun prefetchSponsorSegments(entity: DownloadEntity) {
+        val videoId = com.abhinavxt.debforge.domain.YouTubeLinks.parseSourceRef(entity.sourceRef)?.videoId ?: return
+        scope.launch { sponsorSegments.prefetch(videoId) }
     }
 
     private fun unpublish() {

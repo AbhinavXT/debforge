@@ -716,6 +716,7 @@
     <string name="player_skip_interaction">विनंती वगळा</string>
     <string name="player_skipped_intro">इंट्रो वगळला</string>
     <string name="player_skipped_recap">रीकॅप वगळला</string>
+    <string name="player_skipped_sponsor">प्रायोजक भाग वगळला</string>
     <string name="set_auto_skip_intro">इंट्रो आपोआप वगळा</string>
     <string name="set_auto_skip_intro_detail">फाइलच्या चॅप्टरमध्ये इंट्रो किंवा रीकॅप असल्यास बटण न दाखवता तो वगळा.</string>
     <string name="player_previous_episode">मागील भाग</string>
