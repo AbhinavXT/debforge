@@ -29,6 +29,7 @@ class VideoLifecycleTest {
         override fun takeBack() { log += "takeBack" }
         override fun disableVideo() { log += "disableVideo" }
         override fun discard() { log += "discard" }
+        override fun closeHost() { log += "closeHost" }
     }
 
     private fun started(): Triple<FakeSteps, VideoLifecycle, Long> {
@@ -53,7 +54,7 @@ class VideoLifecycleTest {
     @Test fun openingAnotherVideoSavesThePreviousPositionFirst() {
         val (steps, life, first) = started()
         val second = life.open()
-        assertEquals(listOf("stopTick", "save", "release", "discard", "park"), steps.log)
+        assertEquals(listOf("closeHost", "stopTick", "save", "release", "discard", "park"), steps.log)
         assertNotEquals(first, second)
         assertFalse(life.isCurrent(first))
         assertTrue(life.isCurrent(second))
@@ -65,13 +66,55 @@ class VideoLifecycleTest {
         life.hostStopped(token, finishing = false)
         steps.log.clear()
         life.open()
-        assertEquals(listOf("takeBack", "stopTick", "save", "release", "discard", "park"), steps.log)
+        assertEquals(listOf("closeHost", "takeBack", "stopTick", "save", "release", "discard", "park"), steps.log)
         assertFalse(life.inBackground)
+    }
+
+    @Test fun openingAVideoWhileNoneIsOpenClosesNoHost() {
+        val steps = FakeSteps()
+        VideoLifecycle(steps).open()
+        assertEquals(0, steps.count("closeHost"))
+    }
+
+    @Test fun openingAnotherVideoTellsTheOldHostToCloseBeforeDiscardingIt() {
+        val (steps, life, _) = started()
+        life.open()
+        assertEquals(1, steps.count("closeHost"))
+        assertTrue(steps.log.indexOf("closeHost") < steps.log.indexOf("discard"))
+    }
+
+    @Test fun aTokenFromAnotherProcessNeverMatches() {
+        // Process death: the saved screen holds a token of the dead process; the new one starts from its own seed.
+        val old = VideoLifecycle(FakeSteps(), seed = 1000L)
+        val saved = old.open()
+        val steps = FakeSteps()
+        val fresh = VideoLifecycle(steps, seed = 987654321L)
+        assertFalse(fresh.isCurrent(saved)) // nothing open yet: the screen rebuilds from its intent
+        val reopened = fresh.open()
+        assertFalse(fresh.isCurrent(saved))
+        assertTrue(fresh.isCurrent(reopened))
+        assertFalse(fresh.hostStarted(saved))
+    }
+
+    @Test fun defaultSeedsDifferBetweenProcesses() {
+        val tokens = (1..5).map { VideoLifecycle(FakeSteps()).open() }.toSet()
+        assertTrue(tokens.size > 1)
+    }
+
+    @Test fun aRecreatedHostKeepsItsTokenAndTheVideoStaysOpen() {
+        val (steps, life, token) = started()
+        life.hostStopped(token, finishing = false)
+        life.hostDestroyed(token, finishing = false)
+        assertTrue(life.isCurrent(token))
+        steps.log.clear()
+        assertTrue(life.hostStarted(token))
+        assertEquals(0, steps.count("closeHost"))
     }
 
     @Test fun aReplacedVideosHostIsToldToClose() {
         val (steps, life, first) = started()
         life.open()
+        assertEquals(1, steps.count("closeHost"))
         steps.log.clear()
         assertFalse(life.hostStarted(first))
         life.hostStopped(first, finishing = true)

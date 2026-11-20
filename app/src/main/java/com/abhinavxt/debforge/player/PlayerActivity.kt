@@ -322,10 +322,12 @@ class PlayerActivity : ComponentActivity() {
         }
 
         override fun enterPip() {
+            if (!session.isCurrent(token)) return
             runCatching { enterPictureInPictureMode(pipParams()) }
         }
 
         override fun screenshot() {
+            if (!session.isCurrent(token)) return
             controls.panel = null
             takeScreenshot()
         }
@@ -522,6 +524,7 @@ class PlayerActivity : ComponentActivity() {
 
     override fun onPictureInPictureModeChanged(isInPictureInPictureMode: Boolean, newConfig: android.content.res.Configuration) {
         super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
+        if (!session.isCurrent(token)) return // a replaced video's window: it is closing
         // Just the video in the small window: no controls, title or cards.
         surface.setPictureInPicture(isInPictureInPictureMode)
         if (isInPictureInPictureMode) {
@@ -571,7 +574,7 @@ class PlayerActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
-        session.hostResumed(token)
+        if (session.isCurrent(token)) session.hostResumed(token)
     }
 
     override fun onStop() {

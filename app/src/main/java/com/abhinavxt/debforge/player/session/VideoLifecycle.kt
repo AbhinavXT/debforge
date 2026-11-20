@@ -10,7 +10,11 @@ package com.abhinavxt.debforge.player.session
  * way out; leaving for good tells the audio player where the video stopped, once; a handoff to audio does
  * not (the audio player already has the position).
  */
-internal class VideoLifecycle(private val steps: Steps) {
+internal class VideoLifecycle(
+    private val steps: Steps,
+    /** Tokens count up from here; random per process so a token saved before the process died never matches a new video. */
+    seed: Long = java.util.Random().nextLong() ushr 1
+) {
 
     interface Steps {
         fun hasPlayer(): Boolean
@@ -32,10 +36,12 @@ internal class VideoLifecycle(private val steps: Steps) {
         fun disableVideo()
         /** This video is over: drop its per-video state and jobs. */
         fun discard()
+        /** The screen of the video being replaced must go (finish, also from picture-in-picture). */
+        fun closeHost()
     }
 
     /** Identifies the current video's host; a host holding an older token belongs to a replaced video. */
-    var token = 0L
+    var token = seed
         private set
     var isOpen = false
         private set
@@ -49,6 +55,7 @@ internal class VideoLifecycle(private val steps: Steps) {
     /** A new video: the one playing (if any) is saved and let go first. Returns the new video's token. */
     fun open(): Long {
         if (isOpen) {
+            steps.closeHost()
             if (inBackground) takeBack()
             steps.stopTicking()
             steps.savePosition()

@@ -324,6 +324,7 @@ class VideoSession @Inject constructor(
 
     private inner class Steps : VideoLifecycle.Steps {
         override fun hasPlayer() = player != null
+        override fun closeHost() { host?.close() }
         override fun isPlaying() = player?.isPlaying == true
         override fun parkAudio() = audioPlayer.parkForVideo()
         override fun savePosition() = this@VideoSession.savePosition()
