@@ -81,6 +81,14 @@ object LocalFiles {
         if (SafPaths.isSaf(path)) SafStore.find(context, path)
         else runCatching { FileProvider.getUriForFile(context, "${context.packageName}.files", File(path)) }.getOrNull()
 
+    /** [uriFor] for many paths, looking each picked folder up once; paths with no uri are left out. Blocking. */
+    fun urisFor(context: Context, paths: Collection<String>): Map<String, Uri> {
+        val (saf, plain) = paths.distinct().partition { SafPaths.isSaf(it) }
+        val out = HashMap<String, Uri>(SafStore.findAll(context, saf))
+        for (p in plain) uriFor(context, p)?.let { out[p] = it }
+        return out
+    }
+
     fun mimeType(fileName: String): String =
         MimeTypeMap.getSingleton().getMimeTypeFromExtension(fileName.substringAfterLast('.', "").lowercase()) ?: "*/*"
 

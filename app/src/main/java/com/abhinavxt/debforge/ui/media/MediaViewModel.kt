@@ -8,7 +8,9 @@ import com.abhinavxt.debforge.data.playback.AudioListsState
 import com.abhinavxt.debforge.data.playback.PlaylistEntry
 import com.abhinavxt.debforge.download.youtube.EnqueueResult
 import com.abhinavxt.debforge.download.youtube.YouTubeEnqueuer
-import com.abhinavxt.debforge.player.audioTrackFor
+import com.abhinavxt.debforge.player.audioTracksFor
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
@@ -227,9 +229,18 @@ class MediaViewModel @Inject constructor(
 
     /** Plays the open playlist as audio from [startRow]: downloads and YouTube items through one queue. */
     fun playPlaylist(rows: List<PlaylistRow>, startRow: Int) {
-        val (entries, start) = mixedQueueFor(rows, startRow) { audioTrackFor(context, it) }
-        if (entries.isNotEmpty()) audioPlayer.playMixed(entries, start)
+        playlistJob?.cancel()
+        playlistJob = viewModelScope.launch {
+            // Off the main thread: a long playlist of files in a picked folder takes a while to look up.
+            val tracks = withContext(Dispatchers.IO) {
+                audioTracksFor(context, rows.filterIsInstance<PlaylistRow.Download>().map { it.entity })
+            }.associateBy { it.id }
+            val (entries, start) = mixedQueueFor(rows, startRow) { tracks[it.id] }
+            if (entries.isNotEmpty()) audioPlayer.playMixed(entries, start)
+        }
     }
+
+    private var playlistJob: Job? = null
 
     /** Plays a downloaded video as audio from its saved watch position (or the start). */
     fun playAsAudio(entity: DownloadEntity) {

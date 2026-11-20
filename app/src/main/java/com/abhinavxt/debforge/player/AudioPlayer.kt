@@ -53,6 +53,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import com.abhinavxt.debforge.data.local.DownloadEntity
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
@@ -863,6 +864,22 @@ class AudioPlayer @Inject constructor(
         if (queue.isEmpty()) return
         playJob?.cancel()
         playJob = scope.launch { start(queue, startIndex, resumeFor(queue[startIndex.coerceIn(queue.indices)].resumeId)) }
+    }
+
+    /**
+     * Plays finished downloads from the one at [index]. Their files are looked up off the main thread (hundreds of
+     * files in a picked folder take a while); files that are gone are skipped.
+     */
+    fun playDownloads(queue: List<DownloadEntity>, index: Int) {
+        if (queue.isEmpty()) return
+        val tappedId = queue.getOrNull(index)?.id
+        playJob?.cancel()
+        playJob = scope.launch {
+            val tracks = withContext(Dispatchers.IO) { audioTracksFor(context, queue) }
+            if (tracks.isEmpty()) return@launch
+            val start = startIndexOf(tracks, tappedId)
+            start(tracks, start, resumeFor(tracks[start].resumeId))
+        }
     }
 
     /** Seeks the current item to where it was left, unless playback has already moved on or past the start. */

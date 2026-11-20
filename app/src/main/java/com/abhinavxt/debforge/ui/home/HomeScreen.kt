@@ -86,16 +86,12 @@ import com.abhinavxt.debforge.ui.search.SearchScreen
 import com.abhinavxt.debforge.ui.settings.SettingsScreen
 import com.abhinavxt.debforge.ui.setup.SetupScreen
 import com.abhinavxt.debforge.ui.media.MediaScreen
-import com.abhinavxt.debforge.ui.media.displayTitle
 import com.abhinavxt.debforge.ui.player.MiniPlayer
 import com.abhinavxt.debforge.player.VideoStart
 import com.abhinavxt.debforge.player.VideoStartExtras
 import com.abhinavxt.debforge.ui.player.NowPlaying
 import com.abhinavxt.debforge.ui.youtube.YouTubeScreen
 import com.abhinavxt.debforge.ui.youtube.YouTubeViewModel
-import com.abhinavxt.debforge.player.AudioTrack
-import com.abhinavxt.debforge.download.LocalFiles
-import com.abhinavxt.debforge.download.artworkFile
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
@@ -376,18 +372,10 @@ fun HomeScreen(signedIn: Boolean) {
                         viewModel = youtubeViewModel)
                 }
                 composable(HomeTab.Media.route) {
-                    val context = LocalContext.current
                     MediaScreen(
                         playingId = currentAudio.track?.id,
-                        onPlayAudio = { queue, index ->
-                            val tracks = queue.mapNotNull { e ->
-                                val uri = e.finalFilePath?.let { LocalFiles.uriFor(context, it) } ?: return@mapNotNull null
-                                AudioTrack(e.id, uri, e.displayTitle(), e.artist, artworkFile(context, e.id).takeIf { it.exists() })
-                            }
-                            // Unplayable files are skipped; find the tapped one again in what is left.
-                            val start = tracks.indexOfFirst { it.id == queue.getOrNull(index)?.id }.coerceAtLeast(0)
-                            if (tracks.isNotEmpty()) shell.audio.play(tracks, start)
-                        },
+                        // Files are looked up off the main thread; unplayable ones are skipped.
+                        onPlayAudio = { queue, index -> shell.audio.playDownloads(queue, index) },
                         onOpenDownloads = { push(HomeTab.Active) },
                         onOpenSettings = { push(HomeTab.Settings) },
                         onOpenYouTube = { go(HomeTab.YouTube) },

@@ -54,4 +54,20 @@ class SafPathsTest {
         assertNull(SafPaths.volumeId("content://com.google.android.apps.docs.storage/tree/acc%3D1%3Bdoc%3Dabc"))
         assertNull(SafPaths.volumeId("content://com.android.externalstorage.documents/tree/"))
     }
+
+    @Test fun groupByFolderListsEachFolderOnce() {
+        val eng = (1..300).map { SafPaths.join(tree, "Music/eng/Song $it.mp3") }
+        val hindi = SafPaths.join(tree, "Music/hindi/a.mp3")
+        val root = SafPaths.join(tree, "podcast.mp3")
+        val other = SafPaths.join("content://com.android.externalstorage.documents/tree/primary%3AMusic", "eng/x.mp3")
+        val groups = SafPaths.groupByFolder(eng + hindi + root + other + eng.first() + "/storage/emulated/0/plain.mp3")
+
+        assertEquals(4, groups.size)
+        val engGroup = groups.getValue(SafPaths.Parsed(tree, listOf("Music", "eng"), ""))
+        assertEquals(eng, engGroup.map { it.first }) // in order, the duplicate dropped
+        assertEquals("Song 7.mp3", engGroup[6].second.name)
+        assertEquals(listOf(hindi), groups.getValue(SafPaths.Parsed(tree, listOf("Music", "hindi"), "")).map { it.first })
+        assertEquals(listOf(root), groups.getValue(SafPaths.Parsed(tree, emptyList(), "")).map { it.first })
+        assertTrue(groups.values.flatten().none { it.first.startsWith("/storage") })
+    }
 }

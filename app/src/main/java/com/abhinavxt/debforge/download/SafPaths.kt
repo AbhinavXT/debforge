@@ -40,6 +40,14 @@ object SafPaths {
         return Parsed(tree, segments.dropLast(1), segments.last())
     }
 
+    /**
+     * [paths] grouped by the folder holding them (same tree, same dirs), so each folder is listed once when
+     * many files are looked up together. Paths that are not folder-picker paths are left out.
+     */
+    fun groupByFolder(paths: Collection<String>): Map<Parsed, List<Pair<String, Parsed>>> =
+        paths.distinct().mapNotNull { p -> parse(p)?.let { p to it } }
+            .groupBy { (_, parsed) -> parsed.copy(name = "") }
+
     /** Same folder, different file name (e.g. the .part -> final rename). */
     fun withName(path: String, name: String): String? =
         parse(path)?.let { join(it.treeUri, (it.dirs + name).joinToString("/")) }

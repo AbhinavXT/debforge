@@ -78,6 +78,42 @@ internal object SafStore {
         null
     }
 
+    /**
+     * Document URIs of many [paths] at once, listing each folder a single time ([find] lists the folder once per
+     * file, which for a few hundred files in one folder takes many seconds). Missing or unreadable ones are left out.
+     */
+    fun findAll(context: Context, paths: Collection<String>): Map<String, Uri> {
+        val out = HashMap<String, Uri>()
+        for ((folderKey, files) in SafPaths.groupByFolder(paths)) {
+            try {
+                val tree = Uri.parse(folderKey.treeUri)
+                val dir = folder(context, folderKey, create = false) ?: continue
+                val children = DocumentsContract.buildChildDocumentsUriUsingTree(tree, DocumentsContract.getDocumentId(dir))
+                val byName = HashMap<String, String>()
+                context.contentResolver.query(
+                    children,
+                    arrayOf(Document.COLUMN_DOCUMENT_ID, Document.COLUMN_DISPLAY_NAME),
+                    null, null, null
+                )?.use { c ->
+                    while (c.moveToNext()) {
+                        val name = c.getString(1) ?: continue
+                        byName.putIfAbsent(name, c.getString(0))
+                    }
+                }
+                for ((path, parsed) in files) {
+                    byName[parsed.name]?.let { out[path] = DocumentsContract.buildDocumentUriUsingTree(tree, it) }
+                }
+            } catch (e: SecurityException) {
+                continue
+            } catch (e: FileNotFoundException) {
+                dirCache.clear() // a cached folder was removed behind our back
+            } catch (e: IllegalArgumentException) {
+                continue
+            }
+        }
+        return out
+    }
+
     fun exists(context: Context, path: String): Boolean = find(context, path) != null
 
     /** Finds or creates [path] (and its folders). */
