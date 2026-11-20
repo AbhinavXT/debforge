@@ -202,7 +202,7 @@ internal class VideoEpisodes(private val s: VideoSession) {
             prepare()
             play()
         }
-        s.host?.updatePip()
+        s.updatePip()
     }
 
     private companion object {

@@ -105,6 +105,17 @@ class VideoSession @Inject constructor(
     internal var host: VideoHost? = null
         private set
 
+    /** The app's picture-in-picture (MainActivity): told when the playing state, the picture's size or the episode changed. */
+    var pipListener: (() -> Unit)? = null
+    /** Is the app in its floating window now? Then pausing the activity must not hand the player to the background service. */
+    var pipGate: (() -> Boolean)? = null
+
+    /** The playing state or the picture's shape changed: the host and the app's floating window follow. */
+    internal fun updatePip() {
+        host?.updatePip()
+        pipListener?.invoke()
+    }
+
     /** DebForge's own controls' state (the same object PlayerControls shows). New for each video. */
     var controls = ControlsState()
         private set
@@ -299,7 +310,8 @@ class VideoSession @Inject constructor(
     fun hostStarted(token: Long): Boolean = lifecycle.hostStarted(token)
 
     /** Host leaving the foreground; [mayLeave] false while finishing, recreating or in picture-in-picture. */
-    fun hostPaused(token: Long, mayLeave: Boolean) = lifecycle.hostPaused(token, mayLeave, controls.background)
+    fun hostPaused(token: Long, mayLeave: Boolean) =
+        lifecycle.hostPaused(token, mayHandOver(mayLeave, pipGate?.invoke() == true), controls.background)
 
     fun hostResumed(token: Long) = lifecycle.hostResumed(token)
 
@@ -885,7 +897,7 @@ class VideoSession @Inject constructor(
 
     private val listener = object : Player.Listener {
         override fun onIsPlayingChanged(isPlaying: Boolean) {
-            host?.updatePip()
+            updatePip()
             if (isPlaying) scrobble(scrobbler::playing)
         }
 
@@ -897,7 +909,7 @@ class VideoSession @Inject constructor(
         /** Portrait video (phone recordings, shorts): allow portrait instead. */
         override fun onVideoSizeChanged(videoSize: androidx.media3.common.VideoSize) {
             if (videoSize.width <= 0 || videoSize.height <= 0) return
-            host?.updatePip()
+            updatePip()
             val displayWidth = videoSize.width * videoSize.pixelWidthHeightRatio
             host?.videoShape(portrait = videoSize.height > displayWidth)
         }

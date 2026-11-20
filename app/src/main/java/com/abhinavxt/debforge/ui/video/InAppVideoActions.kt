@@ -40,6 +40,30 @@ class InAppVideoActions(
     private val controls get() = session.controls
     private val handler = android.os.Handler(android.os.Looper.getMainLooper())
 
+    /** Framework dialogs this screen opened: a recreated activity (theme, locale) must not leak their windows. */
+    private val dialogs = mutableListOf<android.app.Dialog>()
+
+    private fun <T : android.app.Dialog> T.tracked(): T {
+        dialogs.removeAll { !it.isShowing }
+        dialogs += this
+        return this
+    }
+
+    init {
+        activity.lifecycle.addObserver(object : androidx.lifecycle.DefaultLifecycleObserver {
+            override fun onDestroy(owner: androidx.lifecycle.LifecycleOwner) {
+                dialogs.toList().forEach { runCatching { it.dismiss() } }
+                dialogs.clear()
+                owner.lifecycle.removeObserver(this)
+            }
+        })
+        // The activity was recreated while casting: the remote's dialog went with the old one, the TV still plays.
+        if (controls.casting) {
+            val renderer = castingTo
+            if (renderer == null) controls.casting = false else activity.lifecycleScope.launch { showCastRemote(renderer) }
+        }
+    }
+
     override fun back() = onBack()
     override fun rotate() = onRotate()
     override fun enterPip() {}
@@ -131,7 +155,7 @@ class InAppVideoActions(
             .setMessage(R.string.cast_searching)
             .setNegativeButton(R.string.action_cancel) { _, _ -> search?.cancel() }
             .setOnCancelListener { search?.cancel() }
-            .show()
+            .show().tracked()
         search = activity.lifecycleScope.launch {
             val found = caster.discover()
             searching.dismiss()
@@ -142,14 +166,14 @@ class InAppVideoActions(
                     .setMessage(R.string.cast_none)
                     .setPositiveButton(R.string.action_retry) { _, _ -> cast() }
                     .setNegativeButton(R.string.action_close, null)
-                    .show()
+                    .show().tracked()
                 return@launch
             }
             AlertDialog.Builder(activity)
                 .setTitle(R.string.cast_title)
                 .setItems(found.map { it.name }.toTypedArray()) { _, i -> startCast(found[i]) }
                 .setNegativeButton(R.string.action_cancel, null)
-                .show()
+                .show().tracked()
         }
     }
 
@@ -170,6 +194,7 @@ class InAppVideoActions(
     private fun showCastRemote(on: Renderer) {
         var paused = false
         controls.casting = true
+        castingTo = on
         val dialog = AlertDialog.Builder(activity)
             .setTitle(activity.getString(R.string.cast_playing_on, on.name))
             .setMessage(session.title)
@@ -181,10 +206,11 @@ class InAppVideoActions(
                     val at = caster.positionMs(on)
                     runCatching { caster.stop(on) }
                     controls.casting = false
+                    castingTo = null
                     session.player?.let { p -> at?.let(p::seekTo); p.play() }
                 }
             }
-            .setNeutralButton(R.string.cast_leave) { _, _ -> onClose() }
+            .setNeutralButton(R.string.cast_leave) { _, _ -> castingTo = null; onClose() }
             .create()
         dialog.setOnShowListener {
             // Set here so the button doesn't close the dialog.
@@ -198,6 +224,11 @@ class InAppVideoActions(
                 }
             }
         }
-        dialog.show()
+        dialog.tracked().show()
+    }
+
+    private companion object {
+        /** Where the video plays now; survives the activity being recreated (the engine does too). */
+        @Volatile var castingTo: Renderer? = null
     }
 }

@@ -1,6 +1,12 @@
 package com.abhinavxt.debforge.player.session
 
 /**
+ * Pure: may the player go to the background service as the host pauses? Not when the host is finishing or
+ * recreating ([mayLeave] false), nor when it is in the floating window ([inPictureInPicture]), which plays it itself.
+ */
+internal fun mayHandOver(mayLeave: Boolean, inPictureInPicture: Boolean): Boolean = mayLeave && !inPictureInPicture
+
+/**
  * The order of the video engine's lifecycle steps, kept apart from Media3 and Android so it can be tested
  * with a fake [Steps]. [VideoSession] supplies the steps; its host (PlayerActivity) reports its own
  * lifecycle here through the session, identified by the [token] [open] handed out.

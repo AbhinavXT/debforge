@@ -40,9 +40,12 @@ class MainActivity : ComponentActivity() {
     @Inject lateinit var audioPlayer: com.abhinavxt.debforge.player.AudioPlayer
     @Inject lateinit var videoLauncher: com.abhinavxt.debforge.player.VideoLauncher
 
+    private lateinit var videoPip: com.abhinavxt.debforge.ui.video.VideoPip
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        videoPip = com.abhinavxt.debforge.ui.video.VideoPip(this, videoLauncher, settingsStore).also { it.start() }
         // A new download folder (or the import switch) is scanned right away; this also drops
         // imported rows outside the new folder. The first value is covered by onStart.
         lifecycleScope.launch {
@@ -92,11 +95,33 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    /** Android 11 and older: leaving while a video plays enters the floating window (12+ enters by itself). */
+    override fun onUserLeaveHint() {
+        super.onUserLeaveHint()
+        videoPip.onUserLeaveHint()
+    }
+
+    override fun onPictureInPictureModeChanged(isInPictureInPictureMode: Boolean, newConfig: android.content.res.Configuration) {
+        super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
+        videoPip.modeChanged(isInPictureInPictureMode)
+    }
+
+    override fun onDestroy() {
+        videoPip.stop()
+        // Leaving for good (Back out of the app, swiped from recents): the video ends with it.
+        if (isFinishing) videoLauncher.close()
+        super.onDestroy()
+    }
+
     /** singleTop: a magnet tapped while DebForge is already open lands here. */
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         // Kept as the activity's intent: without the one-shot play request, so nothing later replays it.
-        setIntent(Intent(intent).apply { removeExtra(com.abhinavxt.debforge.widget.PlayerWidget.EXTRA_PLAY_RESTORED) })
+        setIntent(Intent(intent).apply {
+            removeExtra(com.abhinavxt.debforge.widget.PlayerWidget.EXTRA_PLAY_RESTORED)
+            // Taken below; a copy that kept it would expand the mini bar again when the activity is recreated.
+            removeExtra(com.abhinavxt.debforge.player.VideoLauncher.EXTRA_OPEN_VIDEO)
+        })
         pendingAdds.offerFromIntent(intent)
         handleAppAction(intent)
         takeExpandRequest(intent)

@@ -157,6 +157,11 @@ fun BrowserScreen(onMagnet: (String) -> Unit, onOpenDownloads: () -> Unit, onOpe
         fullscreen?.second?.onCustomViewHidden()
         fullscreen = null
     }
+    // The app must not enter picture-in-picture over a page's full-screen video.
+    DisposableEffect(fullscreen != null) {
+        com.abhinavxt.debforge.ui.video.WebFullscreen.set(fullscreen != null)
+        onDispose { com.abhinavxt.debforge.ui.video.WebFullscreen.set(false) }
+    }
     // A page's player went full screen: its view covers the whole window, in landscape, bars hidden.
     DisposableEffect(fullscreen) {
         val view = fullscreen?.first ?: return@DisposableEffect onDispose {}

@@ -4,12 +4,11 @@ import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.Intent
-import android.content.pm.ActivityInfo
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.animateRectAsState
+import androidx.compose.animation.core.VectorConverter
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -37,6 +36,7 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,6 +47,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -128,13 +130,15 @@ fun InAppVideoHost(
     isTablet: Boolean,
     /** A channel name tapped on the watch page: the app opens the channel (the video minimises first). */
     onChannel: (name: String, url: String) -> Unit,
+    /** The app is in the floating window: only the picture, filling it. */
+    pip: Boolean = rememberInPip(),
 ) {
     val launcher = viewModel.launcher
     val active by launcher.active.collectAsStateWithLifecycle()
     val mode by launcher.mode.collectAsStateWithLifecycle()
     val shown = active ?: return
     val shownMode = mode ?: return
-    key(shown.token) { ActiveVideoHost(viewModel, watchViewModel, shown, shownMode, miniSlot, isTablet, onChannel) }
+    key(shown.token) { ActiveVideoHost(viewModel, watchViewModel, shown, shownMode, miniSlot, isTablet, onChannel, pip) }
 }
 
 @androidx.annotation.OptIn(UnstableApi::class)
@@ -147,6 +151,7 @@ private fun ActiveVideoHost(
     miniSlot: Rect,
     isTablet: Boolean,
     onChannel: (String, String) -> Unit,
+    pip: Boolean,
 ) {
     val context = LocalContext.current
     val activity = remember { context.findComponentActivity() } ?: return
@@ -165,7 +170,7 @@ private fun ActiveVideoHost(
             activity, session, session.actions, vm.caster, { holder[0] },
             onBack = { launcher.dispatch(VideoModeEvent.Back) },
             onRotate = {
-                if (modeNow == VideoMode.FULL) FullScreen.turn(activity) else launcher.dispatch(VideoModeEvent.EnterFull)
+                launcher.dispatch(if (modeNow == VideoMode.FULL) VideoModeEvent.ExitFull else VideoModeEvent.EnterFull)
             },
             onBars = { visible -> if (modeNow == VideoMode.FULL) FullScreen.bars(activity, visible) },
             onClose = launcher::close,
@@ -175,8 +180,13 @@ private fun ActiveVideoHost(
         VideoSurface(activity, session, vm.settings, { activity.window }, false, actions, mode.surfaceMode()).also { holder[0] = it }
     }
     SideEffect {
-        surface.mode = mode.surfaceMode()
+        surface.mode = (if (pip) VideoMode.FULL else mode).surfaceMode()
+        if (pip) surface.setPictureInPicture(true) else if (surface.inPictureInPicture) {
+            surface.setPictureInPicture(false)
+            surface.playerView.useController = session.isTv // the phone's own controls, not Media3's
+        }
         session.controls.inline = mode == VideoMode.WATCH
+        session.controls.exitFullScreen = mode == VideoMode.FULL
     }
     LaunchedEffect(Unit) { surface.gesturesEnabled = vm.settings.playerGesturesFlow.first() }
 
@@ -244,9 +254,48 @@ private fun ActiveVideoHost(
     // --- full screen: immersive bars, landscape for a landscape picture ---
     DisposableEffect(mode == VideoMode.FULL) {
         val full = mode == VideoMode.FULL
-        if (full) FullScreen.enter(activity, session.player?.videoSize)
-        onDispose { if (full) FullScreen.leave(activity) }
+        if (full) FullScreen.bars(activity, false)
+        onDispose { if (full) FullScreen.bars(activity, true) }
     }
+    // --- orientation (section 4): the plan from the settings, the sensor and the lock the button / Back asked for ---
+    val configuration = androidx.compose.ui.platform.LocalConfiguration.current
+    val landscape = configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
+    val smallestWidth = configuration.smallestScreenWidthDp
+    var autoRotate by remember { mutableStateOf(FullScreen.autoRotate(context)) }
+    DisposableEffect(Unit) {
+        val observer = object : android.database.ContentObserver(android.os.Handler(android.os.Looper.getMainLooper())) {
+            override fun onChange(selfChange: Boolean) { autoRotate = FullScreen.autoRotate(context) }
+        }
+        context.contentResolver.registerContentObserver(android.provider.Settings.System.getUriFor(android.provider.Settings.System.ACCELEROMETER_ROTATION), false, observer)
+        onDispose { context.contentResolver.unregisterContentObserver(observer) }
+    }
+    var videoPortrait by remember { mutableStateOf(false) }
+    var sizeKnown by remember { mutableStateOf(false) }
+    var lock by remember { mutableStateOf(OrientationLock.NONE) }
+    var lockedFrom by remember { mutableStateOf(mode) }
+    if (lockedFrom != mode) {
+        // Decided as the mode changes (before the plan below reads it), whichever way full screen was entered or left.
+        if (mode == VideoMode.FULL) lock = lockOnEnterFull(videoPortrait, landscape)
+        else if (lockedFrom == VideoMode.FULL) lock = lockOnExitFull(smallestWidth, landscape)
+        lockedFrom = mode
+    }
+    val plan = orientationPlan(mode, smallestWidth, autoRotate, videoPortrait, landscape, lock, sizeKnown)
+    LaunchedEffect(plan.mode, mode) { if (plan.mode != mode) launcher.dispatch(VideoModeEvent.Rotated(landscape)) }
+    LaunchedEffect(plan.requested) { activity.requestedOrientation = plan.requested }
+    DisposableEffect(Unit) { onDispose { activity.requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED } }
+    // A portrait picture found out late: no landscape hold after all.
+    LaunchedEffect(videoPortrait) { if (videoPortrait && lock == OrientationLock.LANDSCAPE) lock = OrientationLock.NONE }
+    val lockNow by rememberUpdatedState(lock)
+    val autoRotateNow by rememberUpdatedState(autoRotate)
+    DisposableEffect(lock != OrientationLock.NONE) {
+        val listener = object : android.view.OrientationEventListener(context) {
+            override fun onOrientationChanged(degrees: Int) { lock = lockAfterSensor(lockNow, holdOf(degrees), autoRotateNow) }
+        }
+        if (lock != OrientationLock.NONE && listener.canDetectOrientation()) listener.enable()
+        onDispose { listener.disable() }
+    }
+    // With auto-rotate off the portrait hold simply ends after a moment.
+    LaunchedEffect(lock, autoRotate) { if (lock == OrientationLock.PORTRAIT && !autoRotate) { delay(2_000); lock = OrientationLock.NONE } }
     // Over the black strip behind the video the status bar icons must be light, whatever the app's theme.
     DisposableEffect(mode != VideoMode.MINI) {
         val controller = WindowCompat.getInsetsController(activity.window, activity.window.decorView)
@@ -264,6 +313,9 @@ private fun ActiveVideoHost(
         while (true) {
             canPlayAsAudio = session.canPlayAsAudio()
             pictureHeight = session.player?.videoSize?.height ?: 0
+            val size = session.player?.videoSize
+            sizeKnown = size != null && size.width > 0
+            videoPortrait = size != null && size.width > 0 && size.height > size.width
             delay(1_000)
         }
     }
@@ -330,13 +382,86 @@ private fun ActiveVideoHost(
         val width = constraints.maxWidth.toFloat()
         val height = constraints.maxHeight.toFloat()
         val top = WindowInsets.statusBars.getTop(density).toFloat()
-        val target = videoRect(mode, width, height, top, isTablet, miniSlot.translate(-origin))
-        val rect by animateRectAsState(target, animationSpec = tween(if (fast) 0 else 280), label = "video")
+        val target = videoRect(if (pip) VideoMode.FULL else mode, width, height, top, isTablet, miniSlot.translate(-origin))
         val watchRect = videoRect(VideoMode.WATCH, width, height, top, isTablet, miniSlot)
+        val miniRect = videoRect(VideoMode.MINI, width, height, top, isTablet, miniSlot.translate(-origin))
+        // The picture's rectangle: animated between modes, following the finger while the watch page is dragged down.
+        val rectAnim = remember { androidx.compose.animation.core.Animatable(target, Rect.VectorConverter) }
+        val pageAlpha = remember { androidx.compose.animation.core.Animatable(1f) }
+        var dragging by remember { mutableStateOf(false) }
+        var dragOffset by remember { mutableFloatStateOf(0f) }
+        val travel = (miniRect.top - watchRect.top).coerceAtLeast(1f)
+        var lastMode by remember { mutableStateOf(mode) }
+        LaunchedEffect(target) {
+            val wasMini = lastMode == VideoMode.MINI
+            lastMode = mode
+            if (dragging) return@LaunchedEffect
+            // The mini bar being dragged sideways moves the slot: the picture follows at once, not a beat behind.
+            if (mode == VideoMode.MINI && wasMini && !rectAnim.isRunning || fast) rectAnim.snapTo(target)
+            else rectAnim.animateTo(target, tween(280))
+        }
+        LaunchedEffect(mode) { if (mode == VideoMode.WATCH && !dragging) pageAlpha.snapTo(1f) }
+        val rectNow: () -> Rect = {
+            if (dragging) androidx.compose.ui.geometry.lerp(watchRect, miniRect, (dragOffset / travel).coerceIn(0f, 1f)) else rectAnim.value
+        }
+        val dragLatest = rememberUpdatedState(Triple(watchRect, miniRect, travel))
+        val drag = remember {
+            object : VideoSurface.HostDrag {
+                fun begin() { if (modeNow == VideoMode.WATCH && !dragging) { dragOffset = 0f; dragging = true } }
+                fun by(dy: Float) { if (dragging) dragOffset = (dragOffset + dy).coerceAtLeast(0f) }
+                override fun start() = begin()
+                override fun move(dy: Float) = by(dy)
+                override fun end(velocityY: Float) {
+                    if (!dragging) return
+                    val (watch, mini, trav) = dragLatest.value
+                    val minimise = shouldMinimise(dragOffset, velocityY, trav)
+                    val p = (dragOffset / trav).coerceIn(0f, 1f)
+                    scope.launch {
+                        rectAnim.snapTo(androidx.compose.ui.geometry.lerp(watch, mini, p))
+                        pageAlpha.snapTo(1f - p)
+                        dragging = false
+                        if (minimise) {
+                            launcher.dispatch(VideoModeEvent.Minimise)
+                            pageAlpha.animateTo(0f, tween(160))
+                        } else {
+                            launch { pageAlpha.animateTo(1f, tween(150)) }
+                            rectAnim.animateTo(watch, androidx.compose.animation.core.spring(stiffness = 400f))
+                        }
+                    }
+                }
+            }
+        }
+        SideEffect { surface.hostDrag = drag }
+        // The page's own list: pulling down at its top drags the video down too.
+        val pageScroll = remember {
+            object : androidx.compose.ui.input.nestedscroll.NestedScrollConnection {
+                override fun onPreScroll(available: Offset, source: androidx.compose.ui.input.nestedscroll.NestedScrollSource): Offset {
+                    if (source != androidx.compose.ui.input.nestedscroll.NestedScrollSource.UserInput || !dragging || available.y >= 0f) return Offset.Zero
+                    val used = -minOf(dragOffset, -available.y)
+                    drag.move(used)
+                    return Offset(0f, used)
+                }
+                override fun onPostScroll(consumed: Offset, available: Offset, source: androidx.compose.ui.input.nestedscroll.NestedScrollSource): Offset {
+                    if (source != androidx.compose.ui.input.nestedscroll.NestedScrollSource.UserInput || available.y <= 0f || modeNow != VideoMode.WATCH) return Offset.Zero
+                    drag.start(); drag.move(available.y)
+                    return Offset(0f, available.y)
+                }
+                override suspend fun onPreFling(available: androidx.compose.ui.unit.Velocity): androidx.compose.ui.unit.Velocity {
+                    if (!dragging) return androidx.compose.ui.unit.Velocity.Zero
+                    drag.end(available.y)
+                    return available
+                }
+            }
+        }
 
         // The watch page: everything but the picture.
-        AnimatedVisibility(visible = mode == VideoMode.WATCH, enter = fadeIn(tween(220)), exit = fadeOut(tween(160))) {
-            Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+        AnimatedVisibility(visible = mode == VideoMode.WATCH && !pip, enter = fadeIn(tween(220)), exit = fadeOut(tween(160))) {
+            Surface(
+                Modifier.fillMaxSize()
+                    .graphicsLayer { alpha = if (dragging) 1f - (dragOffset / travel).coerceIn(0f, 1f) else pageAlpha.value }
+                    .nestedScroll(pageScroll),
+                color = MaterialTheme.colorScheme.background,
+            ) {
                 val videoBottom = with(density) { watchRect.bottom.toDp() }
                 if (isTablet) {
                     Box(Modifier.fillMaxSize()) {
@@ -358,7 +483,7 @@ private fun ActiveVideoHost(
                 }
             }
         }
-        AnimatedVisibility(visible = mode == VideoMode.FULL, enter = fadeIn(tween(160)), exit = fadeOut(tween(160))) {
+        AnimatedVisibility(visible = mode == VideoMode.FULL || pip, enter = fadeIn(tween(160)), exit = fadeOut(tween(160))) {
             Box(Modifier.fillMaxSize().background(Color.Black))
         }
 
@@ -366,22 +491,22 @@ private fun ActiveVideoHost(
         AndroidView(
             factory = { surface },
             modifier = Modifier
-                .offset { IntOffset(rect.left.roundToInt(), rect.top.roundToInt()) }
+                .offset { rectNow().let { IntOffset(it.left.roundToInt(), it.top.roundToInt()) } }
                 .layout { measurable, _ ->
-                    val w = rect.width.roundToInt().coerceAtLeast(1)
-                    val h = rect.height.roundToInt().coerceAtLeast(1)
+                    val w = rectNow().width.roundToInt().coerceAtLeast(1)
+                    val h = rectNow().height.roundToInt().coerceAtLeast(1)
                     val placeable = measurable.measure(Constraints.fixed(w, h))
                     layout(w, h) { placeable.place(0, 0) }
                 },
         )
         // A tap on the small picture opens the watch page (its own touch handling is off in the mini mode).
-        if (mode == VideoMode.MINI) {
+        if (mode == VideoMode.MINI && !pip) {
             Box(
                 Modifier
-                    .offset { IntOffset(rect.left.roundToInt(), rect.top.roundToInt()) }
+                    .offset { rectNow().let { IntOffset(it.left.roundToInt(), it.top.roundToInt()) } }
                     .layout { measurable, _ ->
-                        val w = rect.width.roundToInt().coerceAtLeast(1)
-                        val h = rect.height.roundToInt().coerceAtLeast(1)
+                        val w = rectNow().width.roundToInt().coerceAtLeast(1)
+                        val h = rectNow().height.roundToInt().coerceAtLeast(1)
                         val placeable = measurable.measure(Constraints.fixed(w, h))
                         layout(w, h) { placeable.place(0, 0) }
                     }
@@ -480,27 +605,8 @@ private tailrec fun Context.findComponentActivity(): ComponentActivity? = when (
     else -> null
 }
 
-/** Full screen's system side: immersive bars and orientation, kept apart from the composition. */
+/** Full screen's system side: immersive bars and the auto-rotate setting, kept apart from the composition. */
 internal object FullScreen {
-    private val handler = android.os.Handler(android.os.Looper.getMainLooper())
-    private var release: Runnable? = null
-
-    fun enter(activity: Activity, size: androidx.media3.common.VideoSize?) {
-        release?.let(handler::removeCallbacks)
-        bars(activity, false)
-        val portraitPicture = size != null && size.width > 0 && size.height > size.width
-        if (!portraitPicture) activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
-    }
-
-    /** Bars back; the turn back to portrait is held for a moment so the phone held sideways does not bounce straight into full screen again. */
-    fun leave(activity: Activity) {
-        bars(activity, true)
-        activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT
-        val r = Runnable { activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED }
-        release = r
-        handler.postDelayed(r, 1_500)
-    }
-
     fun bars(activity: Activity, visible: Boolean) {
         val controller = WindowInsetsControllerCompat(activity.window, activity.window.decorView)
         if (visible) controller.show(WindowInsetsCompat.Type.systemBars()) else {
@@ -509,10 +615,7 @@ internal object FullScreen {
         }
     }
 
-    /** The rotate button in full screen: the other way round. */
-    fun turn(activity: Activity) {
-        val landscape = activity.resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
-        activity.requestedOrientation =
-            if (landscape) ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT else ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
-    }
+    /** The system's auto-rotate switch. */
+    fun autoRotate(context: Context): Boolean =
+        android.provider.Settings.System.getInt(context.contentResolver, android.provider.Settings.System.ACCELEROMETER_ROTATION, 1) == 1
 }
