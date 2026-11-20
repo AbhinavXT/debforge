@@ -191,7 +191,9 @@ class GestureEngine(config: Config, private val cb: Callbacks) {
             return
         }
         when {
-            centerSwipeDown && dy > 0f && abs(dy) > 1.5f * abs(dx) && sideOf(downX) == null -> mode = Mode.CENTER
+            centerSwipeDown && dy > 0f && abs(dy) > 1.5f * abs(dx) && sideOf(downX) == null ->
+                // Near the top a downward swipe is for the system bars, not for leaving full screen.
+                mode = if (downY < config.height * CENTER_SWIPE_TOP_FRACTION) Mode.IGNORED else Mode.CENTER
             abs(dy) > 1.5f * abs(dx) -> {
                 mode = Mode.VERTICAL
                 verticalSide = if (downX < config.width / 2) Side.LEFT else Side.RIGHT
@@ -297,3 +299,6 @@ class GestureEngine(config: Config, private val cb: Callbacks) {
 
 /** How far (dp) a downward swipe from the middle must go to count. */
 private const val CENTER_SWIPE_DP = 64f
+
+/** A downward swipe from the middle that starts in this top part of the screen is left to the system bars. */
+private const val CENTER_SWIPE_TOP_FRACTION = 0.25f

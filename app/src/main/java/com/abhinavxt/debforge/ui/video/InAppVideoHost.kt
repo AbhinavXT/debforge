@@ -193,7 +193,8 @@ private fun ActiveVideoHost(
                 launcher.dispatch(if (modeNow == VideoMode.FULL) VideoModeEvent.ExitFull else VideoModeEvent.EnterFull)
             },
             onRotateScreen = { if (modeNow == VideoMode.FULL) rotateScreenRequests++ },
-            onBars = { visible -> if (modeNow == VideoMode.FULL) FullScreen.bars(activity, visible) },
+            // Showing the controls keeps the system bars hidden: they only come back on an edge swipe.
+            onBars = { if (modeNow == VideoMode.FULL) FullScreen.bars(activity, false) },
             onClose = launcher::close,
         )
     }

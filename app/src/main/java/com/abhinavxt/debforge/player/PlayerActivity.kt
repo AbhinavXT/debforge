@@ -150,7 +150,7 @@ class PlayerActivity : ComponentActivity() {
         surface = VideoSurface(
             this, session, settings, { window }, isTv, controlsActions, SurfaceMode.FULL
         ).apply {
-            onControllerVisibility = { visible -> if (visible) showSystemBars() else hideSystemBars() }
+            onControllerVisibility = { hideSystemBars() }
         }
         lifecycleScope.launch {
             pipAllowed = settings.pipFlow.first()
@@ -334,7 +334,8 @@ class PlayerActivity : ComponentActivity() {
 
         override fun onBarsVisible(visible: Boolean) {
             if (isInPictureInPictureMode) return
-            if (visible) showSystemBars() else hideSystemBars()
+            // Showing the controls keeps the system bars hidden: they only come back on an edge swipe.
+            hideSystemBars()
         }
     }
 
@@ -580,10 +581,6 @@ class PlayerActivity : ComponentActivity() {
             systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
             hide(WindowInsetsCompat.Type.systemBars())
         }
-    }
-
-    private fun showSystemBars() {
-        WindowInsetsControllerCompat(window, window.decorView).show(WindowInsetsCompat.Type.systemBars())
     }
 
 

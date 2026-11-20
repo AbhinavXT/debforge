@@ -185,7 +185,7 @@ class GestureEngineTest {
 
     @Test fun centerSwipeDownFiresOnlyWhenOnAndFromTheMiddle() {
         g.centerSwipeDown = true
-        drag(500f, 100f, 300f)
+        drag(500f, 150f, 350f)
         assertEquals(listOf("centerDown"), rec.log)
         rec.log.clear()
         drag(100f, 100f, 300f) // left side: brightness
@@ -201,5 +201,11 @@ class GestureEngineTest {
     @Test fun centerSwipeDownOffKeepsLevels() {
         drag(500f, 100f, 300f)
         assertTrue(rec.log.first().startsWith("v:"))
+    }
+
+    @Test fun centerSwipeDownNearTheTopIsLeftToTheSystemBars() {
+        g.centerSwipeDown = true
+        drag(500f, 60f, 300f) // below the edge zone but in the top quarter
+        assertTrue(rec.log.isEmpty())
     }
 }
