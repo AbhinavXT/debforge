@@ -11,6 +11,7 @@ import androidx.media3.extractor.Extractor
 import androidx.media3.extractor.ExtractorsFactory
 import androidx.media3.extractor.text.DefaultSubtitleParserFactory
 import androidx.media3.extractor.text.SubtitleExtractor
+import androidx.media3.extractor.text.SubtitleParser
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.DataSpec
@@ -205,13 +206,17 @@ class WindowedDataSource(
  * ones); everything else goes to the default factory.
  */
 @OptIn(UnstableApi::class)
-class YouTubeMediaSourceFactory(context: Context, chunk: Long = YouTubeStreaming.CHUNK) : MediaSource.Factory {
+class YouTubeMediaSourceFactory(
+    context: Context,
+    chunk: Long = YouTubeStreaming.CHUNK,
+    parsers: SubtitleParser.Factory = DefaultSubtitleParserFactory()
+) : MediaSource.Factory {
     private val dataSources = WindowedDataSource.Factory(chunk)
     private val progressive = ProgressiveMediaSource.Factory(dataSources)
     private val default = DefaultMediaSourceFactory(context)
     // Subtitles can be http links or local files, so they do not go through the windowed reader.
     private val subtitleData = DefaultDataSource.Factory(context)
-    private val subtitleParsers = DefaultSubtitleParserFactory()
+    private val subtitleParsers = parsers
 
     /** A subtitle file parsed into cues while it is read, as the default factory does (raw text samples are refused). Null when the format can't be parsed. */
     private fun subtitleSource(config: MediaItem.SubtitleConfiguration): MediaSource? {

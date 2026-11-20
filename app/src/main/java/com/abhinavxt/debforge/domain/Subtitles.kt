@@ -12,7 +12,9 @@ data class SubtitleLink(
     val forced: Boolean,
     /** Where to get a fresh link when [url] expires (null for plain links). */
     val provider: ProviderId? = null,
-    val sourceRef: String? = null
+    val sourceRef: String? = null,
+    /** OpenSubtitles file id for subtitles picked online (the key their timing is remembered under). */
+    val osFileId: Long? = null
 )
 
 /**

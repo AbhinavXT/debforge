@@ -93,12 +93,17 @@ class VideoSession @Inject constructor(
     internal val youTubeResolver: com.abhinavxt.debforge.data.youtube.YouTubeResolver,
     internal val networkMonitor: com.abhinavxt.debforge.download.NetworkMonitor,
     internal val subtitleImporter: com.abhinavxt.debforge.download.SubtitleImporter,
+    private val timingStore: com.abhinavxt.debforge.player.subtitles.SubtitleTimingStore,
 ) {
     private val lifecycle = VideoLifecycle(Steps())
 
     /** Jobs of the current video; cancelled when it closes or is replaced. */
     internal var scope = newScope()
         private set
+
+    /** Raw cues of the side-loaded subtitles, for the sync tools. */
+    internal val cueBook = com.abhinavxt.debforge.player.subtitles.CueBook()
+    private val retimingParsers = com.abhinavxt.debforge.player.subtitles.RetimingParserFactory({ timingStore.cached(it) }, cueBook)
 
     var player: ExoPlayer? = null
         private set
@@ -855,10 +860,11 @@ class VideoSession @Inject constructor(
             .setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON)
             .setEnableDecoderFallback(true)
         val exo = ExoPlayer.Builder(context, renderers)
-            .apply {
+            .setMediaSourceFactory(
                 // Video-only + audio merged, read in byte windows; other items go to the default factory.
-                if (youtube != null) setMediaSourceFactory(com.abhinavxt.debforge.player.youtube.YouTubeMediaSourceFactory(context))
-            }
+                if (youtube != null) com.abhinavxt.debforge.player.youtube.YouTubeMediaSourceFactory(context, parsers = retimingParsers)
+                else androidx.media3.exoplayer.source.DefaultMediaSourceFactory(context).setSubtitleParserFactory(retimingParsers)
+            )
             // Pause for calls / other apps' audio, and when headphones come out.
             .setAudioAttributes(
                 androidx.media3.common.AudioAttributes.Builder()
@@ -893,6 +899,25 @@ class VideoSession @Inject constructor(
         actions.startLoop() // an A-B loop set before leaving the app
     }
 
+    private fun timingKey(sub: SubtitleLink): String? = com.abhinavxt.debforge.player.subtitles.timingKeyFor(
+        identity?.itemId, sub.url, sub.provider?.name, sub.sourceRef, sub.osFileId
+    )
+
+    /**
+     * Saves [timing] for the subtitle [key] and reloads the file at the same position, so the subtitle is
+     * parsed again with the new times. The chosen subtitle track stays on. Works for both hosts.
+     */
+    fun applySubtitleTiming(key: String, timing: com.abhinavxt.debforge.player.subtitles.SubtitleTiming) {
+        timingStore.updateCache(key, timing)
+        scope.launch { runCatching { timingStore.set(key, timing) } }
+        val p = player ?: return
+        pendingTextLabel = p.currentTracks.groups.firstNotNullOfOrNull { g ->
+            if (g.type != C.TRACK_TYPE_TEXT) null
+            else (0 until g.length).firstOrNull { g.isTrackSelected(it) }?.let { g.getTrackFormat(it).label }
+        }
+        reloadMediaItem(p.currentPosition, play = false)
+    }
+
     /** The current file, with the torrent's own subtitle files (pick them with the CC button). */
     internal fun buildMediaItem(): MediaItem =
         MediaItem.Builder()
@@ -904,6 +929,7 @@ class VideoSession @Inject constructor(
                     .setMimeType(sub.mimeType)
                     .setLanguage(sub.language)
                     .setLabel(sub.label)
+                    .setId(timingKey(sub))
                     // Forced subs (signs, foreign dialogue) show without being picked.
                     // Subtitles chosen in the YouTube preview are shown from the start.
                     .setSelectionFlags(if (sub.forced) C.SELECTION_FLAG_FORCED else if (youtube != null) C.SELECTION_FLAG_DEFAULT else 0)

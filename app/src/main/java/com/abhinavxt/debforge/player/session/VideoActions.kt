@@ -399,7 +399,8 @@ class VideoActions internal constructor(private val s: VideoSession) : ControlsA
                 mimeType = "application/x-subrip",
                 language = sub.language?.substringBefore('-'),
                 label = label,
-                forced = false
+                forced = false,
+                osFileId = sub.fileId
             )
             s.pendingTextLabel = label
             controls.panel = null
