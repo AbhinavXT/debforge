@@ -16,6 +16,7 @@ import java.io.File
 import java.util.Locale
 import com.abhinavxt.debforge.domain.MediaKind
 import com.abhinavxt.debforge.domain.ReleaseNameParser
+import com.abhinavxt.debforge.domain.AudioFolder
 import com.abhinavxt.debforge.domain.filingNameFor
 import com.abhinavxt.debforge.domain.isYouTubeSubtitleId
 import javax.inject.Inject
@@ -152,10 +153,11 @@ class DownloadController @Inject constructor(
     // --- helpers -----------------------------------------------------------
 
     /**
-     * "Shows/The Bear/Season 02", "Movies/Oppenheimer (2023)", or "" for
+     * "Shows/The Bear/Season 02", "Movies/Oppenheimer (2023)", "Audio" for audio files, or "" for
      * anything unrecognised (stays in the root folder).
      */
     private fun libraryFolderFor(filename: String, youTubeSubtitle: Boolean): String {
+        if (AudioFolder.isAudioName(filename)) return AudioFolder.NAME
         val info = ReleaseNameParser.parse(filingNameFor(filename, youTubeSubtitle))
         if (!info.isVideo) return ""
         return when (info.kind) {
