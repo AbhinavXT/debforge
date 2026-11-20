@@ -1086,4 +1086,6 @@
     <plurals name="media_download_all_queued_n">
         <item quantity="other">Unduhan dimulai untuk %1$d video</item>
     </plurals>
+    <string name="watch_open_external">Buka di aplikasi lain</string>
+    <string name="watch_next_episodes">Episode berikutnya</string>
 </resources>

@@ -1142,4 +1142,6 @@
         <item quantity="one">%1$d व्हिडिओचे डाउनलोड सुरू झाले</item>
         <item quantity="other">%1$d व्हिडिओचे डाउनलोड सुरू झाले</item>
     </plurals>
+    <string name="watch_open_external">दुसऱ्या अ‍ॅपमध्ये उघडा</string>
+    <string name="watch_next_episodes">पुढील भाग</string>
 </resources>

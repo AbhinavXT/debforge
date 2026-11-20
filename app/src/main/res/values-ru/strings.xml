@@ -1254,4 +1254,6 @@
         <item quantity="many">Загрузка начата для %1$d видео</item>
         <item quantity="other">Загрузка начата для %1$d видео</item>
     </plurals>
+    <string name="watch_open_external">Открыть в другом приложении</string>
+    <string name="watch_next_episodes">Следующие серии</string>
 </resources>

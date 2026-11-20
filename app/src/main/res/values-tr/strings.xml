@@ -1142,4 +1142,6 @@
         <item quantity="one">%1$d video için indirme başladı</item>
         <item quantity="other">%1$d video için indirme başladı</item>
     </plurals>
+    <string name="watch_open_external">Başka uygulamada aç</string>
+    <string name="watch_next_episodes">Sonraki bölümler</string>
 </resources>

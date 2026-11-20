@@ -1142,4 +1142,6 @@
         <item quantity="one">Download für %1$d Video gestartet</item>
         <item quantity="other">Download für %1$d Videos gestartet</item>
     </plurals>
+    <string name="watch_open_external">In anderer App öffnen</string>
+    <string name="watch_next_episodes">Nächste Folgen</string>
 </resources>

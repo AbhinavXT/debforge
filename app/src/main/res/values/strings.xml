@@ -1144,4 +1144,6 @@
         <item quantity="one">Download started for %1$d video</item>
         <item quantity="other">Download started for %1$d videos</item>
     </plurals>
+    <string name="watch_open_external">Open in other app</string>
+    <string name="watch_next_episodes">Next episodes</string>
 </resources>

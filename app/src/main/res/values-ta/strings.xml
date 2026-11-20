@@ -1142,4 +1142,6 @@
         <item quantity="one">%1$d வீடியோவின் பதிவிறக்கம் தொடங்கியது</item>
         <item quantity="other">%1$d வீடியோக்களின் பதிவிறக்கம் தொடங்கியது</item>
     </plurals>
+    <string name="watch_open_external">வேறு செயலியில் திற</string>
+    <string name="watch_next_episodes">அடுத்த அத்தியாயங்கள்</string>
 </resources>

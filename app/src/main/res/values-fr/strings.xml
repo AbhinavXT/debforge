@@ -1198,4 +1198,6 @@
         <item quantity="many">Téléchargement lancé pour %1$d de vidéos</item>
         <item quantity="other">Téléchargement lancé pour %1$d vidéos</item>
     </plurals>
+    <string name="watch_open_external">Ouvrir dans une autre app</string>
+    <string name="watch_next_episodes">Épisodes suivants</string>
 </resources>

@@ -1142,4 +1142,6 @@
         <item quantity="one">%1$d টি ভিডিওর ডাউনলোড শুরু হয়েছে</item>
         <item quantity="other">%1$d টি ভিডিওর ডাউনলোড শুরু হয়েছে</item>
     </plurals>
+    <string name="watch_open_external">অন্য অ্যাপে খুলুন</string>
+    <string name="watch_next_episodes">পরের পর্বগুলি</string>
 </resources>

@@ -147,7 +147,6 @@ import com.abhinavxt.debforge.ui.components.MessageState
 import com.abhinavxt.debforge.ui.components.ScreenHeader
 
 private val FieldShape = CircleShape
-private val RowShape = RoundedCornerShape(16.dp)
 
 @Composable
 fun YouTubeScreen(
@@ -650,60 +649,6 @@ private fun ResultRow(
     }
 }
 
-/**
- * A related video: the body opens its preview. [onAddToQueue] is a separate trailing button, shown only when given
- * (it queues the video for audio playback).
- */
-@Composable
-private fun RelatedRow(
-    r: YouTubeSearchResult,
-    onClick: () -> Unit,
-    onAddToQueue: ((YouTubeSearchResult) -> Unit)? = null,
-) {
-    val source = remember { MutableInteractionSource() }
-    val queueSource = remember { MutableInteractionSource() }
-    Row(Modifier.fillMaxWidth().heightIn(min = 56.dp), verticalAlignment = Alignment.CenterVertically) {
-        Row(
-            Modifier.weight(1f).clip(RowShape).focusRing(source, RowShape)
-                .clickable(interactionSource = source, indication = androidx.compose.foundation.LocalIndication.current, role = Role.Button, onClick = onClick)
-                .semantics(mergeDescendants = true) {}
-                .padding(8.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            ResultThumb(r)
-            Column(Modifier.weight(1f)) {
-                Text(r.title, style = MaterialTheme.typography.titleSmall, maxLines = 2, overflow = TextOverflow.Ellipsis)
-                if (!r.channel.isNullOrBlank()) {
-                    Text(r.channel, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                }
-            }
-        }
-        if (onAddToQueue != null) {
-            IconButton(onClick = { onAddToQueue(r) }, modifier = Modifier.focusRing(queueSource, CircleShape), interactionSource = queueSource) {
-                Icon(Icons.Rounded.PlaylistAdd, contentDescription = stringResource(R.string.yt_add_to_queue_cd))
-            }
-        }
-    }
-}
-
-@Composable
-private fun ResultThumb(r: YouTubeSearchResult) {
-    Box(Modifier.width(128.dp).aspectRatio(16f / 9f).clip(RoundedCornerShape(12.dp)).background(MaterialTheme.colorScheme.surfaceContainerHigh)) {
-        AsyncImage(model = r.thumbnailUrl, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
-        if (r.durationSec > 0) {
-            Surface(
-                color = Color.Black.copy(alpha = 0.75f),
-                contentColor = Color.White,
-                shape = RoundedCornerShape(6.dp),
-                modifier = Modifier.align(Alignment.BottomEnd).padding(4.dp),
-            ) {
-                Text(durationText(r.durationSec), style = MaterialTheme.typography.labelSmall, modifier = Modifier.padding(horizontal = 6.dp, vertical = 1.dp))
-            }
-        }
-    }
-}
-
 @Composable
 private fun PlaylistState(
     p: YouTubeUi.Playlist,
@@ -1005,7 +950,6 @@ private fun PreviewState(
     onClosePreview: () -> Unit = {},
 ) {
     val audio = p.selected.isAudio
-    val rows = p.choices.filter { it.isAudio == audio }
     val firstFocus = remember { FocusRequester() }
     val inputMode = androidx.compose.ui.platform.LocalInputModeManager.current
     // TV / keyboard: land on the default row. Touch: no focus request, it would scroll the list a moment after the preview appears.
@@ -1036,25 +980,16 @@ private fun PreviewState(
         Row(verticalAlignment = Alignment.Top) {
             Column(Modifier.weight(1f)) {
                 Text(p.video.title, style = MaterialTheme.typography.titleMedium, maxLines = 2, overflow = TextOverflow.Ellipsis)
-                val uploaderUrl = p.video.uploaderUrl?.takeIf { p.video.uploader.isNotBlank() }
-                Text(
-                    p.video.uploader, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis,
-                    modifier = if (uploaderUrl != null) Modifier.channelLink(stringResource(R.string.yt_open_channel, p.video.uploader)) { onChannel(p.video.uploader, uploaderUrl) } else Modifier,
-                )
+                ChannelName(p.video.uploader, p.video.uploaderUrl, onChannel)
             }
             IconButton(onClick = onClosePreview) { Icon(Icons.Rounded.Close, contentDescription = stringResource(R.string.yt_another_link)) }
         }
     }
     val choices: @Composable () -> Unit = {
-        // A video with only audio (or only video) choices has nothing to switch between.
-        if (p.choices.any { it.isAudio } && p.choices.any { !it.isAudio }) ModeToggle(audio, onMode)
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            rows.forEachIndexed { i, c ->
-                FormatRow(c, c == p.selected, best = i == 0, onClick = { onSelect(c) },
-                    modifier = if (c == p.selected) Modifier.focusRequester(firstFocus) else Modifier)
-            }
-        }
-        if (!audio && p.video.subtitles.isNotEmpty()) SubtitleRow(p.video.subtitles, p.subtitle, onSubtitle)
+        FormatChoicesBlock(
+            p.choices, p.selected, p.video.subtitles, p.subtitle, onMode, onSelect, onSubtitle,
+            selectedModifier = Modifier.focusRequester(firstFocus),
+        )
     }
     // Part of the preview's own scroll (no nested list), so swipe-down-to-close still only starts at the top.
     val upNext: @Composable () -> Unit = {
@@ -1132,66 +1067,6 @@ private fun PreviewState(
                 }
                 bar(Modifier)
             }
-        }
-    }
-}
-
-@Composable
-private fun subtitleName(s: YouTubeSubtitle) = if (s.auto) stringResource(R.string.yt_subtitles_auto, s.label) else s.label
-
-/** Video mode only: None, or one language to save beside the video. */
-@Composable
-private fun SubtitleRow(options: List<YouTubeSubtitle>, chosen: YouTubeSubtitle?, onChoose: (YouTubeSubtitle?) -> Unit) {
-    var open by remember { mutableStateOf(false) }
-    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        Text(stringResource(R.string.yt_subtitles), style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
-        Box {
-            TextButton(onClick = { open = true }, modifier = Modifier.heightIn(min = 48.dp)) {
-                Text(chosen?.let { subtitleName(it) } ?: stringResource(R.string.yt_subtitles_none), maxLines = 1, overflow = TextOverflow.Ellipsis)
-            }
-            DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
-                DropdownMenuItem(text = { Text(stringResource(R.string.yt_subtitles_none)) }, onClick = { open = false; onChoose(null) })
-                options.forEach { o -> DropdownMenuItem(text = { Text(subtitleName(o)) }, onClick = { open = false; onChoose(o) }) }
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun ModeToggle(audio: Boolean, onMode: (Boolean) -> Unit) {
-    SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-        listOf(false to R.string.yt_mode_video, true to R.string.yt_mode_audio).forEachIndexed { i, (isAudio, label) ->
-            SegmentedButton(
-                selected = audio == isAudio,
-                onClick = { onMode(isAudio) },
-                shape = SegmentedButtonDefaults.itemShape(i, 2),
-                modifier = Modifier.heightIn(min = 48.dp),
-            ) { Text(stringResource(label)) }
-        }
-    }
-}
-
-@Composable
-private fun FormatRow(c: FormatChoice, selected: Boolean, best: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    val source = remember { MutableInteractionSource() }
-    val focused by source.collectIsFocusedAsState()
-    Surface(
-        color = if (selected) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surfaceContainerLow,
-        shape = RowShape,
-        modifier = modifier.fillMaxWidth().heightIn(min = 56.dp).clip(RowShape)
-            .then(if (focused) Modifier.border(2.dp, MaterialTheme.colorScheme.primary, RowShape) else Modifier)
-            .selectable(selected = selected, interactionSource = source, indication = androidx.compose.foundation.LocalIndication.current, role = Role.RadioButton, onClick = onClick),
-    ) {
-        Row(Modifier.padding(horizontal = 12.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
-            RadioButton(selected = selected, onClick = null)
-            Spacer(Modifier.size(12.dp))
-            Text(choiceLabel(c), style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
-            if (best) {
-                Text(stringResource(R.string.yt_best), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
-                Spacer(Modifier.size(12.dp))
-            }
-            Text(sizeText(c), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }
