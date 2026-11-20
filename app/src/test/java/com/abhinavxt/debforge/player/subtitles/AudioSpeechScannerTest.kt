@@ -226,4 +226,23 @@ class AudioSpeechScannerTest {
         run({ FloatArray(2000) { if (it in 500..900) 1f else 0.001f } }, align = { s, _, _ -> seen = s.count { it }; match })
         assertTrue("speech frames=$seen", seen in 380..460)
     }
+
+    @Test fun cancellationIsNotATrackFailure() {
+        var tried = 0
+        try {
+            runBlocking {
+                AudioSpeechScanner.firstReadable(listOf(0, 1, 2), 3) { tried++; throw CancellationException("cancelled") }
+            }
+            fail("expected cancellation")
+        } catch (e: CancellationException) {
+            assertEquals(1, tried) // no fall-through to the next track, no ScanFailure
+        }
+    }
+
+    @Test fun failingTrackFallsThroughToTheNext() {
+        val r = runBlocking {
+            AudioSpeechScanner.firstReadable(listOf(0, 1), 2) { if (it == 0) throw IllegalStateException("bad") else "ok$it" }
+        }
+        assertEquals("ok1", r)
+    }
 }

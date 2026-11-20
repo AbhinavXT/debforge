@@ -5,6 +5,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
@@ -43,7 +44,7 @@ class SubtitleTimingStore internal constructor(
     init {
         scope.launch {
             try {
-                val stored = runCatching { all() }.getOrNull().orEmpty()
+                val stored = try { all() } catch (e: CancellationException) { throw e } catch (e: Exception) { emptyMap() }
                 synchronized(touched) {
                     stored.forEach { (k, v) -> if (k !in touched) cache.putIfAbsent(k, v) }
                 }
@@ -53,13 +54,19 @@ class SubtitleTimingStore internal constructor(
         }
     }
 
+    /** What is in memory for [key] right now, never waiting: for Main and Compose. Null until the first load finishes unless it was changed this run. */
+    fun peek(key: String): SubtitleTiming? = cache[key]
+
+    /** [peek] for [key], else for the key older versions used for the same file. */
+    fun peekLookup(key: String): SubtitleTiming? = peek(key) ?: legacyTimingKey(key)?.let(::peek)
+
     /** The saved timing for [key], waiting (bounded) for the first load. For the loader thread, never Main. */
     fun cached(key: String): SubtitleTiming? {
         if (loaded.count > 0) runCatching { loaded.await(LOAD_WAIT_MS, TimeUnit.MILLISECONDS) }
         return cache[key]
     }
 
-    /** [cached] for [key], else for the key older versions used for the same file. */
+    /** [cached] for [key], else for the key older versions used for the same file. Waits like [cached]: loader thread only. */
     fun lookup(key: String): SubtitleTiming? = cached(key) ?: legacyTimingKey(key)?.let(::cached)
 
     /** Makes [timing] visible to the parser at once; [set] then saves it. */
@@ -81,7 +88,7 @@ class SubtitleTimingStore internal constructor(
     /** [set] from a scope of the app, for callers that may be gone before the write ends. */
     fun save(key: String, timing: SubtitleTiming) {
         updateCache(key, timing)
-        scope.launch { runCatching { persist(key, timing) } }
+        scope.launch { try { persist(key, timing) } catch (e: CancellationException) { throw e } catch (e: Exception) { /* kept in memory */ } }
     }
 
     private suspend fun persist(key: String, timing: SubtitleTiming) {

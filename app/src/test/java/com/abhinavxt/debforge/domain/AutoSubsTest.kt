@@ -108,4 +108,12 @@ class AutoSubsTest {
     @Test fun resetHidesAnything() {
         assertEquals(AutoSubsChip.Hidden, step(AutoSubsChip.Added("English"), AutoSubsEvent.Reset).chip)
     }
+
+    @Test fun resetWhileAddedHidesTheChipWithoutUndoing() {
+        val r = step(AutoSubsChip.Added("English"), AutoSubsEvent.Reset)
+        assertEquals(AutoSubsChip.Hidden, r.chip)
+        assertEquals(null, r.effect)
+        // And Undo after that does nothing.
+        assertEquals(null, step(r.chip, AutoSubsEvent.Undo).effect)
+    }
 }

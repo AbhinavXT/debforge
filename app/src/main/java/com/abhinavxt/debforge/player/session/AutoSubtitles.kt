@@ -139,7 +139,7 @@ internal class AutoSubtitles(private val s: VideoSession) {
                 val file = s.openSubtitles.download(sub)
                 val p = s.player ?: return@launch
                 paramsBefore = p.trackSelectionParameters
-                added = attach(sub, file, resumePlaying = p.playWhenReady)
+                added = attach(sub, file, resumePlaying = p.playWhenReady, auto = true)
                 dispatch(AutoSubsEvent.Attached)
             } catch (e: CancellationException) {
                 throw e
@@ -169,7 +169,10 @@ internal class AutoSubtitles(private val s: VideoSession) {
         }
         paramsBefore = null
         val uri = a.savedUri
-        if (uri != null && a.createdFile) s.scope.launch(Dispatchers.IO) { deleteSaved(uri) }
+        if (uri != null && a.createdFile) {
+            s.forgetSubtitleTiming(a.link)
+            s.scope.launch(Dispatchers.IO) { deleteSaved(uri) }
+        }
     }
 
     private fun deleteSaved(uri: Uri) {
@@ -185,8 +188,16 @@ internal class AutoSubtitles(private val s: VideoSession) {
     /**
      * Adds the downloaded [file] for [sub] to the video (saved next to it when it is a downloaded one, so it is found
      * again next time), then reloads at the same second and switches to it. [resumePlaying]: keep playing afterwards.
+     * [auto]: this is the automatic add's own call; any other caller (the panel) retires the chip and its Undo.
      */
-    suspend fun attach(sub: OnlineSubtitle, file: File, resumePlaying: Boolean): Attached {
+    suspend fun attach(sub: OnlineSubtitle, file: File, resumePlaying: Boolean, auto: Boolean = false): Attached {
+        if (!auto) {
+            // The panel's own pick while the chip is up: the chip's Undo would now undo the wrong thing.
+            downloadJob?.cancel()
+            added = null
+            paramsBefore = null
+            dispatch(AutoSubsEvent.Reset)
+        }
         val language = sub.language?.let { Locale.forLanguageTag(it).displayName.ifBlank { it } }
         val label = s.string(R.string.player_subs_online_label, language ?: s.string(R.string.player_subtitles))
         // One online subtitle per label: picking another English one replaces the last.

@@ -19,9 +19,13 @@ object AutoSubsRules {
         languages: List<String>
     ): Boolean {
         if (mode == OnlineSubsWhenNone.OFF || !hasKey || isTv || userTurnedSubtitlesOff) return false
-        if (textTracks.any { !it.forced && it.language.isNullOrBlank() }) return false
+        if (hasUntaggedFullTrack(textTracks)) return false
         return SubtitleAutoPick.needsSubtitles(textTracks, languages)
     }
+
+    /** A full (not forced) text track with no language tag may well be the user's, so it counts as covering any language. Shared with the download-time fetch. */
+    fun hasUntaggedFullTrack(textTracks: List<TextTrackInfo>): Boolean =
+        textTracks.any { !it.forced && it.language.isNullOrBlank() }
 }
 
 /** What the player's small subtitles chip shows. */

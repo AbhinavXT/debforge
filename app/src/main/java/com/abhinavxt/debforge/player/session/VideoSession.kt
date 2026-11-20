@@ -908,7 +908,14 @@ class VideoSession @Inject constructor(
         actions.startLoop() // an A-B loop set before leaving the app
     }
 
-    internal fun timingStoreLookup(key: String) = timingStore.lookup(key)
+    /** For Main: reads memory only, never waits for the first load. */
+    internal fun timingStoreLookup(key: String) = timingStore.peekLookup(key)
+
+    /** Drops the remembered timing of [link]'s subtitle (its file was deleted). */
+    internal fun forgetSubtitleTiming(link: SubtitleLink) {
+        val key = timingKey(link) ?: return
+        timingStore.save(key, com.abhinavxt.debforge.player.subtitles.SubtitleTiming.IDENTITY)
+    }
 
     private fun timingKey(sub: SubtitleLink): String? = com.abhinavxt.debforge.player.subtitles.timingKeyFor(
         identity?.itemId, sub.url, sub.provider?.name, sub.sourceRef, sub.osFileId
@@ -920,10 +927,25 @@ class VideoSession @Inject constructor(
      */
     internal suspend fun migrateSubtitleTiming(osFileId: Long, link: SubtitleLink) {
         val to = timingKey(link.copy(osFileId = null)) ?: return
-        if (timingStore.cached(to) != null) return
-        val old = timingStore.cached("os:$osFileId") ?: runCatching { timingStore.all()["os:$osFileId"] }.getOrNull() ?: return
+        if (timingStore.peek(to) != null) return
+        // The first load may still be running: the stored copy answers without blocking Main.
+        val stored = try {
+            timingStore.all()
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            emptyMap()
+        }
+        if (stored[to] != null) return
+        val old = timingStore.peek("os:$osFileId") ?: stored["os:$osFileId"] ?: return
         timingStore.updateCache(to, old)
-        runCatching { timingStore.set(to, old) }
+        try {
+            timingStore.set(to, old)
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            // Kept in memory.
+        }
     }
 
     /**

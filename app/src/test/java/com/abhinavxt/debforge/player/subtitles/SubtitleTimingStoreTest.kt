@@ -1,5 +1,6 @@
 package com.abhinavxt.debforge.player.subtitles
 
+import org.junit.Assert.assertTrue
 import androidx.test.core.app.ApplicationProvider
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
@@ -60,5 +61,28 @@ class SubtitleTimingStoreTest {
         val s = store()
         assertEquals(SubtitleTiming(1.0, 9.0), s.lookup("local:Subs/A/English.srt|v1"))
         assertNull(s.cached("local:Subs/A/English.srt|v1"))
+    }
+
+    @Test fun peekNeverWaitsForTheLoad() {
+        // A scope that never runs anything: the first load never finishes, so a waiting read would take 3 s.
+        val never = object : kotlinx.coroutines.CoroutineDispatcher() {
+            override fun dispatch(context: kotlin.coroutines.CoroutineContext, block: Runnable) {}
+        }
+        val s = store(CoroutineScope(SupervisorJob() + never))
+        val start = System.nanoTime()
+        assertNull(s.peek("os:x"))
+        assertNull(s.peekLookup("local:A/b.srt|v1"))
+        val ms = (System.nanoTime() - start) / 1_000_000
+        assertTrue("peek took $ms ms", ms < 500)
+        s.updateCache("os:x", SubtitleTiming(1.0, 5.0))
+        assertEquals(SubtitleTiming(1.0, 5.0), s.peek("os:x"))
+    }
+
+    @Test fun identitySaveRemovesTheEntry() = runBlocking {
+        val s = store()
+        s.set("local:gone", SubtitleTiming(1.0, 5.0))
+        s.set("local:gone", SubtitleTiming.IDENTITY)
+        assertNull(s.peek("local:gone"))
+        assertNull(s.all()["local:gone"])
     }
 }

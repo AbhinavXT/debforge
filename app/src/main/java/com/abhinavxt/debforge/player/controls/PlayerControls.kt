@@ -55,6 +55,7 @@ import androidx.compose.material.icons.rounded.Repeat
 import androidx.compose.material.icons.rounded.Search
 import com.abhinavxt.debforge.player.playAsAudioVisible
 import com.abhinavxt.debforge.domain.AutoSubsChip
+import com.abhinavxt.debforge.player.subtitles.AutoSyncState
 import androidx.compose.material.icons.rounded.Audiotrack
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Cast
@@ -283,6 +284,7 @@ fun PlayerControls(state: ControlsState, actions: ControlsActions) {
         }
 
         AutoSubsChipView(state, actions, Modifier.align(Alignment.TopCenter))
+        AutoSyncChipView(state, actions, Modifier.align(Alignment.TopCenter))
 
         if (state.locked) Locked(state)
 
@@ -608,6 +610,39 @@ private fun AutoSubsChipView(state: ControlsState, actions: ControlsActions, mod
                     .padding(horizontal = 12.dp, vertical = 10.dp)
             )
         }
+    }
+}
+
+/** "Listening… 40% · Cancel" while sync-by-listening runs with the Sync panel closed (the panel shows its own row). Sits below the subtitles chip when both are up. */
+@Composable
+private fun AutoSyncChipView(state: ControlsState, actions: ControlsActions, modifier: Modifier) {
+    val sync = state.autoSync
+    if (sync == AutoSyncState.Idle || state.panel != null) return
+    val text = (sync as? AutoSyncState.Listening)?.let { stringResource(R.string.player_sync_auto_listening, (it.progress * 100).toInt()) }
+        ?: stringResource(R.string.player_sync_auto_matching)
+    val below = if (state.autoSubs is AutoSubsChip.Hidden) 0.dp else 48.dp
+    Row(
+        modifier
+            .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal))
+            .padding(top = 72.dp + below, start = 16.dp, end = 16.dp)
+            .control(state, "autosync")
+            .background(Color(0xE61C1C1E), RoundedCornerShape(20.dp))
+            .padding(start = 14.dp, end = 4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(text, color = Color.White, fontSize = 14.sp, modifier = Modifier.padding(vertical = 10.dp))
+        Text(
+            stringResource(R.string.player_sync_auto_cancel),
+            color = MaterialTheme.colorScheme.primary,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier
+                .clickable {
+                    state.touch()
+                    actions.cancelAutoSync()
+                }
+                .padding(horizontal = 12.dp, vertical = 10.dp)
+        )
     }
 }
 

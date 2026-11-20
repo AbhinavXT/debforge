@@ -8,6 +8,7 @@ import com.abhinavxt.debforge.data.local.DownloadEntity
 import com.abhinavxt.debforge.data.prefs.SettingsStore
 import com.abhinavxt.debforge.data.subtitles.OpenSubtitlesRepository
 import com.abhinavxt.debforge.domain.AutoPickResult
+import com.abhinavxt.debforge.domain.AutoSubsRules
 import com.abhinavxt.debforge.domain.ExtraFiles
 import com.abhinavxt.debforge.domain.OnlineSubsWhenNone
 import com.abhinavxt.debforge.domain.ReleaseNameParser
@@ -45,7 +46,9 @@ object SubtitleFetchRules {
 
     /** True when neither sidecars nor embedded tracks already cover a preferred language. */
     fun needsFetch(sidecars: List<TextTrackInfo>, embedded: List<TextTrackInfo>, languages: List<String>): Boolean =
-        SubtitleAutoPick.needsSubtitles(sidecars + embedded, languages)
+        (sidecars + embedded).let { tracks ->
+            !AutoSubsRules.hasUntaggedFullTrack(tracks) && SubtitleAutoPick.needsSubtitles(tracks, languages)
+        }
 
     private val ISO3 by lazy { Locale.getISOLanguages().associateBy { Locale(it).isO3Language } }
 

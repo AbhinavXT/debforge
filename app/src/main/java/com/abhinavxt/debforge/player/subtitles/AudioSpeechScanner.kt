@@ -7,6 +7,7 @@ import android.media.MediaExtractor
 import android.media.MediaFormat
 import android.net.Uri
 import android.os.Process
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
@@ -25,29 +26,18 @@ class AudioSpeechScanner(private val context: Context) {
 
     suspend fun scan(uri: Uri, preferredLanguage: String?, onProgress: (Float) -> Unit): FloatArray =
         withContext(Dispatchers.IO) {
+            // A pooled thread: its priority is put back when the scan ends.
+            val priorityBefore = runCatching { Process.getThreadPriority(0) }.getOrNull()
             runCatching { Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND) }
-            val languages = audioTracks(uri)
-            if (languages.isEmpty()) throw ScanFailure(false, "no audio track")
-            var noDecoder = 0
-            var lastError: Throwable? = null
-            for (track in orderTracks(languages.map { it.second }, preferredLanguage)) {
-                currentCoroutineContext().ensureActive()
-                try {
-                    return@withContext decode(uri, languages[track].first, onProgress)
-                } catch (e: NoDecoder) {
-                    noDecoder++
-                    lastError = e
-                } catch (e: ScanFailure) {
-                    lastError = e
-                } catch (e: MediaCodec.CodecException) {
-                    lastError = e
-                } catch (e: IllegalStateException) {
-                    lastError = e
-                } catch (e: java.io.IOException) {
-                    lastError = e
+            try {
+                val languages = audioTracks(uri)
+                if (languages.isEmpty()) throw ScanFailure(false, "no audio track")
+                firstReadable(orderTracks(languages.map { it.second }, preferredLanguage), languages.size) { track ->
+                    decode(uri, languages[track].first, onProgress)
                 }
+            } finally {
+                priorityBefore?.let { runCatching { Process.setThreadPriority(it) } }
             }
-            throw ScanFailure(noDecoder == languages.size, "no audio track could be read", lastError)
         }
 
     /** (extractor track index, ISO language) of each audio track. */
@@ -70,7 +60,7 @@ class AudioSpeechScanner(private val context: Context) {
         }
     }
 
-    private class NoDecoder(mime: String, cause: Throwable? = null) : Exception("no decoder for $mime", cause)
+    internal class NoDecoder(mime: String, cause: Throwable? = null) : Exception("no decoder for $mime", cause)
 
     private suspend fun decode(uri: Uri, trackIndex: Int, onProgress: (Float) -> Unit): FloatArray {
         val ctx = currentCoroutineContext()
@@ -165,6 +155,36 @@ class AudioSpeechScanner(private val context: Context) {
     private fun MediaFormat.intOr(key: String, fallback: Int) = if (containsKey(key)) getInteger(key) else fallback
 
     companion object {
+        /**
+         * The result of [decode] for the first of [order] that works. A failure falls through to the next track;
+         * cancellation (an [IllegalStateException] subclass) must not, so it is rethrown first. Throws [ScanFailure]
+         * when none works; [trackCount] tells whether every one lacked a decoder.
+         */
+        internal suspend fun <T> firstReadable(order: List<Int>, trackCount: Int, decode: suspend (Int) -> T): T {
+            var noDecoder = 0
+            var lastError: Throwable? = null
+            for (track in order) {
+                currentCoroutineContext().ensureActive()
+                try {
+                    return decode(track)
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: NoDecoder) {
+                    noDecoder++
+                    lastError = e
+                } catch (e: ScanFailure) {
+                    lastError = e
+                } catch (e: MediaCodec.CodecException) {
+                    lastError = e
+                } catch (e: IllegalStateException) {
+                    lastError = e
+                } catch (e: java.io.IOException) {
+                    lastError = e
+                }
+            }
+            throw ScanFailure(noDecoder == trackCount, "no audio track could be read", lastError)
+        }
+
         private const val TIMEOUT_US = 10_000L
         /** Under 30 s of sound there is nothing to match. */
         private const val MIN_FRAMES = 3_000

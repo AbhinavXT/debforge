@@ -48,4 +48,9 @@ class SubtitleFetchRulesTest {
         assertEquals("pt", SubtitleFetchRules.normalizeLanguage("pt-BR"))
         assertEquals(null, SubtitleFetchRules.normalizeLanguage("und"))
     }
+
+    @Test fun untaggedFullEmbeddedTrackCoversTheLanguage() {
+        assertFalse(SubtitleFetchRules.needsFetch(emptyList(), listOf(TextTrackInfo(null)), listOf("en")))
+        assertTrue(SubtitleFetchRules.needsFetch(emptyList(), listOf(TextTrackInfo(null, forced = true)), listOf("en")))
+    }
 }
