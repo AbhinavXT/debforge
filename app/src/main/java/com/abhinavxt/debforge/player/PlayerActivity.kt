@@ -17,7 +17,6 @@ import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
-import android.net.Uri
 import android.os.Bundle
 import android.util.TypedValue
 import android.view.Gravity
@@ -33,58 +32,36 @@ import androidx.annotation.OptIn
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import androidx.media3.common.C
-import androidx.media3.common.MediaItem
-import androidx.media3.common.MediaMetadata
-import androidx.media3.common.PlaybackException
-import androidx.media3.common.Player
-import androidx.media3.common.Tracks
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.exoplayer.DefaultRenderersFactory
-import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
 import androidx.lifecycle.lifecycleScope
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import com.abhinavxt.debforge.R
-import com.abhinavxt.debforge.data.playback.PlaybackEntity
-import com.abhinavxt.debforge.data.playback.PlaybackPositions
-import com.abhinavxt.debforge.data.repository.DownloadsRepository
-import com.abhinavxt.debforge.domain.DataResult
-import com.abhinavxt.debforge.domain.IntroSkip
-import com.abhinavxt.debforge.player.controls.SKIP_INTRO_SECONDS
-import com.abhinavxt.debforge.domain.LinkRefresh
 import com.abhinavxt.debforge.domain.ProviderId
-import com.abhinavxt.debforge.domain.Resume
 import com.abhinavxt.debforge.domain.SubtitleLink
 import com.abhinavxt.debforge.player.controls.ControlsActions
-import com.abhinavxt.debforge.player.controls.ControlsState
-import com.abhinavxt.debforge.player.controls.END_OF_EPISODE
 import com.abhinavxt.debforge.player.controls.Fill
-import com.abhinavxt.debforge.player.controls.PlaybackSnapshot
 import com.abhinavxt.debforge.player.controls.PlayerControls
-import com.abhinavxt.debforge.player.controls.TrackChoice
 import com.abhinavxt.debforge.player.controls.fillLabel
 import com.abhinavxt.debforge.player.gestures.GestureEngine
-import com.abhinavxt.debforge.player.tracks.SubtitleStyle
-import com.abhinavxt.debforge.player.tracks.TrackPicker
-import kotlinx.coroutines.async
-import androidx.compose.ui.graphics.asImageBitmap
 import com.abhinavxt.debforge.player.gestures.GestureMath
 import com.abhinavxt.debforge.player.gestures.GestureOverlay
 import com.abhinavxt.debforge.player.gestures.GestureUiState
+import com.abhinavxt.debforge.player.session.VideoHost
+import com.abhinavxt.debforge.player.session.VideoIdentity
+import com.abhinavxt.debforge.player.session.VideoSession
+import com.abhinavxt.debforge.player.session.VideoTarget
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import com.abhinavxt.debforge.ui.browse.PlayRequest
 import com.abhinavxt.debforge.ui.browse.playExternally
 
 /**
- * DebForge's own video player (Media3 ExoPlayer + PlayerView). On phones and
- * tablets the controls are DebForge's own (player/controls: title bar with
+ * DebForge's own video player screen (Media3 PlayerView over [VideoSession], the engine that owns the
+ * ExoPlayer). On phones and tablets the controls are DebForge's own (player/controls: title bar with
  * audio / subtitle / speed pickers, play / pause and ±10 s, seek bar with
  * time left, lock, fill, rotate, picture-in-picture, skip 85 s, next
  * episode; More: sleep timer, screenshot, A-B loop, keep playing in the
@@ -104,34 +81,27 @@ import com.abhinavxt.debforge.ui.browse.playExternally
  * Positions are saved per file (every few seconds, on leaving, at the end)
  * and restored on the next play, with a "Start over" chip. Later steps: the
  * torrent's own subtitle files, next episode, link refresh.
+ *
+ * This screen is the engine's host ([VideoHost]): the overlay Views, dialogs, picture-in-picture,
+ * orientation, system bars, keys and touch, brightness, cast and screenshots. The player, the file and
+ * everything about playing it live in [VideoSession].
  */
 @OptIn(UnstableApi::class)
 @AndroidEntryPoint
 class PlayerActivity : ComponentActivity() {
 
-    @Inject lateinit var positions: PlaybackPositions
-    @Inject lateinit var history: com.abhinavxt.debforge.data.history.PlayHistory
-    @Inject lateinit var audioPlayer: AudioPlayer
-    @Inject lateinit var videoHandoff: VideoHandoff
-    @Inject lateinit var upNext: UpNext
-    @Inject lateinit var subtitleResolver: SubtitleResolver
-    @Inject lateinit var repository: DownloadsRepository
+    @Inject lateinit var session: VideoSession
     @Inject lateinit var settings: com.abhinavxt.debforge.data.prefs.SettingsStore
-    @Inject lateinit var sponsorRepo: com.abhinavxt.debforge.data.sponsor.SponsorSegmentRepository
-    @Inject lateinit var trackMemory: com.abhinavxt.debforge.data.playback.TrackMemory
-    @Inject lateinit var scrobbler: TraktScrobbler
-    @Inject lateinit var openSubtitles: com.abhinavxt.debforge.data.subtitles.OpenSubtitlesRepository
-    @Inject lateinit var movieHasher: MovieHasher
     @Inject lateinit var caster: com.abhinavxt.debforge.player.cast.DlnaCaster
-    @Inject lateinit var chapterReader: ChapterReader
-    @Inject lateinit var youTubeResolver: com.abhinavxt.debforge.data.youtube.YouTubeResolver
     @Inject lateinit var downloads: com.abhinavxt.debforge.download.DownloadController
     @Inject @com.abhinavxt.debforge.di.ApiHttpClient lateinit var apiHttp: okhttp3.OkHttpClient
     @Inject lateinit var downloadDao: com.abhinavxt.debforge.data.local.DownloadDao
-    @Inject lateinit var networkMonitor: com.abhinavxt.debforge.download.NetworkMonitor
 
-    /** Settings → "Autoplay next episode". Off: the card still offers Play now, without a countdown. */
-    private var autoplay = true
+    /** The video this screen shows ([VideoSession.open]); another token there means it was replaced. */
+    private var token = 0L
+    private val controls get() = session.controls
+    private val gestureUi get() = session.gestureUi
+    private val player get() = session.player
 
     // --- picture-in-picture ---
     /** The device has PiP (most TVs don't) and Settings allow it. */
@@ -141,38 +111,17 @@ class PlayerActivity : ComponentActivity() {
     /** Play/pause and "Next episode" buttons in the floating window. */
     private val pipReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
+            if (!session.isCurrent(token)) return // a replaced video's screen
             when (intent.action) {
                 ACTION_PIP_PLAY_PAUSE -> player?.let { if (it.isPlaying) it.pause() else it.play() }
-                ACTION_PIP_NEXT -> playNext()
+                ACTION_PIP_NEXT -> session.playNext()
             }
         }
     }
 
-    private var player: ExoPlayer? = null
     private lateinit var playerView: PlayerView
     private lateinit var titleView: TextView
     private lateinit var startOverView: TextView
-
-    /** Which file this is (null for plain links): positions are saved only when known. */
-    private var identity: Identity? = null
-    /** Set when streaming a YouTube video (video-only URL in [uri], audio merged in); null for everything else. */
-    private var youtube: com.abhinavxt.debforge.ui.browse.YtStream? = null
-    private var tickJob: Job? = null
-
-    // --- next episode ---
-    /** Episodes after this one (same show), best copy of each. */
-    private val queue = ArrayDeque<QueuedEpisode>()
-    /** Episodes before this one, nearest first ("Previous episode"). */
-    private val previousQueue = ArrayDeque<QueuedEpisode>()
-    /** The episode playing, so going to the next or previous one can come back to it. */
-    private var currentEpisode: QueuedEpisode? = null
-    /** The next episode with its links fetched ahead of time. */
-    private var prepared: Prepared? = null
-    private var prefetchJob: Job? = null
-    /** User tapped Cancel on the card: no autoplay for this file. */
-    private var nextCancelled = false
-    /** Switching files: the countdown and "ended" can both fire; only one may. */
-    private var switching = false
     private lateinit var nextPlayNow: View
 
     // --- touch gestures ---
@@ -181,91 +130,17 @@ class PlayerActivity : ComponentActivity() {
     private var gestureEngine: GestureEngine? = null
     /** The current touch belongs to the gestures (not to a button). */
     private var gesturing = false
-    private val gestureUi = GestureUiState()
     /** Compose layer over the video: DebForge's controls (not on TV) and the gesture feedback. */
     private lateinit var gestureOverlay: androidx.compose.ui.platform.ComposeView
-    /** DebForge's own controls. Android TV keeps Media3's, made for the remote. */
-    private val controls = ControlsState()
+    /** The engine's controls actions plus this screen's own (back, rotate, fill, PiP…). */
+    private lateinit var controlsActions: ControlsActions
     /** The user turned the screen with the rotate button: stop following the video's shape. */
     private var userRotated = false
-    private val trackNames by lazy { androidx.media3.ui.DefaultTrackNameProvider(resources) }
-
-    // --- tracks, subtitles, volume boost ---
-    /** This file's tracks have been chosen (preferences / last time); only once per file. */
-    private var tracksApplied = false
-    /** What was chosen last time for this show / file, loading. */
-    private var remembered: kotlinx.coroutines.Deferred<TrackPicker.Remembered?>? = null
-    /** Kept across the player being recreated (app switch), with the speed. */
-    private var savedTrackParams: androidx.media3.common.TrackSelectionParameters? = null
-    private var savedSpeed = 1f
-    /** Set when the audio player handed this item over: its speed beats the one remembered for the show. */
-    private var handoffStart: VideoStart? = null
-    /** The audio track "Play as audio" hands over; null when there is none for this file. */
-    private var audioHandoffTrack: AudioTrack? = null
-    private var handingOff = false
-    /** Volume past the phone's maximum (1 = none, up to [GestureMath.MAX_VOLUME_LEVEL]). */
-    private var boostLevel = 1f
-    private var loudness: android.media.audiofx.LoudnessEnhancer? = null
-    private var nightMode: NightMode? = null
-    private var audioSessionId = C.AUDIO_SESSION_ID_UNSET
-    /** Sync and decoder choice, read by the renderers ([SyncedRenderersFactory]). */
-    private val tuning = RendererTuning()
-
-    // --- media session (headset, watch, lock screen, output switcher) ---
-    /** The player with next / previous mapped to episodes; what sessions control. */
-    private var episodePlayer: EpisodePlayer? = null
-    /** While watching; the background service has its own while away. */
-    private var session: androidx.media3.session.MediaSession? = null
-
-    // --- seek previews ---
-    private val thumbnails by lazy { ThumbnailLoader(applicationContext) }
-    private var previewJob: Job? = null
-    /** Settings: previews on streams too (they cost data); downloaded files always have them. */
-    private var streamPreviews = false
 
     // --- stats for nerds ---
     private lateinit var statsView: TextView
-    private var videoDecoder: String? = null
-    private var audioDecoder: String? = null
-    private var droppedFrames = 0
-    private var bandwidthBps = 0L
-    /** This file's OpenSubtitles hash, worked out on the first search. */
-    private var movieHash: kotlinx.coroutines.Deferred<String?>? = null
-    private var onlineSubsJob: Job? = null
-    /** A subtitle just added from OpenSubtitles: switch to it once the reloaded file lists it. */
-    private var pendingTextLabel: String? = null
-
-    // --- skip intro / recap / credits ---
-    /** This file's chapters (Matroska only); intro, recap and credits come from their names. */
-    private var chapters: List<com.abhinavxt.debforge.domain.MkvChapters.Chapter> = emptyList()
-    private var segments: List<IntroSkip.Segment> = emptyList()
-    private var segmentsFor = -1L
-    /** Where the intro was skipped in an earlier episode of this show. */
-    private var learntIntroAt: Long? = null
-    /** Start of each segment already skipped or passed on in this file ([LEARNT_SKIP] for the learnt one). */
-    private val doneSkips = HashSet<Long>()
-    private var autoSkipIntro = false
-    /** SponsorBlock segments of the playing YouTube video (merged, clamped), skipped by [updateSkip]. */
-    private var sponsorSegments: List<com.abhinavxt.debforge.domain.SponsorSegment> = emptyList()
-    private var sponsorRaw: List<com.abhinavxt.debforge.domain.SponsorSegment> = emptyList()
-    private var sponsorFor = -1L
-    /** Start of each sponsor segment already skipped in this file: skipped once, not again after a seek back. */
-    private val sponsorDone = HashSet<Long>()
-    /** Bumped per file, so a slow chapter read for the last one is dropped. */
-    private var fileGeneration = 0
     private lateinit var skipView: TextView
 
-    // --- extras ---
-    /** The player was handed to [BackgroundPlaybackService]: the sound goes on while we're away. */
-    private var inBackground = false
-    private var sleepJob: Job? = null
-    /** Jumps back to A whenever playback reaches B. */
-    private var loopMessage: androidx.media3.exoplayer.PlayerMessage? = null
-    // Seek-bar / swipe scrubbing.
-    private var scrubAnchor = 0L
-    private var scrubTarget = 0L
-    private var scrubWasPlaying = false
-    private var lastScrubSeek = 0L
     private val gestureHandler = android.os.Handler(android.os.Looper.getMainLooper())
     private val gestureTimer = Runnable {
         gestureEngine?.timer(android.os.SystemClock.uptimeMillis())
@@ -273,89 +148,45 @@ class PlayerActivity : ComponentActivity() {
     }
     /** Pinch zoom of the picture (1 = fit). */
     private var zoom = 1f
-    private val hideJobs = HashMap<String, Job>()
 
-    /** Quiet link refreshes after network errors (expired debrid links). */
-    private var refreshState = LinkRefresh.State()
-    private var refreshing = false
-    private var triedMp4Fallback = false // a YouTube stream that the device could not decode is switched to MP4 once
     private var networkDialog: AlertDialog? = null
-    private var networkWatch: kotlinx.coroutines.Job? = null
 
     /** Android TV: move focus to overlays when they appear (no touch screen). */
-    private val isTv by lazy {
-        (getSystemService(UI_MODE_SERVICE) as android.app.UiModeManager).currentModeType ==
-            android.content.res.Configuration.UI_MODE_TYPE_TELEVISION
-    }
+    private val isTv get() = session.isTv
 
     /** Back while "Next: …" is showing cancels it instead of leaving the player. */
     private val cancelNextOnBack = object : androidx.activity.OnBackPressedCallback(false) {
-        override fun handleOnBackPressed() {
-            nextCancelled = true
-            hideNextCard()
-        }
+        override fun handleOnBackPressed() = session.cancelNext()
     }
-    /** When the card appeared (elapsedRealtime), for its countdown; null = hidden. */
-    private var cardShownAt: Long? = null
     private lateinit var nextCard: View
     private lateinit var nextTitle: TextView
     private lateinit var nextCountdown: TextView
 
-    private data class Prepared(val episode: QueuedEpisode, val url: String, val subtitles: List<SubtitleLink>)
-
-    private lateinit var uri: Uri
-    private var title: String = ""
-    private var subtitles: List<SubtitleLink> = emptyList()
-
-    // Survive onStop/onStart (app switch) and rotation-free recreation.
-    private var resumePosition = 0L
-    private var resumePlayWhenReady = true
-    /** Asked once per file whether to switch players: don't nag on every track change. */
-    private var offeredFallback = false
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        audioPlayer.parkForVideo() // the audio queue waits, paused, in the mini player
-        uri = intent.data ?: run { finish(); return }
-        title = intent.getStringExtra(EXTRA_TITLE).orEmpty()
-        youtube = ytStreamFrom(intent)
-        // A stream is saved under DIRECT with no filename: Trakt (which needs a name) skips it.
-        identity = Identity.from(intent) ?: youtube?.let {
-            Identity(
-                com.abhinavxt.debforge.player.youtube.YouTubeStreaming.streamPositionKey(it.videoId, false),
-                ProviderId.DIRECT, it.ref, "", null
+        val uri = intent.data ?: run { finish(); return }
+        val savedToken = savedInstanceState?.getLong(STATE_TOKEN, -1L) ?: -1L
+        if (savedInstanceState != null && session.isCurrent(savedToken)) {
+            // Recreated (the video kept going in the engine): show it again.
+            session.audioPlayer.parkForVideo() // the audio queue waits, paused, in the mini player
+            token = savedToken
+        } else {
+            // Handed over by the audio player: its position and speed, not the saved ones.
+            val start = if (savedInstanceState == null) VideoStartExtras.from(intent) else null
+            token = session.open(
+                VideoTarget(uri, intent.getStringExtra(EXTRA_TITLE).orEmpty(), identityFrom(intent), subtitlesFrom(intent), ytStreamFrom(intent)),
+                start = start,
+                // Fresh start (not a recreate after the process died): pick up where the user left off.
+                restoreSaved = savedInstanceState == null && restoresSavedPosition(start),
+                resumeAtMs = savedInstanceState?.getLong(STATE_POSITION),
+                playWhenReady = savedInstanceState?.getBoolean(STATE_PLAY_WHEN_READY, true) ?: true,
+                offeredFallback = savedInstanceState?.getBoolean(STATE_OFFERED, false) ?: false,
             )
         }
-        subtitles = subtitlesFrom(intent)
-        if (savedInstanceState == null) {
-            // Handed over by the audio player: its position and speed, not the saved ones.
-            VideoStartExtras.from(intent)?.let {
-                handoffStart = it
-                resumePosition = it.positionMs
-                savedSpeed = it.speed
-            }
-        }
-        identity?.let { id ->
-            val q = upNext.take(id.itemId)
-            queue.addAll(q.next)
-            previousQueue.addAll(q.previous)
-            currentEpisode = q.current
-        }
-        startFile()
-        refreshAudioHandoff()
+        controlsActions = ScreenActions(session.actions)
         lifecycleScope.launch {
-            autoplay = settings.autoplayNextFlow.first()
             pipAllowed = settings.pipFlow.first()
             gesturesEnabled = settings.playerGesturesFlow.first()
-            controls.showRemaining = settings.playerShowRemainingFlow.first()
-            controls.subStyle = SubtitleStyle.decode(settings.subtitleStyleFlow.first())
-            controls.background = settings.playerBackgroundFlow.first()
-            controls.onlineSubsAvailable = !isTv && openSubtitles.enabled.first()
-            autoSkipIntro = settings.autoSkipIntroFlow.first()
-            controls.nightMode = settings.nightModeFlow.first()
-            streamPreviews = settings.streamPreviewsFlow.first()
-            applyNightMode()
-            applySubtitleStyle()
             controls.pipAvailable = pipSupported && pipAllowed
             updatePip()
         }
@@ -364,11 +195,6 @@ class PlayerActivity : ComponentActivity() {
             IntentFilter().apply { addAction(ACTION_PIP_PLAY_PAUSE); addAction(ACTION_PIP_NEXT) },
             ContextCompat.RECEIVER_NOT_EXPORTED
         )
-        savedInstanceState?.let {
-            resumePosition = it.getLong(STATE_POSITION)
-            resumePlayWhenReady = it.getBoolean(STATE_PLAY_WHEN_READY, true)
-            offeredFallback = it.getBoolean(STATE_OFFERED, false)
-        }
 
         // Video is landscape: open that way (either side up, following the
         // sensor). Portrait videos switch to portrait once their size is known.
@@ -388,9 +214,10 @@ class PlayerActivity : ComponentActivity() {
             setShowPreviousButton(false)
             keepScreenOn = true
             setBackgroundColor(Color.BLACK)
+            resizeMode = resizeModeFor(controls.fill)
         }
         titleView = TextView(this).apply {
-            text = title
+            text = session.title
             setTextColor(Color.WHITE)
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f)
             maxLines = 1
@@ -403,9 +230,6 @@ class PlayerActivity : ComponentActivity() {
                 intArrayOf(0x99000000.toInt(), Color.TRANSPARENT)
             )
         }
-        controls.title = title
-        controls.castAvailable = !isTv && !isLocalFile() && youtube == null
-        controls.externalAvailable = youtube == null
         if (!isTv) titleView.visibility = View.GONE // the controls have their own title bar
         // TV: the title shows and hides together with Media3's controls.
         playerView.setControllerVisibilityListener(PlayerView.ControllerVisibilityListener { visibility ->
@@ -455,6 +279,8 @@ class PlayerActivity : ComponentActivity() {
         }
 
         // What the gestures show (seek taps, levels, speed…). Never takes touches.
+        val shownControls = controls
+        val shownGestureUi = gestureUi
         gestureOverlay = androidx.compose.ui.platform.ComposeView(this).apply {
             setContent {
                 val dynamic by settings.dynamicColorFlow.collectAsState(initial = false)
@@ -465,8 +291,8 @@ class PlayerActivity : ComponentActivity() {
                     appTheme = com.abhinavxt.debforge.ui.theme.AppTheme.fromName(themeName)
                 ) {
                     androidx.compose.foundation.layout.Box {
-                        if (!isTv) PlayerControls(controls, controlsActions)
-                        GestureOverlay(gestureUi)
+                        if (!isTv) PlayerControls(shownControls, controlsActions)
+                        GestureOverlay(shownGestureUi)
                     }
                 }
             }
@@ -508,199 +334,124 @@ class PlayerActivity : ComponentActivity() {
                     .apply { setMargins(0, 0, dp(24), dp(if (isTv) 96 else 150)) }
             )
         })
+        session.attach(playerView, host)
         hideSystemBars()
         onBackPressedDispatcher.addCallback(this, cancelNextOnBack)
-
-        // Fresh start (not a rotation/recreate): pick up where the user left off.
-        if (savedInstanceState == null && restoresSavedPosition(handoffStart)) restoreSavedPosition()
     }
 
-    /** Looks up the saved position; seeks there once known, unless the user already moved. */
-    private fun restoreSavedPosition() {
-        val id = identity ?: return
-        lifecycleScope.launch {
-            val saved = positions.get(id.itemId) ?: return@launch
-            val at = Resume.resumeAt(saved.positionMs, saved.durationMs, saved.finished)
-            if (at <= 0) return@launch
-            val p = player
-            if (p == null) {
-                resumePosition = at
-            } else if (p.currentPosition < Resume.MIN_RESUME_MS) {
-                p.seekTo(at)
+    /** What the engine asks of this screen. */
+    private val host = object : VideoHost {
+        override val inPictureInPicture get() = isInPictureInPictureMode
+        override val isClosing get() = isFinishing
+
+        override fun close() = finish()
+
+        override fun titleChanged(title: String) {
+            titleView.text = title
+        }
+
+        override fun showStartOver(show: Boolean) {
+            if (show) {
+                startOverView.visibility = View.VISIBLE
+                if (isTv) startOverView.requestFocus()
             } else {
-                return@launch
+                startOverView.visibility = View.GONE
             }
-            startOverView.visibility = View.VISIBLE
-            if (isTv) startOverView.requestFocus()
-            delay(START_OVER_VISIBLE_MS)
-            startOverView.visibility = View.GONE
         }
-    }
 
-    /**
-     * Once a second: the next-episode card and prefetch; every few seconds
-     * while playing, save the position (so a crash or a swipe-away loses little).
-     */
-    private fun startTicking() {
-        tickJob?.cancel()
-        tickJob = lifecycleScope.launch {
-            var ticks = 0
-            while (true) {
-                delay(1_000)
-                ticks++
-                if (ticks % SAVE_EVERY_TICKS == 0 && player?.isPlaying == true) savePosition()
-                controls.hasNext = queue.isNotEmpty()
-                controls.hasPrevious = previousQueue.isNotEmpty()
-                updateNextEpisode()
-                updateSkip()
-                if (controls.stats) updateStats()
-            }
-        }
-    }
-
-    /**
-     * Once a second: offer to skip the intro / recap / credits playing now
-     * (from the file's chapters, or where the user skipped this show's intro
-     * before), or skip it by itself when Settings say so.
-     */
-    private fun updateSkip() {
-        val p = player
-        val duration = durationOrNull()
-        if (p == null || duration == null || switching || cardShownAt != null) {
-            hideSkip()
-            return
-        }
-        if (segmentsFor != duration && chapters.isNotEmpty()) {
-            segments = IntroSkip.fromChapters(chapters, duration)
-            segmentsFor = duration
-        }
-        val position = p.currentPosition
-        if (sponsorRaw.isNotEmpty()) {
-            if (sponsorFor != duration) {
-                sponsorSegments = com.abhinavxt.debforge.domain.SponsorSkip.normalise(sponsorRaw, duration)
-                sponsorFor = duration
-            }
-            val sponsor = com.abhinavxt.debforge.domain.SponsorSkip.autoSkip(sponsorSegments, position, sponsorDone)
-            if (sponsor != null) {
-                sponsorDone += sponsor.startMs
+        override fun showSkip(text: String, onSkip: () -> Unit) {
+            skipView.setOnClickListener {
                 hideSkip()
-                skipSegment(IntroSkip.Segment(IntroSkip.Kind.SPONSOR, sponsor.startMs, sponsor.endMs))
-                showMessage(getString(R.string.player_skipped_sponsor))
-                return
+                onSkip()
             }
+            if (skipView.visibility == View.VISIBLE && skipView.text == text) return
+            skipView.text = text
+            skipView.visibility = View.VISIBLE
+            // TV: reachable with OK at once, unless the user is busy in the controller.
+            if (isTv && !playerView.isControllerFullyVisible) skipView.requestFocus()
         }
-        // Sponsor skipping above also runs in picture-in-picture; the skip button and intro skips do not.
-        if (isInPictureInPictureMode) {
-            hideSkip()
-            return
+
+        override fun hideSkip() {
+            if (skipView.visibility != View.GONE) skipView.visibility = View.GONE
         }
-        val segment = IntroSkip.at(segments, position)?.takeIf { it.startMs !in doneSkips }
-        if (segment != null) {
-            if (autoSkipIntro && (segment.kind == IntroSkip.Kind.INTRO || segment.kind == IntroSkip.Kind.RECAP)) {
-                doneSkips += segment.startMs
-                hideSkip()
-                skipSegment(segment)
-                showMessage(getString(if (segment.kind == IntroSkip.Kind.INTRO) R.string.player_skipped_intro else R.string.player_skipped_recap))
-                return
-            }
-            showSkip(
-                when (segment.kind) {
-                    IntroSkip.Kind.INTRO -> R.string.player_skip_intro
-                    IntroSkip.Kind.RECAP -> R.string.player_skip_recap
-                    IntroSkip.Kind.CREDITS -> R.string.player_skip_credits
-                    IntroSkip.Kind.PREVIEW -> R.string.player_skip_preview
-                    IntroSkip.Kind.SPONSOR -> R.string.player_skip_sponsor
-                    IntroSkip.Kind.SELF_PROMO -> R.string.player_skip_self_promo
-                    IntroSkip.Kind.INTERACTION -> R.string.player_skip_interaction
-                }
-            ) {
-                doneSkips += segment.startMs
-                skipSegment(segment)
-            }
-            return
-        }
-        // No intro chapter: offer it where this show's intro was skipped before.
-        val learnt = learntIntroAt
-        if (learnt != null && LEARNT_SKIP !in doneSkips && segments.none { it.kind == IntroSkip.Kind.INTRO } &&
-            IntroSkip.inLearntWindow(learnt, position)
-        ) {
-            showSkip(R.string.player_skip_intro) {
-                val at = player?.currentPosition ?: return@showSkip
-                rememberIntro(at)
-                player?.seekTo((at + SKIP_INTRO_SECONDS * 1000L).coerceAtMost(duration))
-            }
-            return
-        }
-        hideSkip()
-    }
 
-    /** Jumps past [segment]; credits running to the end go straight to the next episode. */
-    private fun skipSegment(segment: IntroSkip.Segment) {
-        val duration = durationOrNull() ?: return
-        if (com.abhinavxt.debforge.domain.SponsorSkip.endsVideo(segment.endMs, duration, END_SLACK_MS, queue.isNotEmpty())) playNext()
-        else player?.seekTo(segment.endMs.coerceAtMost(duration))
-    }
-
-    /** The intro of this show is around [positionMs]: offer the skip there in the next episodes. */
-    private fun rememberIntro(positionMs: Long) {
-        doneSkips += LEARNT_SKIP
-        if (identity?.showKey == null || !IntroSkip.isLikelyIntro(positionMs, durationOrNull() ?: 0)) return
-        learntIntroAt = positionMs
-        remember { it.copy(introAtMs = positionMs) }
-    }
-
-    private fun showSkip(textRes: Int, onSkip: () -> Unit) {
-        val text = getString(textRes)
-        skipView.setOnClickListener {
-            hideSkip()
-            onSkip()
-        }
-        if (skipView.visibility == View.VISIBLE && skipView.text == text) return
-        skipView.text = text
-        skipView.visibility = View.VISIBLE
-        // TV: reachable with OK at once, unless the user is busy in the controller.
-        if (isTv && !playerView.isControllerFullyVisible) skipView.requestFocus()
-    }
-
-    private fun hideSkip() {
-        if (skipView.visibility != View.GONE) skipView.visibility = View.GONE
-    }
-
-    /** Prefetch near the end, then show the card and count down to the next episode. */
-    private fun updateNextEpisode() {
-        if (switching) return
-        val p = player ?: return
-        val next = queue.firstOrNull()
-        val duration = p.duration.takeIf { it != C.TIME_UNSET && it > 0 }
-        if (next == null || duration == null || nextCancelled) return hideNextCard()
-        val remaining = duration - p.currentPosition
-        if (remaining <= PREFETCH_BEFORE_END_MS) prefetch(next)
-        if (remaining > CARD_BEFORE_END_MS) return hideNextCard() // e.g. seeked back
-        val shownAt = cardShownAt ?: android.os.SystemClock.elapsedRealtime().also {
-            cardShownAt = it
-            nextTitle.text = getString(R.string.player_next, next.title)
+        override fun showNextCard(text: String) {
+            nextTitle.text = text
             if (!isInPictureInPictureMode) nextCard.visibility = View.VISIBLE
             cancelNextOnBack.isEnabled = true
             if (isTv) nextPlayNow.requestFocus()
         }
-        if (!autoplay || controls.sleepAtEnd) {
-            // Offer only: the user starts it with Play now (or the sleep timer stops here).
-            nextCountdown.visibility = View.GONE
-            return
-        }
-        nextCountdown.visibility = View.VISIBLE
-        val left = ((COUNTDOWN_MS - (android.os.SystemClock.elapsedRealtime() - shownAt)) / 1000).toInt()
-        if (left <= 0) {
-            playNext()
-        } else {
-            nextCountdown.text = resources.getQuantityString(R.plurals.player_next_in, left, left)
-        }
-    }
 
-    private fun hideNextCard() {
-        cardShownAt = null
-        cancelNextOnBack.isEnabled = false
-        if (::nextCard.isInitialized) nextCard.visibility = View.GONE
+        override fun setNextCountdown(text: String?) {
+            if (text == null) {
+                nextCountdown.visibility = View.GONE
+            } else {
+                nextCountdown.visibility = View.VISIBLE
+                nextCountdown.text = text
+            }
+        }
+
+        override fun hideNextCard() {
+            cancelNextOnBack.isEnabled = false
+            if (::nextCard.isInitialized) nextCard.visibility = View.GONE
+        }
+
+        override fun showStats(on: Boolean) {
+            statsView.visibility = if (on) View.VISIBLE else View.GONE
+        }
+
+        override fun statsText(text: String) {
+            statsView.text = text
+        }
+
+        override fun updatePip() = this@PlayerActivity.updatePip()
+
+        override fun videoShape(portrait: Boolean) {
+            if (userRotated) return
+            requestedOrientation = if (portrait) {
+                ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT
+            } else {
+                ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+            }
+        }
+
+        override fun showNetworkError() = this@PlayerActivity.showNetworkError()
+
+        override fun dismissNetworkError() {
+            networkDialog?.dismiss()
+        }
+
+        override fun showStreamFailed(youtube: com.abhinavxt.debforge.ui.browse.YtStream) {
+            AlertDialog.Builder(this@PlayerActivity)
+                .setMessage(R.string.yt_stream_failed)
+                .setPositiveButton(R.string.yt_stream_download) { _, _ -> downloadFailedStream(youtube) }
+                .setNegativeButton(R.string.action_close) { _, _ -> finish() }
+                .setOnCancelListener { finish() }
+                .show()
+        }
+
+        override fun showYouTubeProblem(message: String) {
+            AlertDialog.Builder(this@PlayerActivity)
+                .setMessage(message)
+                .setPositiveButton(R.string.action_close) { _, _ -> finish() }
+                .setOnCancelListener { finish() }
+                .show()
+        }
+
+        override fun offerExternal(message: String, offerSoftware: Boolean) {
+            AlertDialog.Builder(this@PlayerActivity)
+                .setTitle(R.string.player_unsupported_title)
+                .setMessage(message)
+                .setPositiveButton(R.string.action_open_other_player) { _, _ -> openExternally() }
+                .setNegativeButton(R.string.player_keep_watching) { _, _ -> player?.play() }
+                .apply {
+                    if (offerSoftware) {
+                        setNeutralButton(R.string.player_try_software) { _, _ -> session.trySoftwareDecoding() }
+                    }
+                }
+                .setOnCancelListener { player?.play() }
+                .show()
+        }
     }
 
     /** Rounded background with a white ring when focused (TV remote). */
@@ -731,9 +482,9 @@ class PlayerActivity : ComponentActivity() {
         // Media keys (remote, headset, keyboard): next / previous episode.
         if (event.action == android.view.KeyEvent.ACTION_DOWN) {
             when (event.keyCode) {
-                android.view.KeyEvent.KEYCODE_MEDIA_NEXT -> if (queue.isNotEmpty()) { playNext(); return true }
-                android.view.KeyEvent.KEYCODE_MEDIA_PREVIOUS -> if (previousQueue.isNotEmpty()) { playPrevious(); return true }
-                android.view.KeyEvent.KEYCODE_INFO -> { showStats(!controls.stats); return true }
+                android.view.KeyEvent.KEYCODE_MEDIA_NEXT -> if (session.hasNext) { session.playNext(); return true }
+                android.view.KeyEvent.KEYCODE_MEDIA_PREVIOUS -> if (session.hasPrevious) { session.playPrevious(); return true }
+                android.view.KeyEvent.KEYCODE_INFO -> { session.setStats(!controls.stats); return true }
                 android.view.KeyEvent.KEYCODE_MENU -> if (isTv && showTvOptions()) return true
             }
         }
@@ -801,21 +552,6 @@ class PlayerActivity : ComponentActivity() {
         return v.getGlobalVisibleRect(r) && r.contains(x, y)
     }
 
-    /** Shows [key]'s feedback until [ms] after the last update, then [clear]s it. */
-    private fun hideLater(key: String, ms: Long, clear: () -> Unit) {
-        hideJobs[key]?.cancel()
-        hideJobs[key] = lifecycleScope.launch {
-            delay(ms)
-            clear()
-        }
-    }
-
-    private fun keepShowing(key: String) {
-        hideJobs.remove(key)?.cancel()
-    }
-
-    private fun durationOrNull(): Long? = player?.duration?.takeIf { it != C.TIME_UNSET && it > 0 }
-
     private fun applyZoom() {
         val frame = playerView.findViewById<View>(androidx.media3.ui.R.id.exo_content_frame) ?: return
         val z = if (isInPictureInPictureMode) 1f else zoom
@@ -827,194 +563,27 @@ class PlayerActivity : ComponentActivity() {
         window.decorView.performHapticFeedback(constant)
     }
 
-    /** Start dragging through the video (swipe or seek bar): pause, fast keyframe seeks. */
-    private fun beginScrub() {
-        val p = player ?: return
-        scrubAnchor = p.currentPosition
-        scrubTarget = scrubAnchor
-        scrubWasPlaying = p.isPlaying
-        p.pause()
-        // Nearest keyframe while dragging: fast, even on a stream.
-        p.setSeekParameters(androidx.media3.exoplayer.SeekParameters.CLOSEST_SYNC)
-        keepShowing("scrub")
-    }
-
-    private fun scrubTo(target: Long) {
-        val p = player ?: return
-        scrubTarget = target
-        gestureUi.scrub = GestureUiState.Scrub(target, target - scrubAnchor)
-        val previews = previewsOn()
-        if (previews) requestPreview(target)
-        // A stream with previews: the frame shows where it'd land, and the
-        // video jumps once, on release (no re-buffering at every move).
-        if (previews && !isLocalFile()) return
-        val now = android.os.SystemClock.uptimeMillis()
-        if (now - lastScrubSeek >= SCRUB_SEEK_EVERY_MS) {
-            lastScrubSeek = now
-            p.seekTo(target)
-        }
-    }
-
-    /** Land exactly where the finger stopped ([cancel]: where it started) and play on. */
-    private fun endScrub(cancel: Boolean) {
-        val p = player ?: return
-        p.setSeekParameters(androidx.media3.exoplayer.SeekParameters.DEFAULT)
-        p.seekTo(if (cancel) scrubAnchor else scrubTarget)
-        if (scrubWasPlaying) p.play()
-        previewJob?.cancel()
-        hideLater("scrub", 400) {
-            gestureUi.scrub = null
-            gestureUi.scrubPreview = null
-        }
-    }
-
-    /** Looks up the audio track of the current file for "Play as audio"; none for a debrid/Library stream. */
-    private fun refreshAudioHandoff() {
-        audioHandoffTrack = null
-        controls.audioHandoffReady = false
-        val yt = youtube
-        val id = identity ?: return
-        controls.debridStream = yt == null && !isLocalFile()
-        if (controls.debridStream) return
-        val generation = fileGeneration
-        val name = title
-        lifecycleScope.launch {
-            val track = runCatching {
-                videoHandoff.audioTrackForVideo(
-                    itemId = id.itemId,
-                    videoId = yt?.videoId,
-                    title = name,
-                    channel = yt?.uploader,
-                    audioUrl = yt?.audioUrl,
-                    audioItag = yt?.let { com.abhinavxt.debforge.domain.YouTubeLinks.parseSourceRef(it.ref)?.audioItag }
-                )
-            }.getOrNull()
-            if (generation != fileGeneration) return@launch // another file by now
-            audioHandoffTrack = track
-            controls.audioHandoffReady = track != null
-        }
-    }
-
     /** TV: the remote's MENU key offers "Play as audio" (Media3's controller has no slot for it). False when there is nothing to offer. */
     private fun showTvOptions(): Boolean {
-        val p = player ?: return false
-        val offer = playAsAudioVisible(p.isCurrentMediaItemLive, durationOrNull() ?: 0L, audioHandoffTrack != null, controls.casting, controls.debridStream)
-        if (!offer || handingOff) return false
+        if (!session.canPlayAsAudio()) return false
         AlertDialog.Builder(this)
-            .setItems(arrayOf(getString(R.string.player_play_as_audio))) { _, _ -> handOffToAudio() }
+            .setItems(arrayOf(getString(R.string.player_play_as_audio))) { _, _ -> session.handOffToAudio() }
             .show()
         return true
     }
 
-    /** "Play as audio": save the spot, hand the item to the audio player at this position and speed, and close. */
-    private fun handOffToAudio() {
-        val track = audioHandoffTrack ?: return
-        val p = player ?: return
-        if (handingOff) return
-        handingOff = true
-        val at = p.currentPosition
-        val speed = p.playbackParameters.speed
-        p.pause()
-        savePosition()
-        audioPlayer.playHandoff(track, at, speed)
-        finish()
+    private fun resizeModeFor(fill: Fill) = when (fill) {
+        Fill.FIT -> androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FIT
+        Fill.CROP -> androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_ZOOM
+        Fill.STRETCH -> androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FILL
     }
 
-    private fun isLocalFile() = uri.scheme == "content" || uri.scheme == "file"
-
-    /** Previews for this file: downloaded ones always, streams if Settings allow, and only while they work. */
-    private fun previewsOn() = youtube == null && (isLocalFile() || streamPreviews) && !thumbnails.failed
-
-    /** The frame at [target] for the scrub bubble; a newer request replaces an older one. */
-    private fun requestPreview(target: Long) {
-        val duration = durationOrNull() ?: return
-        val source = uri
-        previewJob?.cancel()
-        previewJob = lifecycleScope.launch {
-            val frame = thumbnails.frame(source, target, duration)
-            if (gestureUi.scrub != null) gestureUi.scrubPreview = frame?.asImageBitmap()
-        }
-    }
-
-    /** Brief text over the video ("Crop", "Fit"…). */
-    private fun showMessage(text: String) {
-        keepShowing("msg")
-        gestureUi.message = text
-        hideLater("msg", 1_200) { gestureUi.message = null }
-    }
-
-    private val controlsActions = object : ControlsActions {
-        override fun snapshot(): PlaybackSnapshot {
-            val p = player ?: return PlaybackSnapshot()
-            return PlaybackSnapshot(
-                isPlaying = p.isPlaying,
-                buffering = p.playbackState == Player.STATE_BUFFERING,
-                positionMs = p.currentPosition,
-                bufferedMs = p.bufferedPosition,
-                durationMs = durationOrNull() ?: 0L,
-                speed = p.playbackParameters.speed,
-                live = p.isCurrentMediaItemLive
-            )
-        }
-
+    /** The engine's controls actions, plus what needs this screen. */
+    private inner class ScreenActions(engine: ControlsActions) : ControlsActions by engine {
         override fun back() = onBackPressedDispatcher.onBackPressed()
 
-        override fun playPause() {
-            val p = player ?: return
-            when {
-                p.playbackState == Player.STATE_ENDED -> { p.seekTo(0); p.play() }
-                p.isPlaying -> p.pause()
-                else -> p.play()
-            }
-        }
-
-        override fun seekBy(ms: Long) {
-            val p = player ?: return
-            p.seekTo(GestureMath.seekTarget(p.currentPosition, ms > 0, (kotlin.math.abs(ms) / 1000).toInt(), durationOrNull()))
-            keepShowing("seek")
-            gestureUi.seekTaps = GestureUiState.SeekTaps(ms > 0, (kotlin.math.abs(ms) / 1000).toInt())
-            hideLater("seek", 600) { gestureUi.seekTaps = null }
-        }
-
-        override fun skipIntro() {
-            val p = player ?: return
-            rememberIntro(p.currentPosition)
-            seekBy(SKIP_INTRO_SECONDS * 1000L)
-        }
-
-        override fun scrubStart() = beginScrub()
-        override fun scrubTo(ms: Long) = this@PlayerActivity.scrubTo(ms)
-        override fun scrubEnd() = endScrub(cancel = false)
-        override fun next() = playNext()
-        override fun previous() = playPrevious()
-
-        override fun setSubtitleDelay(ms: Long) {
-            applyDelays(ms, controls.audioDelayMs)
-            remember { it.copy(subtitleDelayMs = ms.takeIf { d -> d != 0L }) }
-        }
-
-        override fun setAudioDelay(ms: Long) {
-            applyDelays(controls.subtitleDelayMs, ms)
-            remember { it.copy(audioDelayMs = ms.takeIf { d -> d != 0L }) }
-        }
-
-        override fun setNightMode(on: Boolean) {
-            controls.nightMode = on
-            applyNightMode()
-            lifecycleScope.launch { settings.setNightMode(on) }
-        }
-
-        override fun seekTo(ms: Long) {
-            player?.seekTo(ms)
-            controls.panel = null
-        }
-
-        override fun setStats(on: Boolean) = showStats(on)
-
-        override fun setSoftwareDecoding(on: Boolean) = this@PlayerActivity.setSoftwareDecoding(on, save = true)
         override fun openExternal() = openExternally()
         override fun cast() = castToTv()
-        override fun playAsAudio() = handOffToAudio()
 
         override fun rotate() {
             userRotated = true
@@ -1028,83 +597,14 @@ class PlayerActivity : ComponentActivity() {
 
         override fun setFill(fill: Fill) {
             controls.fill = fill
-            playerView.resizeMode = when (fill) {
-                Fill.FIT -> androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FIT
-                Fill.CROP -> androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_ZOOM
-                Fill.STRETCH -> androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FILL
-            }
+            playerView.resizeMode = resizeModeFor(fill)
             zoom = 1f // pinch zoom starts over from the new fill
             applyZoom()
-            showMessage(getString(fillLabel(fill)))
+            session.showMessage(getString(fillLabel(fill)))
         }
 
         override fun enterPip() {
             runCatching { enterPictureInPictureMode(pipParams()) }
-        }
-
-        override fun tracks(type: Int): List<TrackChoice> {
-            val p = player ?: return emptyList()
-            return p.currentTracks.groups.filter { it.type == type }.flatMap { g ->
-                (0 until g.length).filter { g.isTrackSupported(it) }.map { i ->
-                    TrackChoice(g.mediaTrackGroup, i, trackNames.getTrackName(g.getTrackFormat(i)), g.isTrackSelected(i))
-                }
-            }
-        }
-
-        override fun selectTrack(type: Int, choice: TrackChoice?) {
-            val p = player ?: return
-            val params = p.trackSelectionParameters.buildUpon()
-            if (choice == null) {
-                params.setTrackTypeDisabled(type, true)
-            } else {
-                params.setTrackTypeDisabled(type, false)
-                    .setOverrideForType(androidx.media3.common.TrackSelectionOverride(choice.group, choice.index))
-            }
-            p.trackSelectionParameters = params.build()
-            controls.panel = null
-            // Next time (and every episode of this show): the same choice.
-            val f = choice?.let { it.group.getFormat(it.index) }
-            if (type == C.TRACK_TYPE_AUDIO && f != null) {
-                remember { it.copy(audioLanguage = f.language, audioLabel = f.label) }
-            } else if (type == C.TRACK_TYPE_TEXT) {
-                remember { it.copy(textOff = f == null, textLanguage = f?.language, textLabel = f?.label) }
-            }
-        }
-
-        override fun searchOnlineSubtitles(anyLanguage: Boolean) = this@PlayerActivity.searchOnlineSubtitles(anyLanguage)
-
-        override fun pickOnlineSubtitle(sub: com.abhinavxt.debforge.data.subtitles.OnlineSubtitle) =
-            this@PlayerActivity.pickOnlineSubtitle(sub)
-
-        override fun setSpeed(speed: Float) {
-            player?.setPlaybackSpeed(speed)
-            controls.panel = null
-            remember { it.copy(speed = speed.takeIf { s -> s != 1f }) }
-        }
-
-        override fun setSleep(minutes: Int?) {
-            sleepJob?.cancel()
-            controls.sleepEndsAt = 0L
-            controls.sleepAtEnd = false
-            controls.panel = null
-            when (minutes) {
-                null -> Unit
-                END_OF_EPISODE -> controls.sleepAtEnd = true
-                else -> {
-                    val ms = minutes * 60_000L
-                    controls.sleepEndsAt = android.os.SystemClock.elapsedRealtime() + ms
-                    sleepJob = lifecycleScope.launch {
-                        delay(ms)
-                        sleepNow()
-                    }
-                }
-            }
-            if (minutes != null) {
-                showMessage(
-                    if (minutes == END_OF_EPISODE) getString(R.string.player_sleep_end)
-                    else resources.getQuantityString(R.plurals.player_sleep_in_n, minutes, minutes)
-                )
-            }
         }
 
         override fun screenshot() {
@@ -1112,76 +612,10 @@ class PlayerActivity : ComponentActivity() {
             takeScreenshot()
         }
 
-        override fun abLoop() {
-            val p = player ?: return
-            val pos = p.currentPosition
-            val a = controls.loopA
-            when {
-                a == null -> {
-                    controls.loopA = pos
-                    showMessage("A  " + GestureMath.time(pos))
-                }
-                controls.loopB == null -> {
-                    if (pos <= a + MIN_LOOP_MS) return // B must come after A
-                    controls.loopB = pos
-                    startLoop()
-                    p.seekTo(a)
-                    showMessage("A\u2013B  " + GestureMath.time(a) + " \u2013 " + GestureMath.time(pos))
-                }
-                else -> clearLoop()
-            }
-            controls.panel = null
-        }
-
-        override fun setBackground(on: Boolean) {
-            controls.background = on
-            lifecycleScope.launch { settings.setPlayerBackground(on) }
-        }
-
-        override fun setSubtitleStyle(style: SubtitleStyle) {
-            controls.subStyle = style
-            applySubtitleStyle()
-            lifecycleScope.launch { settings.setSubtitleStyle(style.encode()) }
-        }
-
-        override fun setShowRemaining(show: Boolean) {
-            controls.showRemaining = show
-            lifecycleScope.launch { settings.setPlayerShowRemaining(show) }
-        }
-
         override fun onBarsVisible(visible: Boolean) {
             if (isInPictureInPictureMode) return
             if (visible) showSystemBars() else hideSystemBars()
         }
-    }
-
-    /** Sleep timer ran out (or the episode ended with "end of episode"). */
-    private fun sleepNow() {
-        sleepJob?.cancel()
-        sleepJob = null
-        controls.sleepEndsAt = 0L
-        controls.sleepAtEnd = false
-        player?.pause()
-        showMessage(getString(R.string.player_sleep_done))
-    }
-
-    private fun startLoop() {
-        val p = player ?: return
-        val a = controls.loopA ?: return
-        val b = controls.loopB ?: return
-        loopMessage?.cancel()
-        loopMessage = p.createMessage { _, _ -> player?.seekTo(a) }
-            .setPosition(b)
-            .setLooper(mainLooper)
-            .setDeleteAfterDelivery(false)
-            .send()
-    }
-
-    private fun clearLoop() {
-        loopMessage?.cancel()
-        loopMessage = null
-        controls.loopA = null
-        controls.loopB = null
     }
 
     /**
@@ -1192,7 +626,7 @@ class PlayerActivity : ComponentActivity() {
         val surface = playerView.videoSurfaceView as? android.view.SurfaceView
         val v = player?.videoSize
         if (surface == null || v == null || v.width <= 0 || v.height <= 0) {
-            showMessage(getString(R.string.player_screenshot_failed))
+            session.showMessage(getString(R.string.player_screenshot_failed))
             return
         }
         val w = (v.width * v.pixelWidthHeightRatio).toInt().coerceAtLeast(1)
@@ -1200,20 +634,21 @@ class PlayerActivity : ComponentActivity() {
         val bitmap = android.graphics.Bitmap.createBitmap(
             (w * scale).toInt().coerceAtLeast(1), (v.height * scale).toInt().coerceAtLeast(1), android.graphics.Bitmap.Config.ARGB_8888
         )
+        val title = session.title
         android.view.PixelCopy.request(surface, bitmap, { result ->
             if (result != android.view.PixelCopy.SUCCESS) {
-                showMessage(getString(R.string.player_screenshot_failed))
+                session.showMessage(getString(R.string.player_screenshot_failed))
                 return@request
             }
             lifecycleScope.launch {
-                val ok = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { saveImage(bitmap) }
+                val ok = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { saveImage(bitmap, title) }
                 bitmap.recycle()
-                showMessage(getString(if (ok) R.string.player_screenshot_saved else R.string.player_screenshot_failed))
+                session.showMessage(getString(if (ok) R.string.player_screenshot_saved else R.string.player_screenshot_failed))
             }
         }, gestureHandler)
     }
 
-    private fun saveImage(bitmap: android.graphics.Bitmap): Boolean = runCatching {
+    private fun saveImage(bitmap: android.graphics.Bitmap, title: String): Boolean = runCatching {
         val safeTitle = title.replace(Regex("""[^\p{L}\p{N} ._-]"""), "_").trim().take(60).ifEmpty { "video" }
         val values = android.content.ContentValues().apply {
             put(android.provider.MediaStore.Images.Media.DISPLAY_NAME, "${safeTitle}_${System.currentTimeMillis()}.jpg")
@@ -1233,312 +668,6 @@ class PlayerActivity : ComponentActivity() {
         contentResolver.update(uri, values, null, null)
         true
     }.getOrDefault(false)
-
-    /** A new file starts: its tracks get chosen once they're known. */
-    private fun startFile() {
-        tracksApplied = false
-        clearLoop()
-        movieHash = null
-        previewJob?.cancel()
-        gestureUi.scrubPreview = null
-        lifecycleScope.launch { thumbnails.reset() }
-        chapters = emptyList()
-        segmentsFor = -1L
-        learntIntroAt = null
-        doneSkips.clear()
-        sponsorDone.clear()
-        sponsorRaw = emptyList()
-        sponsorSegments = emptyList()
-        sponsorFor = -1L
-        val generation0 = fileGeneration + 1
-        val videoId = youtube?.videoId
-            ?: identity?.sourceRef?.let { com.abhinavxt.debforge.domain.YouTubeLinks.parseSourceRef(it)?.videoId }
-        if (videoId != null) lifecycleScope.launch {
-            val found = runCatching { sponsorRepo.segmentsFor(videoId) }.getOrDefault(emptyList())
-            if (com.abhinavxt.debforge.domain.SponsorSkip.isCurrent(generation0, fileGeneration)) sponsorRaw = found
-        }
-        val file = identity?.filename?.takeIf { it.isNotBlank() } ?: uri.lastPathSegment.orEmpty()
-        val source = uri
-        val generation = ++fileGeneration
-        controls.chapters = emptyList()
-        if (isTv && ::playerView.isInitialized) playerView.setExtraAdGroupMarkers(null, null)
-        lifecycleScope.launch {
-            val found = if (youtube != null) emptyList() else runCatching { chapterReader.chapters(source, file) }.getOrDefault(emptyList())
-            if (generation != fileGeneration) return@launch // another file by now
-            chapters = found
-            controls.chapters = found
-            // TV: Media3's seek bar marks them (its ad markers).
-            if (isTv && ::playerView.isInitialized) {
-                val marks = found.map { it.startMs }.filter { it > 0 }
-                playerView.setExtraAdGroupMarkers(marks.toLongArray(), BooleanArray(marks.size))
-            }
-        }
-        onlineSubsJob?.cancel()
-        controls.onlineSubs = com.abhinavxt.debforge.player.controls.OnlineSubs.Idle
-        pendingTextLabel = null
-        val key = identity?.let { it.showKey ?: it.itemId }
-        remembered = key?.let { k -> lifecycleScope.async { trackMemory.get(k) } }
-        if (identity?.showKey != null) {
-            val memory = remembered
-            lifecycleScope.launch { learntIntroAt = memory?.await()?.introAtMs }
-        }
-        // Sync starts at zero, then last time's for this show (or file); the
-        // decoder choice too (switching only if it differs, which reloads).
-        applyDelays(0, 0)
-        droppedFrames = 0
-        lifecycleScope.launch {
-            val r = remembered?.await()
-            if (generation != fileGeneration) return@launch
-            if (r != null) applyDelays(r.subtitleDelayMs ?: 0, r.audioDelayMs ?: 0)
-            val software = r?.softwareDecoding == true
-            if (software != tuning.preferSoftwareVideo) setSoftwareDecoding(software, save = false)
-        }
-    }
-
-    private fun remember(change: (TrackPicker.Remembered) -> TrackPicker.Remembered) {
-        val key = identity?.let { it.showKey ?: it.itemId } ?: return
-        lifecycleScope.launch { trackMemory.update(key, change) }
-    }
-
-    /**
-     * Audio and subtitles for a file that just started: last time's choice
-     * for this show, else Settings' languages (skipping commentary and
-     * "signs & songs"), else the file's own defaults. Also last time's speed.
-     */
-    private suspend fun applyTrackChoices(tracks: Tracks, memory: TrackPicker.Remembered?) {
-        val p = player ?: return
-        val audioLanguage = settings.audioLanguageFlow.first()
-        val subtitleSetting = settings.subtitleLanguageFlow.first()
-        fun options(type: Int) = tracks.groups.filter { it.type == type }.flatMap { g ->
-            (0 until g.length).filter { g.isTrackSupported(it) }.map { i -> g to i }
-        }
-        fun candidate(f: androidx.media3.common.Format) = TrackPicker.Candidate(
-            language = f.language,
-            label = f.label,
-            isDefault = f.selectionFlags and C.SELECTION_FLAG_DEFAULT != 0,
-            isForced = f.selectionFlags and C.SELECTION_FLAG_FORCED != 0,
-            commentary = f.roleFlags and (C.ROLE_FLAG_COMMENTARY or C.ROLE_FLAG_DESCRIBES_VIDEO) != 0
-        )
-        val audio = options(C.TRACK_TYPE_AUDIO)
-        val text = options(C.TRACK_TYPE_TEXT)
-        // A fresh start for this file: the last file's picks don't carry over.
-        val params = p.trackSelectionParameters.buildUpon()
-            .clearOverridesOfType(C.TRACK_TYPE_AUDIO)
-            .clearOverridesOfType(C.TRACK_TYPE_TEXT)
-            .setTrackTypeDisabled(C.TRACK_TYPE_TEXT, false)
-        val audioChoice = TrackPicker.pickAudio(audio.map { (g, i) -> candidate(g.getTrackFormat(i)) }, audioLanguage, memory)
-        if (audioChoice is TrackPicker.Choice.Pick) {
-            val (g, i) = audio[audioChoice.index]
-            params.setOverrideForType(androidx.media3.common.TrackSelectionOverride(g.mediaTrackGroup, i))
-        }
-        when (val c = TrackPicker.pickText(text.map { (g, i) -> candidate(g.getTrackFormat(i)) }, subtitleSetting, memory)) {
-            TrackPicker.Choice.Off -> params.setTrackTypeDisabled(C.TRACK_TYPE_TEXT, true)
-            is TrackPicker.Choice.Pick -> {
-                val (g, i) = text[c.index]
-                params.setOverrideForType(androidx.media3.common.TrackSelectionOverride(g.mediaTrackGroup, i))
-            }
-            TrackPicker.Choice.Leave -> Unit
-        }
-        p.trackSelectionParameters = params.build()
-        if (handoffStart == null) memory?.speed?.let { if (it != p.playbackParameters.speed) p.setPlaybackSpeed(it) }
-    }
-
-    /**
-     * Searches OpenSubtitles for this file: by its hash (exact timing) and
-     * name, in the subtitle language from Settings (else the phone's), or
-     * in any language.
-     */
-    private fun searchOnlineSubtitles(anyLanguage: Boolean) {
-        onlineSubsJob?.cancel()
-        controls.onlineSubs = com.abhinavxt.debforge.player.controls.OnlineSubs.Searching
-        val info = com.abhinavxt.debforge.domain.ReleaseNameParser.parse(identity?.filename?.takeIf { it.isNotBlank() } ?: title)
-        val source = uri
-        onlineSubsJob = lifecycleScope.launch {
-            val languages = if (anyLanguage) emptyList() else OnlineSubtitleLanguages.forSetting(
-                settings.subtitleLanguageFlow.first(), java.util.Locale.getDefault()
-            )
-            controls.onlineSubs = try {
-                // Not a child of this search: switching language mid-search mustn't cancel the shared hash.
-                val hash = if (youtube != null) null else (movieHash ?: lifecycleScope.async { movieHasher.hashOf(source) }.also { movieHash = it }).await()
-                com.abhinavxt.debforge.player.controls.OnlineSubs.Results(openSubtitles.search(info, hash, languages), anyLanguage)
-            } catch (e: kotlinx.coroutines.CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                com.abhinavxt.debforge.player.controls.OnlineSubs.Failed(R.string.player_subs_search_failed, anyLanguage)
-            }
-        }
-    }
-
-    /** Downloads [sub], adds it to the file (reloaded at the same second) and switches to it. */
-    private fun pickOnlineSubtitle(sub: com.abhinavxt.debforge.data.subtitles.OnlineSubtitle) {
-        val results = controls.onlineSubs as? com.abhinavxt.debforge.player.controls.OnlineSubs.Results ?: return
-        controls.onlineSubs = com.abhinavxt.debforge.player.controls.OnlineSubs.Downloading(results.subs, results.anyLanguage, sub.fileId)
-        onlineSubsJob = lifecycleScope.launch {
-            val file = try {
-                openSubtitles.download(sub)
-            } catch (e: kotlinx.coroutines.CancellationException) {
-                throw e
-            } catch (e: com.abhinavxt.debforge.data.subtitles.OpenSubtitlesRepository.QuotaException) {
-                controls.onlineSubs = com.abhinavxt.debforge.player.controls.OnlineSubs.Failed(R.string.player_subs_quota, results.anyLanguage)
-                return@launch
-            } catch (e: Exception) {
-                controls.onlineSubs = results
-                showMessage(getString(R.string.player_subs_download_failed))
-                return@launch
-            }
-            controls.onlineSubs = results
-            val language = sub.language?.let { java.util.Locale.forLanguageTag(it).displayName.ifBlank { it } }
-            val label = getString(R.string.player_subs_online_label, language ?: getString(R.string.player_subtitles))
-            // One online subtitle per label: picking another English one replaces the last.
-            subtitles = subtitles.filterNot { it.label == label } + SubtitleLink(
-                url = Uri.fromFile(file).toString(),
-                mimeType = "application/x-subrip",
-                language = sub.language?.substringBefore('-'),
-                label = label,
-                forced = false
-            )
-            pendingTextLabel = label
-            controls.panel = null
-            player?.let { p ->
-                p.setMediaItem(buildMediaItem(), p.currentPosition)
-                p.prepare()
-            }
-        }
-    }
-
-    /** After an OpenSubtitles file was added: turn it on as soon as it's listed. */
-    private fun selectPendingSubtitle(tracks: Tracks) {
-        val label = pendingTextLabel ?: return
-        val p = player ?: return
-        val target = tracks.groups.filter { it.type == C.TRACK_TYPE_TEXT }.firstNotNullOfOrNull { g ->
-            (0 until g.length).firstOrNull { g.getTrackFormat(it).label == label }?.let { g to it }
-        } ?: return
-        pendingTextLabel = null
-        p.trackSelectionParameters = p.trackSelectionParameters.buildUpon()
-            .clearOverridesOfType(C.TRACK_TYPE_TEXT)
-            .setTrackTypeDisabled(C.TRACK_TYPE_TEXT, false)
-            .setOverrideForType(androidx.media3.common.TrackSelectionOverride(target.first.mediaTrackGroup, target.second))
-            .build()
-    }
-
-    /** Size, colours and height of subtitles (the Subtitles panel). */
-    private fun applySubtitleStyle() {
-        val view = playerView.subtitleView ?: return
-        val style = controls.subStyle
-        view.setFractionalTextSize(style.size.fraction)
-        view.setBottomPaddingFraction(style.position.bottomFraction)
-        view.setApplyEmbeddedStyles(style.fileStyling)
-        // Our size always: files' own sizes are often tiny or huge on a phone.
-        view.setApplyEmbeddedFontSizes(false)
-        val outline = androidx.media3.ui.CaptionStyleCompat.EDGE_TYPE_OUTLINE
-        view.setStyle(
-            when (style.look) {
-                SubtitleStyle.Look.OUTLINE -> androidx.media3.ui.CaptionStyleCompat(
-                    Color.WHITE, Color.TRANSPARENT, Color.TRANSPARENT, outline, Color.BLACK, android.graphics.Typeface.DEFAULT_BOLD
-                )
-                SubtitleStyle.Look.BOX -> androidx.media3.ui.CaptionStyleCompat(
-                    Color.WHITE, 0xCC000000.toInt(), Color.TRANSPARENT,
-                    androidx.media3.ui.CaptionStyleCompat.EDGE_TYPE_NONE, Color.TRANSPARENT, android.graphics.Typeface.DEFAULT
-                )
-                SubtitleStyle.Look.YELLOW -> androidx.media3.ui.CaptionStyleCompat(
-                    0xFFFFEB3B.toInt(), Color.TRANSPARENT, Color.TRANSPARENT, outline, Color.BLACK, android.graphics.Typeface.DEFAULT_BOLD
-                )
-            }
-        )
-    }
-
-    /** Volume boost past the phone's maximum, on the player's audio session. */
-    private fun attachLoudness(sessionId: Int) {
-        audioSessionId = sessionId
-        loudness?.release()
-        loudness = null
-        applyNightMode()
-        if (sessionId == C.AUDIO_SESSION_ID_UNSET) return
-        loudness = runCatching { android.media.audiofx.LoudnessEnhancer(sessionId) }.getOrNull()
-        applyBoost()
-    }
-
-    /** Night mode on the current audio session (re-attached when the session changes). */
-    private fun applyNightMode() {
-        nightMode?.release()
-        nightMode = null
-        if (!controls.nightMode || audioSessionId == C.AUDIO_SESSION_ID_UNSET) return
-        nightMode = NightMode.attach(audioSessionId)
-        if (nightMode == null) {
-            controls.nightMode = false
-            showMessage(getString(R.string.player_night_mode_unavailable))
-        }
-    }
-
-    private fun showStats(on: Boolean) {
-        controls.stats = on
-        statsView.visibility = if (on) View.VISIBLE else View.GONE
-        if (on) updateStats()
-    }
-
-    private fun updateStats() {
-        val p = player ?: return
-        fun hdr(f: androidx.media3.common.Format): String? = when {
-            f.sampleMimeType == androidx.media3.common.MimeTypes.VIDEO_DOLBY_VISION -> "Dolby Vision"
-            f.colorInfo?.colorTransfer == C.COLOR_TRANSFER_ST2084 -> "HDR10"
-            f.colorInfo?.colorTransfer == C.COLOR_TRANSFER_HLG -> "HLG"
-            else -> null
-        }
-        val v = p.videoFormat
-        val a = p.audioFormat
-        statsView.text = PlaybackStats.format(
-            PlaybackStats.Snapshot(
-                video = v?.let {
-                    PlaybackStats.Video(it.sampleMimeType, it.codecs, it.width, it.height, it.frameRate, it.bitrate, hdr(it))
-                },
-                videoDecoder = videoDecoder,
-                audio = a?.let { PlaybackStats.Audio(it.sampleMimeType, it.channelCount, it.sampleRate, it.bitrate, it.language) },
-                audioDecoder = audioDecoder,
-                bufferAheadMs = p.bufferedPosition - p.currentPosition,
-                networkBps = bandwidthBps,
-                droppedFrames = droppedFrames,
-                subtitleDelayMs = tuning.subtitleDelayMs,
-                audioDelayMs = tuning.audioDelayMs
-            )
-        )
-    }
-
-    /**
-     * Video on the CPU (Android's own decoders) instead of the chip's, for a
-     * file the hardware decoder shows badly. Decoders are picked when they
-     * start, so the file reloads at the same second. [save]: remember it for
-     * this show (or file).
-     */
-    private fun setSoftwareDecoding(on: Boolean, save: Boolean) {
-        tuning.preferSoftwareVideo = on
-        controls.softwareDecoding = on
-        if (save) remember { it.copy(softwareDecoding = on.takeIf { s -> s }) }
-        val p = player ?: return
-        if (p.mediaItemCount == 0) return
-        val at = p.currentPosition
-        val play = p.playWhenReady
-        p.stop() // releases the decoders
-        p.setMediaItem(buildMediaItem(), at)
-        p.prepare()
-        p.playWhenReady = play
-    }
-
-    private fun applyDelays(subtitleMs: Long, audioMs: Long) {
-        tuning.subtitleDelayMs = subtitleMs
-        tuning.audioDelayMs = audioMs
-        controls.subtitleDelayMs = subtitleMs
-        controls.audioDelayMs = audioMs
-    }
-
-    private fun applyBoost() {
-        val gain = GestureMath.boostGainMb(boostLevel)
-        loudness?.let { l ->
-            runCatching {
-                l.setTargetGain(gain)
-                l.enabled = gain > 0
-            }
-        }
-    }
 
     /** What each gesture does to the player. */
     private inner class GestureActions : GestureEngine.Callbacks {
@@ -1564,14 +693,14 @@ class PlayerActivity : ComponentActivity() {
             if (!gesturesEnabled) return
             val p = player ?: return
             val anchor = seekAnchor ?: p.currentPosition.also { seekAnchor = it }
-            p.seekTo(GestureMath.seekTarget(anchor, forward, seconds, durationOrNull()))
-            keepShowing("seek")
+            p.seekTo(GestureMath.seekTarget(anchor, forward, seconds, session.durationOrNull()))
+            session.keepShowing("seek")
             gestureUi.seekTaps = GestureUiState.SeekTaps(forward, seconds)
         }
 
         override fun onSeekTapsEnd() {
             seekAnchor = null
-            hideLater("seek", 300) { gestureUi.seekTaps = null }
+            session.hideLater("seek", 300) { gestureUi.seekTaps = null }
         }
 
         override fun onVerticalStart(side: GestureEngine.Side) {
@@ -1583,27 +712,23 @@ class PlayerActivity : ComponentActivity() {
                 val max = audio.getStreamMaxVolume(android.media.AudioManager.STREAM_MUSIC).coerceAtLeast(1)
                 val system = audio.getStreamVolume(android.media.AudioManager.STREAM_MUSIC)
                 // At the maximum with a boost on: carry on from the boost.
-                volume = if (system >= max && boostLevel > 1f) boostLevel else system.toFloat() / max
+                volume = if (system >= max && session.boostLevel > 1f) session.boostLevel else system.toFloat() / max
             }
         }
 
         override fun onVertical(side: GestureEngine.Side, delta: Float) {
             if (!gesturesEnabled) return
-            keepShowing("level")
+            session.keepShowing("level")
             if (side == GestureEngine.Side.LEFT) {
                 brightness = GestureMath.level(brightness, delta, min = 0.01f)
                 window.attributes = window.attributes.apply { screenBrightness = brightness }
                 gestureUi.level = GestureUiState.Level(GestureUiState.LevelKind.BRIGHTNESS, brightness)
             } else {
                 // Past 100 % (with the loudness enhancer available): boost.
-                val top = if (loudness != null) GestureMath.MAX_VOLUME_LEVEL else 1f
+                val top = if (session.canBoost) GestureMath.MAX_VOLUME_LEVEL else 1f
                 volume = GestureMath.level(volume, delta, max = top)
                 val max = audio.getStreamMaxVolume(android.media.AudioManager.STREAM_MUSIC)
-                val newBoost = volume.coerceAtLeast(1f)
-                if (newBoost != boostLevel) {
-                    boostLevel = newBoost
-                    applyBoost()
-                }
+                session.setBoost(volume.coerceAtLeast(1f))
                 val index = kotlin.math.round(volume.coerceAtMost(1f) * max).toInt()
                 if (index != audio.getStreamVolume(android.media.AudioManager.STREAM_MUSIC)) {
                     // Can be refused (Do Not Disturb): the bar still follows the finger.
@@ -1614,7 +739,7 @@ class PlayerActivity : ComponentActivity() {
         }
 
         override fun onVerticalEnd(side: GestureEngine.Side) {
-            hideLater("level", 700) { gestureUi.level = null }
+            session.hideLater("level", 700) { gestureUi.level = null }
         }
 
         private fun systemBrightness(): Float =
@@ -1627,20 +752,20 @@ class PlayerActivity : ComponentActivity() {
         override fun onScrubStart() {
             if (!gesturesEnabled) return
             scrubbing = true
-            beginScrub()
+            session.actions.beginScrub()
         }
 
         override fun onScrub(fraction: Float) {
-            if (scrubbing) scrubTo(GestureMath.scrubTarget(scrubAnchor, fraction, durationOrNull()))
+            if (scrubbing) session.actions.scrubToTarget(GestureMath.scrubTarget(session.actions.scrubAnchor, fraction, session.durationOrNull()))
         }
 
         override fun onScrubEnd() {
-            if (scrubbing) endScrub(cancel = false)
+            if (scrubbing) session.actions.endScrub(cancel = false)
             scrubbing = false
         }
 
         override fun onScrubCancel() {
-            if (scrubbing) endScrub(cancel = true)
+            if (scrubbing) session.actions.endScrub(cancel = true)
             scrubbing = false
         }
 
@@ -1673,7 +798,7 @@ class PlayerActivity : ComponentActivity() {
         override fun onPinchStart() {
             pinching = gesturesEnabled
             zoomAtStart = zoom
-            keepShowing("zoom")
+            session.keepShowing("zoom")
         }
 
         override fun onPinch(scale: Float) {
@@ -1689,7 +814,7 @@ class PlayerActivity : ComponentActivity() {
             zoom = GestureMath.snapZoom(zoom)
             applyZoom()
             gestureUi.zoomPercent = (zoom * 100).toInt()
-            hideLater("zoom", 800) { gestureUi.zoomPercent = null }
+            session.hideLater("zoom", 800) { gestureUi.zoomPercent = null }
         }
     }
 
@@ -1720,156 +845,12 @@ class PlayerActivity : ComponentActivity() {
         return false
     }
 
-    /**
-     * The stream failed with a network error: most often the debrid link
-     * expired (a long pause, or hours in). Get a fresh one for the same
-     * file, and fresh subtitle links, and continue from the same second.
-     * Capped by [LinkRefresh]; after that, or for plain links, the Retry
-     * dialog.
-     */
-    private fun refreshLinkOrAsk(refused: Boolean = false) {
-        val id = identity
-        val next = LinkRefresh.next(refreshState, android.os.SystemClock.elapsedRealtime())
-        if (id == null || next == null || refreshing) {
-            // "YouTube stopped this stream" is only for a link YouTube kept refusing; anything else is the connection.
-            if (!refreshing) if (youtube != null && refused) showStreamFailed() else showNetworkError()
-            return
-        }
-        refreshState = next
-        refreshing = true
-        val position = player?.currentPosition ?: resumePosition
-        lifecycleScope.launch {
-            try {
-                if (youtube != null) {
-                    val result = refreshYouTube(position)
-                    if (id == identity) when {
-                        result == YtRefresh.OK -> Unit
-                        result == YtRefresh.GONE && refused -> showStreamFailed()
-                        else -> showNetworkError()
-                    }
-                    return@launch
-                }
-                val fresh = (repository.resolveLink(id.provider, id.sourceRef) as? DataResult.Success)?.data?.url
-                if (fresh == null || id != identity) {
-                    if (id == identity) showNetworkError()
-                    return@launch
-                }
-                uri = Uri.parse(fresh)
-                subtitles = subtitleResolver.refresh(subtitles)
-                player?.apply {
-                    setMediaItem(buildMediaItem(), position)
-                    prepare()
-                    play()
-                }
-            } finally {
-                refreshing = false
-            }
-        }
-    }
-
-    /**
-     * The YouTube stream's URLs expired (or the connection broke): resolve the video again, pick the same
-     * itags (or the best at or below the old height) and carry on from [position]. False when that failed.
-     */
-    private enum class YtRefresh { OK, GONE, OFFLINE }
-
-    private suspend fun refreshYouTube(
-        position: Long,
-        pick: (com.abhinavxt.debforge.domain.YouTubeLinks.Ref, Int, List<com.abhinavxt.debforge.domain.FormatChoice>) -> com.abhinavxt.debforge.domain.FormatChoice? =
-            com.abhinavxt.debforge.player.youtube.YouTubeStreaming::reselect
-    ): YtRefresh {
-        val yt = youtube ?: return YtRefresh.GONE
-        val ref = com.abhinavxt.debforge.domain.YouTubeLinks.parseSourceRef(yt.ref) ?: return YtRefresh.GONE
-        val request = try {
-            val video = youTubeResolver.resolve("https://www.youtube.com/watch?v=${yt.videoId}")
-            val choices = com.abhinavxt.debforge.domain.YouTubeFormats.choices(video.streams, android.os.Build.VERSION.SDK_INT, video.durationSec)
-            val choice = pick(ref, yt.height, choices) ?: return YtRefresh.GONE
-            com.abhinavxt.debforge.ui.browse.youTubePlayRequest(video, choice) ?: return YtRefresh.GONE
-        } catch (e: kotlinx.coroutines.CancellationException) {
-            throw e
-        } catch (e: com.abhinavxt.debforge.data.youtube.YouTubeException.Network) {
-            return YtRefresh.OFFLINE
-        } catch (e: Exception) {
-            return YtRefresh.GONE
-        }
-        val fresh = request.youtube ?: return YtRefresh.GONE
-        uri = request.uri
-        youtube = fresh
-        // Same languages as before (new links), plus subtitles added from OpenSubtitles.
-        val had = subtitles.mapNotNull { it.language }.toSet()
-        subtitles = subtitles.filter { it.url.startsWith("file:") } + request.subtitles.filter { it.language in had }
-        player?.apply {
-            setMediaItem(buildMediaItem(), position)
-            prepare()
-            play()
-        }
-        return YtRefresh.OK
-    }
-
-    /** A YouTube stream broke: refused link, lost connection, undecodable format or something else. */
-    private fun onYouTubeError(error: PlaybackException) {
-        when (PlayerErrors.youTubeFailure(error.errorCode, PlayerErrors.httpStatusOf(error))) {
-            PlayerErrors.YouTubeFailure.LINK_REFUSED -> refreshLinkOrAsk(refused = true)
-            PlayerErrors.YouTubeFailure.NETWORK ->
-                // Offline: wait for the connection instead of looking the video up again.
-                if (networkMonitor.online.value) refreshLinkOrAsk() else showNetworkError()
-            PlayerErrors.YouTubeFailure.DECODER -> youTubeDecoderFallback()
-            PlayerErrors.YouTubeFailure.OTHER -> showYouTubeProblem(getString(R.string.player_error_body, error.errorCodeName))
-        }
-    }
-
-    /** The device could not decode this format: carry on in an MP4 choice at the same position, once. */
-    private fun youTubeDecoderFallback() {
-        // A refresh already in flight replaces the source and reports its own failure with a dialog,
-        // so a decoder error from the old source needs no second message here.
-        if (refreshing || isFinishing) return
-        if (triedMp4Fallback) { showYouTubeProblem(getString(R.string.player_unsupported_body)); return }
-        triedMp4Fallback = true
-        refreshing = true
-        val id = identity
-        val position = player?.currentPosition ?: resumePosition
-        lifecycleScope.launch {
-            try {
-                val result = refreshYouTube(position, com.abhinavxt.debforge.player.youtube.YouTubeStreaming::mp4Fallback)
-                if (id != identity) return@launch
-                when (result) {
-                    YtRefresh.OK -> Unit
-                    YtRefresh.OFFLINE -> showNetworkError()
-                    YtRefresh.GONE -> showYouTubeProblem(getString(R.string.player_unsupported_body))
-                }
-            } finally {
-                refreshing = false
-            }
-        }
-    }
-
-    /** A message for a stream that can't continue and that downloading would not fix. */
-    private fun showYouTubeProblem(message: String) {
-        if (isFinishing) return
-        player?.pause()
-        AlertDialog.Builder(this)
-            .setMessage(message)
-            .setPositiveButton(R.string.action_close) { _, _ -> finish() }
-            .setOnCancelListener { finish() }
-            .show()
-    }
-
-    /** The stream can't be kept going: offer to download the video instead, or close. */
-    private fun showStreamFailed() {
-        val yt = youtube ?: return
-        if (isFinishing) return
-        player?.pause()
-        AlertDialog.Builder(this)
-            .setMessage(R.string.yt_stream_failed)
-            .setPositiveButton(R.string.yt_stream_download) { _, _ -> downloadFailedStream(yt) }
-            .setNegativeButton(R.string.action_close) { _, _ -> finish() }
-            .setOnCancelListener { finish() }
-            .show()
-    }
-
     /** Queues the stream's video like the YouTube preview does, tells the user what happened, then closes. */
     private fun downloadFailedStream(yt: com.abhinavxt.debforge.ui.browse.YtStream) {
         val ref = com.abhinavxt.debforge.domain.YouTubeLinks.parseSourceRef(yt.ref)
+        val title = session.title
+        val uri = session.uri
+        val subtitles = session.subtitles
         lifecycleScope.launch {
             // Same rule as the YouTube tab: no writable download folder yet means ask, never queue to the filesystem root.
             if (ref == null || !com.abhinavxt.debforge.download.StorageAccess.canWrite(this@PlayerActivity, settings.downloadDirFlow.first())) {
@@ -1912,105 +893,6 @@ class PlayerActivity : ComponentActivity() {
         }
     }
 
-    /** Fetches the next episode's link and subtitles once, ahead of time. */
-    private fun prefetch(episode: QueuedEpisode) {
-        if (prefetchJob != null || prepared?.episode == episode) return
-        prefetchJob = lifecycleScope.launch {
-            prepared = prepare(episode)
-            prefetchJob = null
-        }
-    }
-
-    private suspend fun prepare(episode: QueuedEpisode): Prepared? {
-        val item = episode.item
-        val url = item.downloadUrl
-            ?: (repository.resolveLink(item.provider, item.sourceRef) as? DataResult.Success)?.data?.url
-            ?: return null
-        return Prepared(episode, url, subtitleResolver.resolve(episode.subtitles))
-    }
-
-    /**
-     * Switches to the next episode in this same player: marks the current one
-     * watched, then plays the next from its saved position (if any).
-     */
-    private fun playNext() {
-        if (switching) return
-        val episode = queue.firstOrNull() ?: return
-        switching = true
-        hideNextCard()
-        savePosition(ended = true)
-        scrobble(scrobbler::stopped, ended = true)
-        player?.pause()
-        lifecycleScope.launch {
-            try {
-                switchTo(episode)
-            } finally {
-                switching = false
-            }
-        }
-    }
-
-    /** Back to the episode before this one, from where it was left (like [playNext], backwards). */
-    private fun playPrevious() {
-        if (switching) return
-        val episode = previousQueue.firstOrNull() ?: return
-        switching = true
-        hideNextCard()
-        savePosition()
-        scrobble(scrobbler::stopped)
-        player?.pause()
-        lifecycleScope.launch {
-            try {
-                switchTo(episode, backwards = true)
-            } finally {
-                switching = false
-            }
-        }
-    }
-
-    private suspend fun switchTo(episode: QueuedEpisode, backwards: Boolean = false) {
-        prefetchJob?.join()
-        val ready = prepared?.takeIf { it.episode == episode } ?: prepare(episode)
-        prepared = null
-        if (ready == null) {
-            Toast.makeText(this@PlayerActivity, R.string.player_next_failed, Toast.LENGTH_LONG).show()
-            return
-        }
-        // This episode moves to the other side: Previous after going forward, Next after going back.
-        if (backwards) {
-            previousQueue.removeFirst()
-            currentEpisode?.let { queue.addFirst(it) }
-        } else {
-            queue.removeFirst()
-            currentEpisode?.let { previousQueue.addFirst(it) }
-        }
-        currentEpisode = episode
-        episodePlayer?.queueChanged()
-        val item = episode.item
-        identity = Identity(item.id, item.provider, item.sourceRef, item.filename, episode.showKey, item.parentRef)
-        uri = Uri.parse(ready.url)
-        title = episode.title
-        subtitles = ready.subtitles
-        titleView.text = title
-        controls.title = title
-        controls.castAvailable = !isTv && !isLocalFile() && youtube == null
-        controls.externalAvailable = youtube == null
-        handoffStart = null // a later episode is not the handed-over item
-        startFile()
-        refreshAudioHandoff()
-        offeredFallback = false
-        nextCancelled = false
-        refreshState = LinkRefresh.State()
-        val saved = positions.get(item.id)
-        val at = saved?.let { Resume.resumeAt(it.positionMs, it.durationMs, it.finished) } ?: 0L
-        player?.apply {
-            setMediaItem(buildMediaItem(), at)
-            prepare()
-            play()
-        }
-        updatePip()
-    }
-
     /**
      * Current PiP settings: the video's shape, the play/pause and next
      * buttons, and (Android 12+) whether leaving should enter PiP by itself.
@@ -2036,7 +918,7 @@ class PlayerActivity : ComponentActivity() {
                     pipIntent(ACTION_PIP_PLAY_PAUSE, 1)
                 )
             )
-            if (queue.isNotEmpty()) {
+            if (session.hasNext) {
                 add(
                     RemoteAction(
                         Icon.createWithResource(this@PlayerActivity, R.drawable.ic_action_next),
@@ -2084,7 +966,7 @@ class PlayerActivity : ComponentActivity() {
         if (isInPictureInPictureMode) {
             controls.panel = null
             controls.visible = false
-            if (inBackground) takeBackFromBackground() // the window plays it
+            session.hostResumed(token) // in the background service? the window plays it now
         }
         applyZoom() // the small window always shows the whole picture
         if (isInPictureInPictureMode) {
@@ -2102,12 +984,10 @@ class PlayerActivity : ComponentActivity() {
     }
 
     override fun onDestroy() {
-        if (inBackground) {
-            takeBackFromBackground()
-            savePosition()
+        if (::playerView.isInitialized) {
+            session.hostDestroyed(token, isFinishing)
+            session.detach(playerView)
         }
-        releasePlayer() // no-op if already released in onStop
-        thumbnails.release()
         gestureHandler.removeCallbacksAndMessages(null)
         runCatching { unregisterReceiver(pipReceiver) }
         super.onDestroy()
@@ -2138,13 +1018,10 @@ class PlayerActivity : ComponentActivity() {
         }
         val buttons = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
-            nextPlayNow = pill(R.string.player_play_now, primary = true) { playNext() }
+            nextPlayNow = pill(R.string.player_play_now, primary = true) { session.playNext() }
             addView(nextPlayNow)
             addView(
-                pill(R.string.action_cancel, primary = false) {
-                    nextCancelled = true
-                    hideNextCard()
-                },
+                pill(R.string.action_cancel, primary = false) { session.cancelNext() },
                 LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
                     .apply { marginStart = dp(8) }
             )
@@ -2164,347 +1041,44 @@ class PlayerActivity : ComponentActivity() {
         }
     }
 
-    /** Tells Trakt (if signed in) about the current file; [ended] reports it as played to the end. */
-    private fun scrobble(send: (String, Long, Long) -> Unit, ended: Boolean = false) {
-        val p = player ?: return
-        val duration = durationOrNull() ?: return
-        val name = identity?.filename?.takeIf { it.isNotBlank() } ?: return
-        send(name, if (ended) duration else p.currentPosition.coerceIn(0, duration), duration)
-    }
-
-    private fun savePosition(ended: Boolean = false) {
-        val id = identity ?: return
-        val p = player ?: return
-        val duration = p.duration.takeIf { it != C.TIME_UNSET && it > 0 } ?: return
-        val position = if (ended) duration else p.currentPosition.coerceIn(0, duration)
-        positions.save(
-            PlaybackEntity(
-                itemId = id.itemId,
-                provider = id.provider,
-                sourceRef = id.sourceRef,
-                filename = id.filename,
-                title = title,
-                showKey = id.showKey,
-                parentRef = id.parentRef,
-                positionMs = position,
-                durationMs = duration,
-                finished = ended || Resume.isFinished(position, duration),
-                updatedAt = System.currentTimeMillis()
-            )
-        )
-        if (com.abhinavxt.debforge.data.history.shouldRecord(position, ended)) {
-            val yt = youtube
-            history.record(
-                com.abhinavxt.debforge.data.history.HistoryEntity(
-                    itemId = id.itemId,
-                    kind = com.abhinavxt.debforge.data.history.HistoryKind.VIDEO,
-                    origin = com.abhinavxt.debforge.data.history.historyOriginFor(yt != null, isLocalFile()),
-                    provider = if (yt != null) null else id.provider.name,
-                    sourceRef = yt?.videoId ?: id.sourceRef,
-                    parentRef = id.parentRef,
-                    showKey = id.showKey,
-                    title = title,
-                    subtitle = yt?.uploader?.takeIf { it.isNotBlank() },
-                    artworkUrl = null,
-                    positionMs = position,
-                    durationMs = duration,
-                    playedAt = System.currentTimeMillis()
-                )
-            )
-        }
-    }
-
     override fun onStart() {
         super.onStart()
-        if (inBackground) takeBackFromBackground()
-        initializePlayer()
+        // Another video replaced this one in the engine meanwhile: nothing to show here any more.
+        if (!session.hostStarted(token)) {
+            finish()
+            return
+        }
         playerView.onResume()
-        startTicking()
     }
 
     /**
-     * Leaving while playing with "Keep playing in the background" on: hand
-     * the player to the media service now, while still in the foreground
-     * (Android only lets a foreground app start it).
+     * Leaving while playing with "Keep playing in the background" on: the
+     * engine hands the player to the media service now, while still in the
+     * foreground (Android only lets a foreground app start it).
      */
     override fun onPause() {
         super.onPause()
-        if (controls.background && !inBackground && player?.isPlaying == true &&
-            !isFinishing && !isChangingConfigurations && !isInPictureInPictureMode
-        ) {
-            // The service's session takes over (notification, lock screen).
-            closeSession()
-            BackgroundPlayback.player = episodePlayer ?: player
-            BackgroundPlayback.start(this)
-            inBackground = true
-        }
+        session.hostPaused(token, mayLeave = !isFinishing && !isChangingConfigurations && !isInPictureInPictureMode)
     }
 
     override fun onResume() {
         super.onResume()
-        if (inBackground) takeBackFromBackground()
+        session.hostResumed(token)
     }
 
     override fun onStop() {
-        tickJob?.cancel()
-        savePosition()
-        if (isFinishing && !handingOff) {
-            val id = identity
-            val p = player
-            if (id != null && p != null && !inBackground) {
-                audioPlayer.videoClosed(id.itemId, youtube?.videoId, p.currentPosition, p.duration.takeIf { it != C.TIME_UNSET } ?: 0L)
-            }
-        }
+        session.hostStopped(token, isFinishing)
         playerView.onPause()
-        if (inBackground && player != null && !isFinishing) {
-            // Sound only while away: no point decoding pictures nobody sees.
-            player?.let { it.trackSelectionParameters = it.trackSelectionParameters.buildUpon().setTrackTypeDisabled(C.TRACK_TYPE_VIDEO, true).build() }
-        } else {
-            releasePlayer()
-        }
         super.onStop()
-    }
-
-    /** Back in the player: the service lets go, pictures come back. */
-    private fun takeBackFromBackground() {
-        inBackground = false
-        audioPlayer.parkForVideo() // audio may have taken the service over meanwhile; video and audio never overlap
-        BackgroundPlayback.stop(this)
-        BackgroundPlayback.player = null
-        openSession()
-        player?.let { it.trackSelectionParameters = it.trackSelectionParameters.buildUpon().setTrackTypeDisabled(C.TRACK_TYPE_VIDEO, false).build() }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        player?.let {
-            resumePosition = it.currentPosition
-            resumePlayWhenReady = it.playWhenReady
-        }
-        outState.putLong(STATE_POSITION, resumePosition)
-        outState.putBoolean(STATE_PLAY_WHEN_READY, resumePlayWhenReady)
-        outState.putBoolean(STATE_OFFERED, offeredFallback)
-    }
-
-    private fun initializePlayer() {
-        if (player != null) return
-        // Device decoders first; FFmpeg (Jellyfin's prebuilt extension) only
-        // for what the device can't do: E-AC3/AC3 on phones without a Dolby
-        // licence, DTS, TrueHD. Decoder fallback tries another codec
-        // instance if the first one fails to start.
-        val renderers = SyncedRenderersFactory(this, tuning)
-            .setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON)
-            .setEnableDecoderFallback(true)
-        val exo = ExoPlayer.Builder(this, renderers)
-            .apply {
-                // Video-only + audio merged, read in byte windows; other items go to the default factory.
-                if (youtube != null) setMediaSourceFactory(com.abhinavxt.debforge.player.youtube.YouTubeMediaSourceFactory(this@PlayerActivity))
-            }
-            // Pause for calls / other apps' audio, and when headphones come out.
-            .setAudioAttributes(
-                androidx.media3.common.AudioAttributes.Builder()
-                    .setUsage(C.USAGE_MEDIA)
-                    .setContentType(C.AUDIO_CONTENT_TYPE_MOVIE)
-                    .build(),
-                /* handleAudioFocus = */ true
-            )
-            .setHandleAudioBecomingNoisy(true)
-            .build()
-        exo.addListener(listener)
-        // Back from the background: same tracks and speed as before.
-        savedTrackParams?.let { exo.trackSelectionParameters = it }
-        exo.setPlaybackSpeed(savedSpeed)
-        exo.setMediaItem(buildMediaItem())
-        exo.seekTo(resumePosition)
-        exo.playWhenReady = resumePlayWhenReady
-        exo.prepare()
-        exo.addAnalyticsListener(analytics)
-        playerView.player = exo
-        player = exo
-        episodePlayer = EpisodePlayer(
-            exo,
-            hasNext = { queue.isNotEmpty() },
-            hasPrevious = { previousQueue.isNotEmpty() },
-            onNext = ::playNext,
-            onPrevious = ::playPrevious
-        )
-        openSession()
-        attachLoudness(exo.audioSessionId)
-        applySubtitleStyle()
-        startLoop() // an A-B loop set before leaving the app
-    }
-
-    /** The current file, with the torrent's own subtitle files (pick them with the CC button). */
-    private fun buildMediaItem(): MediaItem =
-        MediaItem.Builder()
-            .setUri(uri)
-            .apply { youtube?.let { setTag(com.abhinavxt.debforge.player.youtube.YouTubeStreamTag(it.audioUrl)) } }
-            .setMediaMetadata(MediaMetadata.Builder().setTitle(title).build())
-            .setSubtitleConfigurations(subtitles.map { sub ->
-                MediaItem.SubtitleConfiguration.Builder(Uri.parse(sub.url))
-                    .setMimeType(sub.mimeType)
-                    .setLanguage(sub.language)
-                    .setLabel(sub.label)
-                    // Forced subs (signs, foreign dialogue) show without being picked.
-                    // Subtitles chosen in the YouTube preview are shown from the start.
-                    .setSelectionFlags(if (sub.forced) C.SELECTION_FLAG_FORCED else if (youtube != null) C.SELECTION_FLAG_DEFAULT else 0)
-                    .build()
-            })
-            .build()
-
-    private fun releasePlayer() {
-        val exo = player ?: return
-        if (exo.playbackState != Player.STATE_ENDED) scrobble(scrobbler::stopped)
-        resumePosition = exo.currentPosition
-        resumePlayWhenReady = exo.playWhenReady
-        savedTrackParams = exo.trackSelectionParameters.buildUpon().setTrackTypeDisabled(C.TRACK_TYPE_VIDEO, false).build()
-        loopMessage = null
-        savedSpeed = exo.playbackParameters.speed
-        loudness?.release()
-        loudness = null
-        nightMode?.release()
-        nightMode = null
-        audioSessionId = C.AUDIO_SESSION_ID_UNSET
-        closeSession()
-        episodePlayer = null
-        exo.removeAnalyticsListener(analytics)
-        exo.removeListener(listener)
-        exo.release()
-        playerView.player = null
-        player = null
-    }
-
-    private val listener = object : Player.Listener {
-        /** Portrait video (phone recordings, shorts): allow portrait instead. */
-        override fun onIsPlayingChanged(isPlaying: Boolean) {
-            updatePip()
-            if (isPlaying) scrobble(scrobbler::playing)
-        }
-
-        // The user's pause, not buffering (which also stops isPlaying for a moment).
-        override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
-            if (!playWhenReady && player?.playbackState != Player.STATE_ENDED) scrobble(scrobbler::paused)
-        }
-
-        override fun onVideoSizeChanged(videoSize: androidx.media3.common.VideoSize) {
-            if (videoSize.width <= 0 || videoSize.height <= 0) return
-            updatePip()
-            val displayWidth = videoSize.width * videoSize.pixelWidthHeightRatio
-            if (userRotated) return
-            requestedOrientation = if (videoSize.height > displayWidth) {
-                ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT
-            } else {
-                ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
-            }
-        }
-
-        override fun onPlaybackStateChanged(state: Int) {
-            if (state == Player.STATE_ENDED) {
-                savePosition(ended = true)
-                scrobble(scrobbler::stopped, ended = true)
-                // Reached the end before the countdown did (e.g. seeked there).
-                if (controls.sleepAtEnd) {
-                    sleepNow()
-                    return
-                }
-                if (autoplay && queue.isNotEmpty() && !nextCancelled) playNext()
-            }
-        }
-
-        override fun onPlayerError(error: PlaybackException) {
-            if (youtube != null) { onYouTubeError(error); return }
-            when (PlayerErrors.kindOf(error.errorCode)) {
-                PlayerErrors.Kind.UNSUPPORTED -> offerExternal(getString(R.string.player_unsupported_body))
-                // Most likely an expired link or a dropped connection.
-                PlayerErrors.Kind.NETWORK -> refreshLinkOrAsk()
-                PlayerErrors.Kind.OTHER -> offerExternal(getString(R.string.player_error_body, error.errorCodeName))
-            }
-        }
-
-        /**
-         * Video plays but none of its audio tracks can be decoded here (DTS,
-         * TrueHD…): ExoPlayer would silently play without sound.
-         */
-        override fun onAudioSessionIdChanged(audioSessionId: Int) = attachLoudness(audioSessionId)
-
-        override fun onTracksChanged(tracks: Tracks) {
-            controls.tracksVersion++
-            selectPendingSubtitle(tracks)
-            if (!tracksApplied && !tracks.isEmpty) {
-                tracksApplied = true
-                val memory = remembered
-                lifecycleScope.launch { applyTrackChoices(tracks, memory?.await()) }
-            }
-            val audio = tracks.groups.filter { it.type == C.TRACK_TYPE_AUDIO }
-            if (audio.isNotEmpty() && audio.none { it.isSupported }) {
-                offerExternal(getString(R.string.player_no_audio_body), videoProblem = false)
-            }
-        }
-    }
-
-    /** "Can't play this here" → hand the same link to VLC & co. */
-    /** [videoProblem]: the picture may be the trouble, so software decoding is worth a try first. */
-    private fun offerExternal(message: String, videoProblem: Boolean = true) {
-        if (offeredFallback || isFinishing) return
-        if (youtube != null) { // another player would only get the picture, without the audio stream
-            offeredFallback = true
-            showYouTubeProblem(message)
-            return
-        }
-        offeredFallback = true
-        player?.pause()
-        AlertDialog.Builder(this)
-            .setTitle(R.string.player_unsupported_title)
-            .setMessage(message)
-            .setPositiveButton(R.string.action_open_other_player) { _, _ -> openExternally() }
-            .setNegativeButton(R.string.player_keep_watching) { _, _ -> player?.play() }
-            .apply {
-                if (videoProblem && !tuning.preferSoftwareVideo) {
-                    setNeutralButton(R.string.player_try_software) { _, _ ->
-                        offeredFallback = false // if this fails too, ask again
-                        setSoftwareDecoding(true, save = true)
-                        player?.play()
-                    }
-                }
-            }
-            .setOnCancelListener { player?.play() }
-            .show()
-    }
-
-    /** Session while watching, so headset / watch / output-switcher controls work here too. */
-    private fun openSession() {
-        if (session != null || inBackground) return
-        val p = episodePlayer ?: return
-        session = runCatching {
-            androidx.media3.session.MediaSession.Builder(this, p).setId(SESSION_ID).build()
-        }.getOrNull()
-    }
-
-    private fun closeSession() {
-        session?.release()
-        session = null
-    }
-
-    /** Decoders and dropped frames for the stats overlay. */
-    private val analytics = object : androidx.media3.exoplayer.analytics.AnalyticsListener {
-        override fun onVideoDecoderInitialized(
-            eventTime: androidx.media3.exoplayer.analytics.AnalyticsListener.EventTime,
-            decoderName: String, initializedTimestampMs: Long, initializationDurationMs: Long
-        ) { videoDecoder = decoderName }
-
-        override fun onAudioDecoderInitialized(
-            eventTime: androidx.media3.exoplayer.analytics.AnalyticsListener.EventTime,
-            decoderName: String, initializedTimestampMs: Long, initializationDurationMs: Long
-        ) { audioDecoder = decoderName }
-
-        override fun onDroppedVideoFrames(
-            eventTime: androidx.media3.exoplayer.analytics.AnalyticsListener.EventTime, droppedFrames: Int, elapsedMs: Long
-        ) { this@PlayerActivity.droppedFrames += droppedFrames }
-
-        override fun onBandwidthEstimate(
-            eventTime: androidx.media3.exoplayer.analytics.AnalyticsListener.EventTime,
-            totalLoadTimeMs: Int, totalBytesLoaded: Long, bitrateEstimate: Long
-        ) { bandwidthBps = bitrateEstimate }
+        val (position, playWhenReady) = session.positionForState()
+        outState.putLong(STATE_POSITION, position)
+        outState.putBoolean(STATE_PLAY_WHEN_READY, playWhenReady)
+        outState.putBoolean(STATE_OFFERED, session.offeredFallback)
+        outState.putLong(STATE_TOKEN, token)
     }
 
     /** Play on TV: finds DLNA renderers on the network and hands the picked one the stream. */
@@ -2541,6 +1115,8 @@ class PlayerActivity : ComponentActivity() {
 
     private fun startCast(to: com.abhinavxt.debforge.player.cast.Renderer) {
         val at = player?.currentPosition ?: 0L
+        val uri = session.uri
+        val title = session.title
         lifecycleScope.launch {
             if (runCatching { caster.play(to, uri.toString(), title, at) }.isFailure) {
                 Toast.makeText(this@PlayerActivity, getString(R.string.cast_failed, to.name), Toast.LENGTH_LONG).show()
@@ -2556,7 +1132,7 @@ class PlayerActivity : ComponentActivity() {
         controls.casting = true
         val dialog = AlertDialog.Builder(this)
             .setTitle(getString(R.string.cast_playing_on, on.name))
-            .setMessage(title)
+            .setMessage(session.title)
             .setCancelable(false)
             .setPositiveButton(R.string.cast_pause, null)
             .setNegativeButton(R.string.cast_stop) { _, _ ->
@@ -2586,9 +1162,9 @@ class PlayerActivity : ComponentActivity() {
     }
 
     private fun openExternally() {
-        if (youtube != null) return // the audio is a separate URL: another player could not play it
+        if (session.youtube != null) return // the audio is a separate URL: another player could not play it
         // Subtitles saved in DebForge's cache (OpenSubtitles) aren't readable by other apps.
-        if (!playExternally(PlayRequest(uri, title, subtitles = subtitles.filterNot { it.url.startsWith("file:") }))) {
+        if (!playExternally(PlayRequest(session.uri, session.title, subtitles = session.subtitles.filterNot { it.url.startsWith("file:") }))) {
             Toast.makeText(this, R.string.msg_no_player, Toast.LENGTH_LONG).show()
             player?.play()
             return
@@ -2598,40 +1174,18 @@ class PlayerActivity : ComponentActivity() {
     }
 
     private fun showNetworkError() {
-        if (isFinishing) return
         networkDialog?.dismiss()
         networkDialog = AlertDialog.Builder(this)
             .setTitle(R.string.player_network_title)
             .setMessage(R.string.player_network_body)
-            .setPositiveButton(R.string.action_retry) { _, _ ->
-                if (identity != null) {
-                    // A fresh link, with a fresh budget: the user asked for it.
-                    refreshState = LinkRefresh.State()
-                    refreshLinkOrAsk()
-                } else {
-                    player?.let {
-                        resumePosition = it.currentPosition
-                        it.prepare()
-                        it.play()
-                    }
-                }
-            }
+            .setPositiveButton(R.string.action_retry) { _, _ -> session.retryAfterNetworkError() }
             .setNegativeButton(R.string.action_close) { _, _ -> finish() }
             .setOnCancelListener { finish() }
             .setOnDismissListener { dismissed ->
                 // A newer dialog's watch must survive this one's late dismiss callback.
-                if (networkDialog === dismissed) { networkWatch?.cancel(); networkWatch = null }
+                if (networkDialog === dismissed) session.networkDialogGone()
             }
             .show()
-        if (youtube != null && !networkMonitor.online.value) {
-            // Offline: carry on by itself when the connection is back.
-            networkWatch = lifecycleScope.launch {
-                networkMonitor.online.first { it }
-                networkDialog?.dismiss()
-                refreshState = LinkRefresh.State()
-                refreshLinkOrAsk()
-            }
-        }
     }
 
     private fun hideSystemBars() {
@@ -2647,52 +1201,9 @@ class PlayerActivity : ComponentActivity() {
 
     private fun dp(v: Int): Int = (v * resources.displayMetrics.density).toInt()
 
-    /** The file being played, from the intent; null for a plain link. */
-    private data class Identity(
-        val itemId: String,
-        val provider: ProviderId,
-        val sourceRef: String,
-        val filename: String,
-        val showKey: String?,
-        val parentRef: String? = null
-    ) {
-        companion object {
-            fun from(intent: Intent): Identity? {
-                val id = intent.getStringExtra(EXTRA_ITEM_ID) ?: return null
-                val provider = ProviderId.fromName(intent.getStringExtra(EXTRA_PROVIDER)) ?: return null
-                return Identity(
-                    itemId = id,
-                    provider = provider,
-                    sourceRef = intent.getStringExtra(EXTRA_SOURCE_REF) ?: return null,
-                    filename = intent.getStringExtra(EXTRA_FILENAME).orEmpty(),
-                    showKey = intent.getStringExtra(EXTRA_SHOW_KEY),
-                    parentRef = intent.getStringExtra(EXTRA_PARENT_REF)
-                )
-            }
-        }
-    }
-
     companion object {
         private const val ACTION_PIP_PLAY_PAUSE = "com.abhinavxt.debforge.player.PIP_PLAY_PAUSE"
         private const val ACTION_PIP_NEXT = "com.abhinavxt.debforge.player.PIP_NEXT"
-        private const val SAVE_EVERY_TICKS = 5
-        /** The background service's session uses the default id; the two never clash. */
-        private const val SESSION_ID = "player"
-        /** [doneSkips] entry for the learnt intro (chapter segments use their start). */
-        private const val LEARNT_SKIP = -1L
-        /** Credits ending this close to the end of the file count as "to the end". */
-        private const val END_SLACK_MS = 3_000L
-        /** Fetch the next episode's links this long before the end. */
-        private const val PREFETCH_BEFORE_END_MS = 90_000L
-        /** Show "Next: …" this long before the end (end credits). */
-        private const val CARD_BEFORE_END_MS = 30_000L
-        /** The card counts down this long, then the next episode starts. */
-        private const val COUNTDOWN_MS = 10_000L
-        private const val START_OVER_VISIBLE_MS = 8_000L
-        /** While scrubbing, seek at most this often (streams can't keep up with every move). */
-        private const val SCRUB_SEEK_EVERY_MS = 120L
-        /** The shortest A-B loop. */
-        private const val MIN_LOOP_MS = 1_000L
         private const val EXTRA_ITEM_ID = "itemId"
         private const val EXTRA_PROVIDER = "provider"
         private const val EXTRA_SOURCE_REF = "sourceRef"
@@ -2714,6 +1225,20 @@ class PlayerActivity : ComponentActivity() {
         private const val EXTRA_YT_HEIGHT = "ytHeight"
         private const val EXTRA_YT_EXT = "ytExt"
         private const val EXTRA_YT_UPLOADER = "ytUploader"
+
+        /** The file being played, from the intent; null for a plain link. */
+        private fun identityFrom(intent: Intent): VideoIdentity? {
+            val id = intent.getStringExtra(EXTRA_ITEM_ID) ?: return null
+            val provider = ProviderId.fromName(intent.getStringExtra(EXTRA_PROVIDER)) ?: return null
+            return VideoIdentity(
+                itemId = id,
+                provider = provider,
+                sourceRef = intent.getStringExtra(EXTRA_SOURCE_REF) ?: return null,
+                filename = intent.getStringExtra(EXTRA_FILENAME).orEmpty(),
+                showKey = intent.getStringExtra(EXTRA_SHOW_KEY),
+                parentRef = intent.getStringExtra(EXTRA_PARENT_REF)
+            )
+        }
 
         private fun ytStreamFrom(intent: Intent): com.abhinavxt.debforge.ui.browse.YtStream? {
             val ref = intent.getStringExtra(EXTRA_YT_REF) ?: return null
@@ -2751,6 +1276,8 @@ class PlayerActivity : ComponentActivity() {
         private const val STATE_POSITION = "position"
         private const val STATE_PLAY_WHEN_READY = "playWhenReady"
         private const val STATE_OFFERED = "offeredFallback"
+        /** The engine's video this screen showed, so a recreated screen shows the same one. */
+        private const val STATE_TOKEN = "videoToken"
 
         /** The intent that opens [request]; [start] (from the audio player) sets where and how fast it begins, instead of the saved position. */
         fun intent(context: Context, request: PlayRequest, start: VideoStart? = null): Intent =

@@ -36,9 +36,10 @@ import kotlinx.coroutines.launch
  * Keeps the player's sound going after the user leaves it (Home, another
  * app, screen off) when "Keep playing in the background" is on.
  *
- * The player itself stays owned by [PlayerActivity], which hands it over in
- * [BackgroundPlayback.player] before starting this service and takes it back
- * (stopping the service) when it returns. The service only adds a media
+ * The player itself stays owned by the video engine
+ * ([com.abhinavxt.debforge.player.session.VideoSession]; or the audio player),
+ * which hands it over in [BackgroundPlayback.player] before starting this
+ * service and takes it back (stopping the service) when its screen returns. The service only adds a media
  * session around it: Media3 then shows the media notification, keeps the
  * process in the foreground while playing, and wires lock-screen, Bluetooth
  * and headset controls.
