@@ -93,6 +93,23 @@ class VideoSurface(
     /** Android TV: Media3's controller shows or hides (the host shows or hides the system bars with it). */
     var onControllerVisibility: ((visible: Boolean) -> Unit)? = null
 
+    /** The host's drag-follow (the watch page minimising): what a downward drag on the picture does when [SurfaceFeatures.hostDrag]. */
+    interface HostDrag {
+        fun start()
+        /** [dy]: pixels moved since the last call (down is positive). */
+        fun move(dy: Float)
+        /** The finger lifted (or the touch was cancelled): [velocityY] px/s, down is positive. */
+        fun end(velocityY: Float)
+    }
+
+    var hostDrag: HostDrag? = null
+    private var dragDownX = 0f
+    private var dragDownY = 0f
+    private var dragLastY = 0f
+    private var dragMayStart = false
+    private var hostDragging = false
+    private var dragTracker: android.view.VelocityTracker? = null
+
     private var gestureEngine: GestureEngine? = null
     /** The current touch belongs to the gestures (not to a button). */
     private var gesturing = false
@@ -357,6 +374,7 @@ class VideoSurface(
      */
     override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
         val engine = gestureEngine
+        if (features.hostDrag && hostDrag != null && !inPictureInPicture && handleHostDrag(ev, engine)) return true
         if (ev.actionMasked == MotionEvent.ACTION_DOWN) {
             // Even with gestures off, taps on the video still show / hide the controls.
             gesturing = engine != null && features.overlays && !inPictureInPicture && !touchesControl(ev)
@@ -374,6 +392,61 @@ class VideoSurface(
         }
         scheduleGestureTimer()
         return true
+    }
+
+    /** A downward drag on the watch page's picture belongs to the host; true while it holds the touch. Taps and double taps go on as usual. */
+    private fun handleHostDrag(ev: MotionEvent, engine: GestureEngine?): Boolean {
+        val host = hostDrag ?: return false
+        when (ev.actionMasked) {
+            MotionEvent.ACTION_DOWN -> {
+                dragDownX = ev.rawX; dragDownY = ev.rawY; dragLastY = ev.rawY
+                dragMayStart = !touchesControl(ev)
+                hostDragging = false
+                dragTracker?.recycle()
+                dragTracker = android.view.VelocityTracker.obtain().also { it.addMovement(ev) }
+            }
+            MotionEvent.ACTION_MOVE -> {
+                dragTracker?.addMovement(ev)
+                if (!hostDragging) {
+                    val dy = ev.rawY - dragDownY
+                    val dx = ev.rawX - dragDownX
+                    val slop = android.view.ViewConfiguration.get(context).scaledTouchSlop
+                    if (dragMayStart && ev.pointerCount == 1 && dy > slop && dy > kotlin.math.abs(dx)) {
+                        hostDragging = true
+                        gesturing = false
+                        engine?.cancel(ev.eventTime)
+                        // The controls underneath give up this touch.
+                        val cancel = MotionEvent.obtain(ev).also { it.action = MotionEvent.ACTION_CANCEL }
+                        super.dispatchTouchEvent(cancel)
+                        cancel.recycle()
+                        host.start()
+                        host.move(dy)
+                        dragLastY = ev.rawY
+                        return true
+                    }
+                    if (kotlin.math.abs(dx) > slop || dy < -slop) dragMayStart = false
+                } else {
+                    host.move(ev.rawY - dragLastY)
+                    dragLastY = ev.rawY
+                    return true
+                }
+            }
+            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                val tracker = dragTracker
+                dragTracker = null
+                if (hostDragging) {
+                    hostDragging = false
+                    tracker?.addMovement(ev)
+                    tracker?.computeCurrentVelocity(1000)
+                    val v = if (ev.actionMasked == MotionEvent.ACTION_UP) tracker?.yVelocity ?: 0f else 0f
+                    tracker?.recycle()
+                    host.end(v)
+                    return true
+                }
+                tracker?.recycle()
+            }
+        }
+        return hostDragging
     }
 
     private fun span(ev: MotionEvent): Float =

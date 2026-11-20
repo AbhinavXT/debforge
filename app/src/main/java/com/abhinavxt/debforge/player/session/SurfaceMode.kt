@@ -20,7 +20,9 @@ data class SurfaceFeatures(
     /** The controls and gesture feedback over the video. */
     val overlays: Boolean,
     /** "Start over", skip, next-episode cards and stats. */
-    val cards: Boolean
+    val cards: Boolean,
+    /** A downward drag is the host's (drag-follow minimise), not brightness / volume; taps and double taps still work. */
+    val hostDrag: Boolean = false
 ) {
     companion object {
         /** Pure: the same answer for the same mode. */
@@ -32,7 +34,7 @@ data class SurfaceFeatures(
             // The watch page scrolls and swipes down to minimise: no brightness / volume / scrub / hold / pinch.
             SurfaceMode.INLINE -> SurfaceFeatures(
                 levels = false, scrub = false, holdSpeed = false, pinchZoom = false,
-                doubleTaps = true, tapToggle = true, overlays = true, cards = true
+                doubleTaps = true, tapToggle = true, overlays = true, cards = true, hostDrag = true
             )
             SurfaceMode.MINI -> SurfaceFeatures(
                 levels = false, scrub = false, holdSpeed = false, pinchZoom = false,

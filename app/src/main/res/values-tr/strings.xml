@@ -581,6 +581,7 @@
     <string name="player_back">Geri</string>
     <string name="video_minimise">Küçült</string>
     <string name="video_full_screen">Tam ekran</string>
+    <string name="video_exit_full_screen">Tam ekrandan çık</string>
     <string name="video_mini_expand">Videoyu aç</string>
     <string name="player_audio">Ses</string>
     <string name="player_subtitles">Altyazılar</string>

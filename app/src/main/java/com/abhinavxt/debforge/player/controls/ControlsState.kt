@@ -70,6 +70,8 @@ class ControlsState {
     var pipAvailable by mutableStateOf(false)
     /** Shown in the watch page's video area (not full screen): back becomes "minimise", rotate becomes "full screen", no insets. */
     var inline by mutableStateOf(false)
+    /** Full screen inside the app's video host: the rotate button is "exit full screen" (back to the watch page). */
+    var exitFullScreen by mutableStateOf(false)
     /** The item has an audio track to hand over to the background player ("Play as audio"). */
     var audioHandoffReady by mutableStateOf(false)
     /** Playing on a TV (DLNA). */

@@ -1,6 +1,23 @@
 package com.abhinavxt.debforge.ui.video
 
+import androidx.compose.animation.core.animate
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.layout.offset
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.util.VelocityTracker
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.IntOffset
+import com.abhinavxt.debforge.ui.player.DISMISS_FLING_DP
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -59,10 +76,55 @@ fun VideoMiniBar(
     toggleFocus: FocusRequester = remember { FocusRequester() },
 ) {
     val shape = RoundedCornerShape(16.dp)
+    val scope = rememberCoroutineScope()
+    val density = LocalDensity.current
+    val closeNow by rememberUpdatedState(onClose)
+    val expandNow by rememberUpdatedState(onExpand)
+    // Sideways drag follows the finger: a layout offset (not a layer) so the host sees the slot move and carries the picture along.
+    var dragX by remember { mutableFloatStateOf(0f) }
+    var widthPx by remember { mutableFloatStateOf(0f) }
     val barSource = remember { MutableInteractionSource() }
     val expandLabel = stringResource(R.string.video_mini_expand)
     Surface(
-        modifier = modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .onSizeChanged { widthPx = it.width.toFloat() }
+            // Before the offset: the touch's coordinates must not move with the bar.
+            .pointerInput(Unit) {
+                var total = Offset.Zero
+                val tracker = VelocityTracker()
+                var settling: Job? = null
+                detectDragGestures(
+                    onDragStart = { settling?.cancel(); total = Offset.Zero; tracker.resetTracking() },
+                    onDrag = { change, amount ->
+                        change.consume()
+                        tracker.addPosition(change.uptimeMillis, change.position)
+                        total += amount
+                        dragX += amount.x
+                    },
+                    onDragCancel = { settling = scope.launch { animate(dragX, 0f) { v, _ -> dragX = v } } },
+                    onDragEnd = {
+                        val v = tracker.calculateVelocity()
+                        val fling = DISMISS_FLING_DP * density.density
+                        when (miniSwipe(total.x, total.y, v.x, v.y, widthPx, 48f * density.density, fling)) {
+                            MiniSwipe.CLOSE_LEFT, MiniSwipe.CLOSE_RIGHT -> {
+                                val to = if (dragX >= 0f) widthPx else -widthPx
+                                settling = scope.launch { animate(dragX, to, animationSpec = tween(180)) { x, _ -> dragX = x }; closeNow() }
+                            }
+                            MiniSwipe.CLOSE_DOWN -> {
+                                settling = scope.launch { animate(dragX, 0f) { x, _ -> dragX = x }; closeNow() }
+                            }
+                            MiniSwipe.EXPAND -> {
+                                settling = scope.launch { animate(dragX, 0f) { x, _ -> dragX = x } }
+                                expandNow()
+                            }
+                            MiniSwipe.NONE -> settling = scope.launch { animate(dragX, 0f) { x, _ -> dragX = x } }
+                        }
+                    },
+                )
+            }
+            .offset { IntOffset(dragX.roundToInt(), 0) }
+            .padding(horizontal = 8.dp, vertical = 4.dp),
         shape = shape,
         color = MaterialTheme.colorScheme.surfaceContainerHigh,
     ) {

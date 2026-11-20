@@ -581,6 +581,7 @@
     <string name="player_back">ফিরে যান</string>
     <string name="video_minimise">ছোট করুন</string>
     <string name="video_full_screen">পূর্ণ স্ক্রিন</string>
+    <string name="video_exit_full_screen">ফুল স্ক্রিন থেকে বেরোন</string>
     <string name="video_mini_expand">ভিডিও খুলুন</string>
     <string name="player_audio">অডিও</string>
     <string name="player_subtitles">সাবটাইটেল</string>

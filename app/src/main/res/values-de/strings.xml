@@ -581,6 +581,7 @@
     <string name="player_back">Zurück</string>
     <string name="video_minimise">Minimieren</string>
     <string name="video_full_screen">Vollbild</string>
+    <string name="video_exit_full_screen">Vollbild beenden</string>
     <string name="video_mini_expand">Video öffnen</string>
     <string name="player_audio">Audio</string>
     <string name="player_subtitles">Untertitel</string>

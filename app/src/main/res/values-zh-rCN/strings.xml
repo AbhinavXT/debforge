@@ -551,6 +551,7 @@
     <string name="player_back">返回</string>
     <string name="video_minimise">最小化</string>
     <string name="video_full_screen">全屏</string>
+    <string name="video_exit_full_screen">退出全屏</string>
     <string name="video_mini_expand">打开视频</string>
     <string name="player_audio">音频</string>
     <string name="player_subtitles">字幕</string>

@@ -611,6 +611,7 @@
     <string name="player_back">Atrás</string>
     <string name="video_minimise">Minimizar</string>
     <string name="video_full_screen">Pantalla completa</string>
+    <string name="video_exit_full_screen">Salir de pantalla completa</string>
     <string name="video_mini_expand">Abrir el vídeo</string>
     <string name="player_audio">Audio</string>
     <string name="player_subtitles">Subtítulos</string>

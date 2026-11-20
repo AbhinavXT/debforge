@@ -69,6 +69,7 @@ import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Replay10
 import androidx.compose.material.icons.rounded.ScreenRotation
 import androidx.compose.material.icons.rounded.Fullscreen
+import androidx.compose.material.icons.rounded.FullscreenExit
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material.icons.rounded.SkipNext
 import androidx.compose.material.icons.rounded.SkipPrevious
@@ -443,6 +444,8 @@ private fun BottomBar(state: ControlsState, actions: ControlsActions, modifier: 
             ControlIcon(state, "fill", fillIcon, stringResource(fillLabel(state.fill))) { actions.setFill(next) }
             if (state.inline) {
                 ControlIcon(state, "rotate", Icons.Rounded.Fullscreen, stringResource(R.string.video_full_screen)) { actions.rotate() }
+            } else if (state.exitFullScreen) {
+                ControlIcon(state, "rotate", Icons.Rounded.FullscreenExit, stringResource(R.string.video_exit_full_screen)) { actions.rotate() }
             } else {
                 ControlIcon(state, "rotate", Icons.Rounded.ScreenRotation, stringResource(R.string.player_rotate)) { actions.rotate() }
             }

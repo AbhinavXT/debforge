@@ -551,6 +551,7 @@
     <string name="player_back">Kembali</string>
     <string name="video_minimise">Perkecil</string>
     <string name="video_full_screen">Layar penuh</string>
+    <string name="video_exit_full_screen">Keluar dari layar penuh</string>
     <string name="video_mini_expand">Buka video</string>
     <string name="player_audio">Audio</string>
     <string name="player_subtitles">Subtitel</string>

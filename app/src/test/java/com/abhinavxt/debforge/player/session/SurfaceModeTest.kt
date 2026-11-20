@@ -21,6 +21,8 @@ class SurfaceModeTest {
         assertFalse(f.holdSpeed)
         assertFalse(f.pinchZoom)
         assertTrue(f.doubleTaps && f.tapToggle && f.overlays && f.cards)
+        assertTrue(f.hostDrag)
+        assertFalse(SurfaceFeatures.of(SurfaceMode.FULL).hostDrag)
     }
 
     @Test

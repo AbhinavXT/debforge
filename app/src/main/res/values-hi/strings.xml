@@ -581,6 +581,7 @@
     <string name="player_back">वापस</string>
     <string name="video_minimise">छोटा करें</string>
     <string name="video_full_screen">फ़ुल स्क्रीन</string>
+    <string name="video_exit_full_screen">फ़ुल स्क्रीन से बाहर निकलें</string>
     <string name="video_mini_expand">वीडियो खोलें</string>
     <string name="player_audio">ऑडियो</string>
     <string name="player_subtitles">सबटाइटल</string>
