@@ -245,6 +245,11 @@ fun BrowseScreen(
         val listed = ExtraFiles.hideSubtitles(state.items)
         if (showExtras) listed else ExtraFiles.hide(listed)
     }
+    // When everything loaded so far is hidden, fetch the next page instead of showing the empty state.
+    val allHidden = shown.isEmpty() && state.items.isNotEmpty() && state.canLoadMore
+    LaunchedEffect(allHidden, state.items.size) {
+        if (allHidden) viewModel.loadMore()
+    }
 
     // Parse every filename once per list change (cheap, but not per frame).
     val parsed: Map<String, ReleaseInfo> = remember(shown) {
