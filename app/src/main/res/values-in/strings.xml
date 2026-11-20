@@ -1148,4 +1148,9 @@
         <item quantity="other">%1$s kali ditonton</item>
     </plurals>
     <string name="yt_description">Deskripsi</string>
+    <string name="player_autosubs_offer">Subtitle %1$s ditemukan</string>
+    <string name="player_autosubs_add">Tambah</string>
+    <string name="player_autosubs_adding">Menambahkan subtitle %1$s…</string>
+    <string name="player_autosubs_added">Subtitle %1$s ditambahkan</string>
+    <string name="player_autosubs_undo">Urungkan</string>
 </resources>

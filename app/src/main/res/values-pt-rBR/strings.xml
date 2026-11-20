@@ -1264,4 +1264,9 @@
         <item quantity="other">%1$s visualizações</item>
     </plurals>
     <string name="yt_description">Descrição</string>
+    <string name="player_autosubs_offer">Legendas em %1$s encontradas</string>
+    <string name="player_autosubs_add">Adicionar</string>
+    <string name="player_autosubs_adding">Adicionando legendas em %1$s…</string>
+    <string name="player_autosubs_added">Legendas em %1$s adicionadas</string>
+    <string name="player_autosubs_undo">Desfazer</string>
 </resources>

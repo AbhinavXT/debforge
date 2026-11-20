@@ -52,6 +52,7 @@ internal class VideoTracks(private val s: VideoSession) {
             TrackPicker.Choice.Leave -> Unit
         }
         p.trackSelectionParameters = params.build()
+        s.autoSubs.consider(userTurnedSubtitlesOff = memory?.textOff == true)
         if (s.handoffStart == null) memory?.speed?.let { if (it != p.playbackParameters.speed) p.setPlaybackSpeed(it) }
     }
 

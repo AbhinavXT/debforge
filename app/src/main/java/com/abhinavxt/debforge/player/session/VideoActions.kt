@@ -187,6 +187,10 @@ class VideoActions internal constructor(private val s: VideoSession) : ControlsA
 
     override fun pickOnlineSubtitle(sub: com.abhinavxt.debforge.data.subtitles.OnlineSubtitle) = pickOnline(sub)
 
+    override fun autoSubsAdd() = s.autoSubs.add()
+
+    override fun autoSubsUndo() = s.autoSubs.undo()
+
     override fun refreshOnlineSubs() {
         s.scope.launch { s.refreshOnlineSubs() }
     }
@@ -424,37 +428,7 @@ class VideoActions internal constructor(private val s: VideoSession) : ControlsA
                 return@launch
             }
             controls.onlineSubs = results
-            val language = sub.language?.let { java.util.Locale.forLanguageTag(it).displayName.ifBlank { it } }
-            val label = s.string(R.string.player_subs_online_label, language ?: s.string(R.string.player_subtitles))
-            // One online subtitle per label: picking another English one replaces the last.
-            var link = SubtitleLink(
-                url = Uri.fromFile(file).toString(),
-                mimeType = "application/x-subrip",
-                language = sub.language?.substringBefore('-'),
-                label = label,
-                forced = false,
-                osFileId = sub.fileId
-            )
-            // A downloaded video keeps the pick: saved next to it, it is found as a sidecar on the next play. It plays
-            // from that copy now too, so its timing key (the file's name) is the same now and then.
-            val id = s.identity?.itemId
-            if (id != null && s.isLocalFile() && s.youtube == null) {
-                try {
-                    val added = s.subtitleImporter.save(id, "srt", file.readBytes(), link.language)
-                    val saved = link.copy(url = added.uri.toString(), osFileId = null)
-                    s.migrateSubtitleTiming(sub.fileId, saved)
-                    link = saved
-                } catch (e: kotlinx.coroutines.CancellationException) {
-                    throw e
-                } catch (e: Exception) {
-                    // Keeps playing from the cache copy.
-                }
-            }
-            s.subtitles = s.subtitles.filterNot { it.label == label || it.url == link.url } + link
-            s.pendingTextLabel = label
-            s.pendingTextId = null
-            controls.panel = null
-            s.player?.let { p -> s.reloadMediaItem(p.currentPosition, play = false) }
+            s.autoSubs.attach(sub, file, resumePlaying = false)
         }
     }
 

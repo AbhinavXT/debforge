@@ -1322,4 +1322,9 @@
         <item quantity="other">%1$s просмотра</item>
     </plurals>
     <string name="yt_description">Описание</string>
+    <string name="player_autosubs_offer">Найдены субтитры: %1$s</string>
+    <string name="player_autosubs_add">Добавить</string>
+    <string name="player_autosubs_adding">Добавляем субтитры: %1$s…</string>
+    <string name="player_autosubs_added">Добавлены субтитры: %1$s</string>
+    <string name="player_autosubs_undo">Отменить</string>
 </resources>

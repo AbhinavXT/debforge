@@ -143,6 +143,8 @@ class VideoSession @Inject constructor(
         private set
     internal var tracks = VideoTracks(this)
         private set
+    internal var autoSubs = AutoSubtitles(this)
+        private set
 
     /** Android TV: Media3's controller and seek bar markers; no online subtitles. */
     val isTv by lazy {
@@ -432,6 +434,8 @@ class VideoSession @Inject constructor(
         effects = VideoEffects(this)
         stats = VideoStats(this)
         tracks = VideoTracks(this)
+        autoSubs = AutoSubtitles(this)
+        controls.autoSubs = com.abhinavxt.debforge.domain.AutoSubsChip.Hidden
     }
 
     private fun newScope() = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
@@ -702,6 +706,7 @@ class VideoSession @Inject constructor(
             if (isTv) applyChapterMarks(found)
         }
         onlineSubsJob?.cancel()
+        autoSubs.reset()
         controls.onlineSubs = com.abhinavxt.debforge.player.controls.OnlineSubs.Idle
         pendingTextLabel = null
         pendingTextId = null

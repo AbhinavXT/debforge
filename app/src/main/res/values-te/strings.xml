@@ -1206,4 +1206,9 @@
         <item quantity="other">%1$s వీక్షణలు</item>
     </plurals>
     <string name="yt_description">వివరణ</string>
+    <string name="player_autosubs_offer">%1$s సబ్‌టైటిల్స్ దొరికాయి</string>
+    <string name="player_autosubs_add">జోడించు</string>
+    <string name="player_autosubs_adding">%1$s సబ్‌టైటిల్స్ జోడిస్తోంది…</string>
+    <string name="player_autosubs_added">%1$s సబ్‌టైటిల్స్ జోడించబడ్డాయి</string>
+    <string name="player_autosubs_undo">రద్దు చేయి</string>
 </resources>

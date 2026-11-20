@@ -2,6 +2,7 @@ package com.abhinavxt.debforge.player.subtitles
 
 import androidx.test.core.app.ApplicationProvider
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
@@ -25,7 +26,8 @@ class SubtitleTimingStoreTest {
         val caller = CoroutineScope(SupervisorJob() + Dispatchers.IO)
         val s = store()
         val key = "os:survive"
-        caller.launch { s.save(key, SubtitleTiming(1.0, 1234.0)) }
+        // Undispatched: the save is certainly called before the caller is cancelled (a cancelled-before-start launch never ran it).
+        caller.launch(start = CoroutineStart.UNDISPATCHED) { s.save(key, SubtitleTiming(1.0, 1234.0)) }
         caller.cancel()
         withTimeout(10_000) { while (s.all()[key] == null) delay(20) }
         assertEquals(SubtitleTiming(1.0, 1234.0), s.all()[key])

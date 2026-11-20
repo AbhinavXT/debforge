@@ -1206,4 +1206,9 @@
         <item quantity="other">%1$s görüntüleme</item>
     </plurals>
     <string name="yt_description">Açıklama</string>
+    <string name="player_autosubs_offer">%1$s altyazı bulundu</string>
+    <string name="player_autosubs_add">Ekle</string>
+    <string name="player_autosubs_adding">%1$s altyazı ekleniyor…</string>
+    <string name="player_autosubs_added">%1$s altyazı eklendi</string>
+    <string name="player_autosubs_undo">Geri al</string>
 </resources>

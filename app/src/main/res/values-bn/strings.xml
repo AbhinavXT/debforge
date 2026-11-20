@@ -1206,4 +1206,9 @@
         <item quantity="other">%1$s বার দেখা হয়েছে</item>
     </plurals>
     <string name="yt_description">বিবরণ</string>
+    <string name="player_autosubs_offer">%1$s সাবটাইটেল পাওয়া গেছে</string>
+    <string name="player_autosubs_add">যোগ করুন</string>
+    <string name="player_autosubs_adding">%1$s সাবটাইটেল যোগ হচ্ছে…</string>
+    <string name="player_autosubs_added">%1$s সাবটাইটেল যোগ হয়েছে</string>
+    <string name="player_autosubs_undo">পূর্বাবস্থায়</string>
 </resources>

@@ -1264,4 +1264,9 @@
         <item quantity="other">%1$s visualizaciones</item>
     </plurals>
     <string name="yt_description">Descripción</string>
+    <string name="player_autosubs_offer">Subtítulos en %1$s encontrados</string>
+    <string name="player_autosubs_add">Añadir</string>
+    <string name="player_autosubs_adding">Añadiendo subtítulos en %1$s…</string>
+    <string name="player_autosubs_added">Subtítulos en %1$s añadidos</string>
+    <string name="player_autosubs_undo">Deshacer</string>
 </resources>

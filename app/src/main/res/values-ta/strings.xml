@@ -1206,4 +1206,9 @@
         <item quantity="other">%1$s பார்வைகள்</item>
     </plurals>
     <string name="yt_description">விளக்கம்</string>
+    <string name="player_autosubs_offer">%1$s வசனங்கள் கிடைத்தன</string>
+    <string name="player_autosubs_add">சேர்</string>
+    <string name="player_autosubs_adding">%1$s வசனங்களைச் சேர்க்கிறது…</string>
+    <string name="player_autosubs_added">%1$s வசனங்கள் சேர்க்கப்பட்டன</string>
+    <string name="player_autosubs_undo">செயல்தவிர்</string>
 </resources>

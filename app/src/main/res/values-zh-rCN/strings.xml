@@ -1148,4 +1148,9 @@
         <item quantity="other">%1$s 次观看</item>
     </plurals>
     <string name="yt_description">简介</string>
+    <string name="player_autosubs_offer">找到%1$s字幕</string>
+    <string name="player_autosubs_add">添加</string>
+    <string name="player_autosubs_adding">正在添加%1$s字幕…</string>
+    <string name="player_autosubs_added">已添加%1$s字幕</string>
+    <string name="player_autosubs_undo">撤销</string>
 </resources>

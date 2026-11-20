@@ -1208,4 +1208,9 @@
         <item quantity="other">%1$s views</item>
     </plurals>
     <string name="yt_description">Description</string>
+    <string name="player_autosubs_offer">%1$s subtitles found</string>
+    <string name="player_autosubs_add">Add</string>
+    <string name="player_autosubs_adding">Adding %1$s subtitles…</string>
+    <string name="player_autosubs_added">Added %1$s subtitles</string>
+    <string name="player_autosubs_undo">Undo</string>
 </resources>

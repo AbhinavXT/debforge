@@ -54,6 +54,7 @@ import androidx.compose.material.icons.rounded.PhotoCamera
 import androidx.compose.material.icons.rounded.Repeat
 import androidx.compose.material.icons.rounded.Search
 import com.abhinavxt.debforge.player.playAsAudioVisible
+import com.abhinavxt.debforge.domain.AutoSubsChip
 import androidx.compose.material.icons.rounded.Audiotrack
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Cast
@@ -189,6 +190,10 @@ interface ControlsActions {
     fun pickOnlineSubtitle(sub: com.abhinavxt.debforge.data.subtitles.OnlineSubtitle)
     /** Copy the subtitle file the user picked next to this video, then load and select it. */
     fun addSubtitleFile(uri: android.net.Uri) {}
+    /** The "subtitles found" chip's Add: download that subtitle and switch to it. */
+    fun autoSubsAdd() {}
+    /** The "Added … subtitles" chip's Undo. */
+    fun autoSubsUndo() {}
     /** OpenSubtitles may have just been set up: re-read it (the panel shows the search instead of the setup row). */
     fun refreshOnlineSubs() {}
     fun setSpeed(speed: Float)
@@ -271,6 +276,8 @@ fun PlayerControls(state: ControlsState, actions: ControlsActions) {
                 BottomBar(state, actions, Modifier.align(Alignment.BottomCenter))
             }
         }
+
+        AutoSubsChipView(state, actions, Modifier.align(Alignment.TopCenter))
 
         if (state.locked) Locked(state)
 
@@ -555,6 +562,46 @@ private fun BottomBar(state: ControlsState, actions: ControlsActions, modifier: 
                 Spacer(Modifier.width(4.dp))
                 ControlIcon(state, "next", Icons.Rounded.SkipNext, stringResource(R.string.player_next_episode)) { actions.next() }
             }
+        }
+    }
+}
+
+/** The small chip for subtitles found online (or just added): never covers the controls' buttons, and the video's gestures skip it. */
+@Composable
+private fun AutoSubsChipView(state: ControlsState, actions: ControlsActions, modifier: Modifier) {
+    val chip = state.autoSubs
+    if (chip is AutoSubsChip.Hidden) return
+    val (text, action) = when (chip) {
+        is AutoSubsChip.Offer -> stringResource(R.string.player_autosubs_offer, chip.language) to
+            (stringResource(R.string.player_autosubs_add) to { actions.autoSubsAdd() })
+        is AutoSubsChip.Adding -> stringResource(R.string.player_autosubs_adding, chip.language) to null
+        is AutoSubsChip.Added -> stringResource(R.string.player_autosubs_added, chip.language) to
+            (stringResource(R.string.player_autosubs_undo) to { actions.autoSubsUndo() })
+        AutoSubsChip.Hidden -> return
+    }
+    Row(
+        modifier
+            .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal))
+            .padding(top = 72.dp, start = 16.dp, end = 16.dp)
+            .control(state, "autosubs")
+            .background(Color(0xE61C1C1E), RoundedCornerShape(20.dp))
+            .padding(start = 14.dp, end = if (action == null) 14.dp else 4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(text, color = Color.White, fontSize = 14.sp, modifier = Modifier.padding(vertical = 10.dp))
+        if (action != null) {
+            Text(
+                action.first,
+                color = MaterialTheme.colorScheme.primary,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier
+                    .clickable {
+                        state.touch()
+                        action.second()
+                    }
+                    .padding(horizontal = 12.dp, vertical = 10.dp)
+            )
         }
     }
 }

@@ -93,6 +93,8 @@ class ControlsState {
     /** A downloaded video on a phone or tablet: the Subtitles panel offers "Add subtitle file…". */
     var subtitleFileAvailable by mutableStateOf(false)
     var onlineSubs by mutableStateOf<OnlineSubs>(OnlineSubs.Idle)
+    /** The chip offering (or confirming) subtitles found when the video had none. */
+    var autoSubs by mutableStateOf<com.abhinavxt.debforge.domain.AutoSubsChip>(com.abhinavxt.debforge.domain.AutoSubsChip.Hidden)
     /** Sync tools panel: where the user is, and the first matched line of "Two lines" while they find the second. */
     var syncStep by mutableStateOf(SyncStep.MENU)
     var twoLinesFirst by mutableStateOf<TwoLinePoint?>(null)

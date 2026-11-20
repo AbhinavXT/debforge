@@ -1206,4 +1206,9 @@
         <item quantity="other">%1$s Aufrufe</item>
     </plurals>
     <string name="yt_description">Beschreibung</string>
+    <string name="player_autosubs_offer">%1$s-Untertitel gefunden</string>
+    <string name="player_autosubs_add">Hinzufügen</string>
+    <string name="player_autosubs_adding">%1$s-Untertitel werden hinzugefügt…</string>
+    <string name="player_autosubs_added">%1$s-Untertitel hinzugefügt</string>
+    <string name="player_autosubs_undo">Rückgängig</string>
 </resources>
