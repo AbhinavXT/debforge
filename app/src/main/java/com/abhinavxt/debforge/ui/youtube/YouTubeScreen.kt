@@ -206,6 +206,10 @@ fun YouTubeScreen(
         viewModel.playRequests.collect { videoLauncher.open(context, it.request, video = it.video) }
     }
     val streamingUrl by viewModel.streamingUrl.collectAsStateWithLifecycle()
+    val ask by viewModel.ask.collectAsStateWithLifecycle()
+    ask?.let { a ->
+        PlayQualitySheet(a.choices, a.selected, viewModel::askMode, viewModel::askSelect, viewModel::askPlay, viewModel::askDismiss)
+    }
 
     LaunchedEffect(Unit) {
         viewModel.events.collect { e ->

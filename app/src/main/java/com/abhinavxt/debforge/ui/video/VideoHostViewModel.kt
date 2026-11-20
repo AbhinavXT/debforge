@@ -14,7 +14,9 @@ import com.abhinavxt.debforge.data.youtube.YouTubeResolver
 import com.abhinavxt.debforge.data.provider.ProviderRegistry
 import com.abhinavxt.debforge.domain.ProviderId
 import com.abhinavxt.debforge.domain.DownloadItem
+import com.abhinavxt.debforge.domain.DefaultQuality
 import com.abhinavxt.debforge.domain.FormatChoice
+import com.abhinavxt.debforge.ui.youtube.isAudio
 import com.abhinavxt.debforge.domain.YouTubeFormats
 import com.abhinavxt.debforge.domain.YouTubeLinks
 import com.abhinavxt.debforge.domain.YouTubeSearchResult
@@ -46,7 +48,11 @@ import javax.inject.Inject
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -71,6 +77,11 @@ class VideoHostViewModel @Inject constructor(
     private val space: DownloadSpace,
 ) : ViewModel() {
 
+    private class PendingAsk(val video: YouTubeVideo, val choices: List<FormatChoice>, val selected: FormatChoice, val from: Long)
+
+    private val _ask = MutableStateFlow<PendingAsk?>(null)
+
+    // The collector below runs at once on Main.immediate: every property cancelRelated() touches must be declared ABOVE this block.
     init {
         // Closed while a related video was still being looked up: it must not open the video again.
         viewModelScope.launch { launcher.active.collect { if (it == null) cancelRelated() } }
@@ -118,8 +129,16 @@ class VideoHostViewModel @Inject constructor(
                 val video = resolver.resolve(result.url)
                 if (!relatedStillWanted(from, launcher.active.value?.token)) return@launch
                 val choices = YouTubeFormats.choices(video.streams, Build.VERSION.SDK_INT, video.durationSec)
-                val choice = YouTubeStreaming.quickPlayChoice(settings.youTubeQualityFlow.first(), choices)
-                    ?: pickDefaultChoice(choices, settings.youTubeQualityFlow.first())
+                val quality = settings.youTubeQualityFlow.first()
+                if (quality == DefaultQuality.ASK) {
+                    // "Ask every time": the page shows the quality sheet; the tap plays once a row is chosen.
+                    val first = pickDefaultChoice(choices, DefaultQuality.BEST) ?: choices.firstOrNull()
+                    if (first == null) { toast(R.string.yt_err_unavailable); return@launch failed() }
+                    _ask.value = PendingAsk(video, choices, first, from)
+                    return@launch failed()
+                }
+                val choice = YouTubeStreaming.quickPlayChoice(quality, choices)
+                    ?: pickDefaultChoice(choices, quality)
                     ?: choices.firstOrNull { it.videoItag != null }
                 val request = choice?.let { youTubePlayRequest(video, it, emptyList()) }
                 if (!relatedStillWanted(from, launcher.active.value?.token)) return@launch
@@ -137,8 +156,33 @@ class VideoHostViewModel @Inject constructor(
         }
     }
 
+    /** The quality sheet of a related video when the setting is "ask every time"; null when none is open. */
+    val ask: StateFlow<WatchFormats?> = _ask.map { a -> a?.let { WatchFormats(it.choices, it.selected) } }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, null)
+
+    fun askSelect(choice: FormatChoice) = _ask.update { it?.let { a -> PendingAsk(a.video, a.choices, choice, a.from) } }
+
+    fun askMode(audio: Boolean) {
+        val a = _ask.value ?: return
+        if (a.selected.isAudio == audio) return
+        val inMode = a.choices.filter { it.isAudio == audio }
+        (inMode.firstOrNull { it.isDefault } ?: inMode.firstOrNull())?.let(::askSelect)
+    }
+
+    fun askDismiss() { _ask.value = null }
+
+    /** Play in the quality sheet: opens the related video in place, if the video it was asked from is still shown. */
+    fun askPlay() {
+        val a = _ask.value ?: return
+        _ask.value = null
+        if (!relatedStillWanted(a.from, launcher.active.value?.token)) return
+        val request = youTubePlayRequest(a.video, a.selected, emptyList())
+        if (request == null) toast(R.string.yt_err_unavailable) else launcher.open(context, request, video = a.video)
+    }
+
     /** The video was closed: a related video still resolving must not open it again. */
     fun cancelRelated() {
+        _ask.value = null
         relatedJob?.cancel()
         relatedJob = null
     }

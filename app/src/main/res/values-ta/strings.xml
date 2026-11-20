@@ -1150,4 +1150,6 @@
     </plurals>
     <string name="watch_open_external">வேறு செயலியில் திற</string>
     <string name="watch_next_episodes">அடுத்த அத்தியாயங்கள்</string>
+    <string name="yt_views">%1$s பார்வைகள்</string>
+    <string name="yt_description">விளக்கம்</string>
 </resources>

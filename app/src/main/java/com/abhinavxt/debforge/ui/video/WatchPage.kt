@@ -83,7 +83,10 @@ import com.abhinavxt.debforge.domain.FormatChoice
 import com.abhinavxt.debforge.domain.YouTubeSearchResult
 import com.abhinavxt.debforge.domain.YouTubeVideo
 import com.abhinavxt.debforge.ui.player.focusRing
+import com.abhinavxt.debforge.ui.youtube.ChannelAvatar
 import com.abhinavxt.debforge.ui.youtube.ChannelName
+import com.abhinavxt.debforge.ui.youtube.PlayQualitySheet
+import com.abhinavxt.debforge.ui.youtube.QualityPickSheet
 import com.abhinavxt.debforge.ui.youtube.FormatChoicesBlock
 import com.abhinavxt.debforge.ui.youtube.LocalAddToPlaylist
 import com.abhinavxt.debforge.ui.youtube.RowShape
@@ -127,6 +130,9 @@ fun WatchPage(
     }
     val formats = details.formats
     if (sheet && formats != null) DownloadSheet(formats, actions) { sheet = false }
+    details.ask?.let { ask ->
+        PlayQualitySheet(ask.choices, ask.selected, actions.onAskMode, actions.onAskSelect, actions.onAskPlay, actions.onAskDismiss)
+    }
 }
 
 @Composable
@@ -160,9 +166,15 @@ private fun WatchHeader(state: VideoUiState, details: WatchDetails, actions: Wat
             Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(state.title, style = MaterialTheme.typography.titleMedium, maxLines = if (expanded) Int.MAX_VALUE else 2, overflow = TextOverflow.Ellipsis)
                 if (state.kind == VideoKind.YOUTUBE) {
-                    if (details.channelName.isNotBlank()) ChannelName(details.channelName, details.channelUrl, actions.onChannel)
-                    details.video?.durationSec?.takeIf { it > 0 }?.let {
-                        Text(durationText(it), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    val views = stringResource(R.string.yt_views, "%1\$s")
+                    val meta = details.video?.let { v -> watchMeta(v.viewCount, v.uploadDate, { c -> views.replace("%1\$s", c) }) }.orEmpty()
+                    if (meta.isNotEmpty()) Text(meta, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    if (details.channelName.isNotBlank()) Row(Modifier.padding(top = 4.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                        ChannelAvatar(details.video?.uploaderAvatarUrl, details.channelName, 28.dp)
+                        ChannelName(details.channelName, details.channelUrl, actions.onChannel, Modifier.weight(1f, fill = false))
+                        details.video?.durationSec?.takeIf { it > 0 }?.let {
+                            Text("· " + durationText(it), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
                     }
                 } else if (info.isNotEmpty()) {
                     Text(info, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = if (expanded) Int.MAX_VALUE else 2, overflow = TextOverflow.Ellipsis)
@@ -191,10 +203,32 @@ private fun WatchHeader(state: VideoUiState, details: WatchDetails, actions: Wat
                 chips.forEach { c -> ActionChip(c, onClick = { onChip(c) }) }
             }
         }
+        val description = details.video?.description.orEmpty()
+        if (state.kind == VideoKind.YOUTUBE && description.isNotBlank()) DescriptionBox(description)
         if (state.kind != VideoKind.YOUTUBE && info.isNotEmpty() && state.fileName != null) {
             Surface(color = MaterialTheme.colorScheme.surfaceContainerLow, shape = CardShape, modifier = Modifier.padding(horizontal = 8.dp).fillMaxWidth()) {
                 Text(state.fileName, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(16.dp))
             }
+        }
+    }
+}
+
+/** The video's description: three lines, tap to open it all (and again to fold it). */
+@Composable
+private fun DescriptionBox(text: String) {
+    var open by rememberSaveable(text) { mutableStateOf(false) }
+    val overflows = descriptionOverflows(text)
+    val label = stringResource(R.string.yt_description)
+    Surface(
+        color = MaterialTheme.colorScheme.surfaceContainerLow, shape = CardShape,
+        modifier = Modifier.padding(horizontal = 8.dp).fillMaxWidth().clip(CardShape).clickable(enabled = overflows, role = Role.Button) { open = !open },
+    ) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text(label, style = MaterialTheme.typography.titleSmall, modifier = Modifier.semantics { heading() })
+            Text(
+                text, style = MaterialTheme.typography.bodyMedium,
+                maxLines = if (open) Int.MAX_VALUE else 3, overflow = TextOverflow.Ellipsis,
+            )
         }
     }
 }
@@ -241,7 +275,7 @@ private fun LazyListScope.watchList(state: VideoUiState, details: WatchDetails, 
         WatchListKind.RELATED -> {
             item(key = "related-title") { ListTitle(stringResource(R.string.yt_up_next)) }
             items(details.related, key = { it.url }) { r ->
-                BigCard(r.thumbnailUrl, r.durationSec, r.title, r.channel.orEmpty(), { actions.onOpenRelated(r) }, { actions.onAddRelatedToQueue(r) })
+                BigCard(r.thumbnailUrl, r.durationSec, r.title, r.channel.orEmpty(), { actions.onOpenRelated(r) }, { actions.onAddRelatedToQueue(r) }, avatar = r.channelAvatarUrl, views = r.viewCount)
             }
         }
         WatchListKind.EPISODES -> {
@@ -254,7 +288,7 @@ private fun LazyListScope.watchList(state: VideoUiState, details: WatchDetails, 
 
 /** YouTube's large card: full-width 16:9 picture, then a round avatar (initial), the title and a channel line. */
 @Composable
-private fun BigCard(thumb: String?, durationSec: Long, title: String, channel: String, onClick: () -> Unit, onAddToQueue: (() -> Unit)?) {
+private fun BigCard(thumb: String?, durationSec: Long, title: String, channel: String, onClick: () -> Unit, onAddToQueue: (() -> Unit)?, avatar: String? = null, views: Long = -1) {
     val source = remember { MutableInteractionSource() }
     Column(
         Modifier.fillMaxWidth().padding(bottom = 16.dp).focusRing(source, RowShape)
@@ -270,13 +304,17 @@ private fun BigCard(thumb: String?, durationSec: Long, title: String, channel: S
             }
         }
         Row(Modifier.padding(start = 16.dp, end = 4.dp, top = 12.dp), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Top) {
-            Box(Modifier.size(36.dp).clip(CircleShape).background(MaterialTheme.colorScheme.secondaryContainer), contentAlignment = Alignment.Center) {
-                Text(channel.firstOrNull()?.uppercase() ?: "", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSecondaryContainer)
-            }
+            ChannelAvatar(avatar, channel)
             Column(Modifier.weight(1f)) {
                 Text(title, style = MaterialTheme.typography.titleSmall, maxLines = 2, overflow = TextOverflow.Ellipsis)
-                if (channel.isNotBlank()) Text(
-                    if (durationSec > 0) "$channel · ${durationText(durationSec)}" else channel,
+                val viewsWord = stringResource(R.string.yt_views, "%1\$s")
+                val line = listOfNotNull(
+                    channel.takeIf { it.isNotBlank() },
+                    views.takeIf { it >= 0 }?.let { viewsWord.replace("%1\$s", compactCount(it)) },
+                    durationText(durationSec).takeIf { durationSec > 0 },
+                ).joinToString(" · ")
+                if (line.isNotEmpty()) Text(
+                    line,
                     style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis,
                 )
             }
@@ -319,31 +357,16 @@ private fun WatchSkeleton() {
     }
 }
 
-/** The quality rows of the YouTube preview, in a sheet: pick one, then Download. */
-@OptIn(ExperimentalMaterial3Api::class)
+/** The quality rows, in a sheet: pick one, then Download. */
 @Composable
-private fun DownloadSheet(formats: WatchFormats, actions: WatchActions, onDismiss: () -> Unit) {
-    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
-        Column(
-            Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).navigationBarsPadding().padding(horizontal = 16.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
-            Text(stringResource(R.string.action_download), style = MaterialTheme.typography.titleLarge, modifier = Modifier.semantics { heading() })
-            FormatChoicesBlock(
-                formats.choices, formats.selected, subtitles = formats.subtitles, subtitle = formats.subtitle,
-                onMode = actions.onSelectMode, onSelect = actions.onSelectFormat, onSubtitle = actions.onSelectSubtitle,
-            )
-            Button(
-                onClick = { actions.onDownload(); onDismiss() },
-                modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp),
-            ) {
-                Icon(Icons.Rounded.Download, contentDescription = null, modifier = Modifier.size(20.dp))
-                Spacer(Modifier.size(8.dp))
-                Text(stringResource(R.string.yt_download_format, choiceLabel(formats.selected), sizeText(formats.selected)), maxLines = 2, overflow = TextOverflow.Ellipsis)
-            }
-        }
-    }
-}
+private fun DownloadSheet(formats: WatchFormats, actions: WatchActions, onDismiss: () -> Unit) = QualityPickSheet(
+    title = stringResource(R.string.action_download),
+    confirmLabel = stringResource(R.string.yt_download_format, choiceLabel(formats.selected), sizeText(formats.selected)),
+    confirmIcon = Icons.Rounded.Download,
+    choices = formats.choices, selected = formats.selected, subtitles = formats.subtitles, subtitle = formats.subtitle,
+    onMode = actions.onSelectMode, onSelect = actions.onSelectFormat, onSubtitle = actions.onSelectSubtitle,
+    onConfirm = { actions.onDownload(); onDismiss() }, onDismiss = onDismiss,
+)
 
 // --- previews ---------------------------------------------------------------------------
 

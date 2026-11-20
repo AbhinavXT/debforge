@@ -22,6 +22,16 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.PlaylistAdd
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material.icons.rounded.Download
+import androidx.compose.material.icons.rounded.PlayArrow
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.semantics.heading
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -212,3 +222,65 @@ internal fun FormatRow(c: FormatChoice, selected: Boolean, best: Boolean, onClic
         }
     }
 }
+
+/** A channel's round picture; the first letter of [name] shows underneath while it loads or when there is none. */
+@Composable
+internal fun ChannelAvatar(url: String?, name: String, size: androidx.compose.ui.unit.Dp = 36.dp, modifier: Modifier = Modifier) {
+    Box(modifier.size(size).clip(CircleShape).background(MaterialTheme.colorScheme.secondaryContainer), contentAlignment = Alignment.Center) {
+        Text(name.firstOrNull()?.uppercase() ?: "", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSecondaryContainer)
+        if (url != null) AsyncImage(model = url, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
+    }
+}
+
+/**
+ * A bottom sheet with the quality rows and one confirm button: Download on the watch page, Play when the quality is
+ * to be asked before a video starts. The caller owns the selection ([onMode], [onSelect], [onSubtitle]).
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+internal fun QualityPickSheet(
+    title: String,
+    confirmLabel: String,
+    confirmIcon: ImageVector,
+    choices: List<FormatChoice>,
+    selected: FormatChoice,
+    subtitles: List<YouTubeSubtitle>,
+    subtitle: YouTubeSubtitle?,
+    onMode: (Boolean) -> Unit,
+    onSelect: (FormatChoice) -> Unit,
+    onSubtitle: (YouTubeSubtitle?) -> Unit,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
+        Column(
+            Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).navigationBarsPadding().padding(horizontal = 16.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            Text(title, style = MaterialTheme.typography.titleLarge, modifier = Modifier.semantics { heading() })
+            FormatChoicesBlock(choices, selected, subtitles = subtitles, subtitle = subtitle, onMode = onMode, onSelect = onSelect, onSubtitle = onSubtitle)
+            Button(onClick = onConfirm, modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp)) {
+                Icon(confirmIcon, contentDescription = null, modifier = Modifier.size(20.dp))
+                Spacer(Modifier.size(8.dp))
+                Text(confirmLabel, maxLines = 2, overflow = TextOverflow.Ellipsis)
+            }
+        }
+    }
+}
+
+/** The "ask every time" sheet: pick what to play, then Play. */
+@Composable
+internal fun PlayQualitySheet(
+    choices: List<FormatChoice>,
+    selected: FormatChoice,
+    onMode: (Boolean) -> Unit,
+    onSelect: (FormatChoice) -> Unit,
+    onPlay: () -> Unit,
+    onDismiss: () -> Unit,
+) = QualityPickSheet(
+    title = stringResource(R.string.action_play),
+    confirmLabel = if (selected.isAudio) stringResource(R.string.yt_listen) else stringResource(R.string.yt_play_quality, choiceLabel(selected)),
+    confirmIcon = Icons.Rounded.PlayArrow,
+    choices = choices, selected = selected, subtitles = emptyList(), subtitle = null,
+    onMode = onMode, onSelect = onSelect, onSubtitle = {}, onConfirm = onPlay, onDismiss = onDismiss,
+)

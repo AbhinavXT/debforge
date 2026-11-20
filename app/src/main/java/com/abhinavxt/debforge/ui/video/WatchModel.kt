@@ -61,6 +61,8 @@ data class WatchDetails(
     val canOpenExternal: Boolean = false,
     /** The video is still being resolved: the page shows grey placeholders. */
     val loading: Boolean = false,
+    /** A related video waiting for its quality ("ask every time"): the page shows the quality sheet. */
+    val ask: WatchFormats? = null,
 ) {
     val related: List<YouTubeSearchResult> get() = video?.related.orEmpty()
 }
@@ -80,6 +82,11 @@ class WatchActions(
     val onSelectFormat: (FormatChoice) -> Unit = {},
     val onSelectMode: (audio: Boolean) -> Unit = {},
     val onSelectSubtitle: (YouTubeSubtitle?) -> Unit = {},
+    /** The quality sheet of a related video ("ask every time"): pick a row, switch Video/Audio, play, or dismiss. */
+    val onAskSelect: (FormatChoice) -> Unit = {},
+    val onAskMode: (audio: Boolean) -> Unit = {},
+    val onAskPlay: () -> Unit = {},
+    val onAskDismiss: () -> Unit = {},
     val onPlayAsAudio: () -> Unit = {},
     /** The online subtitle search / track picker of the player. */
     val onSubtitles: () -> Unit = {},
@@ -146,4 +153,50 @@ enum class WatchListKind { RELATED, EPISODES }
 fun listKindFor(state: VideoUiState, details: WatchDetails): WatchListKind? = when (state.kind) {
     VideoKind.YOUTUBE -> if (details.related.isNotEmpty()) WatchListKind.RELATED else null
     else -> if (state.episodes.isNotEmpty()) WatchListKind.EPISODES else null
+}
+
+/** 1234 -> "1.2K", 3_400_000 -> "3.4M", 2_100_000_000 -> "2.1B"; below 1000 as is. */
+fun compactCount(n: Long): String {
+    fun scaled(v: Double, unit: String): String {
+        val r = Math.round(v * 10) / 10.0
+        return (if (r % 1.0 == 0.0) r.toLong().toString() else r.toString()) + unit
+    }
+    return when {
+        n < 1_000 -> n.toString()
+        n < 1_000_000 -> scaled(n / 1_000.0, "K")
+        n < 1_000_000_000 -> scaled(n / 1_000_000.0, "M")
+        else -> scaled(n / 1_000_000_000.0, "B")
+    }
+}
+
+/**
+ * The line under a YouTube title: "1.2M views · Jan 5, 2024". [viewCount] negative and an [uploadDate] that is not an
+ * ISO date (the extractor's relative English text) leave their part out. [views] adds the translated word.
+ */
+fun watchMeta(viewCount: Long, uploadDate: String?, views: (String) -> String, locale: java.util.Locale = java.util.Locale.getDefault()): String {
+    val date = uploadDate?.takeIf { it.length >= 10 }?.let {
+        runCatching {
+            java.time.LocalDate.parse(it.substring(0, 10))
+                .format(java.time.format.DateTimeFormatter.ofLocalizedDate(java.time.format.FormatStyle.MEDIUM).withLocale(locale))
+        }.getOrNull()
+    }
+    return listOfNotNull(viewCount.takeIf { it >= 0 }?.let { views(compactCount(it)) }, date).joinToString(" · ")
+}
+
+/** The description box has more to show than its collapsed height (3 lines). */
+fun descriptionOverflows(text: String, collapsedLines: Int = 3, charsPerLine: Int = 40): Boolean =
+    text.count { it == '\n' } + 1 > collapsedLines || text.length > collapsedLines * charsPerLine
+
+/** What a tap on a YouTube search result (or a channel or trending item) does. */
+enum class ResultTap { PREVIEW, PLAY, ASK }
+
+/**
+ * Phones and tablets play straight away on the watch page at the default quality; "ask every time" asks first in the
+ * quality sheet. A TV keeps the preview screen (it plays in PlayerActivity), except for a row's own Play icon, which
+ * plays at the default quality there as before. [viaPlayIcon] is that icon.
+ */
+fun resultTap(quality: com.abhinavxt.debforge.domain.DefaultQuality, isTv: Boolean, viaPlayIcon: Boolean = false): ResultTap = when {
+    quality == com.abhinavxt.debforge.domain.DefaultQuality.ASK -> if (isTv) ResultTap.PREVIEW else ResultTap.ASK
+    isTv && !viaPlayIcon -> ResultTap.PREVIEW
+    else -> ResultTap.PLAY
 }

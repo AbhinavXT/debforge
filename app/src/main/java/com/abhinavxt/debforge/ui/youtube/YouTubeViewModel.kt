@@ -27,6 +27,8 @@ import com.abhinavxt.debforge.player.AudioPlayer
 import com.abhinavxt.debforge.player.youtubeAudioTrack
 import com.abhinavxt.debforge.player.youtube.YouTubeStreaming
 import com.abhinavxt.debforge.ui.browse.PlayRequest
+import com.abhinavxt.debforge.ui.video.ResultTap
+import com.abhinavxt.debforge.ui.video.resultTap
 import com.abhinavxt.debforge.ui.browse.youTubePlayRequest
 import com.abhinavxt.debforge.domain.StreamKind
 import com.abhinavxt.debforge.data.prefs.SettingsStore
@@ -419,8 +421,79 @@ class YouTubeViewModel @Inject constructor(
         }
     }
 
-    /** A tapped search result: same path as a pasted link, but Back returns to the results. */
+    private val isTv by lazy {
+        (context.getSystemService(Context.UI_MODE_SERVICE) as android.app.UiModeManager).currentModeType ==
+            android.content.res.Configuration.UI_MODE_TYPE_TELEVISION
+    }
+
+    /**
+     * A tapped search, channel or trending result. A phone or tablet plays it straight away on the watch page at the
+     * default quality ("ask every time": the quality sheet first); a TV opens the preview, as does a pasted link.
+     */
     fun pick(result: YouTubeSearchResult) {
+        val results = _ui.value as? YouTubeUi.Results
+        if (results == null && _ui.value !is YouTubeUi.Empty) return
+        startResult(result, viaPlayIcon = false)
+    }
+
+    /** Back from a started tap: its quality sheet is open or its stream is being resolved. */
+    private fun startResult(result: YouTubeSearchResult, viaPlayIcon: Boolean) {
+        if (streamJob?.isActive == true) return
+        _streamingUrl.value = result.url
+        streamJob = viewModelScope.launch {
+            try {
+                val tap = resultTap(settings.youTubeQualityFlow.first(), isTv, viaPlayIcon)
+                if (tap == ResultTap.PREVIEW) {
+                    _streamingUrl.value = null
+                    openPreview(result)
+                    return@launch
+                }
+                val video = resolver.resolve(result.url)
+                val choices = YouTubeFormats.choices(video.streams, Build.VERSION.SDK_INT, video.durationSec)
+                if (tap == ResultTap.ASK) {
+                    val first = pickDefaultChoice(choices, DefaultQuality.BEST) ?: choices.firstOrNull()
+                    if (first == null) _events.send(YouTubeEvent.StreamFailed(YouTubeErrorKind.UNAVAILABLE))
+                    else _ask.value = AskPlay(video, choices, first)
+                    return@launch
+                }
+                val choice = YouTubeStreaming.quickPlayChoice(settings.youTubeQualityFlow.first(), choices)
+                if (choice == null || !startStream(video, choice, emptyList())) {
+                    _events.send(YouTubeEvent.StreamFailed(YouTubeErrorKind.UNAVAILABLE))
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                _events.send(YouTubeEvent.StreamFailed(errorKind(e)))
+            } finally {
+                _streamingUrl.value = null
+            }
+        }
+    }
+
+    /** A resolved result waiting for its quality ("ask every time"). */
+    data class AskPlay(val video: YouTubeVideo, val choices: List<FormatChoice>, val selected: FormatChoice)
+
+    private val _ask = MutableStateFlow<AskPlay?>(null)
+    val ask: StateFlow<AskPlay?> = _ask.asStateFlow()
+
+    fun askSelect(choice: FormatChoice) = _ask.update { it?.copy(selected = choice) }
+
+    fun askMode(audio: Boolean) {
+        val a = _ask.value ?: return
+        if (a.selected.isAudio == audio) return
+        val inMode = a.choices.filter { it.isAudio == audio }
+        (inMode.firstOrNull { it.isDefault } ?: inMode.firstOrNull())?.let(::askSelect)
+    }
+
+    fun askDismiss() { _ask.value = null }
+
+    fun askPlay() {
+        val a = _ask.value ?: return
+        _ask.value = null
+        if (!startStream(a.video, a.selected, emptyList())) viewModelScope.launch { _events.send(YouTubeEvent.StreamFailed(YouTubeErrorKind.UNAVAILABLE)) }
+    }
+
+    private fun openPreview(result: YouTubeSearchResult) {
         val results = _ui.value as? YouTubeUi.Results
         if (results == null && _ui.value !is YouTubeUi.Empty) return
         job?.cancel()
@@ -584,30 +657,8 @@ class YouTubeViewModel @Inject constructor(
         }
     }
 
-    /** A results row's Play icon: resolves, then plays at the default quality; "ask every time" opens the preview. */
-    fun playResult(result: YouTubeSearchResult) {
-        if (streamJob?.isActive == true) return
-        _streamingUrl.value = result.url
-        streamJob = viewModelScope.launch {
-            try {
-                val video = resolver.resolve(result.url)
-                val choices = YouTubeFormats.choices(video.streams, Build.VERSION.SDK_INT, video.durationSec)
-                val choice = YouTubeStreaming.quickPlayChoice(settings.youTubeQualityFlow.first(), choices)
-                if (choice == null) {
-                    _streamingUrl.value = null
-                    pick(result)
-                } else if (!startStream(video, choice, emptyList())) {
-                    _events.send(YouTubeEvent.StreamFailed(YouTubeErrorKind.UNAVAILABLE))
-                }
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                _events.send(YouTubeEvent.StreamFailed(errorKind(e)))
-            } finally {
-                _streamingUrl.value = null
-            }
-        }
-    }
+    /** A results row's Play icon: as a tap on the row, except that a TV plays at the default quality instead of opening the preview. */
+    fun playResult(result: YouTubeSearchResult) = startResult(result, viaPlayIcon = true)
 
     fun download() {
         val p = _ui.value as? YouTubeUi.Preview ?: return

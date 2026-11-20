@@ -1150,4 +1150,6 @@
     </plurals>
     <string name="watch_open_external">In anderer App öffnen</string>
     <string name="watch_next_episodes">Nächste Folgen</string>
+    <string name="yt_views">%1$s Aufrufe</string>
+    <string name="yt_description">Beschreibung</string>
 </resources>

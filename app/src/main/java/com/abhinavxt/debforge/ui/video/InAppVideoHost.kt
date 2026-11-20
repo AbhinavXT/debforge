@@ -344,8 +344,9 @@ private fun ActiveVideoHost(
         videoUiState(vm, session, active, canPlayAsAudio, pictureHeight)
     }
     val request = active.request
-    val pageDetails = remember(details, state.kind, session.controls.castAvailable) {
-        if (state.kind == VideoKind.YOUTUBE) details else details.copy(
+    val ask by vm.ask.collectAsStateWithLifecycle()
+    val pageDetails = remember(details, state.kind, session.controls.castAvailable, ask) {
+        if (state.kind == VideoKind.YOUTUBE) details.copy(ask = ask) else details.copy(
             canDownload = state.kind == VideoKind.DEBRID && request.item != null && request.item?.provider != com.abhinavxt.debforge.domain.ProviderId.LOCAL,
             canCast = session.controls.castAvailable,
             canOpenExternal = session.youtube == null,
@@ -372,6 +373,10 @@ private fun ActiveVideoHost(
             onSelectFormat = watchVm::select,
             onSelectMode = watchVm::selectMode,
             onSelectSubtitle = watchVm::selectSubtitle,
+            onAskSelect = vm::askSelect,
+            onAskMode = vm::askMode,
+            onAskPlay = vm::askPlay,
+            onAskDismiss = vm::askDismiss,
             onPlayAsAudio = session::handOffToAudio,
             onSubtitles = { session.controls.panel = Panel.SUBTITLES; session.controls.visible = true },
             onShare = { share(context, stateNow, request.uri, detailsNow) },

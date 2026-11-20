@@ -28,6 +28,14 @@ data class YouTubeVideo(
     val uploaderUrl: String? = null,
     /** "Up next" videos from the same extractor response; empty when none came. */
     val related: List<YouTubeSearchResult> = emptyList(),
+    /** The video's description as plain text; empty when none. */
+    val description: String = "",
+    /** The channel's picture; null when the extractor gave none. */
+    val uploaderAvatarUrl: String? = null,
+    /** Views; negative when unknown. */
+    val viewCount: Long = -1,
+    /** Upload date as the extractor wrote it (an ISO date for a video's own page); null when unknown. */
+    val uploadDate: String? = null,
 )
 
 /** One related item as the extractor reported it, before filtering; [isStream] is false for playlists and channels. */
@@ -94,6 +102,10 @@ data class YouTubeSearchResult(
     val thumbnailUrl: String?,
     /** The uploader's channel page; null when the extractor gave none. */
     val channelUrl: String? = null,
+    /** The channel's picture; null when the extractor gave none. */
+    val channelAvatarUrl: String? = null,
+    /** Views; negative when unknown. */
+    val viewCount: Long = -1,
 )
 
 /** A playlist's videos (first 200); each [YouTubeSearchResult.url] goes through the normal link path. */

@@ -1094,4 +1094,6 @@
     </plurals>
     <string name="watch_open_external">Buka di aplikasi lain</string>
     <string name="watch_next_episodes">Episode berikutnya</string>
+    <string name="yt_views">%1$s kali ditonton</string>
+    <string name="yt_description">Deskripsi</string>
 </resources>
