@@ -30,6 +30,8 @@ import com.abhinavxt.debforge.download.StorageAccess
 import com.abhinavxt.debforge.download.youtube.EnqueueResult
 import com.abhinavxt.debforge.download.youtube.YouTubeEnqueuer
 import com.abhinavxt.debforge.player.AudioPlayer
+import com.abhinavxt.debforge.player.youtubeAudioTrack
+import com.abhinavxt.debforge.domain.StreamKind
 import com.abhinavxt.debforge.player.EnqueueOutcome
 import com.abhinavxt.debforge.player.VideoLauncher
 import com.abhinavxt.debforge.player.cast.DlnaCaster
@@ -81,6 +83,9 @@ class VideoHostViewModel @Inject constructor(
 
     private val _ask = MutableStateFlow<PendingAsk?>(null)
 
+    /** The related video being resolved; a newer tap replaces it. */
+    private var relatedJob: Job? = null
+
     // The collector below runs at once on Main.immediate: every property cancelRelated() touches must be declared ABOVE this block.
     init {
         // Closed while a related video was still being looked up: it must not open the video again.
@@ -113,9 +118,6 @@ class VideoHostViewModel @Inject constructor(
         }
     }
 
-    /** The related video being resolved; a newer tap replaces it. */
-    private var relatedJob: Job? = null
-
     /**
      * A related video: resolved, then played in place (the one playing is saved first). A second tap replaces a
      * first still resolving, and a result that arrives after the video was closed or replaced is dropped.
@@ -140,12 +142,11 @@ class VideoHostViewModel @Inject constructor(
                 val choice = YouTubeStreaming.quickPlayChoice(quality, choices)
                     ?: pickDefaultChoice(choices, quality)
                     ?: choices.firstOrNull { it.videoItag != null }
-                val request = choice?.let { youTubePlayRequest(video, it, emptyList()) }
                 if (!relatedStillWanted(from, launcher.active.value?.token)) return@launch
-                if (request == null) {
+                if (choice == null || !playChoice(video, choice)) {
                     toast(R.string.yt_err_unavailable)
                     failed()
-                } else launcher.open(context, request, video = video)
+                }
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
@@ -176,8 +177,24 @@ class VideoHostViewModel @Inject constructor(
         val a = _ask.value ?: return
         _ask.value = null
         if (!relatedStillWanted(a.from, launcher.active.value?.token)) return
-        val request = youTubePlayRequest(a.video, a.selected, emptyList())
-        if (request == null) toast(R.string.yt_err_unavailable) else launcher.open(context, request, video = a.video)
+        if (!playChoice(a.video, a.selected)) toast(R.string.yt_err_unavailable)
+    }
+
+    /**
+     * Plays [choice] of a related video: a video choice in place of the one shown; an audio choice (Listen, or the
+     * default quality "Audio") in the audio player, as the YouTube tab does, closing the video (its position is saved).
+     * False when the choice has no stream to play.
+     */
+    private fun playChoice(video: YouTubeVideo, choice: FormatChoice): Boolean {
+        if (choice.isAudio) {
+            val stream = video.streams.firstOrNull { it.itag == choice.audioItag && it.kind == StreamKind.AUDIO } ?: return false
+            launcher.close()
+            audioPlayer.play(listOf(youtubeAudioTrack(video, stream)), 0)
+            return true
+        }
+        val request = youTubePlayRequest(video, choice, emptyList()) ?: return false
+        launcher.open(context, request, video = video)
+        return true
     }
 
     /** The video was closed: a related video still resolving must not open it again. */
