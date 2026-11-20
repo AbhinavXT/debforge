@@ -38,6 +38,16 @@ object ExtraFiles {
         return if ('.' in base) base.substringAfterLast('.').lowercase() else ""
     }
 
+    /** Subtitle formats; the Library lists videos and archives, not these. */
+    private val SUBTITLE_EXTS = setOf("srt", "vtt", "ass", "ssa", "sub", "idx", "smi", "sbv", "ttml")
+
+    /** True when [filename] (or a path) ends in a subtitle extension, any case. */
+    fun isSubtitleFile(filename: String): Boolean = extensionOf(filename) in SUBTITLE_EXTS
+
+    /** [items] without subtitle files, order preserved. Torrent file lists and the player still see them. */
+    fun hideSubtitles(items: List<DownloadItem>): List<DownloadItem> =
+        if (items.any { isSubtitleFile(it.filename) }) items.filterNot { isSubtitleFile(it.filename) } else items
+
     fun isVideo(item: DownloadItem): Boolean = extensionOf(item.filename) in VIDEO_EXTS
 
     private fun isSample(item: DownloadItem): Boolean =

@@ -240,8 +240,10 @@ fun BrowseScreen(
     // Release-group notes, covers and samples inside torrents are hidden
     // unless the user turned them on in Settings.
     val showExtras by viewModel.showExtraFiles.collectAsStateWithLifecycle()
+    // Subtitle files are never listed here; they stay in the torrent's files and the player.
     val shown: List<DownloadItem> = remember(state.items, showExtras) {
-        if (showExtras) state.items else ExtraFiles.hide(state.items)
+        val listed = ExtraFiles.hideSubtitles(state.items)
+        if (showExtras) listed else ExtraFiles.hide(listed)
     }
 
     // Parse every filename once per list change (cheap, but not per frame).
@@ -400,8 +402,8 @@ fun BrowseScreen(
         }
         // True when the poster grid or the list is what fills the screen.
         val contentShown = !state.isInitialLoad &&
-            !(state.error != null && state.items.isEmpty()) &&
-            state.items.isNotEmpty() &&
+            !(state.error != null && shown.isEmpty()) &&
+            shown.isNotEmpty() &&
             if (state.posterView) groups.isNotEmpty() else sections.sumOf { it.items.size } > 0
         val leading: (@Composable () -> Unit)? =
             if (promptVisible || processing.isNotEmpty()) {
@@ -541,7 +543,7 @@ fun BrowseScreen(
                 state.error != null && state.items.isEmpty() -> PullableFill(scroll) {
                     ErrorState(state.error!!, Modifier.holdFocus(held)) { viewModel.clearError(); viewModel.refresh() }
                 }
-                state.items.isEmpty() -> PullableFill(scroll) {
+                shown.isEmpty() -> PullableFill(scroll) {
                     EmptyState(
                         providerName = state.providerName,
                         hint = state.emptyHint,

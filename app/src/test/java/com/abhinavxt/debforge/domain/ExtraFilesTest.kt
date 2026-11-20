@@ -120,4 +120,22 @@ class ExtraFilesTest {
         assertEquals("", ExtraFiles.extensionOf("dir.with.dots/README"))
         assertTrue(ExtraFiles.isVideo(file("x.m2ts", 1)))
     }
+
+    @Test
+    fun subtitleExtensionsAreRecognisedInAnyCase() {
+        listOf("a.srt", "a.VTT", "Subs/2_English.Ass", "x.ssa", "x.sub", "x.idx", "x.smi", "x.sbv", "x.ttml")
+            .forEach { assertTrue(it, ExtraFiles.isSubtitleFile(it)) }
+        listOf("a.mkv", "srt", "a.srt.mkv", "notes.txt", "").forEach {
+            assertTrue(it, !ExtraFiles.isSubtitleFile(it))
+        }
+    }
+
+    @Test
+    fun hideSubtitlesDropsThemEvenWhenAlone() {
+        val items = listOf(file("Movie.mkv", 800 * MB), file("Subs/2_English.srt", 60 * 1024), file("a.SRT", 1))
+        assertEquals(listOf("Movie.mkv"), names(ExtraFiles.hideSubtitles(items)))
+        assertTrue(ExtraFiles.hideSubtitles(items.drop(1)).isEmpty())
+        val clean = listOf(file("Movie.mkv", 800 * MB))
+        assertTrue(ExtraFiles.hideSubtitles(clean) === clean)
+    }
 }
