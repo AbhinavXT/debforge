@@ -85,6 +85,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
@@ -206,6 +207,12 @@ fun YouTubeScreen(
         viewModel.playRequests.collect { videoLauncher.open(context, it.request, video = it.video) }
     }
     val streamingUrl by viewModel.streamingUrl.collectAsStateWithLifecycle()
+    // A tapped result still resolving: Back (registered after the one above, so it wins) and leaving the tab drop it.
+    androidx.activity.compose.BackHandler(streamingUrl != null, viewModel::cancelStart)
+    val activity = remember(context) {
+        generateSequence(context) { (it as? android.content.ContextWrapper)?.baseContext }.firstNotNullOfOrNull { it as? android.app.Activity }
+    }
+    DisposableEffect(Unit) { onDispose { if (activity?.isChangingConfigurations != true) viewModel.cancelStart() } }
     val ask by viewModel.ask.collectAsStateWithLifecycle()
     ask?.let { a ->
         PlayQualitySheet(a.choices, a.selected, viewModel::askMode, viewModel::askSelect, viewModel::askPlay, viewModel::askDismiss)

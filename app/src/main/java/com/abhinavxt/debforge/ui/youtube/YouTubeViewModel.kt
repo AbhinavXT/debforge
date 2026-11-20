@@ -43,6 +43,7 @@ import kotlinx.coroutines.flow.map
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -436,11 +437,14 @@ class YouTubeViewModel @Inject constructor(
         startResult(result, viaPlayIcon = false)
     }
 
-    /** Back from a started tap: its quality sheet is open or its stream is being resolved. */
+    /**
+     * Starts a tapped result: resolves it, then plays it (or asks for its quality, or opens the preview). A newer tap
+     * replaces one still resolving, as do Back and leaving the tab ([cancelStart]).
+     */
     private fun startResult(result: YouTubeSearchResult, viaPlayIcon: Boolean) {
-        if (streamJob?.isActive == true) return
+        streamJob?.cancel()
         _streamingUrl.value = result.url
-        streamJob = viewModelScope.launch {
+        val job = viewModelScope.launch(start = CoroutineStart.LAZY) {
             try {
                 val tap = resultTap(settings.youTubeQualityFlow.first(), isTv, viaPlayIcon)
                 if (tap == ResultTap.PREVIEW) {
@@ -465,9 +469,20 @@ class YouTubeViewModel @Inject constructor(
             } catch (e: Exception) {
                 _events.send(YouTubeEvent.StreamFailed(errorKind(e)))
             } finally {
-                _streamingUrl.value = null
+                // A replaced tap must not clear the spinner of the one replacing it.
+                if (streamJob === coroutineContext[Job]) _streamingUrl.value = null
             }
         }
+        streamJob = job
+        job.start()
+    }
+
+    /** Back, or leaving the YouTube tab, while a tapped result is still resolving: it no longer opens. */
+    fun cancelStart() {
+        if (_streamingUrl.value == null) return
+        streamJob?.cancel()
+        streamJob = null
+        _streamingUrl.value = null
     }
 
     /** A resolved result waiting for its quality ("ask every time"). */
