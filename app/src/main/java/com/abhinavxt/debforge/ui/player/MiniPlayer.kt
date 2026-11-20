@@ -1,5 +1,14 @@
 package com.abhinavxt.debforge.ui.player
 
+import com.abhinavxt.debforge.ui.video.pastSlop
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.platform.LocalViewConfiguration
+import androidx.compose.ui.input.pointer.util.VelocityTracker
+import androidx.compose.ui.input.pointer.positionChange
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.awaitEachGesture
 import android.net.Uri
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.Crossfade
@@ -38,9 +47,8 @@ import androidx.compose.material.icons.rounded.SkipNext
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.spring
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.draggable
-import androidx.compose.foundation.gestures.rememberDraggableState
+import androidx.compose.animation.core.Spring
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.foundation.layout.absoluteOffset
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
@@ -246,6 +254,7 @@ fun MiniPlayer(
     val anim = remember { object { var job: Job? = null } }
     val scope = rememberCoroutineScope()
     val latestClose by rememberUpdatedState(onClose)
+    val animateOn = animatorDurationScale(LocalContext.current) > 0f
     val flingVelocity = with(LocalDensity.current) { DISMISS_FLING_DP.dp.toPx() }
     LaunchedEffect(track.id) {
         // A committed dismiss still closes; only a finished one (or none) is reset for the new track.
@@ -254,37 +263,89 @@ fun MiniPlayer(
             offsetPx = 0f
         }
     }
-    val drag = rememberDraggableState { delta ->
-        if (!dismissing && widthPx > 0f) offsetPx += delta
+    fun release(velocity: Float) {
+        val width = widthPx
+        if (dismissing || width <= 0f) return
+        val dir = miniPlayerDismissDirection(offsetPx, velocity, width, flingVelocity)
+        if (dir == 0) {
+            anim.job = scope.launch {
+                if (animateOn) {
+                    Animatable(offsetPx).animateTo(
+                        0f, spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessMediumLow),
+                        initialVelocity = velocity
+                    ) { offsetPx = value }
+                } else offsetPx = 0f
+            }
+        } else {
+            dismissing = true
+            anim.job = scope.launch {
+                try {
+                    if (animateOn) {
+                        Animatable(offsetPx).animateTo(
+                            dir * width, spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessMedium),
+                            initialVelocity = if (velocity * dir > 0f) velocity else 0f
+                        ) { offsetPx = value }
+                    } else offsetPx = dir * width
+                } finally {
+                    withContext(NonCancellable) { latestClose() }
+                }
+            }
+        }
     }
+    val slop = LocalViewConfiguration.current.touchSlop
     Box(
         modifier
             .onSizeChanged { widthPx = it.width.toFloat() }
-            .draggable(
-                drag, Orientation.Horizontal,
-                onDragStarted = { if (!dismissing) anim.job?.cancel() },
-                onDragStopped = { velocity ->
-                    val width = widthPx
-                    if (dismissing || width <= 0f) return@draggable
-                    val dir = miniPlayerDismissDirection(offsetPx, velocity, width, flingVelocity)
-                    if (dir == 0) {
-                        anim.job = scope.launch {
-                            Animatable(offsetPx).animateTo(0f, spring(stiffness = 400f)) { offsetPx = value }
-                        }
-                    } else {
-                        dismissing = true
-                        anim.job = scope.launch {
-                            try {
-                                Animatable(offsetPx).animateTo(dir * width, tween(200)) { offsetPx = value }
-                            } finally {
-                                withContext(NonCancellable) { latestClose() }
-                            }
+            // Watches in the Initial pass, before the buttons: a drag past touch slop is the bar's and cancels their
+            // press (consumed), however fast it is and whatever it started on. Taps are left alone.
+            .pointerInput(Unit) {
+                awaitEachGesture {
+                    val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
+                    if (dismissing || widthPx <= 0f) return@awaitEachGesture
+                    var total = Offset.Zero
+                    while (true) {
+                        val event = awaitPointerEvent(PointerEventPass.Initial)
+                        val change = event.changes.firstOrNull { it.id == down.id } ?: return@awaitEachGesture
+                        if (!change.pressed) return@awaitEachGesture
+                        total += change.positionChange()
+                        if (total.getDistance() >= slop) {
+                            if (abs(total.x) <= abs(total.y)) return@awaitEachGesture
+                            change.consume()
+                            break
                         }
                     }
+                    anim.job?.cancel()
+                    val tracker = VelocityTracker()
+                    tracker.addPosition(down.uptimeMillis, down.position)
+                    offsetPx += pastSlop(total.x, slop)
+                    var last = down
+                    var cancelled = false
+                    while (true) {
+                        val event = awaitPointerEvent(PointerEventPass.Initial)
+                        val change = event.changes.firstOrNull { it.id == down.id }
+                        if (change == null) { cancelled = true; break }
+                        tracker.addPosition(change.uptimeMillis, change.position)
+                        last = change
+                        change.consume()
+                        if (!change.pressed) break
+                        offsetPx += change.positionChange().x
+                    }
+                    var v = if (cancelled) 0f else tracker.calculateVelocity().x
+                    // A very quick flick has few samples; its average speed is then the better estimate.
+                    val ms = last.uptimeMillis - down.uptimeMillis
+                    if (!cancelled && ms in 1..250) {
+                        val avg = (last.position.x - down.position.x) / ms * 1000f
+                        if (abs(avg) > abs(v)) v = avg
+                    }
+                    release(v)
                 }
-            )
+            }
             // Drag deltas are physical, so the offset must not be mirrored in right-to-left layouts.
-            .absoluteOffset { IntOffset(offsetPx.takeIf { it.isFinite() }?.roundToInt() ?: 0, 0) }
+            .graphicsLayer {
+                val x = offsetPx.takeIf { it.isFinite() } ?: 0f
+                translationX = x
+                alpha = if (widthPx > 0f) (1f - 0.5f * (abs(x) / widthPx)).coerceIn(0.4f, 1f) else 1f
+            }
     ) {
     Surface(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp).animateContentSize(),
@@ -301,10 +362,18 @@ fun MiniPlayer(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
+                // Once the track changes while the full player is open (a swipe, Next), this bar stops offering its artwork
+                // for sharing until the player closes, even if the track comes back: a hidden partner here would make the full
+                // player's new artwork fly in from this bar instead of staying put. On close it is added as the full one hides,
+                // so the closing flight still runs.
+                val openedOn = remember(expanded) { track.id }
+                val changedWhileOpen = remember(expanded) { booleanArrayOf(false) }
+                if (track.id != openedOn) changedWhileOpen[0] = true
+                val share = !expanded || !changedWhileOpen[0]
                 if (sharedScope == null) TrackArt(track, Modifier.size(44.dp).clip(ArtShape))
                 else TrackArt(
                     track,
-                    Modifier.size(44.dp).sharedArtwork(sharedScope, track.id, visible = !expanded).clip(ArtShape)
+                    Modifier.size(44.dp).then(if (share) Modifier.sharedArtwork(sharedScope, track.id, visible = !expanded) else Modifier).clip(ArtShape)
                 )
                 Crossfade(track, Modifier.weight(1f), label = "track") { t ->
                     Column {

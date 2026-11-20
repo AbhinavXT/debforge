@@ -26,6 +26,38 @@ class VideoGesturesTest {
         assertEquals(MiniSwipe.NONE, miniSwipe(0f, 20f, 0f, 0f, 1000f, 100f, 2000f))
     }
 
+    @Test fun miniBarFollowsDownFullyAndUpWithResistance() {
+        assertEquals(100f, miniDragY(100f), 0f)
+        assertEquals(-35f, miniDragY(-100f), 0.001f)
+        assertEquals(0f, miniDragY(Float.NaN), 0f)
+    }
+
+    @Test fun miniBarAxisAndSlop() {
+        assertTrue(miniSwipeHorizontal(30f, -10f))
+        assertFalse(miniSwipeHorizontal(5f, 30f))
+        assertEquals(12f, pastSlop(20f, 8f), 0f)
+        assertEquals(-12f, pastSlop(-20f, 8f), 0f)
+        assertEquals(0f, pastSlop(5f, 8f), 0f)
+        assertEquals(0f, pastSlop(Float.NaN, 8f), 0f)
+    }
+
+    @Test fun miniBarFadesWithDistance() {
+        assertEquals(1f, miniSwipeAlpha(0f, 0f, 1000f, 100f), 0f)
+        assertEquals(0.5f, miniSwipeAlpha(500f, 0f, 1000f, 100f), 0.001f)
+        assertEquals(0.5f, miniSwipeAlpha(-500f, 0f, 1000f, 100f), 0.001f)
+        assertEquals(0f, miniSwipeAlpha(0f, 150f, 1000f, 100f), 0.001f)
+        assertEquals(1f, miniSwipeAlpha(0f, -80f, 1000f, 100f), 0f)
+        assertEquals(0f, miniSwipeAlpha(2000f, 0f, 1000f, 100f), 0f)
+        assertEquals(1f, miniSwipeAlpha(10f, 10f, 0f, 0f), 0f)
+    }
+
+    @Test fun committedCloseSlidesOutTheWayItWasThrown() {
+        assertEquals(-1000f to 0f, miniExitTarget(MiniSwipe.CLOSE_LEFT, 1000f, 100f))
+        assertEquals(1000f to 0f, miniExitTarget(MiniSwipe.CLOSE_RIGHT, 1000f, 100f))
+        assertEquals(0f to 150f, miniExitTarget(MiniSwipe.CLOSE_DOWN, 1000f, 100f))
+        assertEquals(0f to 0f, miniExitTarget(MiniSwipe.NONE, 1000f, 100f))
+    }
+
     private val unspecified = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
 
     @Test fun phoneAutoRotateGoesFullAndBack() {
@@ -125,5 +157,17 @@ class VideoGesturesTest {
         assertEquals(VideoMode.FULL, nextMode(VideoMode.WATCH, VideoModeEvent.EnterFull, isTablet = false))
         assertEquals(VideoMode.WATCH, nextMode(VideoMode.FULL, VideoModeEvent.Back, isTablet = false, backClosesFull = false))
         assertEquals(null, nextMode(VideoMode.FULL, VideoModeEvent.Back, isTablet = false, backClosesFull = true))
+    }
+}
+
+class VelocityTowardTest {
+    @org.junit.Test fun sameDirectionKept() {
+        org.junit.Assert.assertEquals(800f, velocityToward(800f, 300f), 0f)
+        org.junit.Assert.assertEquals(-800f, velocityToward(-800f, -300f), 0f)
+    }
+    @org.junit.Test fun opposingOrInvalidIsZero() {
+        org.junit.Assert.assertEquals(0f, velocityToward(800f, -300f), 0f)
+        org.junit.Assert.assertEquals(0f, velocityToward(Float.NaN, 300f), 0f)
+        org.junit.Assert.assertEquals(0f, velocityToward(800f, 0f), 0f)
     }
 }

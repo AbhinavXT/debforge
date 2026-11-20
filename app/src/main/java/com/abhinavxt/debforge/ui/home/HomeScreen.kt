@@ -605,6 +605,7 @@ fun HomeScreen(signedIn: Boolean) {
                         }
                     },
                     padSystemBars = true,
+                    open = nowPlaying,
                     artColor = artColor,
                     skipSeconds = skipSeconds,
                     state = audio,

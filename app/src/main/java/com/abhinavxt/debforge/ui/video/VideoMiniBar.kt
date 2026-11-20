@@ -1,11 +1,21 @@
 package com.abhinavxt.debforge.ui.video
 
 import androidx.compose.animation.core.animate
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.layout.offset
+import androidx.compose.animation.core.AnimationSpec
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.PointerInputChange
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.platform.LocalContext
+import com.abhinavxt.debforge.ui.player.animatorDurationScale
+import kotlinx.coroutines.coroutineScope
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.foundation.background
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.geometry.Offset
@@ -13,11 +23,9 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.util.VelocityTracker
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.IntOffset
 import com.abhinavxt.debforge.ui.player.DISMISS_FLING_DP
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import kotlin.math.roundToInt
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -86,9 +94,8 @@ fun VideoMiniBar(
     SideEffect { swipe.onClose = { closeNow() }; swipe.onExpand = { expandNow() } }
     // The swipe outlives the bar: a bar shown again starts in place, not where the last one was thrown.
     androidx.compose.runtime.DisposableEffect(swipe) {
-        swipe.settling?.cancel()
-        swipe.dragX = 0f
-        onDispose { swipe.settling?.cancel(); swipe.dragX = 0f }
+        swipe.reset()
+        onDispose { swipe.reset() }
     }
     val barSource = remember { MutableInteractionSource() }
     val expandLabel = stringResource(R.string.video_mini_expand)
@@ -96,10 +103,10 @@ fun VideoMiniBar(
     Surface(
         modifier = modifier
             .fillMaxWidth()
-            .onSizeChanged { swipe.widthPx = it.width.toFloat() }
-            // Before the offset: the touch's coordinates must not move with the bar.
+            .onSizeChanged { swipe.widthPx = it.width.toFloat(); swipe.heightPx = it.height.toFloat() }
+            // Before the layer: the touch's coordinates must not move with the bar.
             .miniBarSwipe(swipe)
-            .offset { IntOffset(swipe.dragX.roundToInt(), 0) }
+            .graphicsLayer { translationX = swipe.dragX; translationY = swipe.dragY; alpha = swipe.alpha }
             .padding(horizontal = 8.dp, vertical = 4.dp),
         shape = shape,
         color = MaterialTheme.colorScheme.surfaceContainerHigh,
@@ -110,7 +117,20 @@ fun VideoMiniBar(
                     .clickable(interactionSource = barSource, indication = androidx.compose.material3.ripple(), onClickLabel = expandLabel, onClick = onExpand),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Box(Modifier.width(MiniVideoWidth).height(MiniBarHeight).onGloballyPositioned { onVideoSlot(it.boundsInRoot()) })
+                Box(Modifier.width(MiniVideoWidth).height(MiniBarHeight).onGloballyPositioned {
+                    // The slot at rest: bounds in the root include the bar's layer offset, which the host applies itself.
+                    onVideoSlot(it.boundsInRoot().translate(-swipe.dragX, -swipe.dragY))
+                }) {
+                    // While swiped, the host's live picture (a SurfaceView, which cannot fade with a layer) steps aside and a
+                    // still of it is drawn here instead, so it moves and fades with the bar in the same frame.
+                    swipe.frame?.let { frame ->
+                        androidx.compose.foundation.Image(
+                            frame, null,
+                            Modifier.matchParentSize().background(androidx.compose.ui.graphics.Color.Black),
+                            contentScale = androidx.compose.ui.layout.ContentScale.Fit,
+                        )
+                    }
+                }
                 Text(
                     title,
                     style = MaterialTheme.typography.bodyMedium,
@@ -136,52 +156,151 @@ fun VideoMiniBar(
 }
 
 /**
- * The mini bar's sideways swipe: the bar follows the finger ([dragX], a layout offset, not a layer, so the host sees
- * the slot move and carries the picture along) and closes past a distance or a fling; up opens, down closes. Held
- * outside the bar so the picture over the bar's slot (the host's, on top of the bar) runs the same swipe.
+ * The mini bar's swipe. The bar follows the finger in a graphics layer ([dragX], [dragY], read only in layer lambdas,
+ * so no relayout per frame); the host's picture over the bar's slot follows through [onMoved] (a View transform set in
+ * the same frame) and, once it has a still of it ([frame]), steps aside so the still moves and fades with the bar. Sideways and down close (sliding out with the fling's speed, then [onClose]), up opens. Held outside the bar
+ * so the picture over the bar's slot (the host's, on top of the bar) runs the same swipe.
  */
 class MiniBarSwipe {
     var dragX by mutableFloatStateOf(0f)
+    var dragY by mutableFloatStateOf(0f)
     internal var widthPx by mutableFloatStateOf(0f)
+    internal var heightPx by mutableFloatStateOf(0f)
     internal var onClose: () -> Unit = {}
     internal var onExpand: () -> Unit = {}
+    /** Called on every move, before the frame is drawn: the host moves its picture (a View transform) in the same frame. */
+    internal var onMoved: () -> Unit = {}
     internal var settling: Job? = null
+    /** True from the moment a drag passes the touch slop until the bar is back at rest (or [reset]). */
+    var held by mutableStateOf(false)
+        internal set
+    /** A still of the picture the host draws over the slot, shown in the slot while [held]; set and cleared by the host. */
+    var frame by mutableStateOf<androidx.compose.ui.graphics.ImageBitmap?>(null)
+
+    /** The bar's opacity for its offset. Read in a layer lambda. */
+    val alpha: Float get() = miniSwipeAlpha(dragX, dragY, widthPx, heightPx)
+
+    internal fun moveTo(x: Float, y: Float) {
+        if (x == dragX && y == dragY) return
+        dragX = x; dragY = y
+        onMoved()
+    }
+
+    internal fun reset() {
+        settling?.cancel()
+        dragX = 0f; dragY = 0f
+        held = false
+        onMoved()
+    }
+
+    /** Animates to ([x], [y]) from where it is, carrying the release velocity; [animate] false (system animations off) snaps. */
+    internal suspend fun settleTo(x: Float, y: Float, vx: Float, vy: Float, spec: AnimationSpec<Float>, animate: Boolean) {
+        if (!animate) { moveTo(x, y); return }
+        coroutineScope {
+            launch { animate(dragX, x, vx, spec) { v, _ -> moveTo(v, dragY) } }
+            launch { animate(dragY, y, vy, spec) { v, _ -> moveTo(dragX, v) } }
+        }
+    }
 }
 
-/** The [MiniBarSwipe] gesture. Put it on a node that does not move with [MiniBarSwipe.dragX], or the touch would move with it. */
+private class SwipeCoords { var c: LayoutCoordinates? = null }
+
+private val SpringBack = spring<Float>(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessMedium)
+private val SlideOut = spring<Float>(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessMedium, visibilityThreshold = 1f)
+
+/**
+ * The [MiniBarSwipe] gesture: one pointer loop, the axis locked after the touch slop. Positions are read in the root's
+ * coordinates, so it works on a node that itself moves with the swipe (the host's picture overlay moves with the bar).
+ */
 @Composable
 fun Modifier.miniBarSwipe(swipe: MiniBarSwipe): Modifier {
     val scope = rememberCoroutineScope()
     val density = LocalDensity.current
-    return pointerInput(swipe) {
-        var total = Offset.Zero
+    val context = LocalContext.current
+    val coords = remember { SwipeCoords() }
+    return onGloballyPositioned { coords.c = it }.pointerInput(swipe) {
         val tracker = VelocityTracker()
-        fun settle(to: Float, then: () -> Unit = {}, spec: androidx.compose.animation.core.AnimationSpec<Float> = androidx.compose.animation.core.spring()) {
-            swipe.settling = scope.launch { animate(swipe.dragX, to, animationSpec = spec) { x, _ -> swipe.dragX = x }; then() }
-        }
-        detectDragGestures(
-            onDragStart = { swipe.settling?.cancel(); total = Offset.Zero; tracker.resetTracking() },
-            onDrag = { change, amount ->
-                change.consume()
-                tracker.addPosition(change.uptimeMillis, change.position)
-                total += amount
-                swipe.dragX += amount.x
-            },
-            onDragCancel = { settle(0f) },
-            onDragEnd = {
-                val v = tracker.calculateVelocity()
-                val fling = DISMISS_FLING_DP * density.density
-                when (miniSwipe(total.x, total.y, v.x, v.y, swipe.widthPx, 48f * density.density, fling)) {
-                    MiniSwipe.CLOSE_LEFT, MiniSwipe.CLOSE_RIGHT -> {
-                        val to = if (swipe.dragX >= 0f) swipe.widthPx else -swipe.widthPx
-                        settle(to, swipe.onClose, tween(180))
-                    }
-                    MiniSwipe.CLOSE_DOWN -> settle(0f, swipe.onClose)
-                    MiniSwipe.EXPAND -> { settle(0f); swipe.onExpand() }
-                    MiniSwipe.NONE -> settle(0f)
+        val slop = viewConfiguration.touchSlop
+        awaitEachGesture {
+            var released = false
+            var dragging = false
+            try {
+            val down = awaitFirstDown(requireUnconsumed = false)
+            fun root(c: PointerInputChange): Offset = coords.c?.takeIf { it.isAttached }?.localToRoot(c.position) ?: c.position
+            val start = root(down)
+            tracker.resetTracking()
+            tracker.addPosition(down.uptimeMillis, start)
+            var horizontal: Boolean? = null
+            var baseX = 0f
+            var baseY = 0f
+            var along = 0f
+            while (true) {
+                val event = awaitPointerEvent()
+                val change = event.changes.firstOrNull { it.id == down.id } ?: return@awaitEachGesture
+                if (!change.pressed) {
+                    if (horizontal == null) return@awaitEachGesture
+                    break
                 }
-            },
-        )
+                if (horizontal == null && change.isConsumed) return@awaitEachGesture
+                val pos = root(change)
+                tracker.addPosition(change.uptimeMillis, pos)
+                val total = pos - start
+                if (horizontal == null) {
+                    if (total.getDistance() < slop) continue
+                    horizontal = miniSwipeHorizontal(total.x, total.y)
+                    dragging = true
+                    swipe.settling?.cancel()
+                    swipe.held = true
+                    baseX = swipe.dragX
+                    baseY = swipe.dragY
+                }
+                change.consume()
+                if (horizontal == true) {
+                    along = pastSlop(total.x, slop)
+                    swipe.moveTo(baseX + along, baseY)
+                } else {
+                    along = pastSlop(total.y, slop)
+                    swipe.moveTo(baseX, baseY + miniDragY(along))
+                }
+            }
+            released = true
+            val isHorizontal = horizontal == true
+            val v = tracker.calculateVelocity()
+            val fling = DISMISS_FLING_DP * density.density
+            val result = miniSwipe(
+                if (isHorizontal) along else 0f, if (isHorizontal) 0f else along,
+                if (isHorizontal) v.x else 0f, if (isHorizontal) 0f else v.y,
+                swipe.widthPx, 48f * density.density, fling,
+            )
+            val animate = animatorDurationScale(context) > 0f
+            val vy = if (v.y < 0f) v.y * MINI_UP_RESISTANCE else v.y
+            swipe.settling = scope.launch {
+                when (result) {
+                    MiniSwipe.CLOSE_LEFT, MiniSwipe.CLOSE_RIGHT, MiniSwipe.CLOSE_DOWN -> {
+                        val (x, y) = miniExitTarget(result, swipe.widthPx, swipe.heightPx)
+                        swipe.settleTo(
+                            x, y,
+                            if (isHorizontal) velocityToward(v.x, x - swipe.dragX) else 0f,
+                            if (isHorizontal) 0f else velocityToward(v.y, y - swipe.dragY), SlideOut, animate
+                        )
+                        swipe.onClose()
+                    }
+                    MiniSwipe.EXPAND -> {
+                        swipe.onExpand()
+                        swipe.settleTo(0f, 0f, 0f, vy, SpringBack, animate)
+                        swipe.held = false
+                    }
+                    MiniSwipe.NONE -> {
+                        swipe.settleTo(0f, 0f, if (isHorizontal) v.x else 0f, if (isHorizontal) 0f else vy, SpringBack, animate)
+                        swipe.held = false
+                    }
+                }
+            }
+            } finally {
+                // The node left composition (or the gesture was cancelled) mid-drag: do not leave the bar displaced.
+                if (dragging && !released) { swipe.settling?.cancel(); swipe.moveTo(0f, 0f); swipe.held = false }
+            }
+        }
     }
 }
 

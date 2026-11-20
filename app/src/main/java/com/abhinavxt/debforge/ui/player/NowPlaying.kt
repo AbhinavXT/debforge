@@ -81,6 +81,8 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -115,6 +117,7 @@ import com.abhinavxt.debforge.R
 import com.abhinavxt.debforge.player.AudioRepeat
 import com.abhinavxt.debforge.player.AUDIO_SPEEDS
 import com.abhinavxt.debforge.player.AudioState
+import com.abhinavxt.debforge.player.AudioTrack
 import com.abhinavxt.debforge.player.SLEEP_END_OF_TRACK
 import com.abhinavxt.debforge.player.SLEEP_MINUTES
 import com.abhinavxt.debforge.player.sleepMinutesLeft
@@ -166,7 +169,9 @@ fun NowPlaying(
     onAutoplay: (Boolean) -> Unit = {},
     /** Continues this item as video; the button shows only when the track can be watched. */
     onWatch: (() -> Unit)? = null,
-    watchBusy: Boolean = false
+    watchBusy: Boolean = false,
+    /** False while the sheet is fading out; true again when it is reopened in that window. */
+    open: Boolean = true
 ) {
     val track = state.track ?: return
     val surface = MaterialTheme.colorScheme.surface
@@ -177,7 +182,7 @@ fun NowPlaying(
     )
     // Trap D-pad focus inside the player: focusProperties on a wrapper does not reach focusables nested in
     // another focusable behind it, so the player itself refuses to let focus leave.
-    val dismiss = rememberSwipeDown(onClose)
+    val dismiss = rememberSwipeDown(onClose, open, slideOut = share == null)
     Surface(modifier.fillMaxSize().swipeDownToDismiss(dismiss).focusProperties { exit = { FocusRequester.Cancel } }.focusGroup(), color = MaterialTheme.colorScheme.surface) {
         BoxWithConstraints(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(top, surface))).then(if (padSystemBars) Modifier.windowInsetsPadding(WindowInsets.systemBars) else Modifier)) {
             val wide = maxWidth > maxHeight && maxWidth >= 600.dp
@@ -244,23 +249,96 @@ private fun Artwork(state: AudioState, share: ArtworkShare?, onNext: () -> Unit,
     )
     val visible = share?.visibility?.transition?.targetState != EnterExitState.PostExit
     val context = LocalContext.current
-    var sliding by remember { mutableStateOf(false) }
-    // Same actions as the buttons: next only when there is one, previous always.
+    val swipeState = remember { ArtworkSwipeState() }
+    val gap = with(androidx.compose.ui.platform.LocalDensity.current) { 24.dp.toPx() }
+    val rtl = androidx.compose.ui.platform.LocalLayoutDirection.current == androidx.compose.ui.unit.LayoutDirection.Rtl
+    val stateNow by rememberUpdatedState(state)
+    // While a committed swipe slides, the centre and the arriving neighbour are frozen as they were at release; once it has
+    // landed the arrived track stays in the centre until the player reports it (it changes tracks asynchronously).
+    var frozen by remember { mutableStateOf<Triple<AudioTrack?, AudioTrack?, Int>?>(null) }
+    var pinned by remember { mutableStateOf<AudioTrack?>(null) }
+    var pinnedSet by remember { mutableStateOf(false) }
+    // The track a swipe just landed on (set in the same frame), so its arrival is not mistaken for a button press and faded in.
+    val arrived = remember { arrayOfNulls<String>(1) }
+    val current = state.track
+    LaunchedEffect(pinnedSet, pinned?.id, current?.id) {
+        if (!pinnedSet) return@LaunchedEffect
+        if (pinned == null || pinned?.id == current?.id) { pinnedSet = false; pinned = null; return@LaunchedEffect }
+        // The player never moved there (an error, a refused seek): fall back to what it plays.
+        kotlinx.coroutines.delay(1500)
+        pinnedSet = false; pinned = null
+    }
+    val centre = when {
+        frozen != null -> frozen!!.first
+        pinnedSet -> pinned ?: current
+        else -> current
+    }
+    // Next sits on the right in LTR (swiping left brings it in), previous on the left; mirrored in RTL.
+    val nextSide = if (rtl) -1 else 1
+    fun neighbourAt(side: Int): AudioTrack? {
+        val dir = if (side == nextSide) 1 else -1
+        frozen?.let { (_, arriving, slideDir) -> return if (side == arrivingSide(slideDir, rtl)) arriving else null }
+        return if (pinnedSet && centre?.id != current?.id) null else artworkNeighbour(state, dir)
+    }
     val swipe = Modifier.artworkSwipe(
-        canSwipe = { it < 0 || state.hasNext },
+        swipeState,
+        gap = gap,
+        canSwipe = { canArtworkSwipe(stateNow, it) },
         animate = animatorDurationScale(context) > 0f,
-        onSliding = { sliding = it },
-        onSwipe = { if (it > 0) onNext() else onPrevious() }
+        onSwipe = { dir ->
+            frozen = Triple(stateNow.track, artworkNeighbour(stateNow, dir), dir)
+            if (dir > 0) onNext() else onPrevious()
+        },
+        onLanded = {
+            arrived[0] = frozen?.second?.id
+            pinned = frozen?.second
+            pinnedSet = true
+            frozen = null
+        }
     )
-    // While the carousel slides the new artwork must arrive at full opacity, not fade in.
-    Crossfade(state.track, modifier.aspectRatio(1f).then(swipe), animationSpec = if (sliding) snap() else tween(), label = "art") { t ->
-        if (t != null) TrackArt(
-            t,
-            Modifier.fillMaxSize().shadow(elevation, shape, ambientColor = cs.surfaceTint, spotColor = cs.surfaceTint)
-                .sharedArtwork(share?.transition, t.id, visible).clip(ArtShape)
-        )
+    // A track change that did not come from a swipe (buttons, the queue, the end of a track) fades the new artwork in.
+    val fadeIn = remember { androidx.compose.animation.core.Animatable(1f) }
+    var shownId by remember { mutableStateOf(centre?.id) }
+    LaunchedEffect(centre?.id) {
+        if (centre?.id == shownId) return@LaunchedEffect
+        val fromSwipe = swipeState.sliding || frozen != null || (centre?.id != null && centre?.id == arrived[0])
+        arrived[0] = null
+        shownId = centre?.id
+        if (fromSwipe || animatorDurationScale(context) == 0f) fadeIn.snapTo(1f) else { fadeIn.snapTo(0f); fadeIn.animateTo(1f, tween(250)) }
+    }
+    val artMod = Modifier.fillMaxSize().shadow(elevation, shape, ambientColor = cs.surfaceTint, spotColor = cs.surfaceTint)
+    Box(modifier.aspectRatio(1f).then(swipe)) {
+        // Three slots keyed by track: the arriving neighbour's composition (and its loaded image) becomes the centre as is.
+        val used = HashSet<String>()
+        fun keyFor(t: AudioTrack, slot: Int): String = if (used.add(t.id)) t.id else "${t.id}#$slot".also { used.add(it) }
+        val slots = buildList {
+            centre?.let { add(Triple(it, 0, keyFor(it, 0))) }
+            for (side in intArrayOf(1, -1)) neighbourAt(side)?.let { add(Triple(it, side, keyFor(it, side))) }
+        }
+        for ((t, side, k) in slots) androidx.compose.runtime.key(k) {
+            val layer = Modifier.graphicsLayer {
+                translationX = swipeState.offset + side * swipeState.span
+                // Neighbours stay composed (so their artwork is loaded before it is needed) but only show while the carousel moves.
+                alpha = if (side == 0) fadeIn.value else if (swipeState.offset != 0f || swipeState.sliding) 1f else 0f
+            }
+            // One call site for every slot, so the arriving artwork keeps its composition (and its drawn image) as it becomes the centre.
+            TrackArt(t, layer.then(artMod).sharedArtwork(share?.transition?.takeIf { side == 0 }, t.id, visible).clip(ArtShape))
+        }
+        // A committed swipe whose track is not known ahead (previous under shuffle) still slides something in.
+        frozen?.let { (_, arriving, slideDir) ->
+            if (arriving == null) {
+                val side = arrivingSide(slideDir, rtl)
+                Box(
+                    Modifier.fillMaxSize().graphicsLayer { translationX = swipeState.offset + side * swipeState.span }
+                        .clip(ArtShape).background(cs.surfaceVariant)
+                )
+            }
+        }
     }
 }
+
+/** The side (1 right, -1 left) a swipe in [dir] (1 next, -1 previous) brings its track in from: opposite to where the artwork leaves. */
+internal fun arrivingSide(dir: Int, rtl: Boolean): Int = (if (dir > 0) 1 else -1) * (if (rtl) -1 else 1)
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable

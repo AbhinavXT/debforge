@@ -43,6 +43,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshotFlow
+import kotlinx.coroutines.flow.collectLatest
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -571,6 +574,43 @@ private fun ActiveVideoHost(
             Box(Modifier.fillMaxSize().background(Color.Black))
         }
 
+        // The mini bar's swipe moves the picture with a View transform on the surface itself, set from the same state in the
+        // same frame as the bar's layer (a SurfaceView follows View transforms, not a Compose layer's, and cannot fade).
+        // Once a still of the picture is drawn in the bar's slot, the live picture steps off-screen, so what the user sees
+        // moves, fades and is covered by the tabs exactly like the bar; back at rest the live picture returns, then the still goes.
+        val miniPicture = remember { MiniPicture() }
+        val miniNow = mode == VideoMode.MINI && !pip
+        fun applyMini() {
+            val m = miniPicture.active
+            surface.translationX = when { !m -> 0f; miniPicture.hidden -> MINI_PICTURE_AWAY; else -> miniSwipe.dragX }
+            surface.translationY = if (m && !miniPicture.hidden) miniSwipe.dragY else 0f
+        }
+        miniPicture.active = miniNow
+        SideEffect { miniSwipe.onMoved = { applyMini() }; applyMini() }
+        LaunchedEffect(miniNow) {
+            if (!miniNow) return@LaunchedEffect
+            snapshotFlow { miniSwipe.held }.collectLatest { held ->
+                if (held) {
+                    val still = copyPicture(surface.playerView) ?: return@collectLatest
+                    miniSwipe.frame = still.asImageBitmap()
+                    // The bar draws the still under the live picture first; then the live one steps aside.
+                    withFrameNanos { }
+                    withFrameNanos { }
+                    miniPicture.hidden = true
+                    applyMini()
+                } else if (miniPicture.hidden || miniSwipe.frame != null) {
+                    miniPicture.hidden = false
+                    applyMini()
+                    withFrameNanos { }
+                    withFrameNanos { }
+                    miniSwipe.frame = null
+                }
+            }
+        }
+        DisposableEffect(miniNow) {
+            onDispose { miniPicture.hidden = false; miniSwipe.frame = null; surface.translationX = 0f; surface.translationY = 0f }
+        }
+
         // The one picture.
         AndroidView(
             factory = { surface },
@@ -589,7 +629,7 @@ private fun ActiveVideoHost(
         if (mode == VideoMode.MINI && !pip) {
             Box(
                 Modifier
-                    .offset { rectNow().let { IntOffset((it.left - miniSwipe.dragX).roundToInt(), it.top.roundToInt()) } }
+                    .offset { rectNow().let { IntOffset(it.left.roundToInt(), it.top.roundToInt()) } }
                     .layout { measurable, _ ->
                         val w = rectNow().width.roundToInt().coerceAtLeast(1)
                         val h = rectNow().height.roundToInt().coerceAtLeast(1)
@@ -705,4 +745,29 @@ internal object FullScreen {
     /** The system's auto-rotate switch. */
     fun autoRotate(context: Context): Boolean =
         android.provider.Settings.System.getInt(context.contentResolver, android.provider.Settings.System.ACCELEROMETER_ROTATION, 1) == 1
+}
+
+/** Where the live mini picture goes while a still of it stands in on the swiped bar: far off-screen (the surface is kept, not destroyed). */
+private const val MINI_PICTURE_AWAY = -100_000f
+
+private class MiniPicture {
+    var active = false
+    var hidden = false
+}
+
+/** A still of what the player's SurfaceView shows, or null when it has none (no surface yet, a copy failure). */
+@androidx.annotation.OptIn(UnstableApi::class)
+private suspend fun copyPicture(view: androidx.media3.ui.PlayerView): android.graphics.Bitmap? {
+    val sv = view.videoSurfaceView as? android.view.SurfaceView ?: return null
+    if (sv.width <= 0 || sv.height <= 0 || !sv.holder.surface.isValid) return null
+    val bitmap = android.graphics.Bitmap.createBitmap(sv.width, sv.height, android.graphics.Bitmap.Config.ARGB_8888)
+    return kotlinx.coroutines.suspendCancellableCoroutine { c ->
+        try {
+            android.view.PixelCopy.request(sv, bitmap, { result ->
+                if (c.isActive) c.resumeWith(Result.success(if (result == android.view.PixelCopy.SUCCESS) bitmap else null))
+            }, android.os.Handler(android.os.Looper.getMainLooper()))
+        } catch (e: IllegalArgumentException) {
+            c.resumeWith(Result.success(null))
+        }
+    }
 }
