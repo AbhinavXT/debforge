@@ -1,0 +1,75 @@
+name: Test build
+
+# Pushing to a test branch builds a release-signed APK and attaches it to a
+# DRAFT GitHub Release named "test-build". Drafts are visible only to people
+# with write access, have no tag, and are ignored by Obtainium and F-Droid.
+# Nothing here creates a tag or a public release.
+on:
+    push:
+        branches: ["media-downloads", "test/**"]
+
+permissions:
+    contents: write
+
+concurrency:
+    group: test-build
+    cancel-in-progress: true
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        timeout-minutes: 45
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Make gradlew executable
+              run: chmod +x gradlew
+
+            - uses: actions/setup-java@v4
+              with:
+                  distribution: temurin
+                  java-version: "21"
+
+            - uses: gradle/actions/setup-gradle@v4
+
+            - name: Restore signing keystore
+              env:
+                  KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+              run: |
+                  if [ -z "$KEYSTORE_BASE64" ]; then
+                    echo "::error::KEYSTORE_BASE64 secret is not set"; exit 1
+                  fi
+                  echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
+                  echo "DEBFORGE_KEYSTORE=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
+
+            - name: Build signed release APK
+              env:
+                  DEBFORGE_KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+                  DEBFORGE_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+                  DEBFORGE_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+              run: ./gradlew --stacktrace assembleRelease
+
+            - name: Collect APK
+              run: |
+                  apk=$(ls app/build/outputs/apk/release/*.apk | head -n1)
+                  if [[ "$apk" == *unsigned* ]]; then
+                    echo "::error::APK is unsigned - check the keystore secrets"; exit 1
+                  fi
+                  short=$(git rev-parse --short HEAD)
+                  out="DebForge-test-${short}.apk"
+                  cp "$apk" "$out"
+                  sha256sum "$out" > "$out.sha256"
+                  echo "APK=$out" >> "$GITHUB_ENV"
+                  echo "SHORT=$short" >> "$GITHUB_ENV"
+
+            - name: Replace the draft test release
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              run: |
+                  # Remove earlier test drafts (drafts only; never a published release).
+                  gh api "repos/${GITHUB_REPOSITORY}/releases" --paginate \
+                    --jq '.[] | select(.draft and .name == "test-build") | .id' |
+                    while read -r id; do gh api -X DELETE "repos/${GITHUB_REPOSITORY}/releases/$id"; done
+                  gh release create "test-build-${SHORT}" "$APK" "$APK.sha256" \
+                    --draft --target "$GITHUB_SHA" --title "test-build" \
+                    --notes "Private test build of ${GITHUB_REF_NAME} at ${SHORT}. Draft: not public, no tag."
