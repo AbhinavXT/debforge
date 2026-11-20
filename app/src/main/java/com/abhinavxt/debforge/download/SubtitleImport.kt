@@ -73,16 +73,25 @@ object SubtitleFiles {
     }
 
     /**
-     * The name for the copy: "<base>.<ext>", or "<base>.1.<ext>", "<base>.2.<ext>"… when [taken] (compared
-     * ignoring case) already has it. [base] is the video's name without its extension.
+     * The name for the copy: "<base>.<ext>", or with a known [lang] "<base>.<lang>.<ext>" (so it reads back as that
+     * language); "<base>.1.<lang>.<ext>", "<base>.2.<lang>.<ext>"… (the language stays last) when [taken] (compared ignoring case)
+     * already has it. [base] is the video's name without its extension.
      */
-    fun targetName(base: String, ext: String, taken: Collection<String>): String {
+    fun targetName(base: String, ext: String, taken: Collection<String>, lang: String? = null): String {
         val used = taken.mapTo(HashSet()) { it.lowercase() }
-        var name = "$base.$ext"
+        val tag = if (lang.isNullOrBlank()) "" else ".${lang.lowercase()}"
+        var name = "$base$tag.$ext"
         var n = 1
-        while (name.lowercase() in used) name = "$base.${n++}.$ext"
+        while (name.lowercase() in used) name = "$base.${n++}$tag.$ext"
         return name
     }
+
+    /** The first of [names] that belongs to [base] with extension [ext] and whose content ([read]) equals [bytes]. */
+    fun identicalName(base: String, ext: String, names: Collection<String>, bytes: ByteArray, read: (String) -> ByteArray?): String? =
+        names.firstOrNull {
+            it.startsWith("$base.", ignoreCase = true) && it.endsWith(".$ext", ignoreCase = true) &&
+                read(it)?.contentEquals(bytes) == true
+        }
 }
 
 /**
@@ -103,8 +112,6 @@ class SubtitleImporter @Inject constructor(
     data class Added(val name: String, val uri: Uri)
 
     suspend fun add(videoId: String, picked: Uri): Added = withContext(Dispatchers.IO) {
-        val videoPath = downloadDao.getById(videoId)?.finalFilePath?.takeIf { LocalFiles.exists(it) }
-            ?: throw Problem(R.string.player_subs_file_failed)
         val resolver = context.contentResolver
         val displayName = try {
             resolver.query(picked, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)?.use {
@@ -136,9 +143,24 @@ class SubtitleImporter @Inject constructor(
             throw Problem(R.string.player_subs_file_invalid)
         }
 
+        save(videoId, ext, bytes, null)
+    }
+
+    /**
+     * Saves [bytes] as a subtitle of type [ext] (language [lang] when known) next to the video [videoId], or in app
+     * storage when that folder can't be written. A copy with identical content already there is reused, not duplicated.
+     */
+    suspend fun save(videoId: String, ext: String, bytes: ByteArray, lang: String?): Added = withContext(Dispatchers.IO) {
+        val videoPath = downloadDao.getById(videoId)?.finalFilePath?.takeIf { LocalFiles.exists(it) }
+            ?: throw Problem(R.string.player_subs_file_failed)
         val base = LocalFiles.name(videoPath).substringBeforeLast('.')
-        val taken = LocalFiles.subtitleSiblings(context, videoPath).keys + fallbackFiles(videoId).map { it.name }
-        val name = SubtitleFiles.targetName(base, ext, taken + LocalFiles.name(videoPath))
+        val existing = LocalFiles.subtitleSiblings(context, videoPath) + appStorageSubtitles(context, videoId)
+        SubtitleFiles.identicalName(base, ext, existing.keys, bytes) { name ->
+            runCatching {
+                context.contentResolver.openInputStream(existing.getValue(name))?.use { it.readBytes() }
+            }.getOrNull()
+        }?.let { return@withContext Added(it, existing.getValue(it)) }
+        val name = SubtitleFiles.targetName(base, ext, existing.keys + LocalFiles.name(videoPath), lang)
         try {
             Added(name, writeNextToVideo(videoPath, name, bytes))
         } catch (e: Exception) {
@@ -184,8 +206,6 @@ class SubtitleImporter @Inject constructor(
     }
 
     private fun fallbackDir(videoId: String) = fallbackDir(context, videoId)
-
-    private fun fallbackFiles(videoId: String): List<File> = fallbackSubtitles(context, videoId).keys.map { File(it) }
 
     companion object {
         private fun fallbackDir(context: Context, videoId: String) =

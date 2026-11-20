@@ -87,5 +87,13 @@ fun timingKeyFor(
         val name = url.substringBefore('?').substringAfterLast('/').ifEmpty { return null }
         return "local:$name|${videoId.orEmpty()}"
     }
+    if (url.startsWith("content:")) {
+        // A sidecar next to the video, linked through the file provider or the picked folder: the file name is the last
+        // part of the (possibly percent-encoded) path.
+        val path = url.substringBefore('?').substringAfterLast('/')
+        val decoded = runCatching { java.net.URLDecoder.decode(path.replace("+", "%2B"), "UTF-8") }.getOrDefault(path)
+        val name = decoded.substringAfterLast('/').substringAfterLast(':').ifEmpty { return null }
+        return "local:$name|${videoId.orEmpty()}"
+    }
     return null
 }

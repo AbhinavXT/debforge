@@ -59,6 +59,8 @@ class SubtitleTimingTest {
         assertEquals("os:42", timingKeyFor("v1", "file:///x/a.srt", null, null, 42))
         assertEquals("REAL_DEBRID:abc", timingKeyFor("v1", "https://x/y", "REAL_DEBRID", "abc"))
         assertEquals("local:Movie.en.srt|v1", timingKeyFor("v1", "file:///data/Movie.en.srt", null, null))
+        assertEquals("local:Movie.en.srt|v1", timingKeyFor("v1", "content://x.files/dl/Movie.en.srt", null, null))
+        assertEquals("local:Movie.en.srt|v1", timingKeyFor("v1", "content://com.android.externalstorage.documents/tree/p%3AM/document/p%3AM%2FMovie.en.srt", null, null))
         assertEquals("local:a.srt|", timingKeyFor(null, "/sdcard/a.srt", null, null))
         assertNull(timingKeyFor("v1", "https://x/y", null, null))
     }

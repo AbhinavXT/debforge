@@ -43,7 +43,28 @@ class SubtitleFilesTest {
         assertEquals("Movie.vtt", SubtitleFiles.targetName("Movie", "vtt", listOf("Movie.srt")))
     }
 
-    private val SRT = "1\n00:00:01,000 --> 00:00:02,000\nHi"
+    @Test fun targetNameIncludesLanguage() {
+        assertEquals("Movie.en.srt", SubtitleFiles.targetName("Movie", "srt", listOf("Movie.mkv"), "EN"))
+        assertEquals("Movie.srt", SubtitleFiles.targetName("Movie", "srt", emptyList(), null))
+        assertEquals("en", com.abhinavxt.debforge.domain.Subtitles.describe("Movie.en.srt").first)
+    }
+
+    @Test fun targetNameWithLanguageAvoidsCollisions() {
+        assertEquals("Movie.1.en.srt", SubtitleFiles.targetName("Movie", "srt", listOf("movie.EN.srt"), "en"))
+        assertEquals("Movie.2.en.srt", SubtitleFiles.targetName("Movie", "srt", listOf("Movie.en.srt", "Movie.1.en.srt"), "en"))
+        assertEquals("en", com.abhinavxt.debforge.domain.Subtitles.describe("Movie.1.en.srt").first)
+    }
+
+    @Test fun identicalFileIsReused() {
+        val bytes = "same".toByteArray()
+        val files = mapOf("Movie.en.srt" to "other".toByteArray(), "Movie.1.en.srt" to bytes, "Other.en.srt" to bytes)
+        val names = files.keys
+        assertEquals("Movie.1.en.srt", SubtitleFiles.identicalName("Movie", "srt", names, bytes) { files[it] })
+        assertEquals(null, SubtitleFiles.identicalName("Movie", "srt", names, "new".toByteArray()) { files[it] })
+        assertEquals(null, SubtitleFiles.identicalName("Movie", "vtt", names, bytes) { files[it] })
+    }
+
+    private val SRT ="1\n00:00:01,000 --> 00:00:02,000\nHi"
 
     @Test fun decodeHeadUtf16WithBom() {
         val le = byteArrayOf(0xFF.toByte(), 0xFE.toByte()) + SRT.toByteArray(Charsets.UTF_16LE)

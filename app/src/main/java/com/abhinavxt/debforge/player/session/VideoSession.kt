@@ -904,6 +904,18 @@ class VideoSession @Inject constructor(
     )
 
     /**
+     * An online pick was saved next to the video and now plays as a local file: carry the timing set under its
+     * "os:" key over to the file's key (unless that already has one), so the correction survives either way.
+     */
+    internal suspend fun migrateSubtitleTiming(osFileId: Long, link: SubtitleLink) {
+        val to = timingKey(link.copy(osFileId = null)) ?: return
+        if (timingStore.cached(to) != null) return
+        val old = timingStore.cached("os:$osFileId") ?: runCatching { timingStore.all()["os:$osFileId"] }.getOrNull() ?: return
+        timingStore.updateCache(to, old)
+        runCatching { timingStore.set(to, old) }
+    }
+
+    /**
      * Saves [timing] for the subtitle [key] and reloads the file at the same position, so the subtitle is
      * parsed again with the new times. The chosen subtitle track stays on. Works for both hosts.
      */
