@@ -48,7 +48,9 @@ object ExtraFiles {
     fun hideSubtitles(items: List<DownloadItem>): List<DownloadItem> =
         if (items.any { isSubtitleFile(it.filename) }) items.filterNot { isSubtitleFile(it.filename) } else items
 
-    fun isVideo(item: DownloadItem): Boolean = extensionOf(item.filename) in VIDEO_EXTS
+    fun isVideo(item: DownloadItem): Boolean = isVideoName(item.filename)
+
+    fun isVideoName(filename: String): Boolean = extensionOf(filename) in VIDEO_EXTS
 
     private fun isSample(item: DownloadItem): Boolean =
         isVideo(item) && item.filesize in 0..SAMPLE_MAX_BYTES && SAMPLE_WORD.containsMatchIn(item.filename)

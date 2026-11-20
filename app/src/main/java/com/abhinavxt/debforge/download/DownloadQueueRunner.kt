@@ -54,6 +54,7 @@ class DownloadQueueRunner @Inject constructor(
     private val completionNotifier: CompletionNotifier,
     private val serviceCleaner: ServiceCleaner,
     private val sponsorSegments: com.abhinavxt.debforge.data.sponsor.SponsorSegmentRepository,
+    private val subtitleFetcher: SubtitleFetcher,
     @ApplicationContext private val context: Context
 ) {
     /**
@@ -319,6 +320,7 @@ class DownloadQueueRunner @Inject constructor(
                         completionNotifier.notifyCompleted(entity)
                         serviceCleaner.onCompleted(entity)
                         prefetchSponsorSegments(entity)
+                        scope.launch { subtitleFetcher.fetchFor(entity) }
                     }
                     null -> Unit
                 }
