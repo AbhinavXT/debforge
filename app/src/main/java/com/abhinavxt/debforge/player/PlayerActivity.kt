@@ -16,16 +16,8 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.graphics.Color
-import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
-import android.util.TypedValue
-import android.view.Gravity
-import android.view.MotionEvent
 import android.view.View
-import android.view.ViewGroup
-import android.widget.FrameLayout
-import android.widget.LinearLayout
-import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.annotation.OptIn
@@ -35,22 +27,17 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.ui.PlayerView
 import androidx.lifecycle.lifecycleScope
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import com.abhinavxt.debforge.R
 import com.abhinavxt.debforge.domain.ProviderId
 import com.abhinavxt.debforge.domain.SubtitleLink
 import com.abhinavxt.debforge.player.controls.ControlsActions
 import com.abhinavxt.debforge.player.controls.Fill
-import com.abhinavxt.debforge.player.controls.PlayerControls
 import com.abhinavxt.debforge.player.controls.fillLabel
-import com.abhinavxt.debforge.player.gestures.GestureEngine
-import com.abhinavxt.debforge.player.gestures.GestureMath
-import com.abhinavxt.debforge.player.gestures.GestureOverlay
-import com.abhinavxt.debforge.player.gestures.GestureUiState
 import com.abhinavxt.debforge.player.session.VideoHost
 import com.abhinavxt.debforge.player.session.VideoIdentity
+import com.abhinavxt.debforge.player.session.SurfaceMode
 import com.abhinavxt.debforge.player.session.VideoSession
+import com.abhinavxt.debforge.player.session.VideoSurface
 import com.abhinavxt.debforge.player.session.VideoTarget
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -100,7 +87,6 @@ class PlayerActivity : ComponentActivity() {
     /** The video this screen shows ([VideoSession.open]); another token there means it was replaced. */
     private var token = 0L
     private val controls get() = session.controls
-    private val gestureUi get() = session.gestureUi
     private val player get() = session.player
 
     // --- picture-in-picture ---
@@ -119,35 +105,15 @@ class PlayerActivity : ComponentActivity() {
         }
     }
 
-    private lateinit var playerView: PlayerView
-    private lateinit var titleView: TextView
-    private lateinit var startOverView: TextView
-    private lateinit var nextPlayNow: View
+    /** The video, its controls, cards and touch gestures (FULL: the whole screen). */
+    private lateinit var surface: VideoSurface
+    private val playerView get() = surface.playerView
+    private val gestureHandler = android.os.Handler(android.os.Looper.getMainLooper())
 
-    // --- touch gestures ---
-    /** Settings → "Touch gestures". */
-    private var gesturesEnabled = true
-    private var gestureEngine: GestureEngine? = null
-    /** The current touch belongs to the gestures (not to a button). */
-    private var gesturing = false
-    /** Compose layer over the video: DebForge's controls (not on TV) and the gesture feedback. */
-    private lateinit var gestureOverlay: androidx.compose.ui.platform.ComposeView
     /** The engine's controls actions plus this screen's own (back, rotate, fill, PiP…). */
     private lateinit var controlsActions: ControlsActions
     /** The user turned the screen with the rotate button: stop following the video's shape. */
     private var userRotated = false
-
-    // --- stats for nerds ---
-    private lateinit var statsView: TextView
-    private lateinit var skipView: TextView
-
-    private val gestureHandler = android.os.Handler(android.os.Looper.getMainLooper())
-    private val gestureTimer = Runnable {
-        gestureEngine?.timer(android.os.SystemClock.uptimeMillis())
-        scheduleGestureTimer()
-    }
-    /** Pinch zoom of the picture (1 = fit). */
-    private var zoom = 1f
 
     private var networkDialog: AlertDialog? = null
 
@@ -158,9 +124,6 @@ class PlayerActivity : ComponentActivity() {
     private val cancelNextOnBack = object : androidx.activity.OnBackPressedCallback(false) {
         override fun handleOnBackPressed() = session.cancelNext()
     }
-    private lateinit var nextCard: View
-    private lateinit var nextTitle: TextView
-    private lateinit var nextCountdown: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -184,9 +147,14 @@ class PlayerActivity : ComponentActivity() {
             )
         }
         controlsActions = ScreenActions(session.actions)
+        surface = VideoSurface(
+            this, session, settings, { window }, isTv, controlsActions, SurfaceMode.FULL
+        ).apply {
+            onControllerVisibility = { visible -> if (visible) showSystemBars() else hideSystemBars() }
+        }
         lifecycleScope.launch {
             pipAllowed = settings.pipFlow.first()
-            gesturesEnabled = settings.playerGesturesFlow.first()
+            surface.gesturesEnabled = settings.playerGesturesFlow.first()
             controls.pipAvailable = pipSupported && pipAllowed
             updatePip()
         }
@@ -204,136 +172,7 @@ class PlayerActivity : ComponentActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         window.decorView.setBackgroundColor(Color.BLACK)
 
-        playerView = PlayerView(this).apply {
-            // Phones and tablets: DebForge's controls (PlayerControls). TV: Media3's, for the remote.
-            useController = isTv
-            // A spinner over the video while it loads (Media3's controller showed it on its own).
-            if (!isTv) setShowBuffering(PlayerView.SHOW_BUFFERING_WHEN_PLAYING)
-            setShowSubtitleButton(true)
-            setShowNextButton(false)
-            setShowPreviousButton(false)
-            keepScreenOn = true
-            setBackgroundColor(Color.BLACK)
-            resizeMode = resizeModeFor(controls.fill)
-        }
-        titleView = TextView(this).apply {
-            text = session.title
-            setTextColor(Color.WHITE)
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f)
-            maxLines = 1
-            ellipsize = android.text.TextUtils.TruncateAt.END
-            val pad = dp(16)
-            setPadding(pad, pad, pad, dp(28))
-            // Soft top scrim so the title reads over bright video.
-            background = GradientDrawable(
-                GradientDrawable.Orientation.TOP_BOTTOM,
-                intArrayOf(0x99000000.toInt(), Color.TRANSPARENT)
-            )
-        }
-        if (!isTv) titleView.visibility = View.GONE // the controls have their own title bar
-        // TV: the title shows and hides together with Media3's controls.
-        playerView.setControllerVisibilityListener(PlayerView.ControllerVisibilityListener { visibility ->
-            titleView.visibility = visibility
-            if (visibility == View.VISIBLE) showSystemBars() else hideSystemBars()
-        })
-
-        // "Start over" after resuming mid-way; hides itself after a few seconds.
-        startOverView = TextView(this).apply {
-            text = getString(R.string.player_start_over)
-            setTextColor(Color.WHITE)
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
-            val h = dp(16); val v = dp(10)
-            setPadding(h, v, h, v)
-            background = focusable(0xCC202020.toInt(), dp(20))
-            visibility = View.GONE
-            isFocusable = true // reachable with the TV remote
-            setOnClickListener {
-                player?.seekTo(0)
-                visibility = View.GONE
-            }
-        }
-
-        nextCard = buildNextCard()
-
-        // Stats for nerds (More, or the remote's Info key on TV).
-        statsView = TextView(this).apply {
-            setTextColor(Color.WHITE)
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f)
-            typeface = android.graphics.Typeface.MONOSPACE
-            val pad = dp(10)
-            setPadding(pad, pad, pad, pad)
-            setBackgroundColor(0xB3000000.toInt())
-            visibility = View.GONE
-        }
-
-        // "Skip intro" / "Skip recap" / "Skip credits": focusable for the TV remote.
-        skipView = TextView(this).apply {
-            setTextColor(Color.WHITE)
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f)
-            typeface = android.graphics.Typeface.DEFAULT_BOLD
-            val h = dp(20); val v = dp(12)
-            setPadding(h, v, h, v)
-            background = focusable(0xE6202020.toInt(), dp(24))
-            visibility = View.GONE
-            isFocusable = true
-        }
-
-        // What the gestures show (seek taps, levels, speed…). Never takes touches.
-        val shownControls = controls
-        val shownGestureUi = gestureUi
-        gestureOverlay = androidx.compose.ui.platform.ComposeView(this).apply {
-            setContent {
-                val dynamic by settings.dynamicColorFlow.collectAsState(initial = false)
-                val themeName by settings.appThemeFlow.collectAsState(initial = null)
-                com.abhinavxt.debforge.ui.theme.DebforgeTheme(
-                    darkTheme = true,
-                    dynamicColor = dynamic,
-                    appTheme = com.abhinavxt.debforge.ui.theme.AppTheme.fromName(themeName)
-                ) {
-                    androidx.compose.foundation.layout.Box {
-                        if (!isTv) PlayerControls(shownControls, controlsActions)
-                        GestureOverlay(shownGestureUi)
-                    }
-                }
-            }
-        }
-        gestureEngine = GestureEngine(
-            GestureEngine.Config(
-                width = resources.displayMetrics.widthPixels.toFloat(),
-                height = resources.displayMetrics.heightPixels.toFloat(),
-                density = resources.displayMetrics.density
-            ),
-            GestureActions()
-        )
-
-        setContentView(FrameLayout(this).apply {
-            addView(playerView, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
-            addView(gestureOverlay, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
-            addView(
-                titleView,
-                FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.TOP)
-            )
-            addView(
-                startOverView,
-                FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM or Gravity.START)
-                    .apply { setMargins(dp(24), 0, 0, dp(if (isTv) 96 else 150)) }
-            )
-            addView(
-                statsView,
-                FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.TOP or Gravity.START)
-                    .apply { setMargins(dp(16), dp(72), dp(16), 0) }
-            )
-            addView(
-                skipView,
-                FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM or Gravity.END)
-                    .apply { setMargins(0, 0, dp(24), dp(if (isTv) 96 else 150)) }
-            )
-            addView(
-                nextCard,
-                FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM or Gravity.END)
-                    .apply { setMargins(0, 0, dp(24), dp(if (isTv) 96 else 150)) }
-            )
-        })
+        setContentView(surface)
         session.attach(playerView, host)
         hideSystemBars()
         onBackPressedDispatcher.addCallback(this, cancelNextOnBack)
@@ -347,62 +186,30 @@ class PlayerActivity : ComponentActivity() {
         override fun close() = finish()
 
         override fun titleChanged(title: String) {
-            titleView.text = title
+            surface.titleChanged(title)
         }
 
-        override fun showStartOver(show: Boolean) {
-            if (show) {
-                startOverView.visibility = View.VISIBLE
-                if (isTv) startOverView.requestFocus()
-            } else {
-                startOverView.visibility = View.GONE
-            }
-        }
+        override fun showStartOver(show: Boolean) = surface.showStartOver(show)
 
-        override fun showSkip(text: String, onSkip: () -> Unit) {
-            skipView.setOnClickListener {
-                hideSkip()
-                onSkip()
-            }
-            if (skipView.visibility == View.VISIBLE && skipView.text == text) return
-            skipView.text = text
-            skipView.visibility = View.VISIBLE
-            // TV: reachable with OK at once, unless the user is busy in the controller.
-            if (isTv && !playerView.isControllerFullyVisible) skipView.requestFocus()
-        }
+        override fun showSkip(text: String, onSkip: () -> Unit) = surface.showSkip(text, onSkip)
 
-        override fun hideSkip() {
-            if (skipView.visibility != View.GONE) skipView.visibility = View.GONE
-        }
+        override fun hideSkip() = surface.hideSkip()
 
         override fun showNextCard(text: String) {
-            nextTitle.text = text
-            if (!isInPictureInPictureMode) nextCard.visibility = View.VISIBLE
+            surface.showNextCard(text)
             cancelNextOnBack.isEnabled = true
-            if (isTv) nextPlayNow.requestFocus()
         }
 
-        override fun setNextCountdown(text: String?) {
-            if (text == null) {
-                nextCountdown.visibility = View.GONE
-            } else {
-                nextCountdown.visibility = View.VISIBLE
-                nextCountdown.text = text
-            }
-        }
+        override fun setNextCountdown(text: String?) = surface.setNextCountdown(text)
 
         override fun hideNextCard() {
             cancelNextOnBack.isEnabled = false
-            if (::nextCard.isInitialized) nextCard.visibility = View.GONE
+            if (::surface.isInitialized) surface.hideNextCard()
         }
 
-        override fun showStats(on: Boolean) {
-            statsView.visibility = if (on) View.VISIBLE else View.GONE
-        }
+        override fun showStats(on: Boolean) = surface.showStats(on)
 
-        override fun statsText(text: String) {
-            statsView.text = text
-        }
+        override fun statsText(text: String) = surface.statsText(text)
 
         override fun updatePip() = this@PlayerActivity.updatePip()
 
@@ -454,18 +261,6 @@ class PlayerActivity : ComponentActivity() {
         }
     }
 
-    /** Rounded background with a white ring when focused (TV remote). */
-    private fun focusable(color: Int, radius: Int): android.graphics.drawable.Drawable {
-        fun shape(ring: Boolean) = GradientDrawable().apply {
-            cornerRadius = radius.toFloat()
-            setColor(color)
-            if (ring) setStroke(dp(2), Color.WHITE)
-        }
-        return android.graphics.drawable.StateListDrawable().apply {
-            addState(intArrayOf(android.R.attr.state_focused), shape(ring = true))
-            addState(intArrayOf(), shape(ring = false))
-        }
-    }
 
     /**
      * Keys go to PlayerView (D-pad shows the controls, media keys play and
@@ -488,80 +283,11 @@ class PlayerActivity : ComponentActivity() {
                 android.view.KeyEvent.KEYCODE_MENU -> if (isTv && showTvOptions()) return true
             }
         }
-        val overlayFocused = focus != null && (focus === startOverView || focus === skipView || isInside(focus, nextCard))
-        if (!overlayFocused && ::playerView.isInitialized && playerView.dispatchKeyEvent(event)) return true
+        val overlayFocused = ::surface.isInitialized && surface.ownsFocus(focus)
+        if (!overlayFocused && ::surface.isInitialized && playerView.dispatchKeyEvent(event)) return true
         return super.dispatchKeyEvent(event)
     }
 
-    // --- gestures ---------------------------------------------------------------
-
-    /**
-     * Touches on the video go to the gestures; touches on a button, the seek
-     * bar or one of DebForge's cards go to them as usual. Decided once per
-     * touch, when the finger goes down.
-     */
-    override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
-        val engine = gestureEngine
-        if (ev.actionMasked == MotionEvent.ACTION_DOWN) {
-            // Even with gestures off, taps on the video still show / hide the controls.
-            gesturing = engine != null && !isInPictureInPictureMode && !touchesControl(ev)
-            if (gesturing && playerView.width > 0) engine?.resize(playerView.width.toFloat(), playerView.height.toFloat())
-        }
-        if (!gesturing || engine == null) return super.dispatchTouchEvent(ev)
-        val t = ev.eventTime
-        when (ev.actionMasked) {
-            MotionEvent.ACTION_DOWN -> engine.down(ev.x, ev.y, t)
-            MotionEvent.ACTION_POINTER_DOWN -> engine.pointerDown(ev.pointerCount, span(ev), t)
-            MotionEvent.ACTION_MOVE -> engine.move(ev.getX(0), ev.getY(0), t, ev.pointerCount, span(ev))
-            MotionEvent.ACTION_POINTER_UP -> engine.pointerUp(ev.pointerCount - 1, t)
-            MotionEvent.ACTION_UP -> engine.up(ev.x, ev.y, t)
-            MotionEvent.ACTION_CANCEL -> engine.cancel(t)
-        }
-        scheduleGestureTimer()
-        return true
-    }
-
-    private fun span(ev: MotionEvent): Float =
-        if (ev.pointerCount < 2) 0f else kotlin.math.hypot(ev.getX(0) - ev.getX(1), ev.getY(0) - ev.getY(1))
-
-    private fun scheduleGestureTimer() {
-        gestureHandler.removeCallbacks(gestureTimer)
-        val due = gestureEngine?.deadline ?: return
-        gestureHandler.postDelayed(gestureTimer, (due - android.os.SystemClock.uptimeMillis()).coerceAtLeast(0))
-    }
-
-    /** Is ([ev].x, [ev].y) on something tappable: a controller button, the seek bar, a card? */
-    private fun touchesControl(ev: MotionEvent): Boolean {
-        val x = ev.x.toInt()
-        val y = ev.y.toInt()
-        if (hit(startOverView, x, y) || hit(skipView, x, y) || hit(nextCard, x, y)) return true
-        if (!isTv) return controls.isOnControl(ev.x, ev.y)
-        if (!playerView.isControllerFullyVisible) return false
-        val content = playerView.findViewById<View>(androidx.media3.ui.R.id.exo_content_frame)
-        fun find(v: View): Boolean {
-            if (v === content || !hit(v, x, y)) return false
-            if (v !== playerView && (v.hasOnClickListeners() || v is androidx.media3.ui.TimeBar)) return true
-            return v is ViewGroup && (0 until v.childCount).any { find(v.getChildAt(it)) }
-        }
-        return find(playerView)
-    }
-
-    private fun hit(v: View, x: Int, y: Int): Boolean {
-        if (!v.isShown) return false
-        val r = android.graphics.Rect()
-        return v.getGlobalVisibleRect(r) && r.contains(x, y)
-    }
-
-    private fun applyZoom() {
-        val frame = playerView.findViewById<View>(androidx.media3.ui.R.id.exo_content_frame) ?: return
-        val z = if (isInPictureInPictureMode) 1f else zoom
-        frame.scaleX = z
-        frame.scaleY = z
-    }
-
-    private fun haptic(constant: Int) {
-        window.decorView.performHapticFeedback(constant)
-    }
 
     /** TV: the remote's MENU key offers "Play as audio" (Media3's controller has no slot for it). False when there is nothing to offer. */
     private fun showTvOptions(): Boolean {
@@ -572,11 +298,6 @@ class PlayerActivity : ComponentActivity() {
         return true
     }
 
-    private fun resizeModeFor(fill: Fill) = when (fill) {
-        Fill.FIT -> androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FIT
-        Fill.CROP -> androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_ZOOM
-        Fill.STRETCH -> androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FILL
-    }
 
     /** The engine's controls actions, plus what needs this screen. */
     private inner class ScreenActions(engine: ControlsActions) : ControlsActions by engine {
@@ -596,10 +317,7 @@ class PlayerActivity : ComponentActivity() {
         }
 
         override fun setFill(fill: Fill) {
-            controls.fill = fill
-            playerView.resizeMode = resizeModeFor(fill)
-            zoom = 1f // pinch zoom starts over from the new fill
-            applyZoom()
+            surface.setFill(fill)
             session.showMessage(getString(fillLabel(fill)))
         }
 
@@ -623,9 +341,9 @@ class PlayerActivity : ComponentActivity() {
      * Pictures/DebForge. No permission needed: MediaStore owns the folder.
      */
     private fun takeScreenshot() {
-        val surface = playerView.videoSurfaceView as? android.view.SurfaceView
+        val videoView = playerView.videoSurfaceView as? android.view.SurfaceView
         val v = player?.videoSize
-        if (surface == null || v == null || v.width <= 0 || v.height <= 0) {
+        if (videoView == null || v == null || v.width <= 0 || v.height <= 0) {
             session.showMessage(getString(R.string.player_screenshot_failed))
             return
         }
@@ -635,7 +353,7 @@ class PlayerActivity : ComponentActivity() {
             (w * scale).toInt().coerceAtLeast(1), (v.height * scale).toInt().coerceAtLeast(1), android.graphics.Bitmap.Config.ARGB_8888
         )
         val title = session.title
-        android.view.PixelCopy.request(surface, bitmap, { result ->
+        android.view.PixelCopy.request(videoView, bitmap, { result ->
             if (result != android.view.PixelCopy.SUCCESS) {
                 session.showMessage(getString(R.string.player_screenshot_failed))
                 return@request
@@ -669,154 +387,6 @@ class PlayerActivity : ComponentActivity() {
         true
     }.getOrDefault(false)
 
-    /** What each gesture does to the player. */
-    private inner class GestureActions : GestureEngine.Callbacks {
-        private var seekAnchor: Long? = null
-        private var speedBefore = 1f
-        private var zoomAtStart = 1f
-        private var brightness = 0.5f
-        private var volume = 0f
-        private val audio by lazy { getSystemService(AUDIO_SERVICE) as android.media.AudioManager }
-
-        override fun onSingleTap() {
-            if (!isTv) controls.toggle()
-            else if (playerView.isControllerFullyVisible) playerView.hideController() else playerView.showController()
-        }
-
-        override fun onCenterDoubleTap() {
-            if (!gesturesEnabled) return onSingleTap()
-            val p = player ?: return
-            if (p.isPlaying) p.pause() else p.play()
-        }
-
-        override fun onSeekTaps(forward: Boolean, seconds: Int) {
-            if (!gesturesEnabled) return
-            val p = player ?: return
-            val anchor = seekAnchor ?: p.currentPosition.also { seekAnchor = it }
-            p.seekTo(GestureMath.seekTarget(anchor, forward, seconds, session.durationOrNull()))
-            session.keepShowing("seek")
-            gestureUi.seekTaps = GestureUiState.SeekTaps(forward, seconds)
-        }
-
-        override fun onSeekTapsEnd() {
-            seekAnchor = null
-            session.hideLater("seek", 300) { gestureUi.seekTaps = null }
-        }
-
-        override fun onVerticalStart(side: GestureEngine.Side) {
-            if (!gesturesEnabled) return
-            if (side == GestureEngine.Side.LEFT) {
-                val current = window.attributes.screenBrightness
-                brightness = if (current >= 0f) current else systemBrightness()
-            } else {
-                val max = audio.getStreamMaxVolume(android.media.AudioManager.STREAM_MUSIC).coerceAtLeast(1)
-                val system = audio.getStreamVolume(android.media.AudioManager.STREAM_MUSIC)
-                // At the maximum with a boost on: carry on from the boost.
-                volume = if (system >= max && session.boostLevel > 1f) session.boostLevel else system.toFloat() / max
-            }
-        }
-
-        override fun onVertical(side: GestureEngine.Side, delta: Float) {
-            if (!gesturesEnabled) return
-            session.keepShowing("level")
-            if (side == GestureEngine.Side.LEFT) {
-                brightness = GestureMath.level(brightness, delta, min = 0.01f)
-                window.attributes = window.attributes.apply { screenBrightness = brightness }
-                gestureUi.level = GestureUiState.Level(GestureUiState.LevelKind.BRIGHTNESS, brightness)
-            } else {
-                // Past 100 % (with the loudness enhancer available): boost.
-                val top = if (session.canBoost) GestureMath.MAX_VOLUME_LEVEL else 1f
-                volume = GestureMath.level(volume, delta, max = top)
-                val max = audio.getStreamMaxVolume(android.media.AudioManager.STREAM_MUSIC)
-                session.setBoost(volume.coerceAtLeast(1f))
-                val index = kotlin.math.round(volume.coerceAtMost(1f) * max).toInt()
-                if (index != audio.getStreamVolume(android.media.AudioManager.STREAM_MUSIC)) {
-                    // Can be refused (Do Not Disturb): the bar still follows the finger.
-                    runCatching { audio.setStreamVolume(android.media.AudioManager.STREAM_MUSIC, index, 0) }
-                }
-                gestureUi.level = GestureUiState.Level(GestureUiState.LevelKind.VOLUME, volume, max = top)
-            }
-        }
-
-        override fun onVerticalEnd(side: GestureEngine.Side) {
-            session.hideLater("level", 700) { gestureUi.level = null }
-        }
-
-        private fun systemBrightness(): Float =
-            runCatching {
-                android.provider.Settings.System.getInt(contentResolver, android.provider.Settings.System.SCREEN_BRIGHTNESS) / 255f
-            }.getOrDefault(0.5f)
-
-        private var scrubbing = false
-
-        override fun onScrubStart() {
-            if (!gesturesEnabled) return
-            scrubbing = true
-            session.actions.beginScrub()
-        }
-
-        override fun onScrub(fraction: Float) {
-            if (scrubbing) session.actions.scrubToTarget(GestureMath.scrubTarget(session.actions.scrubAnchor, fraction, session.durationOrNull()))
-        }
-
-        override fun onScrubEnd() {
-            if (scrubbing) session.actions.endScrub(cancel = false)
-            scrubbing = false
-        }
-
-        override fun onScrubCancel() {
-            if (scrubbing) session.actions.endScrub(cancel = true)
-            scrubbing = false
-        }
-
-        override fun onLongPressStart(): Boolean {
-            if (!gesturesEnabled) return false
-            val p = player ?: return false
-            if (!p.isPlaying) return false
-            speedBefore = p.playbackParameters.speed
-            p.setPlaybackSpeed(GestureMath.HOLD_SPEED)
-            gestureUi.speed = GestureMath.HOLD_SPEED
-            haptic(android.view.HapticFeedbackConstants.LONG_PRESS)
-            return true
-        }
-
-        override fun onLongPressSlide(steps: Int) {
-            val speed = GestureMath.speedAfterSlide(steps)
-            if (speed == gestureUi.speed) return
-            player?.setPlaybackSpeed(speed)
-            gestureUi.speed = speed
-            haptic(android.view.HapticFeedbackConstants.CLOCK_TICK)
-        }
-
-        override fun onLongPressEnd() {
-            player?.setPlaybackSpeed(speedBefore)
-            gestureUi.speed = null
-        }
-
-        private var pinching = false
-
-        override fun onPinchStart() {
-            pinching = gesturesEnabled
-            zoomAtStart = zoom
-            session.keepShowing("zoom")
-        }
-
-        override fun onPinch(scale: Float) {
-            if (!pinching) return
-            zoom = GestureMath.zoom(zoomAtStart, scale)
-            applyZoom()
-            gestureUi.zoomPercent = (zoom * 100).toInt()
-        }
-
-        override fun onPinchEnd() {
-            if (!pinching) return
-            pinching = false
-            zoom = GestureMath.snapZoom(zoom)
-            applyZoom()
-            gestureUi.zoomPercent = (zoom * 100).toInt()
-            session.hideLater("zoom", 800) { gestureUi.zoomPercent = null }
-        }
-    }
 
     /** A keyboard or media buttons on a phone (Media3's controller, which handled them, is off). */
     private fun handlePhoneKey(event: android.view.KeyEvent): Boolean {
@@ -836,14 +406,6 @@ class PlayerActivity : ComponentActivity() {
         return true
     }
 
-    private fun isInside(view: View, parent: View): Boolean {
-        var v: View? = view
-        while (v != null) {
-            if (v === parent) return true
-            v = v.parent as? View
-        }
-        return false
-    }
 
     /** Queues the stream's video like the YouTube preview does, tells the user what happened, then closes. */
     private fun downloadFailedStream(yt: com.abhinavxt.debforge.ui.browse.YtStream) {
@@ -907,7 +469,7 @@ class PlayerActivity : ComponentActivity() {
             builder.setAspectRatio(Rational((ratio * 1000).toInt(), 1000))
         }
         val bounds = android.graphics.Rect()
-        if (::playerView.isInitialized && playerView.getGlobalVisibleRect(bounds)) builder.setSourceRectHint(bounds)
+        if (::surface.isInitialized && playerView.getGlobalVisibleRect(bounds)) builder.setSourceRectHint(bounds)
         val playing = p?.isPlaying == true
         val actions = buildList {
             add(
@@ -961,19 +523,11 @@ class PlayerActivity : ComponentActivity() {
     override fun onPictureInPictureModeChanged(isInPictureInPictureMode: Boolean, newConfig: android.content.res.Configuration) {
         super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
         // Just the video in the small window: no controls, title or cards.
-        playerView.useController = !isInPictureInPictureMode
-        gestureOverlay.visibility = if (isInPictureInPictureMode) View.GONE else View.VISIBLE
+        surface.setPictureInPicture(isInPictureInPictureMode)
         if (isInPictureInPictureMode) {
             controls.panel = null
             controls.visible = false
             session.hostResumed(token) // in the background service? the window plays it now
-        }
-        applyZoom() // the small window always shows the whole picture
-        if (isInPictureInPictureMode) {
-            playerView.hideController()
-            titleView.visibility = View.GONE
-            startOverView.visibility = View.GONE
-            nextCard.visibility = View.GONE
         } else if (lifecycle.currentState == Lifecycle.State.CREATED) {
             // The window was closed (not expanded): the activity is stopped
             // with nothing to come back to. The position was saved in onStop.
@@ -984,62 +538,16 @@ class PlayerActivity : ComponentActivity() {
     }
 
     override fun onDestroy() {
-        if (::playerView.isInitialized) {
+        if (::surface.isInitialized) {
             session.hostDestroyed(token, isFinishing)
             session.detach(playerView)
         }
+        if (::surface.isInitialized) surface.release()
         gestureHandler.removeCallbacksAndMessages(null)
         runCatching { unregisterReceiver(pipReceiver) }
         super.onDestroy()
     }
 
-    private fun buildNextCard(): View {
-        nextTitle = TextView(this).apply {
-            setTextColor(Color.WHITE)
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f)
-            maxLines = 2
-            ellipsize = android.text.TextUtils.TruncateAt.END
-            maxWidth = dp(280)
-        }
-        nextCountdown = TextView(this).apply {
-            setTextColor(0xCCFFFFFF.toInt())
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
-            setPadding(0, dp(2), 0, dp(10))
-        }
-        fun pill(textRes: Int, primary: Boolean, onClick: () -> Unit) = TextView(this).apply {
-            text = getString(textRes)
-            setTextColor(if (primary) Color.BLACK else Color.WHITE)
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
-            val h = dp(16); val v = dp(8)
-            setPadding(h, v, h, v)
-            background = focusable(if (primary) Color.WHITE else 0x33FFFFFF, dp(18))
-            isFocusable = true // TV remote
-            setOnClickListener { onClick() }
-        }
-        val buttons = LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
-            nextPlayNow = pill(R.string.player_play_now, primary = true) { session.playNext() }
-            addView(nextPlayNow)
-            addView(
-                pill(R.string.action_cancel, primary = false) { session.cancelNext() },
-                LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-                    .apply { marginStart = dp(8) }
-            )
-        }
-        return LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            val pad = dp(16)
-            setPadding(pad, pad, pad, pad)
-            background = GradientDrawable().apply {
-                cornerRadius = dp(16).toFloat()
-                setColor(0xE0181818.toInt())
-            }
-            addView(nextTitle)
-            addView(nextCountdown)
-            addView(buttons)
-            visibility = View.GONE
-        }
-    }
 
     override fun onStart() {
         super.onStart()
@@ -1199,7 +707,6 @@ class PlayerActivity : ComponentActivity() {
         WindowInsetsControllerCompat(window, window.decorView).show(WindowInsetsCompat.Type.systemBars())
     }
 
-    private fun dp(v: Int): Int = (v * resources.displayMetrics.density).toInt()
 
     companion object {
         private const val ACTION_PIP_PLAY_PAUSE = "com.abhinavxt.debforge.player.PIP_PLAY_PAUSE"
