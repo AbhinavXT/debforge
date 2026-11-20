@@ -193,8 +193,8 @@ fun HomeScreen(signedIn: Boolean) {
     val videoExpanded = videoMode == VideoMode.WATCH || videoMode == VideoMode.FULL
     val isTablet = LocalConfiguration.current.smallestScreenWidthDp >= 600
     LaunchedEffect(isTablet) { videoLauncher.isTablet = isTablet }
-    var videoSlot by remember { mutableStateOf(androidx.compose.ui.geometry.Rect.Zero) }
-    val videoPulse = rememberVideoPulse(videoLauncher.session, videoShown)
+    // Written while the mini bar moves (every frame of its slide): kept as a State and read only by the video host.
+    val videoSlot = remember { mutableStateOf(androidx.compose.ui.geometry.Rect.Zero) }
     var videoBarTitle by remember { mutableStateOf("") }
     LaunchedEffect(videoActive, videoRevision) { if (videoShown) videoBarTitle = videoLauncher.session.title }
     val msgFileMissing = stringResource(R.string.dl_file_missing)
@@ -485,12 +485,11 @@ fun HomeScreen(signedIn: Boolean) {
         ) {
             VideoMiniBar(
                 title = videoBarTitle,
-                playing = videoPulse.playing,
-                progress = videoPulse.progress,
+                pulse = rememberVideoPulse(videoLauncher.session),
                 onToggle = { videoLauncher.session.player?.let { if (it.isPlaying) it.pause() else it.play() } },
                 onClose = videoLauncher::close,
                 onExpand = { videoLauncher.dispatch(VideoModeEvent.Expand) },
-                onVideoSlot = { videoSlot = it },
+                onVideoSlot = { videoSlot.value = it },
                 toggleFocus = videoMiniFocus,
             )
         }
@@ -639,7 +638,7 @@ fun HomeScreen(signedIn: Boolean) {
         InAppVideoHost(
             viewModel = videoVm,
             watchViewModel = watchVm,
-            miniSlot = videoSlot,
+            miniSlot = { videoSlot.value },
             isTablet = isTablet,
             onChannel = openChannel,
         )

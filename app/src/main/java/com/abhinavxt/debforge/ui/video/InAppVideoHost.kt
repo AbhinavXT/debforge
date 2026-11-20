@@ -119,14 +119,21 @@ internal fun videoRect(mode: VideoMode, width: Float, height: Float, top: Float,
  * the picture is only resized: no new surface, no black frame, while the user switches tabs under it.
  *
  * Put it last in the app shell's root so it covers the shell; in the mini mode it covers nothing but the
- * picture. [miniSlot] is where [VideoMiniBar] left room for the video, in this host's coordinates.
+ * picture. [miniSlot] is where [VideoMiniBar] left room for the video, in the root's coordinates: read only
+ * here, so the app shell does not recompose while the bar moves.
+ *
+ * Each video gets its own [VideoSurface] (`key(token)`): the surface's controls, gesture overlay and actions are
+ * bound to the engine's per-video state ([VideoSession.controls], `gestureUi`, `actions`), which opening another
+ * video replaces, so a surface kept across videos would show the old video's controls and send its buttons to
+ * a discarded engine. The picture between two videos is black either way: PlayerView closes its shutter for a
+ * new player until the new stream's first frame.
  */
 @androidx.annotation.OptIn(UnstableApi::class)
 @Composable
 fun InAppVideoHost(
     viewModel: VideoHostViewModel,
     watchViewModel: WatchViewModel,
-    miniSlot: Rect,
+    miniSlot: () -> Rect,
     isTablet: Boolean,
     /** A channel name tapped on the watch page: the app opens the channel (the video minimises first). */
     onChannel: (name: String, url: String) -> Unit,
@@ -148,7 +155,7 @@ private fun ActiveVideoHost(
     watchVm: WatchViewModel,
     active: ActiveVideo,
     mode: VideoMode,
-    miniSlot: Rect,
+    miniSlot: () -> Rect,
     isTablet: Boolean,
     onChannel: (String, String) -> Unit,
     pip: Boolean,
@@ -162,6 +169,9 @@ private fun ActiveVideoHost(
     val details by watchVm.details.collectAsStateWithLifecycle()
     val revision by launcher.revision.collectAsStateWithLifecycle()
     var dialog by remember { mutableStateOf<HostDialog?>(null) }
+    val spaceWarning by vm.spaceWarning.collectAsStateWithLifecycle()
+    // More → Rotate in full screen: counted here, turned into an orientation lock below.
+    var rotateScreenRequests by remember { mutableIntStateOf(0) }
 
     // --- the surface and what it asks of this screen ---
     val holder = remember { arrayOfNulls<VideoSurface>(1) }
@@ -172,6 +182,7 @@ private fun ActiveVideoHost(
             onRotate = {
                 launcher.dispatch(if (modeNow == VideoMode.FULL) VideoModeEvent.ExitFull else VideoModeEvent.EnterFull)
             },
+            onRotateScreen = { if (modeNow == VideoMode.FULL) rotateScreenRequests++ },
             onBars = { visible -> if (modeNow == VideoMode.FULL) FullScreen.bars(activity, visible) },
             onClose = launcher::close,
         )
@@ -223,6 +234,7 @@ private fun ActiveVideoHost(
     // --- lifecycle: the engine builds and releases its player with the app's visibility ---
     val lifecycle = androidx.lifecycle.compose.LocalLifecycleOwner.current.lifecycle
     DisposableEffect(active.token) {
+        val controls = session.controls
         session.attach(surface.playerView, engineHost)
         val observer = LifecycleEventObserver { _, event ->
             when (event) {
@@ -243,6 +255,9 @@ private fun ActiveVideoHost(
         lifecycle.addObserver(observer)
         onDispose {
             lifecycle.removeObserver(observer)
+            // The watch page's and full screen's own control layouts end with this host.
+            controls.inline = false
+            controls.exitFullScreen = false
             session.detach(surface.playerView)
             surface.release()
         }
@@ -285,6 +300,10 @@ private fun ActiveVideoHost(
     DisposableEffect(Unit) { onDispose { activity.requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED } }
     // A portrait picture found out late: no landscape hold after all.
     LaunchedEffect(videoPortrait) { if (videoPortrait && lock == OrientationLock.LANDSCAPE) lock = OrientationLock.NONE }
+    val landscapeNow by rememberUpdatedState(landscape)
+    LaunchedEffect(rotateScreenRequests) {
+        if (rotateScreenRequests > 0 && modeNow == VideoMode.FULL) lock = lockOnRotateScreen(landscapeNow)
+    }
     val lockNow by rememberUpdatedState(lock)
     val autoRotateNow by rememberUpdatedState(autoRotate)
     DisposableEffect(lock != OrientationLock.NONE) {
@@ -304,7 +323,9 @@ private fun ActiveVideoHost(
         onDispose { controller.isAppearanceLightStatusBars = before }
     }
 
-    BackHandler(enabled = backBelongsToVideo(mode)) { launcher.dispatch(VideoModeEvent.Back) }
+    // Registered afresh each time the video expands (and on each expanded mode), so it is the newest callback and
+    // wins over a BackHandler a screen under the video registered while it was minimised.
+    if (backBelongsToVideo(mode)) key(mode) { BackHandler { launcher.dispatch(VideoModeEvent.Back) } }
 
     // --- what the watch page shows ---
     var canPlayAsAudio by remember { mutableStateOf(false) }
@@ -336,7 +357,8 @@ private fun ActiveVideoHost(
         WatchActions(
             onChannel = { name, url -> launcher.dispatch(VideoModeEvent.Minimise); onChannel(name, url) },
             onToggleFollow = { watchVm.toggleFollow { Toast.makeText(context, R.string.yt_follow_failed, Toast.LENGTH_LONG).show() } },
-            onOpenRelated = { r -> vm.playRelated(r, loading = { watchVm.show(null, true) }, failed = { watchVm.show(detailsNow.video, false) }) },
+            // The page keeps the playing video's details under the loading state, so a failure can go back to them.
+            onOpenRelated = { r -> vm.playRelated(r, loading = { watchVm.setLoading(true) }, failed = { watchVm.setLoading(false) }) },
             onAddRelatedToQueue = vm::addToQueue,
             onAddToQueue = { detailsNow.video?.let(vm::addToQueue) },
             onDownload = {
@@ -373,6 +395,7 @@ private fun ActiveVideoHost(
     }
 
     HostDialogs(dialog, { dialog = null }, vm, session, actions, launcher::close)
+    spaceWarning?.let { w -> com.abhinavxt.debforge.ui.browse.SpaceWarningDialog(w, vm::confirmSpaceWarning, vm::dismissSpaceWarning) }
 
     // --- layout ---
     val density = LocalDensity.current
@@ -382,9 +405,10 @@ private fun ActiveVideoHost(
         val width = constraints.maxWidth.toFloat()
         val height = constraints.maxHeight.toFloat()
         val top = WindowInsets.statusBars.getTop(density).toFloat()
-        val target = videoRect(if (pip) VideoMode.FULL else mode, width, height, top, isTablet, miniSlot.translate(-origin))
-        val watchRect = videoRect(VideoMode.WATCH, width, height, top, isTablet, miniSlot)
-        val miniRect = videoRect(VideoMode.MINI, width, height, top, isTablet, miniSlot.translate(-origin))
+        val slot = miniSlot().translate(-origin)
+        val target = videoRect(if (pip) VideoMode.FULL else mode, width, height, top, isTablet, slot)
+        val watchRect = videoRect(VideoMode.WATCH, width, height, top, isTablet, slot)
+        val miniRect = videoRect(VideoMode.MINI, width, height, top, isTablet, slot)
         // The picture's rectangle: animated between modes, following the finger while the watch page is dragged down.
         val rectAnim = remember { androidx.compose.animation.core.Animatable(target, Rect.VectorConverter) }
         val pageAlpha = remember { androidx.compose.animation.core.Animatable(1f) }

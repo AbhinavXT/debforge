@@ -32,6 +32,8 @@ class InAppVideoActions(
     private val surface: () -> VideoSurface?,
     private val onBack: () -> Unit,
     private val onRotate: () -> Unit,
+    /** More → Rotate in full screen. */
+    private val onRotateScreen: () -> Unit,
     private val onBars: (Boolean) -> Unit,
     /** Closes the video (leaving it on the TV, or handing it to another player). */
     private val onClose: () -> Unit,
@@ -69,6 +71,7 @@ class InAppVideoActions(
 
     override fun back() = onBack()
     override fun rotate() = onRotate()
+    override fun rotateScreen() = onRotateScreen()
     override fun enterPip() {}
     override fun onBarsVisible(visible: Boolean) = onBars(visible)
 

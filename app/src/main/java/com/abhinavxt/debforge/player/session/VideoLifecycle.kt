@@ -28,7 +28,7 @@ internal class VideoLifecycle(
         /** The audio queue waits, paused, while a video plays. */
         fun parkAudio()
         fun savePosition()
-        /** Tells the parked audio queue where the video stopped. */
+        /** Tells the parked audio queue where the video stopped (the last saved position when the player is gone). */
         fun audioVideoClosed()
         fun buildPlayer()
         fun releasePlayer()
@@ -109,7 +109,9 @@ internal class VideoLifecycle(
         if (!isCurrent(token)) return
         steps.stopTicking()
         steps.savePosition()
-        if (finishing && !handingOff && !inBackground && !closedReported && steps.hasPlayer()) {
+        // Also without a player: a host stopped first (the floating window closed) already released it, and the
+        // parked audio must still hear where the video got to.
+        if (finishing && !handingOff && !inBackground && !closedReported) {
             closedReported = true
             steps.audioVideoClosed()
         }

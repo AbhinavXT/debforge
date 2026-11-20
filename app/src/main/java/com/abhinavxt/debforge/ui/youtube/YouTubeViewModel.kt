@@ -99,10 +99,10 @@ sealed interface YouTubeEvent {
     data class PlaylistAdd(val result: YouTubeAddResult, val listName: String, val mode: YouTubeMode = YouTubeMode.AUDIO) : YouTubeEvent
 }
 
-/** What to tell the user after the video's own enqueue [video] and the chosen subtitle's [sub] (null: none chosen). */
 /** A YouTube stream to play, with the video it came from (the watch page shows its related videos). */
 data class StreamPlay(val request: PlayRequest, val video: YouTubeVideo)
 
+/** What to tell the user after the video's own enqueue [video] and the chosen subtitle's [sub] (null: none chosen). */
 internal fun downloadOutcome(video: YouTubeEvent, sub: YouTubeEvent?): YouTubeEvent = when (video) {
     YouTubeEvent.QUEUED -> if (sub == YouTubeEvent.QUEUE_FAILED) YouTubeEvent.QUEUED_NO_SUBTITLE else YouTubeEvent.QUEUED
     YouTubeEvent.ALREADY_QUEUED -> when (sub) {

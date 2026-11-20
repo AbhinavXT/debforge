@@ -22,6 +22,8 @@ import com.abhinavxt.debforge.domain.YouTubeSubtitle
 import com.abhinavxt.debforge.domain.YouTubeVideo
 import com.abhinavxt.debforge.domain.pickDefaultChoice
 import com.abhinavxt.debforge.download.DownloadController
+import com.abhinavxt.debforge.download.DownloadSpace
+import com.abhinavxt.debforge.download.SpaceWarning
 import com.abhinavxt.debforge.download.StorageAccess
 import com.abhinavxt.debforge.download.youtube.EnqueueResult
 import com.abhinavxt.debforge.download.youtube.YouTubeEnqueuer
@@ -42,6 +44,10 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
@@ -62,7 +68,13 @@ class VideoHostViewModel @Inject constructor(
     private val audioPlayer: AudioPlayer,
     private val audioLists: AudioLists,
     private val providers: ProviderRegistry,
+    private val space: DownloadSpace,
 ) : ViewModel() {
+
+    init {
+        // Closed while a related video was still being looked up: it must not open the video again.
+        viewModelScope.launch { launcher.active.collect { if (it == null) cancelRelated() } }
+    }
 
     /** The debrid service's name for the source line; null for what is not one. */
     fun providerName(id: ProviderId): String? =
@@ -90,17 +102,27 @@ class VideoHostViewModel @Inject constructor(
         }
     }
 
-    /** A related video: resolved, then played in place (the one playing is saved first). */
+    /** The related video being resolved; a newer tap replaces it. */
+    private var relatedJob: Job? = null
+
+    /**
+     * A related video: resolved, then played in place (the one playing is saved first). A second tap replaces a
+     * first still resolving, and a result that arrives after the video was closed or replaced is dropped.
+     */
     fun playRelated(result: YouTubeSearchResult, loading: () -> Unit, failed: () -> Unit) {
+        relatedJob?.cancel()
+        val from = launcher.active.value?.token ?: return
         loading()
-        viewModelScope.launch {
+        relatedJob = viewModelScope.launch {
             try {
                 val video = resolver.resolve(result.url)
+                if (!relatedStillWanted(from, launcher.active.value?.token)) return@launch
                 val choices = YouTubeFormats.choices(video.streams, Build.VERSION.SDK_INT, video.durationSec)
                 val choice = YouTubeStreaming.quickPlayChoice(settings.youTubeQualityFlow.first(), choices)
                     ?: pickDefaultChoice(choices, settings.youTubeQualityFlow.first())
                     ?: choices.firstOrNull { it.videoItag != null }
                 val request = choice?.let { youTubePlayRequest(video, it, emptyList()) }
+                if (!relatedStillWanted(from, launcher.active.value?.token)) return@launch
                 if (request == null) {
                     toast(R.string.yt_err_unavailable)
                     failed()
@@ -108,10 +130,17 @@ class VideoHostViewModel @Inject constructor(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
+                if (!relatedStillWanted(from, launcher.active.value?.token)) return@launch
                 toast(R.string.yt_err_unavailable)
                 failed()
             }
         }
+    }
+
+    /** The video was closed: a related video still resolving must not open it again. */
+    fun cancelRelated() {
+        relatedJob?.cancel()
+        relatedJob = null
     }
 
     // --- the audio queue and playlists ----------------------------------------------
@@ -176,18 +205,38 @@ class VideoHostViewModel @Inject constructor(
         }
     }
 
-    /** A debrid stream's file to the downloads. */
+    private val _spaceWarning = MutableStateFlow<SpaceWarning?>(null)
+    /** Not enough free space for the file "Download" asked for: the page asks before queueing (as the Library does). */
+    val spaceWarning: StateFlow<SpaceWarning?> = _spaceWarning.asStateFlow()
+
+    /** A debrid stream's file to the downloads; short of space, asks through [spaceWarning] first. */
     fun downloadFile(item: DownloadItem) {
         viewModelScope.launch {
             if (!StorageAccess.canWrite(context, settings.downloadDirFlow.first())) return@launch toast(R.string.add_needs_storage)
-            try {
-                downloads.enqueue(item, foreground = true)
-                toast(R.string.msg_added_one, item.filename)
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                toast(R.string.yt_err_queue)
-            }
+            val warning = runCatching { space.warningFor(listOf(item)) }.getOrNull()
+            if (warning != null) _spaceWarning.value = warning else enqueueFile(item)
+        }
+    }
+
+    /** "Queue anyway" in the space warning. */
+    fun confirmSpaceWarning() {
+        val w = _spaceWarning.value ?: return
+        _spaceWarning.value = null
+        viewModelScope.launch { w.items.forEach { enqueueFile(it) } }
+    }
+
+    fun dismissSpaceWarning() {
+        _spaceWarning.value = null
+    }
+
+    private suspend fun enqueueFile(item: DownloadItem) {
+        try {
+            downloads.enqueue(item, foreground = true)
+            toast(R.string.msg_added_one, item.filename)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            toast(R.string.yt_err_queue)
         }
     }
 
@@ -219,3 +268,6 @@ class VideoHostViewModel @Inject constructor(
         }
     }
 }
+
+/** Pure: a related video resolved for the video [from] still opens only while that same video is shown ([now]). */
+internal fun relatedStillWanted(from: Long, now: Long?): Boolean = now == from

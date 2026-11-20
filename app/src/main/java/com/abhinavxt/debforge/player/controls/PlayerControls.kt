@@ -147,6 +147,8 @@ interface ControlsActions {
     /** Play on a TV on the same network (DLNA). */
     fun cast()
     fun rotate()
+    /** More → Rotate: turns the screen the other way and stays in full screen (where [rotate] is "exit full screen"). */
+    fun rotateScreen() {}
     fun setFill(fill: Fill)
     fun enterPip()
     /** Audio ([C.TRACK_TYPE_AUDIO]) or subtitle ([C.TRACK_TYPE_TEXT]) tracks. */
@@ -957,6 +959,12 @@ private fun MorePanel(state: ControlsState, actions: ControlsActions) {
                 Icons.Rounded.NightsStay, stringResource(R.string.player_night_mode),
                 stringResource(R.string.player_night_mode_detail), state.nightMode, actions::setNightMode
             )
+        }
+        if (state.exitFullScreen) {
+            // The rotate button became "exit full screen" here: turning the picture by hand lives on in More.
+            item {
+                MoreRow(Icons.Rounded.ScreenRotation, stringResource(R.string.player_rotate)) { state.panel = null; actions.rotateScreen() }
+            }
         }
         item {
             MoreRow(Icons.Rounded.PhotoCamera, stringResource(R.string.player_screenshot)) { actions.screenshot() }

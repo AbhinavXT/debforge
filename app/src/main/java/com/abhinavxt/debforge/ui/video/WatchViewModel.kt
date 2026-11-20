@@ -80,6 +80,9 @@ class WatchViewModel @Inject constructor(
         }
     }
 
+    /** Another video is being looked up ([loading]) or that failed: the page keeps what it showed underneath. */
+    fun setLoading(loading: Boolean) = base.update { it.copy(loading = loading) }
+
     fun select(choice: FormatChoice) = base.update { it.copy(selected = choice) }
 
     fun selectSubtitle(s: YouTubeSubtitle?) = base.update { it.copy(subtitle = s) }

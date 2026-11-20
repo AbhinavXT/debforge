@@ -142,6 +142,16 @@ class VideoLifecycleTest {
         assertFalse(life.isOpen)
     }
 
+    @Test fun closeAfterTheHostStoppedStillReportsVideoClosed() {
+        // The floating window closed: the activity stopped (player released) before the video was closed.
+        val (steps, life, token) = started()
+        life.hostStopped(token, finishing = false)
+        assertFalse(steps.player)
+        life.close()
+        assertEquals(1, steps.count("videoClosed"))
+        assertFalse(life.isOpen)
+    }
+
     @Test fun handoffToAudioDoesNotReportVideoClosed() {
         val (steps, life, token) = started()
         life.handingOff = true

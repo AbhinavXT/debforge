@@ -61,4 +61,24 @@ class VideoGesturesTest {
         assertEquals(OrientationLock.NONE, lockOnExitFull(360, false))
         assertEquals(Hold.LANDSCAPE, holdOf(90)); assertEquals(Hold.PORTRAIT, holdOf(180)); assertEquals(Hold.OTHER, holdOf(-1))
     }
+
+    @Test fun rotateFromMoreTurnsTheOtherWayAndStaysFull() {
+        assertEquals(OrientationLock.TURNED_PORTRAIT, lockOnRotateScreen(landscapeNow = true))
+        assertEquals(OrientationLock.TURNED_LANDSCAPE, lockOnRotateScreen(landscapeNow = false))
+        // Held upright in full screen: no return to the watch page, even with auto-rotate on.
+        val upright = orientationPlan(VideoMode.FULL, 360, true, false, false, OrientationLock.TURNED_PORTRAIT)
+        assertEquals(OrientationPlan(VideoMode.FULL, ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT), upright)
+        // Sideways asked for even with auto-rotate off or a portrait picture.
+        val sideways = orientationPlan(VideoMode.FULL, 360, false, true, false, OrientationLock.TURNED_LANDSCAPE)
+        assertEquals(OrientationPlan(VideoMode.FULL, ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE), sideways)
+        // The sensor does not end it; leaving full screen does (lockOnExitFull replaces it).
+        assertEquals(OrientationLock.TURNED_PORTRAIT, lockAfterSensor(OrientationLock.TURNED_PORTRAIT, Hold.PORTRAIT, true))
+        assertEquals(OrientationLock.TURNED_LANDSCAPE, lockAfterSensor(OrientationLock.TURNED_LANDSCAPE, Hold.LANDSCAPE, true))
+    }
+
+    @Test fun relatedResultOnlyOpensForTheVideoItWasAskedFrom() {
+        assertTrue(relatedStillWanted(from = 7, now = 7))
+        assertFalse(relatedStillWanted(from = 7, now = null)) // closed meanwhile
+        assertFalse(relatedStillWanted(from = 7, now = 8)) // another video opened meanwhile
+    }
 }

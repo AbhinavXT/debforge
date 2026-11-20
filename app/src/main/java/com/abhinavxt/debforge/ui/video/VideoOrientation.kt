@@ -10,6 +10,10 @@ enum class OrientationLock {
     LANDSCAPE,
     /** Full screen was left while held sideways: portrait until the phone is really held upright (no bounce back). */
     PORTRAIT,
+    /** More → Rotate in full screen: held sideways until full screen is left. */
+    TURNED_LANDSCAPE,
+    /** More → Rotate in full screen: held upright (still full screen) until full screen is left. */
+    TURNED_PORTRAIT,
 }
 
 /** The mode and the orientation to ask the activity for. */
@@ -42,6 +46,8 @@ fun orientationPlan(
         else -> mode
     }
     val requested = when {
+        lock == OrientationLock.TURNED_LANDSCAPE && next == VideoMode.FULL -> ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+        lock == OrientationLock.TURNED_PORTRAIT && next == VideoMode.FULL -> ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT
         lock == OrientationLock.LANDSCAPE && next == VideoMode.FULL && sizeKnown && !videoPortrait -> ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
         lock == OrientationLock.PORTRAIT && next != VideoMode.FULL -> ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT
         else -> ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
@@ -56,6 +62,10 @@ fun lockOnEnterFull(videoPortrait: Boolean, landscapeNow: Boolean): OrientationL
 /** Pure: the lock to start when full screen is left ([landscapeNow]: the screen is sideways, on a phone it must not bounce back in). */
 fun lockOnExitFull(smallestWidthDp: Int, landscapeNow: Boolean): OrientationLock =
     if (smallestWidthDp < TABLET_SMALLEST_WIDTH_DP && landscapeNow) OrientationLock.PORTRAIT else OrientationLock.NONE
+
+/** Pure: the lock after More → Rotate in full screen ([landscapeNow]: the screen is sideways): the other way round. */
+fun lockOnRotateScreen(landscapeNow: Boolean): OrientationLock =
+    if (landscapeNow) OrientationLock.TURNED_PORTRAIT else OrientationLock.TURNED_LANDSCAPE
 
 /** How the phone is physically held, from the sensor's angle (degrees, or -1 when flat). */
 enum class Hold { PORTRAIT, LANDSCAPE, OTHER }

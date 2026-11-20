@@ -209,6 +209,8 @@ class VideoSession @Inject constructor(
     // Survive the player being released and built again (app switch).
     internal var resumePosition = 0L
     private var resumePlayWhenReady = true
+    /** The duration of the player last released (0: unknown), for the parked audio after the player is gone. */
+    private var releasedDurationMs = 0L
     /** Asked once per file whether to switch players: don't nag on every track change. */
     var offeredFallback = false
         private set
@@ -343,8 +345,11 @@ class VideoSession @Inject constructor(
 
         override fun audioVideoClosed() {
             val id = identity ?: return
-            val p = player ?: return
-            audioPlayer.videoClosed(id.itemId, youtube?.videoId, p.currentPosition, p.duration.takeIf { it != C.TIME_UNSET } ?: 0L)
+            // Released already (the host stopped first): where it was when released.
+            val p = player
+            val position = p?.currentPosition ?: resumePosition
+            val duration = p?.duration?.takeIf { it != C.TIME_UNSET } ?: releasedDurationMs
+            audioPlayer.videoClosed(id.itemId, youtube?.videoId, position, duration)
         }
 
         override fun buildPlayer() = initializePlayer()
@@ -401,6 +406,7 @@ class VideoSession @Inject constructor(
         loopMessage = null
         resumePosition = 0L
         resumePlayWhenReady = true
+        releasedDurationMs = 0L
         offeredFallback = false
         identity = null
         youtube = null
@@ -882,6 +888,7 @@ class VideoSession @Inject constructor(
         if (exo.playbackState != Player.STATE_ENDED) scrobble(scrobbler::stopped)
         resumePosition = exo.currentPosition
         resumePlayWhenReady = exo.playWhenReady
+        releasedDurationMs = exo.duration.takeIf { it != C.TIME_UNSET } ?: releasedDurationMs
         savedTrackParams = exo.trackSelectionParameters.buildUpon().setTrackTypeDisabled(C.TRACK_TYPE_VIDEO, false).build()
         loopMessage = null
         savedSpeed = exo.playbackParameters.speed

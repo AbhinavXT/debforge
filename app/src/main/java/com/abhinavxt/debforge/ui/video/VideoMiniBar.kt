@@ -38,6 +38,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -66,8 +68,8 @@ internal val MiniBarHeight = 64.dp
 @Composable
 fun VideoMiniBar(
     title: String,
-    playing: Boolean,
-    progress: Float,
+    /** Read only inside the bar (the play icon, the progress line), so its 500 ms updates recompose nothing else. */
+    pulse: State<VideoPulse>,
     onToggle: () -> Unit,
     onClose: () -> Unit,
     onExpand: () -> Unit,
@@ -85,6 +87,7 @@ fun VideoMiniBar(
     var widthPx by remember { mutableFloatStateOf(0f) }
     val barSource = remember { MutableInteractionSource() }
     val expandLabel = stringResource(R.string.video_mini_expand)
+    val playing by remember(pulse) { derivedStateOf { pulse.value.playing } }
     Surface(
         modifier = modifier
             .fillMaxWidth()
@@ -151,7 +154,7 @@ fun VideoMiniBar(
                 IconButton(onClick = onClose) { Icon(Icons.Rounded.Close, stringResource(R.string.action_close)) }
             }
             LinearProgressIndicator(
-                progress = { progress.coerceIn(0f, 1f) },
+                progress = { pulse.value.progress.coerceIn(0f, 1f) },
                 modifier = Modifier.fillMaxWidth().height(2.dp).align(Alignment.BottomStart),
                 trackColor = androidx.compose.ui.graphics.Color.Transparent,
             )
@@ -162,15 +165,16 @@ fun VideoMiniBar(
 /** What the mini bar shows of the engine, polled while a video is shown. */
 data class VideoPulse(val playing: Boolean = false, val progress: Float = 0f)
 
+/** Polls the engine for the mini bar while it is composed (it only is while a video is shown). */
 @Composable
-fun rememberVideoPulse(session: com.abhinavxt.debforge.player.session.VideoSession, enabled: Boolean): VideoPulse {
-    var pulse by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(VideoPulse()) }
-    androidx.compose.runtime.LaunchedEffect(enabled) {
-        while (enabled) {
+fun rememberVideoPulse(session: com.abhinavxt.debforge.player.session.VideoSession): State<VideoPulse> {
+    val pulse = androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(VideoPulse()) }
+    androidx.compose.runtime.LaunchedEffect(session) {
+        while (true) {
             val p = session.player
             val duration = p?.duration?.takeIf { it > 0 && it != androidx.media3.common.C.TIME_UNSET }
             val next = VideoPulse(p?.playWhenReady == true && p.playbackState != androidx.media3.common.Player.STATE_ENDED, if (p != null && duration != null) p.currentPosition.toFloat() / duration else 0f)
-            if (next != pulse) pulse = next
+            if (next != pulse.value) pulse.value = next
             kotlinx.coroutines.delay(500)
         }
     }
