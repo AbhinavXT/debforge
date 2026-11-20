@@ -41,6 +41,7 @@ import com.abhinavxt.debforge.domain.SponsorSkip
 import com.abhinavxt.debforge.download.LocalFiles
 import com.abhinavxt.debforge.data.youtube.YouTubeException
 import com.abhinavxt.debforge.data.youtube.YouTubeResolver
+import com.abhinavxt.debforge.data.youtube.decodeEntities
 import com.abhinavxt.debforge.domain.YouTubeFormats
 import com.abhinavxt.debforge.domain.YouTubeLinks
 import com.abhinavxt.debforge.domain.YouTubeStream
@@ -983,7 +984,7 @@ class AudioPlayer @Inject constructor(
 
     private fun buildTrack(e: MixedEntry, local: Map<String, AudioTrack>): AudioTrack = when (e) {
         is MixedEntry.Local -> e.track
-        is MixedEntry.YouTube -> local[e.videoId] ?: lazyYouTubeTrack(e.videoId, e.meta)
+        is MixedEntry.YouTube -> local[e.videoId] ?: lazyYouTubeTrack(e.videoId, e.meta.copy(title = decodeEntities(e.meta.title)))
     }
 
     /** Adds a YouTube video to the end of the queue (starts it when nothing is queued); plays the downloaded file if there is one. */
@@ -1046,9 +1047,9 @@ class AudioPlayer @Inject constructor(
                 val video = t.videoId
                 val itag = t.itag
                 val url = t.streamUrl
-                if (video == null && url != null) AudioTrack(t.id, Uri.parse(url), t.title, t.artist, null, t.artworkUrl) // a podcast episode
+                if (video == null && url != null) AudioTrack(t.id, Uri.parse(url), decodeEntities(t.title), t.artist, null, t.artworkUrl) // a podcast episode
                 else if (video == null || itag == null) null
-                else AudioTrack(t.id, t.streamUrl?.let { Uri.parse(it) } ?: Uri.EMPTY, t.title, t.artist, null, t.artworkUrl,
+                else AudioTrack(t.id, t.streamUrl?.let { Uri.parse(it) } ?: Uri.EMPTY, decodeEntities(t.title), t.artist, null, t.artworkUrl,
                     YouTubeAudio(video, itag), t.artistUrl)
             }
         }

@@ -1,5 +1,6 @@
 package com.abhinavxt.debforge.ui.history
 
+import com.abhinavxt.debforge.data.youtube.decodeEntities
 import android.text.format.DateUtils
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -232,7 +233,7 @@ private fun HistoryRow(e: HistoryEntity, onClick: () -> Unit, onRemove: () -> Un
             Artwork(e, Modifier.size(56.dp).clip(RoundedCornerShape(12.dp)))
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
-                Text(e.title, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(decodeEntities(e.title), style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Text(sub, style = MaterialTheme.typography.bodySmall, color = cs.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 if (progress != null && progress > 0f) {
                     Spacer(Modifier.height(6.dp))

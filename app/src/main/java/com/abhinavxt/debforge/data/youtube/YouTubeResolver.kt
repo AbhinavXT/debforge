@@ -68,6 +68,9 @@ private val NAMED_ENTITIES = mapOf(
     "ldquo" to "\u201C", "rdquo" to "\u201D", "copy" to "\u00A9", "reg" to "\u00AE", "trade" to "\u2122",
 )
 
+/** An extractor-supplied name with its character references decoded ("&#128218;" arrives that way from some endpoints). */
+private fun String?.decoded(): String = decodeEntities(orEmpty())
+
 /** Decodes HTML character references (named, decimal and hex) in one pass, so "&amp;lt;" stays "&lt;". Unknown ones are kept. */
 internal fun decodeEntities(text: String): String = ENTITY.replace(text) { m ->
     val body = m.groupValues[1]
@@ -109,7 +112,7 @@ class YouTubeResolver @Inject constructor(@ApiHttpClient private val client: OkH
         }
         YouTubeVideo(
             id = id,
-            title = info.name.orEmpty(),
+            title = info.name.decoded(),
             uploader = info.uploaderName.orEmpty(),
             uploaderUrl = info.uploaderUrl?.takeIf { it.isNotBlank() },
             durationSec = info.duration,
@@ -157,7 +160,7 @@ class YouTubeResolver @Inject constructor(@ApiHttpClient private val client: OkH
         relatedVideos(selfId, info.relatedItems.map {
             val s = it as? StreamInfoItem
             RelatedCandidate(
-                YouTubeSearchResult(it.url.orEmpty(), it.name.orEmpty(), s?.uploaderName, s?.duration ?: 0, it.thumbnails.maxByOrNull { t -> t.height }?.url, s?.uploaderUrl, s?.uploaderAvatars?.maxByOrNull { a -> a.height }?.url, s?.viewCount ?: -1),
+                YouTubeSearchResult(it.url.orEmpty(), it.name.decoded(), s?.uploaderName, s?.duration ?: 0, it.thumbnails.maxByOrNull { t -> t.height }?.url, s?.uploaderUrl, s?.uploaderAvatars?.maxByOrNull { a -> a.height }?.url, s?.viewCount ?: -1),
                 isStream = s != null,
                 isLive = s != null && s.streamType != StreamType.VIDEO_STREAM && s.streamType != StreamType.AUDIO_STREAM,
             )
@@ -167,7 +170,7 @@ class YouTubeResolver @Inject constructor(@ApiHttpClient private val client: OkH
     }
 
     private fun searchResults(items: List<InfoItem>) = items.filterIsInstance<StreamInfoItem>().map {
-        YouTubeSearchResult(it.url, it.name.orEmpty(), it.uploaderName, it.duration, it.thumbnails.maxByOrNull { t -> t.height }?.url, it.uploaderUrl, it.uploaderAvatars.maxByOrNull { a -> a.height }?.url, it.viewCount)
+        YouTubeSearchResult(it.url, it.name.decoded(), it.uploaderName, it.duration, it.thumbnails.maxByOrNull { t -> t.height }?.url, it.uploaderUrl, it.uploaderAvatars.maxByOrNull { a -> a.height }?.url, it.viewCount)
     }.distinctBy { it.url } // rows are keyed by url; a repeat would crash the list
 
     /** The trending-music kiosk's first page (at most 30); callers treat any failure as "no trending". */
@@ -207,7 +210,7 @@ class YouTubeResolver @Inject constructor(@ApiHttpClient private val client: OkH
             val info = ChannelInfo.getInfo(ServiceList.YouTube, channelUrl)
             ChannelRef(
                 url = YouTubeChannelLinks.canonical(info.id),
-                title = info.name.orEmpty().ifBlank { info.id },
+                title = info.name.decoded().ifBlank { info.id },
                 artworkUrl = info.avatars.maxByOrNull { it.height }?.url,
             )
         } catch (e: Exception) {
@@ -226,7 +229,7 @@ class YouTubeResolver @Inject constructor(@ApiHttpClient private val client: OkH
                 FeedInfo.getInfo(ServiceList.YouTube, channelUrl).relatedItems.mapNotNull { item ->
                     val id = YouTubeLinks.videoId(item.url.orEmpty()) ?: return@mapNotNull null
                     FeedEntry(
-                        key = id, title = item.name.orEmpty(), url = "https://www.youtube.com/watch?v=$id",
+                        key = id, title = item.name.decoded(), url = "https://www.youtube.com/watch?v=$id",
                         publishedAt = item.uploadDate?.instant?.toEpochMilli(),
                         durationSec = item.duration.takeIf { it > 0 },
                         thumbUrl = item.thumbnails.maxByOrNull { t -> t.height }?.url,
@@ -271,9 +274,9 @@ class YouTubeResolver @Inject constructor(@ApiHttpClient private val client: OkH
                 page = more.nextPage
             }
             YouTubePlaylist(
-                info.name.orEmpty(),
+                info.name.decoded(),
                 items.take(200).map {
-                    YouTubeSearchResult(it.url, it.name.orEmpty(), it.uploaderName, it.duration, it.thumbnails.maxByOrNull { t -> t.height }?.url, it.uploaderUrl)
+                    YouTubeSearchResult(it.url, it.name.decoded(), it.uploaderName, it.duration, it.thumbnails.maxByOrNull { t -> t.height }?.url, it.uploaderUrl)
                 }.distinctBy { it.url }, // rows are keyed by url; a repeat would crash the list
             )
         } catch (e: Exception) {

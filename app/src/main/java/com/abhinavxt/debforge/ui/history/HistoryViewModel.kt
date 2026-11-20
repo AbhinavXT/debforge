@@ -16,6 +16,7 @@ import com.abhinavxt.debforge.domain.DownloadState
 import com.abhinavxt.debforge.download.LocalFiles
 import com.abhinavxt.debforge.player.AudioPlayer
 import com.abhinavxt.debforge.player.LocalPlayback
+import com.abhinavxt.debforge.data.youtube.decodeEntities
 import com.abhinavxt.debforge.player.SubtitleResolver
 import com.abhinavxt.debforge.player.UpNext
 import com.abhinavxt.debforge.domain.Subtitles
@@ -93,14 +94,14 @@ class HistoryViewModel @Inject constructor(
             } catch (c: kotlinx.coroutines.CancellationException) {
                 throw c
             } catch (t: Throwable) {
-                unplayable(e, context.getString(R.string.continue_unavailable, e.title, t.message ?: t.javaClass.simpleName))
+                unplayable(e, context.getString(R.string.continue_unavailable, decodeEntities(e.title), t.message ?: t.javaClass.simpleName))
             }
         }
     }
 
     private suspend fun unplayable(e: HistoryEntity, text: String) = _events.send(HistoryEvent.Unplayable(e.itemId, text))
 
-    private fun missing(e: HistoryEntity) = context.getString(R.string.history_missing, e.title)
+    private fun missing(e: HistoryEntity) = context.getString(R.string.history_missing, decodeEntities(e.title))
 
     private suspend fun playAudio(e: HistoryEntity) {
         val row = downloads.getById(e.sourceRef)?.takeIf { it.state == DownloadState.COMPLETED }
@@ -128,11 +129,11 @@ class HistoryViewModel @Inject constructor(
                 upNext.set(known.id, upNextFor(known, pool))
                 _events.send(
                     HistoryEvent.Play(
-                        PlayRequest(Uri.parse(r.data.url), e.title, known, e.showKey, subtitleResolver.resolve(Subtitles.forVideo(known, pool)))
+                        PlayRequest(Uri.parse(r.data.url), decodeEntities(e.title), known, e.showKey, subtitleResolver.resolve(Subtitles.forVideo(known, pool)))
                     )
                 )
             }
-            is DataResult.Error -> unplayable(e, context.getString(R.string.continue_unavailable, e.title, r.message))
+            is DataResult.Error -> unplayable(e, context.getString(R.string.continue_unavailable, decodeEntities(e.title), r.message))
         }
     }
 }

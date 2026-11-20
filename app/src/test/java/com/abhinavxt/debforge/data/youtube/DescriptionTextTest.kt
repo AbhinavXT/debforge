@@ -16,3 +16,11 @@ class DescriptionTextTest {
     @Test fun htmlTagsDroppedEntitiesDecoded() =
         assertEquals("Line one\nDon't miss", descriptionText("<p>Line one</p><b>Don&apos;t</b>&nbsp;miss", html = true))
 }
+
+class DecodeEntitiesTest {
+    @Test fun decimalAboveBmp() = assertEquals("1 A.M Study Session 📚 [lofi hip hop]", decodeEntities("1 A.M Study Session &#128218; [lofi hip hop]"))
+    @Test fun hexAboveBmp() = assertEquals("📚", decodeEntities("&#x1F4DA;"))
+    @Test fun named() = assertEquals("a & b \"c\" 'd'", decodeEntities("a &amp; b &quot;c&quot; &#39;d&#39;"))
+    @Test fun invalidLeftAsIs() = assertEquals("&#xZZ; &#1114112;", decodeEntities("&#xZZ; &#1114112;"))
+    @Test fun plainAmpersandsKept() = assertEquals("R&B and AT&T; rock", decodeEntities("R&B and AT&T; rock"))
+}

@@ -1,5 +1,6 @@
 package com.abhinavxt.debforge.ui.media
 
+import com.abhinavxt.debforge.data.youtube.decodeEntities
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.abhinavxt.debforge.data.local.DownloadDao
@@ -124,7 +125,8 @@ internal fun browseView(audio: List<DownloadEntity>, pick: String?, openKey: Str
 }
 
 /** Name shown for a download: its title (YouTube) or the cleaned release name. */
-fun DownloadEntity.displayTitle(): String = title?.takeIf { it.isNotBlank() } ?: releaseLabels(filename).title
+fun DownloadEntity.displayTitle(): String =
+    title?.takeIf { it.isNotBlank() }?.let { decodeEntities(it) } ?: releaseLabels(filename).title
 
 @HiltViewModel
 class MediaViewModel @Inject constructor(

@@ -1,5 +1,6 @@
 package com.abhinavxt.debforge.ui.media
 
+import com.abhinavxt.debforge.data.youtube.decodeEntities
 import com.abhinavxt.debforge.data.local.DownloadEntity
 import com.abhinavxt.debforge.data.playback.PlaylistEntry
 import com.abhinavxt.debforge.data.playback.YouTubeMeta
@@ -70,7 +71,7 @@ internal fun playlistRows(
                 val meta = ytMeta[e.videoId]
                 val row = PlaylistRow.YouTube(
                     entry = e,
-                    title = meta?.title?.takeIf { it.isNotBlank() } ?: e.videoId,
+                    title = meta?.title?.takeIf { it.isNotBlank() }?.let { decodeEntities(it) } ?: e.videoId,
                     channel = meta?.channel?.takeIf { it.isNotBlank() },
                     thumbnailUrl = PlaylistEntry.thumbnailUrl(e.videoId),
                     download = locals.any[e.videoId],
