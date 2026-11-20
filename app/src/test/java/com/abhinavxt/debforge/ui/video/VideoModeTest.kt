@@ -29,6 +29,12 @@ class VideoModeTest {
         assertEquals(MINI, next(MINI, VideoModeEvent.Back))
     }
 
+    @Test fun backFromFullClosesWhenOpenedFullByTheSetting() {
+        assertEquals(null, nextMode(FULL, VideoModeEvent.Back, isTablet = false, backClosesFull = true))
+        assertEquals(WATCH, nextMode(FULL, VideoModeEvent.Back, isTablet = false, backClosesFull = false))
+        assertEquals(MINI, nextMode(WATCH, VideoModeEvent.Back, isTablet = false, backClosesFull = true))
+    }
+
     @Test fun backIsOursOnlyInFullScreenAndOnTheWatchPage() {
         assertTrue(backBelongsToVideo(FULL))
         assertTrue(backBelongsToVideo(WATCH))

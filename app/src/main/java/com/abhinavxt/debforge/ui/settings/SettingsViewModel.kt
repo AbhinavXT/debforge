@@ -229,6 +229,11 @@ class SettingsViewModel @Inject constructor(
     )
     fun setPip(v: Boolean) = viewModelScope.launch { settingsStore.setPip(v) }
 
+    val videoFullScreen: StateFlow<Boolean> = settingsStore.videoFullScreenFlow.stateIn(
+        viewModelScope, SharingStarted.WhileSubscribed(5_000), false
+    )
+    fun setVideoFullScreen(v: Boolean) = viewModelScope.launch { settingsStore.setVideoFullScreen(v) }
+
     val autoSkipIntro: StateFlow<Boolean> = settingsStore.autoSkipIntroFlow.stateIn(
         viewModelScope, SharingStarted.WhileSubscribed(5_000), false
     )

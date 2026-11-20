@@ -23,7 +23,8 @@ sealed interface VideoModeEvent {
 }
 
 /** Pure: the mode after [event]; null is no video. A mode with nothing to do stays as it is. */
-fun nextMode(mode: VideoMode?, event: VideoModeEvent, isTablet: Boolean): VideoMode? = when (event) {
+/** [backClosesFull]: the video was opened straight in full screen by the setting, so Back from it ends the video. */
+fun nextMode(mode: VideoMode?, event: VideoModeEvent, isTablet: Boolean, backClosesFull: Boolean = false): VideoMode? = when (event) {
     is VideoModeEvent.Open -> if (event.startFull) VideoMode.FULL else VideoMode.WATCH
     VideoModeEvent.Close -> null
     else -> when (mode) {
@@ -34,7 +35,7 @@ fun nextMode(mode: VideoMode?, event: VideoModeEvent, isTablet: Boolean): VideoM
             VideoModeEvent.EnterFull -> if (mode == VideoMode.WATCH) VideoMode.FULL else mode
             VideoModeEvent.ExitFull -> if (mode == VideoMode.FULL) VideoMode.WATCH else mode
             VideoModeEvent.Back -> when (mode) {
-                VideoMode.FULL -> VideoMode.WATCH
+                VideoMode.FULL -> if (backClosesFull) null else VideoMode.WATCH
                 VideoMode.WATCH -> VideoMode.MINI
                 VideoMode.MINI -> VideoMode.MINI
             }

@@ -56,6 +56,7 @@ import androidx.compose.material.icons.rounded.Folder
 import androidx.compose.material.icons.rounded.FolderOpen
 import androidx.compose.material.icons.rounded.Image
 import androidx.compose.material.icons.rounded.Language
+import androidx.compose.material.icons.rounded.Fullscreen
 import androidx.compose.material.icons.rounded.PictureInPictureAlt
 import androidx.compose.material.icons.rounded.PlayCircle
 import androidx.compose.material.icons.rounded.SkipNext
@@ -149,6 +150,7 @@ fun SettingsScreen(onConnect: () -> Unit, onBack: (() -> Unit)? = null, viewMode
     val internalPlayer by viewModel.internalPlayer.collectAsStateWithLifecycle()
     val autoplayNext by viewModel.autoplayNext.collectAsStateWithLifecycle()
     val pip by viewModel.pip.collectAsStateWithLifecycle()
+    val videoFullScreen by viewModel.videoFullScreen.collectAsStateWithLifecycle()
     val autoSkipIntro by viewModel.autoSkipIntro.collectAsStateWithLifecycle()
     val streamPreviews by viewModel.streamPreviews.collectAsStateWithLifecycle()
     val playerArtColor by viewModel.playerArtColor.collectAsStateWithLifecycle()
@@ -514,6 +516,14 @@ fun SettingsScreen(onConnect: () -> Unit, onBack: (() -> Unit)? = null, viewMode
                             current = subtitleLanguage,
                             offOption = true,
                             onPick = viewModel::setSubtitleLanguage
+                        )
+                        RowDivider()
+                        SwitchSettingRow(
+                            icon = Icons.Rounded.Fullscreen,
+                            title = stringResource(R.string.set_video_full_screen),
+                            subtitle = stringResource(R.string.set_video_full_screen_detail),
+                            checked = videoFullScreen,
+                            onChange = viewModel::setVideoFullScreen
                         )
                         RowDivider()
                         if (viewModel.pipAvailable) {

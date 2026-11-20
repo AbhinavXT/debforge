@@ -52,6 +52,7 @@ class SettingsStore @Inject constructor(
     private val keyInternalPlayer = booleanPreferencesKey("internal_player")
     private val keyAutoplayNext = booleanPreferencesKey("autoplay_next")
     private val keyPip = booleanPreferencesKey("picture_in_picture")
+    private val keyVideoFullScreen = booleanPreferencesKey("video_full_screen")
     private val keyAutoSkipIntro = booleanPreferencesKey("auto_skip_intro")
     private val keyYouTubeAutoplay = booleanPreferencesKey("youtube_autoplay")
     private val keySponsorBlock = booleanPreferencesKey("sponsorblock_enabled")
@@ -167,6 +168,10 @@ class SettingsStore @Inject constructor(
     /** Leaving the player while a video plays keeps it in a floating window. On by default. */
     val pipFlow: Flow<Boolean> = context.settingsDataStore.data.map { it[keyPip] ?: true }
     suspend fun setPip(v: Boolean) = context.settingsDataStore.edit { it[keyPip] = v }
+
+    /** Videos open straight in full screen (Back closes them) instead of on the watch page. Off by default. */
+    val videoFullScreenFlow: Flow<Boolean> = context.settingsDataStore.data.map { it[keyVideoFullScreen] ?: false }
+    suspend fun setVideoFullScreen(v: Boolean) = context.settingsDataStore.edit { it[keyVideoFullScreen] = v }
 
     /** Player: jump over chapters marked intro / recap as they start, instead of offering a button. Off by default. */
     val autoSkipIntroFlow: Flow<Boolean> = context.settingsDataStore.data.map { it[keyAutoSkipIntro] ?: false }
@@ -337,7 +342,7 @@ class SettingsStore @Inject constructor(
         keyDynamicColor, keyPosterView, keyOrganize, keyWifiOnly, keyChargingOnly,
         keyScheduleOn, keyAutoUpdate, keyRemoveAfter, keyPureBlack, keyShowExtras, keyClipboardOffer, keyAdBlock,
         keyInternalPlayer, keyAutoplayNext, keyPip, keyAutoSkipIntro, keySponsorBlock, keyYouTubeAutoplay, keyNightMode, keyStreamPreviews,
-        keyPlayerArtColor, keyPlayerGestures, keyPlayerShowRemaining, keyPlayerBackground, keyHistoryPaused
+        keyPlayerArtColor, keyPlayerGestures, keyPlayerShowRemaining, keyPlayerBackground, keyHistoryPaused, keyVideoFullScreen
     )
     /** May be blank on purpose (nothing avoided, no site left unblocked). */
     private val backupStrings get() = listOf(keyReleaseAvoid, keyReleasePrefer, keyAdBlockOffSites, keyYouTubeQuality,

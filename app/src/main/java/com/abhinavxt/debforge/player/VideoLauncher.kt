@@ -10,11 +10,16 @@ import com.abhinavxt.debforge.ui.video.ActiveVideo
 import com.abhinavxt.debforge.ui.video.VideoMode
 import com.abhinavxt.debforge.ui.video.VideoModeEvent
 import com.abhinavxt.debforge.ui.video.nextMode
+import com.abhinavxt.debforge.data.prefs.SettingsStore
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
 /**
  * The one way to start a video. Phones and tablets play it in the app (the watch page, full screen and
@@ -24,7 +29,20 @@ import kotlinx.coroutines.flow.asStateFlow
 @Singleton
 class VideoLauncher @Inject constructor(
     val session: VideoSession,
+    settingsStore: SettingsStore,
 ) {
+    /** The "Open videos in full screen" setting, kept current. */
+    @Volatile private var openFull = false
+
+    /** The shown video was opened full screen by that setting: Back from full screen closes it. */
+    @Volatile private var backClosesFull = false
+
+    init {
+        CoroutineScope(SupervisorJob() + Dispatchers.Default).launch {
+            settingsStore.videoFullScreenFlow.collect { openFull = it }
+        }
+    }
+
     private val _active = MutableStateFlow<ActiveVideo?>(null)
     /** The video shown in the app; null when none. */
     val active: StateFlow<ActiveVideo?> = _active.asStateFlow()
@@ -71,13 +89,20 @@ class VideoLauncher @Inject constructor(
         _active.value = ActiveVideo(token, request, video)
         // On a phone held sideways the picture goes straight to full screen.
         val landscape = context.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-        dispatch(VideoModeEvent.Open(startFull = startFull || (landscape && !isTablet)))
+        backClosesFull = openFull
+        dispatch(VideoModeEvent.Open(startFull = startFull || openFull || (landscape && !isTablet)))
     }
 
     /** Changes the shown mode by [event] (see [nextMode]). */
     fun dispatch(event: VideoModeEvent) {
-        _mode.value = nextMode(_mode.value, event, isTablet)
-        if (_mode.value == null) _active.value = null
+        val next = nextMode(_mode.value, event, isTablet, backClosesFull)
+        if (next == null && event == VideoModeEvent.Back) {
+            close()
+            return
+        }
+        _mode.value = next
+        if (next != VideoMode.FULL) backClosesFull = false
+        if (next == null) _active.value = null
     }
 
     /** Ends the video: saved, the parked audio told where it stopped, the player released. */
@@ -86,6 +111,7 @@ class VideoLauncher @Inject constructor(
         session.close()
         _active.value = null
         _mode.value = null
+        backClosesFull = false
     }
 
     /** The engine asks its host to close (a failed stream, "Play as audio", a replaced video). */
