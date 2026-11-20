@@ -28,6 +28,7 @@ class GestureEngineTest {
         override fun onPinchStart() { log += "pinch" }
         override fun onPinch(scale: Float) { log += "p:%.1f".format(scale) }
         override fun onPinchEnd() { log += "pinchEnd" }
+        override fun onCenterSwipeDown() { log += "centerDown" }
     }
 
     private val rec = Rec()
@@ -172,5 +173,33 @@ class GestureEngineTest {
     @Test fun deadlineCoversLongPressWhilePressed() {
         g.down(500f, 250f, 1000)
         assertEquals(1500L, g.deadline)
+    }
+
+    private fun drag(x: Float, fromY: Float, toY: Float) {
+        g.down(x, fromY, 0)
+        var y = fromY
+        val step = if (toY > fromY) 10f else -10f
+        while ((toY - y) * step > 0f) { y += step; g.move(x, y, 10) }
+        g.up(x, y, 500)
+    }
+
+    @Test fun centerSwipeDownFiresOnlyWhenOnAndFromTheMiddle() {
+        g.centerSwipeDown = true
+        drag(500f, 100f, 300f)
+        assertEquals(listOf("centerDown"), rec.log)
+        rec.log.clear()
+        drag(100f, 100f, 300f) // left side: brightness
+        assertTrue(rec.log.first().startsWith("v:LEFT"))
+        rec.log.clear()
+        drag(900f, 100f, 300f) // right side: volume
+        assertTrue(rec.log.first().startsWith("v:RIGHT"))
+        rec.log.clear()
+        drag(500f, 300f, 100f) // middle, upward: still levels
+        assertTrue(rec.log.first().startsWith("v:"))
+    }
+
+    @Test fun centerSwipeDownOffKeepsLevels() {
+        drag(500f, 100f, 300f)
+        assertTrue(rec.log.first().startsWith("v:"))
     }
 }

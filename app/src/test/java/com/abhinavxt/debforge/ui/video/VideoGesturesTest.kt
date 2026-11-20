@@ -112,4 +112,18 @@ class VideoGesturesTest {
         assertFalse(orientationRulesApply(pip = true, settlingAfterPip = false))
         assertFalse(orientationRulesApply(pip = false, settlingAfterPip = true))
     }
+
+    @Test fun swipeUpEntersFullByDistanceOrFling() {
+        assertTrue(shouldEnterFull(up = 200f, velocity = 0f, minDistance = 150f))
+        assertFalse(shouldEnterFull(up = 100f, velocity = -200f, minDistance = 150f))
+        assertTrue(shouldEnterFull(up = 30f, velocity = -2000f, minDistance = 150f))
+        assertFalse(shouldEnterFull(up = -50f, velocity = -2000f, minDistance = 150f))
+        assertFalse(shouldEnterFull(up = Float.NaN, velocity = 0f, minDistance = 150f))
+    }
+
+    @Test fun swipeUpAndDownMoveBetweenWatchAndFull() {
+        assertEquals(VideoMode.FULL, nextMode(VideoMode.WATCH, VideoModeEvent.EnterFull, isTablet = false))
+        assertEquals(VideoMode.WATCH, nextMode(VideoMode.FULL, VideoModeEvent.Back, isTablet = false, backClosesFull = false))
+        assertEquals(null, nextMode(VideoMode.FULL, VideoModeEvent.Back, isTablet = false, backClosesFull = true))
+    }
 }

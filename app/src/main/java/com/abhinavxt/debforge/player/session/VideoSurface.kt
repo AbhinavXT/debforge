@@ -80,6 +80,7 @@ class VideoSurface(
             if (field == value) return
             field = value
             features = SurfaceFeatures.of(value)
+            gestureEngine?.centerSwipeDown = value == SurfaceMode.FULL
             applyMode()
         }
 
@@ -100,7 +101,12 @@ class VideoSurface(
         fun move(dy: Float)
         /** The finger lifted (or the touch was cancelled): [velocityY] px/s, down is positive. */
         fun end(velocityY: Float)
+        /** An upward drag on the picture ended: [up] px travelled, [velocityY] px/s (down is positive). */
+        fun swipeUp(up: Float, velocityY: Float) {}
     }
+
+    /** A downward swipe from the middle of the full-screen picture (leave full screen). */
+    var onSwipeDownFromCenter: (() -> Unit)? = null
 
     var hostDrag: HostDrag? = null
     private var dragDownX = 0f
@@ -108,6 +114,7 @@ class VideoSurface(
     private var dragLastY = 0f
     private var dragMayStart = false
     private var hostDragging = false
+    private var upDragging = false
     private var dragTracker: android.view.VelocityTracker? = null
 
     private var gestureEngine: GestureEngine? = null
@@ -222,7 +229,7 @@ class VideoSurface(
                 density = resources.displayMetrics.density
             ),
             GestureActions()
-        )
+        ).also { it.centerSwipeDown = mode == SurfaceMode.FULL }
 
         addView(playerView, LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
         addView(overlay, LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
@@ -402,11 +409,13 @@ class VideoSurface(
                 dragDownX = ev.rawX; dragDownY = ev.rawY; dragLastY = ev.rawY
                 dragMayStart = !touchesControl(ev)
                 hostDragging = false
+                upDragging = false
                 dragTracker?.recycle()
                 dragTracker = android.view.VelocityTracker.obtain().also { it.addMovement(ev) }
             }
             MotionEvent.ACTION_MOVE -> {
                 dragTracker?.addMovement(ev)
+                if (upDragging) return true
                 if (!hostDragging) {
                     val dy = ev.rawY - dragDownY
                     val dx = ev.rawX - dragDownX
@@ -424,7 +433,16 @@ class VideoSurface(
                         dragLastY = ev.rawY
                         return true
                     }
-                    if (kotlin.math.abs(dx) > slop || dy < -slop) dragMayStart = false
+                    if (dragMayStart && ev.pointerCount == 1 && -dy > slop && -dy > kotlin.math.abs(dx)) {
+                        upDragging = true
+                        gesturing = false
+                        engine?.cancel(ev.eventTime)
+                        val cancel = MotionEvent.obtain(ev).also { it.action = MotionEvent.ACTION_CANCEL }
+                        super.dispatchTouchEvent(cancel)
+                        cancel.recycle()
+                        return true
+                    }
+                    if (kotlin.math.abs(dx) > slop) dragMayStart = false
                 } else {
                     host.move(ev.rawY - dragLastY)
                     dragLastY = ev.rawY
@@ -441,6 +459,15 @@ class VideoSurface(
                     val v = if (ev.actionMasked == MotionEvent.ACTION_UP) tracker?.yVelocity ?: 0f else 0f
                     tracker?.recycle()
                     host.end(v)
+                    return true
+                }
+                if (upDragging) {
+                    upDragging = false
+                    tracker?.addMovement(ev)
+                    tracker?.computeCurrentVelocity(1000)
+                    val v = if (ev.actionMasked == MotionEvent.ACTION_UP) tracker?.yVelocity ?: 0f else 0f
+                    tracker?.recycle()
+                    if (ev.actionMasked == MotionEvent.ACTION_UP) host.swipeUp(dragDownY - ev.rawY, v)
                     return true
                 }
                 tracker?.recycle()
@@ -515,6 +542,10 @@ class VideoSurface(
         private var brightness = 0.5f
         private var volume = 0f
         private val audio by lazy { context.getSystemService(Context.AUDIO_SERVICE) as android.media.AudioManager }
+
+        override fun onCenterSwipeDown() {
+            if (features.levels) onSwipeDownFromCenter?.invoke()
+        }
 
         override fun onSingleTap() {
             if (!features.tapToggle) return

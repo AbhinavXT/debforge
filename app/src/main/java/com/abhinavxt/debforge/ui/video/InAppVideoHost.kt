@@ -206,6 +206,8 @@ private fun ActiveVideoHost(
             surface.setPictureInPicture(false)
             surface.playerView.useController = session.isTv // the phone's own controls, not Media3's
         }
+        // A swipe down from the middle leaves full screen like Back does (closing when the setting opened it there).
+        surface.onSwipeDownFromCenter = { if (modeNow == VideoMode.FULL) launcher.dispatch(VideoModeEvent.Back) }
         session.controls.inline = mode == VideoMode.WATCH
         session.controls.exitFullScreen = mode == VideoMode.FULL
     }
@@ -488,6 +490,10 @@ private fun ActiveVideoHost(
                 fun by(dy: Float) { if (dragging) dragOffset = (dragOffset + dy).coerceAtLeast(0f) }
                 override fun start() = begin()
                 override fun move(dy: Float) = by(dy)
+                override fun swipeUp(up: Float, velocityY: Float) {
+                    val minPx = ENTER_FULL_DP * activity.resources.displayMetrics.density
+                    if (modeNow == VideoMode.WATCH && !dragging && shouldEnterFull(up, velocityY, minPx)) launcher.dispatch(VideoModeEvent.EnterFull)
+                }
                 override fun end(velocityY: Float) {
                     if (!dragging) return
                     val (watch, mini, trav) = dragLatest.value

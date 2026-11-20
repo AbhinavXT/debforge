@@ -15,6 +15,17 @@ internal fun shouldMinimise(offset: Float, velocity: Float, travel: Float): Bool
     return offset / travel >= MINIMISE_FRACTION
 }
 
+/** How far up (dp) a swipe on the watch page's picture must go to enter full screen on release. */
+internal const val ENTER_FULL_DP = 64f
+/** An upward fling faster than this (px/s) enters full screen whatever the distance. */
+internal const val ENTER_FULL_FLING = 1200f
+
+/** Pure: does releasing an upward drag of [up] px (up is positive) at [velocity] px/s (down is positive) enter full screen? */
+internal fun shouldEnterFull(up: Float, velocity: Float, minDistance: Float): Boolean {
+    if (!up.isFinite() || !velocity.isFinite() || !minDistance.isFinite() || up <= 0f) return false
+    return up >= minDistance || velocity <= -ENTER_FULL_FLING
+}
+
 /** What a swipe on the mini bar does. */
 internal enum class MiniSwipe { NONE, CLOSE_LEFT, CLOSE_RIGHT, CLOSE_DOWN, EXPAND }
 

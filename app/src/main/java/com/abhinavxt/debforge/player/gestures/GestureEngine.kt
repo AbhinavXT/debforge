@@ -70,9 +70,14 @@ class GestureEngine(config: Config, private val cb: Callbacks) {
         /** [scale]: finger distance now / at the start. */
         fun onPinch(scale: Float)
         fun onPinchEnd()
+        /** A downward swipe that began in the middle of the screen went far enough (only when [GestureEngine.centerSwipeDown] is on). */
+        fun onCenterSwipeDown() {}
     }
 
-    private enum class Mode { IDLE, PRESSED, VERTICAL, SCRUB, LONG_PRESS, PINCH, IGNORED }
+    private enum class Mode { IDLE, PRESSED, VERTICAL, SCRUB, LONG_PRESS, PINCH, IGNORED, CENTER }
+
+    /** A downward drag in the middle (outside both [Config.sideFraction] sides) is a [Callbacks.onCenterSwipeDown], not brightness / volume. */
+    var centerSwipeDown = false
 
     var config: Config = config
         private set
@@ -165,6 +170,10 @@ class GestureEngine(config: Config, private val cb: Callbacks) {
                     cb.onLongPressSlide(steps)
                 }
             }
+            Mode.CENTER -> if (y - downY >= px(CENTER_SWIPE_DP)) {
+                mode = Mode.IGNORED
+                cb.onCenterSwipeDown()
+            }
             Mode.IDLE, Mode.IGNORED -> Unit
         }
     }
@@ -182,6 +191,7 @@ class GestureEngine(config: Config, private val cb: Callbacks) {
             return
         }
         when {
+            centerSwipeDown && dy > 0f && abs(dy) > 1.5f * abs(dx) && sideOf(downX) == null -> mode = Mode.CENTER
             abs(dy) > 1.5f * abs(dx) -> {
                 mode = Mode.VERTICAL
                 verticalSide = if (downX < config.width / 2) Side.LEFT else Side.RIGHT
@@ -206,7 +216,7 @@ class GestureEngine(config: Config, private val cb: Callbacks) {
             Mode.SCRUB -> cb.onScrubEnd()
             Mode.LONG_PRESS -> cb.onLongPressEnd()
             Mode.PINCH -> cb.onPinchEnd()
-            Mode.IDLE, Mode.IGNORED -> Unit
+            Mode.IDLE, Mode.IGNORED, Mode.CENTER -> Unit
         }
         mode = Mode.IDLE
     }
@@ -284,3 +294,6 @@ class GestureEngine(config: Config, private val cb: Callbacks) {
         }
     }
 }
+
+/** How far (dp) a downward swipe from the middle must go to count. */
+private const val CENTER_SWIPE_DP = 64f
