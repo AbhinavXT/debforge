@@ -8,6 +8,8 @@ import androidx.datastore.preferences.preferencesDataStore
 import com.abhinavxt.debforge.data.provider.OAuthCredentials
 import com.abhinavxt.debforge.domain.ProviderId
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -55,16 +57,19 @@ class TokenStore @Inject constructor(
     /** The provider the user chose (may not have a token yet). Null on first launch. */
     val activeProviderFlow: Flow<ProviderId?> = context.tokenDataStore.data
         .map { it.activeOf() }
+        .flowOn(Dispatchers.Default) // Keystore decrypt: never on Main
         .distinctUntilChanged()
 
     /** Active provider IF it has a token, else null. Drives the auth gate. */
     val signedInProviderFlow: Flow<ProviderId?> = context.tokenDataStore.data
         .map { prefs -> prefs.activeOf()?.takeIf { prefs.tokenOf(it) != null } }
+        .flowOn(Dispatchers.Default) // Keystore decrypt: never on Main
         .distinctUntilChanged()
 
     /** Providers that currently have a stored token. */
     val signedInSetFlow: Flow<Set<ProviderId>> = context.tokenDataStore.data
         .map { prefs -> ProviderId.entries.filter { prefs.tokenOf(it) != null }.toSet() }
+        .flowOn(Dispatchers.Default) // Keystore decrypt: never on Main
         .distinctUntilChanged()
 
     /** One-shot read (used by the synchronous AuthInterceptor). */

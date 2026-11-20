@@ -22,6 +22,10 @@ class DebForgeApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        // Debug builds log any disk/slow work on Main (logcat tag StrictMode).
+        if (BuildConfig.DEBUG) {
+            android.os.StrictMode.setThreadPolicy(android.os.StrictMode.ThreadPolicy.Builder().detectAll().penaltyLog().build())
+        }
         CrashReporter.install(this)
         com.abhinavxt.debforge.download.DownloadFiles.init(this)
         com.abhinavxt.debforge.data.provider.ProviderCalls.init(this)

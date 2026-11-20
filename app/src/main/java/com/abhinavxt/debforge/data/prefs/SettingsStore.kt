@@ -13,6 +13,8 @@ import com.abhinavxt.debforge.domain.ReleasePrefs
 import com.abhinavxt.debforge.domain.SortOrder
 import com.abhinavxt.debforge.domain.ThemeMode
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -111,6 +113,7 @@ class SettingsStore @Inject constructor(
         // Encrypted at rest like service tokens; unreadable (e.g. restored
         // from backup on another device) reads as empty.
         .map { prefs -> prefs[keyTmdbKey]?.let(TokenCipher::decrypt).orEmpty() }
+        .flowOn(Dispatchers.Default) // Keystore decrypt: never on Main
 
     /** Browse opens in poster view. On by default. */
     val posterViewFlow: Flow<Boolean> = context.settingsDataStore.data

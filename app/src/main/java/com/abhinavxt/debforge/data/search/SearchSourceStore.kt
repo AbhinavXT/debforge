@@ -11,6 +11,8 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -42,6 +44,7 @@ class SearchSourceStore @Inject constructor(
 
     val sources: Flow<List<SearchSource>> = context.searchSourcesDataStore.data
         .map { prefs -> prefs[key]?.let(TokenCipher::decrypt)?.let { runCatching { adapter.fromJson(it) }.getOrNull() }.orEmpty() }
+        .flowOn(Dispatchers.Default) // Keystore decrypt: never on Main
         .distinctUntilChanged()
 
     suspend fun all(): List<SearchSource> = sources.first()

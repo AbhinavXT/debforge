@@ -10,6 +10,8 @@ import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.abhinavxt.debforge.data.prefs.TokenCipher
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -60,11 +62,12 @@ class TraktStore @Inject constructor(private val context: Context) {
         return Session(creds, access, secret(keyRefresh), this[keyExpiresAt] ?: 0L)
     }
 
-    val credentialsFlow: Flow<Credentials?> = context.traktDataStore.data.map { it.credentials() }.distinctUntilChanged()
+    val credentialsFlow: Flow<Credentials?> = context.traktDataStore.data.map { it.credentials() }.flowOn(Dispatchers.Default).distinctUntilChanged()
 
     /** Trakt username once signed in, else null. */
     val userFlow: Flow<String?> = context.traktDataStore.data
         .map { p -> p.session()?.let { p[keyUser] ?: "" } }
+        .flowOn(Dispatchers.Default) // Keystore decrypt: never on Main
         .distinctUntilChanged()
 
     /** Send what's playing in DebForge's player to Trakt. On by default. */

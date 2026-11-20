@@ -14,6 +14,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -59,8 +60,8 @@ class OpenSubtitlesStore @Inject constructor(private val context: Context) {
 
     data class Account(val username: String, val password: String)
 
-    val apiKeyFlow: Flow<String?> = context.openSubtitlesDataStore.data.map { it.secret(keyApiKey) }.distinctUntilChanged()
-    val usernameFlow: Flow<String?> = context.openSubtitlesDataStore.data.map { it.secret(keyUser) }.distinctUntilChanged()
+    val apiKeyFlow: Flow<String?> = context.openSubtitlesDataStore.data.map { it.secret(keyApiKey) }.flowOn(Dispatchers.Default).distinctUntilChanged()
+    val usernameFlow: Flow<String?> = context.openSubtitlesDataStore.data.map { it.secret(keyUser) }.flowOn(Dispatchers.Default).distinctUntilChanged()
 
     suspend fun apiKey(): String? = apiKeyFlow.first()
 
