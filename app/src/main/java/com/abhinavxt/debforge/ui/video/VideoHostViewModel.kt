@@ -107,7 +107,7 @@ class VideoHostViewModel @Inject constructor(
         show(null, true)
         viewModelScope.launch {
             val video = try {
-                resolver.resolve(id)
+                resolver.resolve(com.abhinavxt.debforge.domain.YouTubeLinks.watchUrl(id))
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {

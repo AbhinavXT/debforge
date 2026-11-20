@@ -92,7 +92,7 @@ class VideoHandoff @Inject constructor(
         // The resolver takes a link, not a bare id: a bare id is "not a video link" and always failed.
         val video = resolver.resolve(YouTubeLinks.watchUrl(videoId))
         val choices = YouTubeFormats.choices(video.streams, android.os.Build.VERSION.SDK_INT, video.durationSec)
-        choiceForMode(choices, EnqueueMode.VIDEO, settings.youTubeQualityFlow.first())?.let { youTubePlayRequest(video, it) }
+        choiceForMode(choices, EnqueueMode.VIDEO, settings.youTubeQualityFlow.first())?.let { youTubePlayRequest(video, it, emptyList()) }
     } catch (e: CancellationException) {
         throw e
     } catch (e: Exception) {
