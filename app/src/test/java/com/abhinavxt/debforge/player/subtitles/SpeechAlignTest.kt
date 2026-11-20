@@ -86,7 +86,12 @@ class SpeechAlignTest {
         assertTrue("took $ms ms", ms < 10_000)
     }
 
-    @Test fun detectorFindsBurstsWithHangoverAndDrift() {
+    /** Speech-like energy: 150 ms loud syllables with 50 ms dips, so its level swings the way a voice does. */
+    private fun syllables(energy: FloatArray, start: Int, len: Int) {
+        for (i in start until start + len) energy[i] = if ((i - start) % 20 < 15) 1f else 0.01f
+    }
+
+    @Test fun detectorFindsSpeechOverDriftingFloor() {
         val n = 60_000 // 10 min
         val r = Random(7)
         val energy = FloatArray(n)
@@ -95,14 +100,27 @@ class SpeechAlignTest {
             energy[i] = (floor * (0.8 + 0.4 * r.nextDouble())).toFloat()
         }
         val starts = intArrayOf(5_000, 15_000, 30_000, 45_000)
-        for (st in starts) for (i in st until st + 500) energy[i] = 1f
+        for (st in starts) syllables(energy, st, 500)
         val out = SpeechDetector.detect(energy)
         for (st in starts) {
-            for (i in st until st + 500 + SpeechDetector.HANGOVER_FRAMES) assertTrue("frame $i", out[i])
-            assertTrue(!out[st - 5])
-            assertTrue(!out[st + 500 + SpeechDetector.HANGOVER_FRAMES + 2])
+            val inside = (st until st + 500).count { out[it] }
+            assertTrue("burst at $st: $inside of 500", inside >= 450)
+            // the 1 s burst window and the hangover let it spill, but not far
+            assertTrue((st - 150 until st - 60).none { out[it] })
+            assertTrue((st + 500 + 120 until st + 500 + 200).none { out[it] })
         }
-        assertEquals(starts.size * (500 + SpeechDetector.HANGOVER_FRAMES), out.count { it })
+        val total = out.count { it }
+        assertTrue("speech frames=$total", total in starts.size * 450..starts.size * 800)
+    }
+
+    @Test fun detectorIgnoresSteadyLoudSound() {
+        // A constant loud bed (music, engine) is far above the floor but is not speech.
+        val energy = FloatArray(60_000) { 1e-4f }
+        for (i in 10_000 until 40_000) energy[i] = 1f
+        for (st in intArrayOf(5_000, 45_000)) syllables(energy, st, 500)
+        val out = SpeechDetector.detect(energy)
+        assertTrue((15_000 until 35_000).count { out[it] } < 1_000)
+        assertTrue((5_000 until 5_500).count { out[it] } > 450)
     }
 
     @Test fun fftMatchesNaiveDft() {

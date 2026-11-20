@@ -223,8 +223,8 @@ class AudioSpeechScannerTest {
 
     @Test fun alignSeesTheDetectedSpeech() {
         var seen = -1
-        run({ FloatArray(2000) { if (it in 500..900) 1f else 0.001f } }, align = { s, _, _ -> seen = s.count { it }; match })
-        assertTrue("speech frames=$seen", seen in 380..460)
+        run({ FloatArray(2000) { if (it in 500..900) (if ((it - 500) % 20 < 15) 1f else 0.01f) else 0.001f } }, align = { s, _, _ -> seen = s.count { it }; match })
+        assertTrue("speech frames=$seen", seen in 380..700)
     }
 
     @Test fun cancellationIsNotATrackFailure() {

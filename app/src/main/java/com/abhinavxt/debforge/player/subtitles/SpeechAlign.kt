@@ -38,13 +38,15 @@ object SpeechAlign {
     private const val BIN_MS = 100
     private const val FRAME_MS = SpeechDetector.FRAME_MS
     private const val MAX_BINS = 1 shl 17
+    private const val FAMILY = 0.01
+    private const val FAMILY_KEEP = 0.97
 
     fun align(
         speech: BooleanArray,
         cues: List<CueSpan>,
         maxLagMs: Int = 600_000,
-        minScore: Double = 0.12,
-        minConfidence: Double = 0.10,
+        minScore: Double = 0.20,
+        minConfidence: Double = 0.30,
         onProgress: (Float) -> Unit = {},
         ensureActive: () -> Unit = {},
     ): AlignResult {
@@ -112,15 +114,18 @@ object SpeechAlign {
 
         var best = 0
         for (i in RATES.indices) if (peaks[i] > peaks[best]) best = i
+        // Rates within 1% of each other (1, 24/23.976, 23.976/24; 25/24, 25/23.976) differ by under 7 s over 2 h and
+        // cannot be told apart on a sparse film, where noise picks between them. Plain 1.0 stands unless a
+        // neighbour beats it clearly, so a film that needs no stretch is not given one by chance.
+        if (abs(RATES[best] / 1.0 - 1.0) <= FAMILY && best != 0 && peaks[0] >= peaks[best] * FAMILY_KEEP) best = 0
         val bestScore = peaks[best]
         val lags = corrs[best]
         if (lags == null || bestScore <= 0.0) return AlignResult.NoMatch(max(bestScore, 0.0), 0.0)
 
         var runner = 0.0
         for (i in RATES.indices) {
-            // Rates within 0.15% of the winner (e.g. 1 and 24/23.976) are indistinguishable on short
-            // files; they are not treated as a rival.
-            if (i != best && abs(RATES[i] / RATES[best] - 1.0) > 0.0015 && peaks[i] > runner) runner = peaks[i]
+            // Rates within 1% of the winner are one family, indistinguishable on short files; not a rival.
+            if (i != best && abs(RATES[i] / RATES[best] - 1.0) > FAMILY && peaks[i] > runner) runner = peaks[i]
         }
         val guard = 1000 / BIN_MS
         for (l in -maxLag..maxLag) {

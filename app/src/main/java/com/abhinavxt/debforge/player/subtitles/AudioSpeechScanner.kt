@@ -96,30 +96,35 @@ class AudioSpeechScanner(private val context: Context) {
             var idle = 0
             while (!outputDone) {
                 ctx.ensureActive()
-                if (!inputDone) {
-                    val i = created.dequeueInputBuffer(TIMEOUT_US)
-                    if (i >= 0) {
-                        val buf = created.getInputBuffer(i)!!
-                        val size = ex.readSampleData(buf, 0)
-                        if (size < 0) {
-                            created.queueInputBuffer(i, 0, 0, 0, MediaCodec.BUFFER_FLAG_END_OF_STREAM)
-                            inputDone = true
-                        } else {
-                            created.queueInputBuffer(i, 0, size, ex.sampleTime, 0)
-                            ex.advance()
-                        }
+                var progressed = false
+                // Keep the decoder fed: queue every input buffer that is free right now, without waiting.
+                while (!inputDone) {
+                    val i = created.dequeueInputBuffer(0)
+                    if (i < 0) break
+                    val buf = created.getInputBuffer(i)!!
+                    val size = ex.readSampleData(buf, 0)
+                    if (size < 0) {
+                        created.queueInputBuffer(i, 0, size.coerceAtLeast(0), 0, MediaCodec.BUFFER_FLAG_END_OF_STREAM)
+                        inputDone = true
+                    } else {
+                        created.queueInputBuffer(i, 0, size, ex.sampleTime, 0)
+                        ex.advance()
                     }
+                    progressed = true
                 }
-                val o = created.dequeueOutputBuffer(info, TIMEOUT_US)
-                when {
-                    o == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED -> {
+                // Drain every output buffer that is ready. Only when nothing moved does the call wait (briefly), so the
+                // decoder is never stalled in lockstep with a 10 ms timeout per buffer.
+                while (!outputDone) {
+                    val o = created.dequeueOutputBuffer(info, if (progressed) 0L else TIMEOUT_US)
+                    if (o == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
                         val f = created.outputFormat
                         rate = f.intOr(MediaFormat.KEY_SAMPLE_RATE, rate)
                         channels = f.intOr(MediaFormat.KEY_CHANNEL_COUNT, channels)
                         encoding = encodingOf(f.intOr(MediaFormat.KEY_PCM_ENCODING, AudioFormat.ENCODING_PCM_16BIT))
                             ?: throw ScanFailure(false, "unsupported PCM encoding")
-                    }
-                    o >= 0 -> {
+                        progressed = true
+                    } else if (o >= 0) {
+                        progressed = true
                         idle = 0
                         if (info.size > 0) {
                             val out = created.getOutputBuffer(o)!!
@@ -136,9 +141,11 @@ class AudioSpeechScanner(private val context: Context) {
                         }
                         created.releaseOutputBuffer(o, false)
                         if (info.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM != 0) outputDone = true
+                    } else {
+                        // INFO_TRY_AGAIN_LATER: a decoder that never produces anything would spin here forever.
+                        if (inputDone && !progressed && ++idle > 500) throw ScanFailure(false, "decoder stalled")
+                        break
                     }
-                    // INFO_TRY_AGAIN_LATER: a decoder that never produces anything would spin here forever.
-                    else -> if (inputDone && ++idle > 500) throw ScanFailure(false, "decoder stalled")
                 }
             }
             val frames = energy.finish()
