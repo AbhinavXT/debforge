@@ -1128,6 +1128,16 @@
     <string name="media_refresh">Yenile</string>
     <string name="media_play_all">Tümünü oynat</string>
     <string name="media_play_all_hint">Videolar ses olarak oynatılır</string>
+    <string name="media_browse_folders">Klasörler</string>
+    <string name="media_browse_artists">Sanatçılar</string>
+    <string name="media_browse_albums">Albümler</string>
+    <string name="media_unknown_album">Bilinmeyen albüm</string>
+    <string name="media_root_folder">İndirme klasörü</string>
+    <string name="media_shuffle">Karıştır</string>
+    <plurals name="media_group_tracks">
+        <item quantity="one">%d parça</item>
+        <item quantity="other">%d parça</item>
+    </plurals>
     <string name="media_stream_badge">Akış</string>
     <string name="media_yt_mode_audio">Ses</string>
     <string name="media_yt_mode_video">Video</string>

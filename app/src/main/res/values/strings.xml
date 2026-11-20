@@ -1130,6 +1130,16 @@
     <string name="media_refresh">Refresh</string>
     <string name="media_play_all">Play all</string>
     <string name="media_play_all_hint">Videos play as audio</string>
+    <string name="media_browse_folders">Folders</string>
+    <string name="media_browse_artists">Artists</string>
+    <string name="media_browse_albums">Albums</string>
+    <string name="media_unknown_album">Unknown album</string>
+    <string name="media_root_folder">Download folder</string>
+    <string name="media_shuffle">Shuffle</string>
+    <plurals name="media_group_tracks">
+        <item quantity="one">%d track</item>
+        <item quantity="other">%d tracks</item>
+    </plurals>
     <string name="media_stream_badge">Stream</string>
     <string name="media_yt_mode_audio">Audio</string>
     <string name="media_yt_mode_video">Video</string>

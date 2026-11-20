@@ -241,6 +241,32 @@ class DatabaseMigrationTest {
     }
 
     @Test
+    fun v13RowsUpgradeWithNullAlbumFieldsAndBackfillQueriesWork() {
+        val name = create(13) { db ->
+            db.execSQL(
+                "INSERT INTO downloads (rdId, provider, filename, originalLink, downloadUrl, host, filesize, chunksAllowed, state, " +
+                    "bytesDownloaded, title, artist, createdAt, updatedAt) VALUES ('l1', 'LOCAL', 'a.mp3', 'p', '', '', 1, 1, 'COMPLETED', 1, 'Song', 'Art', 1, 2)"
+            )
+        }
+        val room = openWithRoom(name)
+        try {
+            runBlocking {
+                val dao = room.downloadDao()
+                val row = dao.getById("l1")!!
+                assertNull(row.album); assertNull(row.albumArtist); assertNull(row.trackNo)
+                assertEquals(listOf("l1"), dao.localUnchecked(10).map { it.id })
+                assertEquals(1, dao.setLocalAlbum("l1", "Alb", "AA", 3))
+                val after = dao.getById("l1")!!
+                assertEquals(listOf("Song", "Art", "Alb", "AA", 3), listOf(after.title, after.artist, after.album, after.albumArtist, after.trackNo))
+                assertEquals(0, dao.setLocalAlbum("l1", "Other", null, null)) // already read
+                assertTrue(dao.localUnchecked(10).isEmpty())
+            }
+        } finally {
+            room.close()
+        }
+    }
+
+    @Test
     fun refreshingAndTrimmingFeedItemsKeepsNewAndQueuedState() {
         val room = openWithRoom(create(13) {})
         try {

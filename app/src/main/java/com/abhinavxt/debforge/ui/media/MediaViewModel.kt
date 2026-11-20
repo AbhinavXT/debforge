@@ -35,6 +35,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -63,7 +64,11 @@ data class MediaUiState(
     /** A playlist is open: its rows, downloads and YouTube items in playlist order. Null otherwise. */
     val playlistRows: List<PlaylistRow>? = null,
     /** The open playlist's YouTube items that "Download all" would queue. */
-    val ytToDownload: List<PlaylistEntry.YouTube> = emptyList()
+    val ytToDownload: List<PlaylistEntry.YouTube> = emptyList(),
+    /** Folders / Artists / Albums pick, no group open: the group list. Null otherwise. */
+    val groups: List<AudioGroup>? = null,
+    /** A group is open: its header info (name, marker). Its tracks are in [shown]. */
+    val openGroup: AudioGroup? = null
 ) {
     /** Tab badge count: the audio badge ignores the list pick. */
     fun count(k: FileKind): Int = shown[k].orEmpty().size.let { if (k == FileKind.Audio) maxOf(it, audioTotal) else it }
@@ -90,6 +95,34 @@ internal fun audioListView(rows: List<DownloadEntity>, lists: AudioListsState, p
     return playlist.trackIds.mapNotNull { byId[it] }
 }
 
+internal const val BROWSE_FOLDERS = "folders"
+internal const val BROWSE_ARTISTS = "artists"
+internal const val BROWSE_ALBUMS = "albums"
+
+/** The browse mode a reserved audioList id stands for; null for All, Favourites, Podcasts and playlist ids. */
+internal fun browseModeOf(pick: String?): BrowseMode? = when (pick) {
+    BROWSE_FOLDERS -> BrowseMode.FOLDERS
+    BROWSE_ARTISTS -> BrowseMode.ARTISTS
+    BROWSE_ALBUMS -> BrowseMode.ALBUMS
+    else -> null
+}
+
+/** What a browse pick shows: [groups] (list) or [open] with its [tracks] (query applied). */
+internal class BrowseView(val groups: List<AudioGroup>?, val open: AudioGroup?, val tracks: List<DownloadEntity>)
+
+/**
+ * [audio] is every audio row in the current sort. Null when [pick] is not a browse pick.
+ * An [openKey] that no longer exists (group emptied) falls back to the group list.
+ */
+internal fun browseView(audio: List<DownloadEntity>, pick: String?, openKey: String?, root: String, query: String): BrowseView? {
+    val mode = browseModeOf(pick) ?: return null
+    if (openKey != null) {
+        val open = groupsOf(audio, mode, root).firstOrNull { it.key == openKey }
+        if (open != null) return BrowseView(null, open, tracksOf(audio, mode, openKey, root, query))
+    }
+    return BrowseView(groupsOf(audio, mode, root, query), null, emptyList())
+}
+
 /** Name shown for a download: its title (YouTube) or the cleaned release name. */
 fun DownloadEntity.displayTitle(): String = title?.takeIf { it.isNotBlank() } ?: releaseLabels(filename).title
 
@@ -109,7 +142,7 @@ class MediaViewModel @Inject constructor(
     private val playbackPositions: com.abhinavxt.debforge.data.playback.PlaybackPositions
 ) : ViewModel() {
 
-    private data class Ui(val query: String, val sort: SortOrder, val kind: FileKind, val selected: Set<String>, val audioList: String? = null)
+    private data class Ui(val query: String, val sort: SortOrder, val kind: FileKind, val selected: Set<String>, val audioList: String? = null, val openGroup: String? = null)
 
     init {
         // Pick up files added to the folder since the last scan (at most every 30 s).
@@ -171,7 +204,9 @@ class MediaViewModel @Inject constructor(
     private val completed = dao.observeCompleted().distinctUntilChanged()
         .map { rows -> rows.map { Row(it, kindOf(it.filename), it.displayTitle()) } }
 
-    val state: StateFlow<MediaUiState> = combine(completed, ui, activeSummary, audioLists.state, ytDownloads) { rows, u, active, lists, ytDl ->
+    private val listsAndRoot = combine(audioLists.state, settings.downloadDirFlow) { l, r -> l to r }
+
+    val state: StateFlow<MediaUiState> = combine(completed, ui, activeSummary, listsAndRoot, ytDownloads) { rows, u, active, (lists, root), ytDl ->
         val q = u.query.trim()
         val byKind = rows.groupBy { it.kind }
         val shown = FileKind.entries.associateWith { kind ->
@@ -181,8 +216,18 @@ class MediaViewModel @Inject constructor(
                 .map { it.entity }
         }
         val audioMatching = shown[FileKind.Audio].orEmpty().size
+        // Browse picks group every audio row (not only the matching ones): a folder or artist name can match the query.
+        val browse = browseModeOf(u.audioList)?.let {
+            val all = byKind[FileKind.Audio].orEmpty().sortedWith(comparator(u.sort)).map { r -> r.entity }
+            browseView(all, u.audioList, u.openGroup, root, u.query)
+        }
+        // The open group emptied: forget it, so it doesn't reopen by itself when files with that key return.
+        if (browse != null && u.openGroup != null && browse.open == null) {
+            ui.update { if (it.openGroup == u.openGroup) it.copy(openGroup = null) else it }
+        }
         val view = shown.toMutableMap().also { m ->
-            if (u.audioList != null) m[FileKind.Audio] = audioListView(m[FileKind.Audio].orEmpty(), lists, u.audioList)
+            if (browse != null) m[FileKind.Audio] = browse.tracks
+            else if (u.audioList != null) m[FileKind.Audio] = audioListView(m[FileKind.Audio].orEmpty(), lists, u.audioList)
         }
         val selected = pruneSelection(u.selected, view[u.kind].orEmpty().map { it.id })
         val typed = u.audioList?.let { pick -> lists.typedPlaylists().firstOrNull { it.id == pick } }
@@ -191,8 +236,8 @@ class MediaViewModel @Inject constructor(
             playlistRows(it.entries, shown[FileKind.Audio].orEmpty().associateBy { e -> e.id }, lists.ytMeta, locals, u.query)
         }
         val toDownload = typed?.let { youTubeToDownload(it.entries, ytDl) }.orEmpty()
-        MediaUiState(view, rows.size, u.query, u.sort, u.kind, selected, active, u.audioList, lists, audioMatching, true, playlistRows, toDownload)
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), MediaUiState(loaded = false))
+        MediaUiState(view, rows.size, u.query, u.sort, u.kind, selected, active, u.audioList, lists, audioMatching, true, playlistRows, toDownload, browse?.groups, browse?.open)
+    }.flowOn(Dispatchers.Default).stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), MediaUiState(loaded = false))
 
     private fun comparator(sort: SortOrder): Comparator<Row> = when (sort) {
         SortOrder.DATE_DESC -> compareByDescending { it.entity.updatedAt }
@@ -206,9 +251,12 @@ class MediaViewModel @Inject constructor(
     fun setQuery(q: String) = ui.update { it.copy(query = q) }
     fun setSort(s: SortOrder) = ui.update { it.copy(sort = s) }
     /** Selection belongs to one segment, so switching drops it. */
-    fun setKind(k: FileKind) = ui.update { it.copy(kind = k, selected = emptySet()) }
+    fun setKind(k: FileKind) = ui.update { it.copy(kind = k, selected = emptySet(), openGroup = null) }
 
-    fun selectAudioList(pick: String?) = ui.update { it.copy(audioList = pick, selected = emptySet()) }
+    /** Changing the chip closes any open group. */
+    fun selectAudioList(pick: String?) = ui.update { it.copy(audioList = pick, selected = emptySet(), openGroup = null) }
+    fun openGroup(key: String) = ui.update { it.copy(openGroup = key, selected = emptySet()) }
+    fun closeGroup() = ui.update { it.copy(openGroup = null, selected = emptySet()) }
     fun toggleFavourite(id: String) { viewModelScope.launch { audioLists.toggleFavourite(id) } }
     fun createPlaylist(name: String, addIds: Collection<String> = emptyList()) {
         viewModelScope.launch {

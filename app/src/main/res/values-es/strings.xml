@@ -1181,6 +1181,17 @@
     <string name="media_refresh">Actualizar</string>
     <string name="media_play_all">Reproducir todo</string>
     <string name="media_play_all_hint">Los vídeos se reproducen como audio</string>
+    <string name="media_browse_folders">Carpetas</string>
+    <string name="media_browse_artists">Artistas</string>
+    <string name="media_browse_albums">Álbumes</string>
+    <string name="media_unknown_album">Álbum desconocido</string>
+    <string name="media_root_folder">Carpeta de descargas</string>
+    <string name="media_shuffle">Aleatorio</string>
+    <plurals name="media_group_tracks">
+        <item quantity="one">%d canción</item>
+        <item quantity="many">%d canciones</item>
+        <item quantity="other">%d canciones</item>
+    </plurals>
     <string name="media_stream_badge">Streaming</string>
     <string name="media_yt_mode_audio">Audio</string>
     <string name="media_yt_mode_video">Vídeo</string>

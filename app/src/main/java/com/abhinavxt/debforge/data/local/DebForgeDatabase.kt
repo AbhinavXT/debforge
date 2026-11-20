@@ -41,7 +41,7 @@ class Converters {
         com.abhinavxt.debforge.data.subscriptions.FeedItemEntity::class,
         com.abhinavxt.debforge.data.sponsor.SponsorSegmentEntity::class
     ],
-    version = 13,
+    version = 14,
     // Schemas land in app/schemas (commit them): DatabaseMigrationTest checks
     // every migration against them. v1–v7 were rebuilt from the migrations.
     exportSchema = true
@@ -63,7 +63,7 @@ abstract class DebForgeDatabase : RoomDatabase() {
 
         /** Every migration, oldest first. A new one goes here (and DatabaseMigrationTest checks it). Lazy: they are declared below. */
         val ALL_MIGRATIONS: Array<Migration> by lazy {
-            arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13)
+            arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14)
         }
 
         /**
@@ -189,6 +189,15 @@ abstract class DebForgeDatabase : RoomDatabase() {
                     "CREATE TABLE IF NOT EXISTS `sponsor_segments` (`videoId` TEXT NOT NULL, `json` TEXT NOT NULL, " +
                         "`fetchedAt` INTEGER NOT NULL, PRIMARY KEY(`videoId`))"
                 )
+            }
+        }
+
+        /** v13 -> v14: album, album artist and track number of imported audio (NULL until the tags are read). */
+        val MIGRATION_13_14 = object : Migration(13, 14) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE `downloads` ADD COLUMN `album` TEXT")
+                db.execSQL("ALTER TABLE `downloads` ADD COLUMN `albumArtist` TEXT")
+                db.execSQL("ALTER TABLE `downloads` ADD COLUMN `trackNo` INTEGER")
             }
         }
 

@@ -1075,6 +1075,15 @@
     <string name="media_refresh">刷新</string>
     <string name="media_play_all">全部播放</string>
     <string name="media_play_all_hint">视频将以音频播放</string>
+    <string name="media_browse_folders">文件夹</string>
+    <string name="media_browse_artists">艺术家</string>
+    <string name="media_browse_albums">专辑</string>
+    <string name="media_unknown_album">未知专辑</string>
+    <string name="media_root_folder">下载文件夹</string>
+    <string name="media_shuffle">随机播放</string>
+    <plurals name="media_group_tracks">
+        <item quantity="other">%d 首曲目</item>
+    </plurals>
     <string name="media_stream_badge">在线</string>
     <string name="media_yt_mode_audio">音频</string>
     <string name="media_yt_mode_video">视频</string>

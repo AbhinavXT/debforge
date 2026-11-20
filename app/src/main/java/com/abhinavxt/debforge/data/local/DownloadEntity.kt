@@ -27,6 +27,7 @@ import com.abhinavxt.debforge.domain.ProviderId
  *  - [supportsRanges] cached result of the 206-probe. Null = not probed yet.
  *  - [referer] / [userAgent] sent with every request for this file: what the
  *                    in-app browser used, for hosts that refuse anything else.
+ *  - [album]         NULL = tags not read yet; "" = read, none. [albumArtist] / [trackNo] NULL when absent.
  *  - [audioUrl]      a stream whose audio is apart: its audio playlist, joined
  *                    on its own and combined with the video at the end.
  *
@@ -58,6 +59,9 @@ data class DownloadEntity(
     val audioUrl: String? = null,
     val title: String? = null,
     val artist: String? = null,
+    val album: String? = null,
+    val albumArtist: String? = null,
+    val trackNo: Int? = null,
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis()
 )

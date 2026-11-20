@@ -8,6 +8,7 @@ import android.net.Uri
 import android.util.Log
 import com.abhinavxt.debforge.data.local.DownloadDao
 import com.abhinavxt.debforge.data.local.DownloadEntity
+import com.abhinavxt.debforge.domain.AudioFolder
 import com.abhinavxt.debforge.ui.components.releaseLabels
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CancellationException
@@ -39,7 +40,21 @@ object LocalMetadataLogic {
      * A file that opened but has no tags gets the cleaned file name; one that failed to open stays blank
      * (retried on a later scan, skipped for the rest of the current run).
      */
-    fun needsCheck(title: String?): Boolean = title.isNullOrBlank()
+    fun needsCheck(title: String?, album: String? = ""): Boolean = title.isNullOrBlank() || album == null
+
+    /** A blank title means the full read (title, artist, artwork); otherwise only the album fields are missing. */
+    fun needsFullRead(title: String?): Boolean = title.isNullOrBlank()
+
+    /** Non-audio files have no album: stored as "" without opening the file (when the title is already set). */
+    fun skipsFileOpen(filename: String, title: String?): Boolean =
+        !needsFullRead(title) && !AudioFolder.isAudioName(filename)
+
+    /** The album to store: the tag when it has text, else "" (read, none). */
+    fun albumFor(tag: String?): String = tag?.trim().orEmpty()
+
+    /** "3/12" -> 3, " 7 " -> 7; anything else (or below 1) -> null. */
+    fun trackNoFor(tag: String?): Int? =
+        tag?.substringBefore('/')?.trim()?.toIntOrNull()?.takeIf { it > 0 }
 
     /** The title to store: the tag when it has text, else [fallback]. */
     fun titleFor(tag: String?, fallback: String): String =
@@ -108,11 +123,23 @@ class LocalMetadata @Inject constructor(
             for (id in todo) {
                 kotlin.coroutines.coroutineContext.ensureActive()
                 val row = byId.getValue(id)
-                val read = readWithTimeout(row)
+                if (LocalMetadataLogic.skipsFileOpen(row.filename, row.title)) {
+                    dao.setLocalAlbum(id, "", null, null)
+                    continue
+                }
+                val full = LocalMetadataLogic.needsFullRead(row.title)
+                val read = readWithTimeout(row, full)
                 if (read == null) { skipped += id; continue }
-                val fallback = releaseLabels(row.filename).title
-                val title = LocalMetadataLogic.titleToStore(true, read.title, fallback) ?: continue
-                dao.setLocalMeta(id, title, LocalMetadataLogic.artistFor(read.artist))
+                val album = LocalMetadataLogic.albumFor(read.album)
+                val albumArtist = LocalMetadataLogic.artistFor(read.albumArtist)
+                val trackNo = LocalMetadataLogic.trackNoFor(read.trackNo)
+                if (full) {
+                    val fallback = releaseLabels(row.filename).title
+                    val title = LocalMetadataLogic.titleFor(read.title, fallback)
+                    dao.setLocalFull(id, title, LocalMetadataLogic.artistFor(read.artist), album, albumArtist, trackNo)
+                } else {
+                    dao.setLocalAlbum(id, album, albumArtist, trackNo)
+                }
                 // The row may have been removed while the picture was written: don't leave it behind.
                 if (dao.getById(id) == null) artworkFile(context, id).delete()
             }
@@ -123,17 +150,17 @@ class LocalMetadata @Inject constructor(
      * Reads on its own coroutine so a file that hangs can't block the pass. The retriever call can't be
      * interrupted: on timeout the pass moves on and that thread finishes (and releases the retriever) on its own.
      */
-    private suspend fun readWithTimeout(row: DownloadEntity): Tags? {
-        val job = scope.async { runCatching { read(row) }.getOrNull() }
+    private suspend fun readWithTimeout(row: DownloadEntity, full: Boolean): Tags? {
+        val job = scope.async { runCatching { read(row, full) }.getOrNull() }
         val result = withTimeoutOrNull(LocalMetadataLogic.FILE_TIMEOUT_MS) { job.await() }
         if (result == null) job.cancel()
         return result
     }
 
-    private class Tags(val title: String?, val artist: String?)
+    private class Tags(val title: String?, val artist: String?, val album: String?, val albumArtist: String?, val trackNo: String?)
 
     /** Tags of the file, also saving the artwork. Null when the file can't be opened. */
-    private fun read(row: DownloadEntity): Tags? {
+    private fun read(row: DownloadEntity, full: Boolean): Tags? {
         val path = row.finalFilePath ?: row.sourceRef
         val retriever = MediaMetadataRetriever()
         try {
@@ -146,10 +173,15 @@ class LocalMetadata @Inject constructor(
             val title = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE)
             val artist = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST)
                 ?: retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUMARTIST)
-            val hasVideo = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_HAS_VIDEO) == "yes"
-            val bitmap = runCatching { picture(retriever, hasVideo) }.getOrNull()
-            if (bitmap != null) saveArtwork(row.id, bitmap)
-            return Tags(title, artist)
+            val album = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM)
+            val albumArtist = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUMARTIST)
+            val trackNo = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_CD_TRACK_NUMBER)
+            if (full) { // album-only backfill never re-decodes artwork
+                val hasVideo = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_HAS_VIDEO) == "yes"
+                val bitmap = runCatching { picture(retriever, hasVideo) }.getOrNull()
+                if (bitmap != null) saveArtwork(row.id, bitmap)
+            }
+            return Tags(title, artist, album, albumArtist, trackNo)
         } catch (e: Exception) {
             return null
         } finally {

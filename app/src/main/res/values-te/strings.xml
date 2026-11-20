@@ -1128,6 +1128,16 @@
     <string name="media_refresh">రిఫ్రెష్ చేయి</string>
     <string name="media_play_all">అన్నీ ప్లే చేయి</string>
     <string name="media_play_all_hint">వీడియోలు ఆడియోగా ప్లే అవుతాయి</string>
+    <string name="media_browse_folders">ఫోల్డర్లు</string>
+    <string name="media_browse_artists">కళాకారులు</string>
+    <string name="media_browse_albums">ఆల్బమ్‌లు</string>
+    <string name="media_unknown_album">తెలియని ఆల్బమ్</string>
+    <string name="media_root_folder">డౌన్‌లోడ్ ఫోల్డర్</string>
+    <string name="media_shuffle">షఫుల్</string>
+    <plurals name="media_group_tracks">
+        <item quantity="one">%d ట్రాక్</item>
+        <item quantity="other">%d ట్రాక్‌లు</item>
+    </plurals>
     <string name="media_stream_badge">స్ట్రీమ్</string>
     <string name="media_yt_mode_audio">ఆడియో</string>
     <string name="media_yt_mode_video">వీడియో</string>

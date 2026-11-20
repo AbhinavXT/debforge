@@ -1128,6 +1128,16 @@
     <string name="media_refresh">रीफ़्रेश करें</string>
     <string name="media_play_all">सभी चलाएं</string>
     <string name="media_play_all_hint">वीडियो ऑडियो के रूप में चलते हैं</string>
+    <string name="media_browse_folders">फ़ोल्डर</string>
+    <string name="media_browse_artists">कलाकार</string>
+    <string name="media_browse_albums">एल्बम</string>
+    <string name="media_unknown_album">अज्ञात एल्बम</string>
+    <string name="media_root_folder">डाउनलोड फ़ोल्डर</string>
+    <string name="media_shuffle">शफ़ल करें</string>
+    <plurals name="media_group_tracks">
+        <item quantity="one">%d ट्रैक</item>
+        <item quantity="other">%d ट्रैक</item>
+    </plurals>
     <string name="media_stream_badge">स्ट्रीम</string>
     <string name="media_yt_mode_audio">ऑडियो</string>
     <string name="media_yt_mode_video">वीडियो</string>

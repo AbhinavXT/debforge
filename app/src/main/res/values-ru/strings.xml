@@ -1234,6 +1234,18 @@
     <string name="media_refresh">Обновить</string>
     <string name="media_play_all">Воспроизвести все</string>
     <string name="media_play_all_hint">Видео воспроизводятся как аудио</string>
+    <string name="media_browse_folders">Папки</string>
+    <string name="media_browse_artists">Исполнители</string>
+    <string name="media_browse_albums">Альбомы</string>
+    <string name="media_unknown_album">Неизвестный альбом</string>
+    <string name="media_root_folder">Папка загрузок</string>
+    <string name="media_shuffle">Перемешать</string>
+    <plurals name="media_group_tracks">
+        <item quantity="one">%d трек</item>
+        <item quantity="few">%d трека</item>
+        <item quantity="many">%d треков</item>
+        <item quantity="other">%d трека</item>
+    </plurals>
     <string name="media_stream_badge">Онлайн</string>
     <string name="media_yt_mode_audio">Аудио</string>
     <string name="media_yt_mode_video">Видео</string>

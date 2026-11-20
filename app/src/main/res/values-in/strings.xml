@@ -1075,6 +1075,15 @@
     <string name="media_refresh">Segarkan</string>
     <string name="media_play_all">Putar semua</string>
     <string name="media_play_all_hint">Video diputar sebagai audio</string>
+    <string name="media_browse_folders">Folder</string>
+    <string name="media_browse_artists">Artis</string>
+    <string name="media_browse_albums">Album</string>
+    <string name="media_unknown_album">Album tidak dikenal</string>
+    <string name="media_root_folder">Folder unduhan</string>
+    <string name="media_shuffle">Acak</string>
+    <plurals name="media_group_tracks">
+        <item quantity="other">%d lagu</item>
+    </plurals>
     <string name="media_stream_badge">Stream</string>
     <string name="media_yt_mode_audio">Audio</string>
     <string name="media_yt_mode_video">Video</string>

@@ -1128,6 +1128,16 @@
     <string name="media_refresh">রিফ্রেশ</string>
     <string name="media_play_all">সব চালান</string>
     <string name="media_play_all_hint">ভিডিও অডিও হিসেবে চলে</string>
+    <string name="media_browse_folders">ফোল্ডার</string>
+    <string name="media_browse_artists">শিল্পী</string>
+    <string name="media_browse_albums">অ্যালবাম</string>
+    <string name="media_unknown_album">অজানা অ্যালবাম</string>
+    <string name="media_root_folder">ডাউনলোড ফোল্ডার</string>
+    <string name="media_shuffle">শাফল</string>
+    <plurals name="media_group_tracks">
+        <item quantity="one">%d টি ট্র্যাক</item>
+        <item quantity="other">%d টি ট্র্যাক</item>
+    </plurals>
     <string name="media_stream_badge">স্ট্রিম</string>
     <string name="media_yt_mode_audio">অডিও</string>
     <string name="media_yt_mode_video">ভিডিও</string>

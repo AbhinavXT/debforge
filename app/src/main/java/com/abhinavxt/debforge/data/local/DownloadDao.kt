@@ -111,13 +111,17 @@ interface DownloadDao {
     @Query("SELECT partFilePath FROM downloads WHERE provider != 'LOCAL' AND partFilePath IS NOT NULL")
     suspend fun claimedPartPaths(): List<String>
 
-    /** Imported rows whose tags haven't been read yet (blank title, see LocalMetadataLogic). */
-    @Query("SELECT * FROM downloads WHERE provider = 'LOCAL' AND (title IS NULL OR title = '') LIMIT :limit")
+    /** Imported rows whose tags haven't been read yet (blank title or no album yet, see LocalMetadataLogic). */
+    @Query("SELECT * FROM downloads WHERE provider = 'LOCAL' AND (title IS NULL OR TRIM(title, ' ' || char(9) || char(10) || char(11) || char(12) || char(13)) = '' OR album IS NULL) LIMIT :limit")
     suspend fun localUnchecked(limit: Int): List<DownloadEntity>
 
-    /** Only while the title is still blank, so a title set after the snapshot isn't overwritten. Returns rows changed. */
-    @Query("UPDATE downloads SET title = :title, artist = :artist WHERE rdId = :id AND provider = 'LOCAL' AND (title IS NULL OR title = '')")
-    suspend fun setLocalMeta(id: String, title: String, artist: String?): Int
+    /** Title, artist and album fields in one write, only while the title is still blank. Returns rows changed. */
+    @Query("UPDATE downloads SET title = :title, artist = :artist, album = :album, albumArtist = :albumArtist, trackNo = :trackNo WHERE rdId = :id AND provider = 'LOCAL' AND (title IS NULL OR TRIM(title, ' ' || char(9) || char(10) || char(11) || char(12) || char(13)) = '')")
+    suspend fun setLocalFull(id: String, title: String, artist: String?, album: String, albumArtist: String?, trackNo: Int?): Int
+
+    /** Album fields only, leaving title and artist alone; only while the album is unread. Returns rows changed. */
+    @Query("UPDATE downloads SET album = :album, albumArtist = :albumArtist, trackNo = :trackNo WHERE rdId = :id AND provider = 'LOCAL' AND album IS NULL")
+    suspend fun setLocalAlbum(id: String, album: String, albumArtist: String?, trackNo: Int?): Int
 
     @Query("DELETE FROM downloads WHERE provider = 'LOCAL'")
     suspend fun deleteLocal()

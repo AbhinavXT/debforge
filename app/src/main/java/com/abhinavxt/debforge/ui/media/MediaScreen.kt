@@ -37,9 +37,17 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.runtime.withFrameNanos
+import androidx.compose.material.icons.rounded.Album
+import androidx.compose.material.icons.rounded.Folder
+import androidx.compose.material.icons.rounded.Person
+import androidx.compose.material.icons.rounded.Shuffle
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -208,6 +216,8 @@ fun MediaScreen(
         onOpenHistory = onOpenHistory,
         refreshing = refreshing,
         onRefresh = viewModel::refresh,
+        onOpenGroup = viewModel::openGroup,
+        onCloseGroup = viewModel::closeGroup,
         tell = tell,
         lists = AudioListActions(
             onPick = viewModel::selectAudioList,
@@ -253,6 +263,8 @@ internal fun MediaContent(
     onOpenHistory: () -> Unit = {},
     refreshing: Boolean = false,
     onRefresh: () -> Unit = {},
+    onOpenGroup: (String) -> Unit = {},
+    onCloseGroup: () -> Unit = {},
     tell: (String) -> Unit = {},
     lists: AudioListActions = AudioListActions(),
     watch: Map<String, com.abhinavxt.debforge.data.playback.PlaybackEntity>? = null,
@@ -262,6 +274,25 @@ internal fun MediaContent(
     val selecting = state.selected.isNotEmpty()
     var confirm by remember { mutableStateOf<List<DownloadEntity>?>(null) }
     BackHandler(selecting, onClearSelection)
+    // Registered after the selection handler, so it only wins when nothing is selected.
+    BackHandler(state.openGroup != null && state.kind == FileKind.Audio && !selecting) { onCloseGroup() }
+    val groupGridState = rememberLazyGridState()
+    // The group row that opened the current group: it gets focus back when the group closes.
+    var restoreKey by remember { mutableStateOf<String?>(null) }
+    val restoreFocus = remember { FocusRequester() }
+    val backFocus = remember { FocusRequester() }
+    // A new chip starts at the top with no row to restore.
+    LaunchedEffect(state.audioList) {
+        restoreKey = null
+        groupGridState.scrollToItem(0)
+    }
+    // A group just opened: move focus to its Back button, so the D-pad doesn't stay on a row that is gone.
+    val openGroupKey = state.openGroup?.key.takeIf { state.kind == FileKind.Audio }
+    LaunchedEffect(openGroupKey) {
+        if (openGroupKey == null) return@LaunchedEffect
+        withFrameNanos { }
+        runCatching { backFocus.requestFocus() }
+    }
     var addTo by remember { mutableStateOf<List<String>?>(null) }
     var nameFor by remember { mutableStateOf<Pair<String?, List<String>>?>(null) } // (playlist id when renaming, tracks to add when creating)
     var deleteList by remember { mutableStateOf<com.abhinavxt.debforge.data.playback.Playlist?>(null) }
@@ -366,6 +397,9 @@ internal fun MediaContent(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     FilterChip(state.audioList == null, { lists.onPick(null) }, { Text(stringResource(R.string.search_kind_all)) })
+                    FilterChip(state.audioList == BROWSE_FOLDERS, { lists.onPick(BROWSE_FOLDERS) }, { Text(stringResource(R.string.media_browse_folders)) })
+                    FilterChip(state.audioList == BROWSE_ARTISTS, { lists.onPick(BROWSE_ARTISTS) }, { Text(stringResource(R.string.media_browse_artists)) })
+                    FilterChip(state.audioList == BROWSE_ALBUMS, { lists.onPick(BROWSE_ALBUMS) }, { Text(stringResource(R.string.media_browse_albums)) })
                     FilterChip(state.audioList == "fav", { lists.onPick("fav") }, { Text(stringResource(R.string.media_list_favourites)) })
                     FilterChip(state.audioList == PODCASTS_LIST, { lists.onPick(PODCASTS_LIST) }, { Text(stringResource(R.string.podcasts_chip)) })
                     state.lists.playlists.forEach { p ->
@@ -398,20 +432,31 @@ internal fun MediaContent(
             val items = state.current
             // An open playlist shows its own rows (downloads and YouTube items); otherwise the download list.
             val listRows = state.playlistRows.takeIf { state.kind == FileKind.Audio }
-            val shownCount = listRows?.size ?: items.size
+            val groupList = state.groups.takeIf { state.kind == FileKind.Audio }
+            val shownCount = listRows?.size ?: groupList?.size ?: items.size
             // D-pad: deleting the last row removes the focused item; the empty message holds focus rather than letting it fall to the first tab.
             // Only when the same tab, list and query had rows a moment ago (a chip or field the user is on keeps its focus).
             val view = Triple(state.kind, state.audioList, state.query)
             var hadItems by remember { mutableStateOf<Triple<*, *, *>?>(null) }
             val held = hadItems == view
             SideEffect { hadItems = if (shownCount > 0) view else null }
+            val openGroup = state.openGroup.takeIf { state.kind == FileKind.Audio }
+            if (openGroup != null) GroupHeader(
+                group = openGroup,
+                mode = browseModeOf(state.audioList),
+                onBack = onCloseGroup,
+                backFocus = backFocus,
+                onPlayAll = { if (items.isNotEmpty()) onPlayAudio(items, 0) },
+                onShuffle = { if (items.isNotEmpty()) onPlayAudio(items.shuffled(), 0) }
+            )
             if (podcastsOpen) {
                 PodcastsPane(playingId, tell)
             } else if (shownCount == 0 && state.kind == FileKind.Audio && state.audioList != null && state.query.isBlank()) {
+                val browsing = browseModeOf(state.audioList) != null
                 PullableMessage(refreshing, onRefresh) { mod -> MessageState(
                     icon = Icons.Rounded.MusicNote,
-                    title = stringResource(R.string.media_list_empty_title),
-                    body = stringResource(R.string.media_list_empty_body),
+                    title = stringResource(if (browsing) R.string.media_empty_title else R.string.media_list_empty_title),
+                    body = stringResource(if (browsing) R.string.media_empty_body else R.string.media_list_empty_body),
                     modifier = mod.holdFocus(held)
                 ) }
             } else if (shownCount == 0) {
@@ -439,7 +484,15 @@ internal fun MediaContent(
                 val audio = state.kind != FileKind.Video
                 val audioCols = ((maxWidth - 32.dp) / 420.dp).toInt().coerceIn(1, 2)
                 val sidePad = if (audio && audioCols == 1) maxOf(16.dp, (maxWidth - 600.dp) / 2) else 16.dp
+                if (groupList != null) LaunchedEffect(Unit) {
+                    // Back from a group: focus the row that opened it (the scroll position is kept in groupGridState).
+                    if (restoreKey == null) return@LaunchedEffect
+                    withFrameNanos { }
+                    runCatching { restoreFocus.requestFocus() }
+                    restoreKey = null
+                }
                 LazyVerticalGrid(
+                    state = if (groupList != null) groupGridState else rememberLazyGridState(),
                     columns = if (audio) GridCells.Fixed(audioCols) else GridCells.Adaptive(168.dp),
                     modifier = Modifier.fillMaxSize(),
                     // Bottom space keeps the last row clear of the 64dp mini player.
@@ -447,7 +500,13 @@ internal fun MediaContent(
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     verticalArrangement = Arrangement.spacedBy(if (state.kind == FileKind.Video) 16.dp else 4.dp)
                 ) {
-                    if (listRows != null && pickedList != null) items(listRows, key = { it.key }) { row ->
+                    if (groupList != null) items(groupList, key = { it.key }) { g ->
+                        GroupRow(
+                            g, browseModeOf(state.audioList) ?: BrowseMode.FOLDERS,
+                            Modifier.animateItem().then(if (g.key == restoreKey) Modifier.focusRequester(restoreFocus) else Modifier),
+                            onClick = { restoreKey = g.key; onOpenGroup(g.key) }
+                        )
+                    } else if (listRows != null && pickedList != null) items(listRows, key = { it.key }) { row ->
                         val m = Modifier.animateItem()
                         val hasStreams = listRows.any { it is PlaylistRow.YouTube }
                         when (row) {
@@ -812,6 +871,76 @@ private fun MediaRow(
                     onClick = { menu = false; onDelete() }
                 )
             }
+        }
+    }
+}
+
+/** One row of the Folders / Artists / Albums list. */
+@Composable
+private fun GroupRow(g: AudioGroup, mode: BrowseMode, modifier: Modifier, onClick: () -> Unit) {
+    val cs = MaterialTheme.colorScheme
+    val shape = RoundedCornerShape(16.dp)
+    val name = when (g.marker) {
+        GroupMarker.ROOT -> stringResource(R.string.media_root_folder)
+        GroupMarker.UNKNOWN -> stringResource(if (mode == BrowseMode.ALBUMS) R.string.media_unknown_album else R.string.audio_unknown_artist)
+        null -> g.name
+    }
+    val icon = when (mode) {
+        BrowseMode.FOLDERS -> Icons.Rounded.Folder
+        BrowseMode.ARTISTS -> Icons.Rounded.Person
+        BrowseMode.ALBUMS -> Icons.Rounded.Album
+    }
+    val count = pluralStringResource(R.plurals.media_group_tracks, g.trackCount, g.trackCount)
+    Row(
+        modifier.fillMaxWidth().mediaClickable(shape, false, onClick, onClick).padding(start = 8.dp, top = 6.dp, bottom = 6.dp, end = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(Modifier.size(56.dp).clip(RoundedCornerShape(12.dp)).background(cs.surfaceContainerHigh), contentAlignment = Alignment.Center) {
+            Icon(icon, null, tint = cs.onSurfaceVariant)
+        }
+        Spacer(Modifier.width(12.dp))
+        Column(Modifier.weight(1f)) {
+            Text(name, style = MaterialTheme.typography.titleMedium, color = cs.onSurface, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(
+                listOfNotNull(g.secondary, count).joinToString(" · "),
+                style = MaterialTheme.typography.bodyMedium, color = cs.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis
+            )
+        }
+    }
+}
+
+/** Header of an open group: Back, its name, Play all and Shuffle. Plain buttons, so the D-pad reaches each in order. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun GroupHeader(group: AudioGroup, mode: BrowseMode?, onBack: () -> Unit, backFocus: FocusRequester, onPlayAll: () -> Unit, onShuffle: () -> Unit) {
+    val cs = MaterialTheme.colorScheme
+    val name = when (group.marker) {
+        GroupMarker.ROOT -> stringResource(R.string.media_root_folder)
+        GroupMarker.UNKNOWN -> stringResource(if (mode == BrowseMode.ALBUMS) R.string.media_unknown_album else R.string.audio_unknown_artist)
+        null -> group.name
+    }
+    FlowRow(
+        Modifier.fillMaxWidth().padding(horizontal = 12.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        verticalArrangement = Arrangement.Center
+    ) {
+        val source = remember { MutableInteractionSource() }
+        IconButton(onClick = onBack, modifier = Modifier.align(Alignment.CenterVertically).focusRequester(backFocus).focusRing(source, CircleShape), interactionSource = source) {
+            Icon(Icons.AutoMirrored.Rounded.ArrowBack, stringResource(R.string.page_back))
+        }
+        Text(
+            name, style = MaterialTheme.typography.titleMedium, color = cs.onSurface, maxLines = 1, overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.align(Alignment.CenterVertically).widthIn(max = 280.dp)
+        )
+        TextButton(onClick = onPlayAll, modifier = Modifier.heightIn(min = 48.dp).align(Alignment.CenterVertically)) {
+            Icon(Icons.Rounded.PlayArrow, null)
+            Spacer(Modifier.width(8.dp))
+            Text(stringResource(R.string.media_play_all))
+        }
+        TextButton(onClick = onShuffle, modifier = Modifier.heightIn(min = 48.dp).align(Alignment.CenterVertically)) {
+            Icon(Icons.Rounded.Shuffle, null)
+            Spacer(Modifier.width(8.dp))
+            Text(stringResource(R.string.media_shuffle))
         }
     }
 }

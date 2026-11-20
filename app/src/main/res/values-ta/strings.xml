@@ -1128,6 +1128,16 @@
     <string name="media_refresh">புதுப்பி</string>
     <string name="media_play_all">அனைத்தையும் இயக்கு</string>
     <string name="media_play_all_hint">வீடியோக்கள் ஆடியோவாக இயங்கும்</string>
+    <string name="media_browse_folders">கோப்புறைகள்</string>
+    <string name="media_browse_artists">கலைஞர்கள்</string>
+    <string name="media_browse_albums">ஆல்பங்கள்</string>
+    <string name="media_unknown_album">தெரியாத ஆல்பம்</string>
+    <string name="media_root_folder">பதிவிறக்க கோப்புறை</string>
+    <string name="media_shuffle">ஷஃபிள்</string>
+    <plurals name="media_group_tracks">
+        <item quantity="one">%d டிராக்</item>
+        <item quantity="other">%d டிராக்குகள்</item>
+    </plurals>
     <string name="media_stream_badge">ஸ்ட்ரீம்</string>
     <string name="media_yt_mode_audio">ஆடியோ</string>
     <string name="media_yt_mode_video">வீடியோ</string>

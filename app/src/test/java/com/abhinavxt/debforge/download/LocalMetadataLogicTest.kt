@@ -14,6 +14,35 @@ class LocalMetadataLogicTest {
         assertFalse(LocalMetadataLogic.needsCheck("Song"))
     }
 
+    @Test fun unreadAlbumNeedsCheckEvenWithTitle() {
+        assertTrue(LocalMetadataLogic.needsCheck("Song", null))
+        assertFalse(LocalMetadataLogic.needsCheck("Song", ""))
+        assertFalse(LocalMetadataLogic.needsCheck("Song", "Album"))
+        assertTrue(LocalMetadataLogic.needsCheck("", "Album"))
+        assertFalse(LocalMetadataLogic.needsFullRead("Song"))
+        assertTrue(LocalMetadataLogic.needsFullRead(null))
+    }
+
+    @Test fun nonAudioWithTitleSkipsOpeningButAudioOrBlankTitleDoesNot() {
+        assertTrue(LocalMetadataLogic.skipsFileOpen("Movie.mkv", "Movie"))
+        assertFalse(LocalMetadataLogic.skipsFileOpen("Song.mp3", "Song"))
+        assertFalse(LocalMetadataLogic.skipsFileOpen("Movie.mkv", null))
+    }
+
+    @Test fun albumAndTrackNumberParsing() {
+        assertEquals("", LocalMetadataLogic.albumFor(null))
+        assertEquals("", LocalMetadataLogic.albumFor("  "))
+        assertEquals("Abbey Road", LocalMetadataLogic.albumFor(" Abbey Road "))
+        assertEquals(3, LocalMetadataLogic.trackNoFor("3/12"))
+        assertEquals(7, LocalMetadataLogic.trackNoFor(" 7 "))
+        assertEquals(5, LocalMetadataLogic.trackNoFor("05"))
+        assertNull(LocalMetadataLogic.trackNoFor(null))
+        assertNull(LocalMetadataLogic.trackNoFor(""))
+        assertNull(LocalMetadataLogic.trackNoFor("abc"))
+        assertNull(LocalMetadataLogic.trackNoFor("/12"))
+        assertNull(LocalMetadataLogic.trackNoFor("0"))
+    }
+
     @Test fun storedTitleIsNeverBlankSoAFileIsCheckedOnce() {
         assertFalse(LocalMetadataLogic.needsCheck(LocalMetadataLogic.titleFor(null, "Movie")))
         assertFalse(LocalMetadataLogic.needsCheck(LocalMetadataLogic.titleFor("  ", "")))
