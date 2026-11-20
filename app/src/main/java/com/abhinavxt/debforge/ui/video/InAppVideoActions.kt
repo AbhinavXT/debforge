@@ -1,6 +1,5 @@
 package com.abhinavxt.debforge.ui.video
 
-import android.app.AlertDialog
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.lifecycle.lifecycleScope
@@ -11,11 +10,12 @@ import com.abhinavxt.debforge.player.cast.Renderer
 import com.abhinavxt.debforge.player.controls.ControlsActions
 import com.abhinavxt.debforge.player.controls.Fill
 import com.abhinavxt.debforge.player.controls.fillLabel
+import com.abhinavxt.debforge.player.session.VideoCast
+import com.abhinavxt.debforge.player.session.VideoScreenshot
 import com.abhinavxt.debforge.player.session.VideoSession
 import com.abhinavxt.debforge.player.session.VideoSurface
 import com.abhinavxt.debforge.ui.browse.PlayRequest
 import com.abhinavxt.debforge.ui.browse.playExternally
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 /**
@@ -39,6 +39,9 @@ class InAppVideoActions(
 
     private val controls get() = session.controls
     private val handler = android.os.Handler(android.os.Looper.getMainLooper())
+
+    /** Casting (before init: a recreated screen reopens the remote right away). */
+    private val casting = VideoCast(activity, session, caster, onLeave = onClose, track = { it.tracked() }, onCasting = { castingTo = it })
 
     /** Framework dialogs this screen opened: a recreated activity (theme, locale) must not leak their windows. */
     private val dialogs = mutableListOf<android.app.Dialog>()
@@ -94,138 +97,14 @@ class InAppVideoActions(
         onClose()
     }
 
-    // --- screenshot (the current frame to Pictures/DebForge) -----------------------------
-
-    private fun takeScreenshot() {
-        val videoView = surface()?.playerView?.videoSurfaceView as? android.view.SurfaceView
-        val v = session.player?.videoSize
-        if (videoView == null || v == null || v.width <= 0 || v.height <= 0) {
-            session.showMessage(activity.getString(R.string.player_screenshot_failed))
-            return
-        }
-        val w = (v.width * v.pixelWidthHeightRatio).toInt().coerceAtLeast(1)
-        val scale = minOf(1f, 3840f / maxOf(w, v.height))
-        val bitmap = android.graphics.Bitmap.createBitmap(
-            (w * scale).toInt().coerceAtLeast(1), (v.height * scale).toInt().coerceAtLeast(1), android.graphics.Bitmap.Config.ARGB_8888
-        )
-        val title = session.title
-        android.view.PixelCopy.request(videoView, bitmap, { result ->
-            if (result != android.view.PixelCopy.SUCCESS) {
-                session.showMessage(activity.getString(R.string.player_screenshot_failed))
-                return@request
-            }
-            activity.lifecycleScope.launch {
-                val ok = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { saveImage(bitmap, title) }
-                bitmap.recycle()
-                session.showMessage(activity.getString(if (ok) R.string.player_screenshot_saved else R.string.player_screenshot_failed))
-            }
-        }, handler)
-    }
-
-    private fun saveImage(bitmap: android.graphics.Bitmap, title: String): Boolean = runCatching {
-        val safeTitle = title.replace(Regex("""[^\p{L}\p{N} ._-]"""), "_").trim().take(60).ifEmpty { "video" }
-        val values = android.content.ContentValues().apply {
-            put(android.provider.MediaStore.Images.Media.DISPLAY_NAME, "${safeTitle}_${System.currentTimeMillis()}.jpg")
-            put(android.provider.MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
-            put(android.provider.MediaStore.Images.Media.RELATIVE_PATH, android.os.Environment.DIRECTORY_PICTURES + "/DebForge")
-            put(android.provider.MediaStore.Images.Media.IS_PENDING, 1)
-        }
-        val resolver = activity.contentResolver
-        val uri = resolver.insert(android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values) ?: return@runCatching false
-        val written = resolver.openOutputStream(uri)?.use { bitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 95, it) } == true
-        if (!written) {
-            resolver.delete(uri, null, null)
-            return@runCatching false
-        }
-        values.clear()
-        values.put(android.provider.MediaStore.Images.Media.IS_PENDING, 0)
-        resolver.update(uri, values, null, null)
-        true
-    }.getOrDefault(false)
+    private fun takeScreenshot() = VideoScreenshot.take(activity, session, surface()?.playerView, handler)
 
     // --- cast (DLNA) ------------------------------------------------------------------
 
     /** Play on a TV: finds DLNA renderers on the network and hands the picked one the stream. */
-    override fun cast() {
-        val p = session.player ?: return
-        p.pause()
-        var search: Job? = null
-        val searching = AlertDialog.Builder(activity)
-            .setTitle(R.string.cast_title)
-            .setMessage(R.string.cast_searching)
-            .setNegativeButton(R.string.action_cancel) { _, _ -> search?.cancel() }
-            .setOnCancelListener { search?.cancel() }
-            .show().tracked()
-        search = activity.lifecycleScope.launch {
-            val found = caster.discover()
-            searching.dismiss()
-            if (activity.isFinishing) return@launch
-            if (found.isEmpty()) {
-                AlertDialog.Builder(activity)
-                    .setTitle(R.string.cast_title)
-                    .setMessage(R.string.cast_none)
-                    .setPositiveButton(R.string.action_retry) { _, _ -> cast() }
-                    .setNegativeButton(R.string.action_close, null)
-                    .show().tracked()
-                return@launch
-            }
-            AlertDialog.Builder(activity)
-                .setTitle(R.string.cast_title)
-                .setItems(found.map { it.name }.toTypedArray()) { _, i -> startCast(found[i]) }
-                .setNegativeButton(R.string.action_cancel, null)
-                .show().tracked()
-        }
-    }
+    override fun cast() = casting.start()
 
-    private fun startCast(to: Renderer) {
-        val at = session.player?.currentPosition ?: 0L
-        val uri = session.uri
-        val title = session.title
-        activity.lifecycleScope.launch {
-            if (runCatching { caster.play(to, uri.toString(), title, at) }.isFailure) {
-                Toast.makeText(activity, activity.getString(R.string.cast_failed, to.name), Toast.LENGTH_LONG).show()
-                return@launch
-            }
-            if (!activity.isFinishing) showCastRemote(to)
-        }
-    }
-
-    /** While the TV plays: pause / play it, take the video back here, or leave it there and close. */
-    private fun showCastRemote(on: Renderer) {
-        var paused = false
-        controls.casting = true
-        castingTo = on
-        val dialog = AlertDialog.Builder(activity)
-            .setTitle(activity.getString(R.string.cast_playing_on, on.name))
-            .setMessage(session.title)
-            .setCancelable(false)
-            .setPositiveButton(R.string.cast_pause, null)
-            .setNegativeButton(R.string.cast_stop) { _, _ ->
-                activity.lifecycleScope.launch {
-                    // Carry on here from where the TV got to.
-                    val at = caster.positionMs(on)
-                    runCatching { caster.stop(on) }
-                    controls.casting = false
-                    castingTo = null
-                    session.player?.let { p -> at?.let(p::seekTo); p.play() }
-                }
-            }
-            .setNeutralButton(R.string.cast_leave) { _, _ -> castingTo = null; onClose() }
-            .create()
-        dialog.setOnShowListener {
-            // Set here so the button doesn't close the dialog.
-            val toggle = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
-            toggle.setOnClickListener {
-                activity.lifecycleScope.launch {
-                    val ok = runCatching { if (paused) caster.resume(on) else caster.pause(on) }.isSuccess
-                    if (!ok) return@launch
-                    paused = !paused
-                    toggle.setText(if (paused) R.string.cast_play else R.string.cast_pause)
-                }
-            }
-        }
-        dialog.tracked().show()
-    }
+    private fun showCastRemote(on: Renderer) = casting.showRemote(on)
 
     private companion object {
         /** Where the video plays now; survives the activity being recreated (the engine does too). */
