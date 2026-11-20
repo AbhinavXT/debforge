@@ -26,10 +26,7 @@ import com.abhinavxt.debforge.domain.ReleaseInfo
 import com.abhinavxt.debforge.domain.SortOrder
 import com.abhinavxt.debforge.download.DownloadController
 import com.abhinavxt.debforge.download.StorageAccess
-import com.abhinavxt.debforge.download.StorageSpace
-import com.abhinavxt.debforge.domain.Housekeeping
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import com.abhinavxt.debforge.download.SpaceWarning
 import com.abhinavxt.debforge.ui.add.ProviderEvents
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -104,7 +101,8 @@ class BrowseViewModel @Inject constructor(
     private val subtitleResolver: com.abhinavxt.debforge.player.SubtitleResolver,
     private val upNext: com.abhinavxt.debforge.player.UpNext,
     private val localPlayback: com.abhinavxt.debforge.player.LocalPlayback,
-    private val trakt: com.abhinavxt.debforge.data.trakt.TraktRepository
+    private val trakt: com.abhinavxt.debforge.data.trakt.TraktRepository,
+    private val downloadSpace: com.abhinavxt.debforge.download.DownloadSpace,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(BrowseUiState())
@@ -945,17 +943,6 @@ class BrowseViewModel @Inject constructor(
         return downloadsRepository.zipBundle(file.provider, ref, file.parentName ?: file.filename, fileCount)
     }
 
-    /**
-     * "Not enough space" before queueing: what was about to be queued, what
-     * it (plus everything already waiting) needs, and what's free there.
-     */
-    data class SpaceWarning(
-        val items: List<DownloadItem>,
-        val needed: Long,
-        val available: Long,
-        val folder: String
-    )
-
     private val _spaceWarning = MutableStateFlow<SpaceWarning?>(null)
     val spaceWarning: StateFlow<SpaceWarning?> = _spaceWarning.asStateFlow()
 
@@ -984,17 +971,8 @@ class BrowseViewModel @Inject constructor(
         _spaceWarning.value = null
     }
 
-    private suspend fun spaceWarningFor(items: List<DownloadItem>): SpaceWarning? {
-        val tracked = downloadStates.value
-        val fresh = items.filter { it.id !in tracked }
-        if (fresh.isEmpty()) return null
-        val dir = settingsStore.downloadDirFlow.first()
-        val available = withContext(Dispatchers.IO) { StorageSpace.availableBytes(appContext, dir) }
-        // Everything already waiting goes to the same place first.
-        val needed = fresh.sumOf { it.filesize.coerceAtLeast(0) } + downloadDao.remainingPendingBytes()
-        Housekeeping.shortfall(needed, available) ?: return null
-        return SpaceWarning(fresh, needed, available ?: 0, StorageAccess.label(appContext, dir))
-    }
+    private suspend fun spaceWarningFor(items: List<DownloadItem>): SpaceWarning? =
+        downloadSpace.warningFor(items, tracked = downloadStates.value.keys)
 
     private suspend fun enqueueNow(items: List<DownloadItem>) {
         items.forEach { downloadController.enqueue(it, foreground = true) }

@@ -682,22 +682,7 @@ fun BrowseScreen(
         )
     }
 
-    spaceWarning?.let { w ->
-        AlertDialog(
-            onDismissRequest = viewModel::dismissSpaceWarning,
-            icon = { Icon(Icons.Rounded.WarningAmber, contentDescription = null) },
-            title = { Text(stringResource(R.string.space_title)) },
-            text = {
-                Text(stringResource(R.string.space_body, formatSize(w.needed), formatSize(w.available), w.folder))
-            },
-            confirmButton = {
-                TextButton(onClick = viewModel::confirmSpaceWarning) { Text(stringResource(R.string.space_queue_anyway)) }
-            },
-            dismissButton = {
-                TextButton(onClick = viewModel::dismissSpaceWarning) { Text(stringResource(R.string.action_cancel)) }
-            }
-        )
-    }
+    spaceWarning?.let { w -> SpaceWarningDialog(w, viewModel::confirmSpaceWarning, viewModel::dismissSpaceWarning) }
 
     confirmRemove?.let { req ->
         AlertDialog(
