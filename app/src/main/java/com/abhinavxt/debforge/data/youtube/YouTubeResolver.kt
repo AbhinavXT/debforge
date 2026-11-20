@@ -51,12 +51,35 @@ import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/** The description as plain text: [html] markup is reduced to its text (tags dropped, `<br>` and `</p>` become line breaks, common entities decoded). */
+/**
+ * The description as plain text: [html] markup is reduced to its text (tags dropped, `<br>` and `</p>` become line
+ * breaks). Character references are decoded either way: YouTube's plain text can carry them too ("hasn&apos;t").
+ */
 internal fun descriptionText(content: String?, html: Boolean): String {
     val raw = content?.trim().orEmpty()
-    if (!html) return raw
-    return raw.replace(Regex("(?i)<br\\s*/?>|</p>"), "\n").replace(Regex("<[^>]*>"), "")
-        .replace("&nbsp;", " ").replace("&lt;", "<").replace("&gt;", ">").replace("&quot;", "\"").replace("&#39;", "'").replace("&amp;", "&").trim()
+    val text = if (html) raw.replace(Regex("(?i)<br\\s*/?>|</p>"), "\n").replace(Regex("<[^>]*>"), "") else raw
+    return decodeEntities(text).trim()
+}
+
+private val ENTITY = Regex("&(#[0-9]{1,7}|#[xX][0-9a-fA-F]{1,6}|[a-zA-Z]{2,8});")
+private val NAMED_ENTITIES = mapOf(
+    "amp" to "&", "lt" to "<", "gt" to ">", "quot" to "\"", "apos" to "'", "nbsp" to " ",
+    "ndash" to "\u2013", "mdash" to "\u2014", "hellip" to "\u2026", "lsquo" to "\u2018", "rsquo" to "\u2019",
+    "ldquo" to "\u201C", "rdquo" to "\u201D", "copy" to "\u00A9", "reg" to "\u00AE", "trade" to "\u2122",
+)
+
+/** Decodes HTML character references (named, decimal and hex) in one pass, so "&amp;lt;" stays "&lt;". Unknown ones are kept. */
+internal fun decodeEntities(text: String): String = ENTITY.replace(text) { m ->
+    val body = m.groupValues[1]
+    val code = when {
+        body.startsWith("#x") || body.startsWith("#X") -> body.substring(2).toIntOrNull(16)
+        body.startsWith("#") -> body.substring(1).toIntOrNull()
+        else -> null
+    }
+    when {
+        code != null -> if (Character.isValidCodePoint(code) && code != 0) String(Character.toChars(code)) else m.value
+        else -> NAMED_ENTITIES[body] ?: m.value
+    }
 }
 
 /** Why a link could not be resolved; the UI picks its message from the subtype. */

@@ -1094,6 +1094,8 @@
     </plurals>
     <string name="watch_open_external">在其他应用中打开</string>
     <string name="watch_next_episodes">后续剧集</string>
-    <string name="yt_views">%1$s 次观看</string>
+    <plurals name="yt_views_n">
+        <item quantity="other">%1$s 次观看</item>
+    </plurals>
     <string name="yt_description">简介</string>
 </resources>

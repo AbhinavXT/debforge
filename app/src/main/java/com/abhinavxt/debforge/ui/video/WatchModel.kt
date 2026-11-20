@@ -171,17 +171,24 @@ fun compactCount(n: Long): String {
 
 /**
  * The line under a YouTube title: "1.2M views · Jan 5, 2024". [viewCount] negative and an [uploadDate] that is not an
- * ISO date (the extractor's relative English text) leave their part out. [views] adds the translated word.
+ * ISO date (the extractor's relative English text) leave their part out. [views] adds the translated word to the
+ * shortened count (it gets the real count too, to pick the plural).
  */
-fun watchMeta(viewCount: Long, uploadDate: String?, views: (String) -> String, locale: java.util.Locale = java.util.Locale.getDefault()): String {
+fun watchMeta(viewCount: Long, uploadDate: String?, views: (count: Long, compact: String) -> String, locale: java.util.Locale = java.util.Locale.getDefault()): String {
     val date = uploadDate?.takeIf { it.length >= 10 }?.let {
         runCatching {
             java.time.LocalDate.parse(it.substring(0, 10))
                 .format(java.time.format.DateTimeFormatter.ofLocalizedDate(java.time.format.FormatStyle.MEDIUM).withLocale(locale))
         }.getOrNull()
     }
-    return listOfNotNull(viewCount.takeIf { it >= 0 }?.let { views(compactCount(it)) }, date).joinToString(" · ")
+    return listOfNotNull(viewCount.takeIf { it >= 0 }?.let { views(it, compactCount(it)) }, date).joinToString(" · ")
 }
+
+/**
+ * The quantity that picks the plural of "views" for [count]: the count itself below a thousand; a shortened count
+ * ("1.2K", "3M") reads as a large round number, so it takes the plural of 1000 whatever the digits after it.
+ */
+fun viewsQuantity(count: Long): Int = if (count in 0 until 1_000) count.toInt() else 1_000
 
 /** The description box has more to show than its collapsed height (3 lines). */
 fun descriptionOverflows(text: String, collapsedLines: Int = 3, charsPerLine: Int = 40): Boolean =

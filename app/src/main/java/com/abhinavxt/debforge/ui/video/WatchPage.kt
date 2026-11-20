@@ -166,8 +166,10 @@ private fun WatchHeader(state: VideoUiState, details: WatchDetails, actions: Wat
             Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(state.title, style = MaterialTheme.typography.titleMedium, maxLines = if (expanded) Int.MAX_VALUE else 2, overflow = TextOverflow.Ellipsis)
                 if (state.kind == VideoKind.YOUTUBE) {
-                    val views = stringResource(R.string.yt_views, "%1\$s")
-                    val meta = details.video?.let { v -> watchMeta(v.viewCount, v.uploadDate, { c -> views.replace("%1\$s", c) }) }.orEmpty()
+                    val res = androidx.compose.ui.platform.LocalContext.current.resources
+                    val meta = details.video?.let { v ->
+                        watchMeta(v.viewCount, v.uploadDate, { n, c -> res.getQuantityString(R.plurals.yt_views_n, viewsQuantity(n), c) })
+                    }.orEmpty()
                     if (meta.isNotEmpty()) Text(meta, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     if (details.channelName.isNotBlank()) Row(Modifier.padding(top = 4.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                         ChannelAvatar(details.video?.uploaderAvatarUrl, details.channelName, 28.dp)
@@ -307,10 +309,10 @@ private fun BigCard(thumb: String?, durationSec: Long, title: String, channel: S
             ChannelAvatar(avatar, channel)
             Column(Modifier.weight(1f)) {
                 Text(title, style = MaterialTheme.typography.titleSmall, maxLines = 2, overflow = TextOverflow.Ellipsis)
-                val viewsWord = stringResource(R.string.yt_views, "%1\$s")
+                val res = androidx.compose.ui.platform.LocalContext.current.resources
                 val line = listOfNotNull(
                     channel.takeIf { it.isNotBlank() },
-                    views.takeIf { it >= 0 }?.let { viewsWord.replace("%1\$s", compactCount(it)) },
+                    views.takeIf { it >= 0 }?.let { res.getQuantityString(R.plurals.yt_views_n, viewsQuantity(it), compactCount(it)) },
                     durationText(durationSec).takeIf { durationSec > 0 },
                 ).joinToString(" · ")
                 if (line.isNotEmpty()) Text(

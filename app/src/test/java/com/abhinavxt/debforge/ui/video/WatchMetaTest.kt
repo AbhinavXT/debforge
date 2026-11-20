@@ -8,7 +8,15 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class WatchMetaTest {
-    private val views: (String) -> String = { "$it views" }
+    private val views: (Long, String) -> String = { _, c -> "$c views" }
+
+    @Test fun viewsPluralQuantity() {
+        assertEquals(0, viewsQuantity(0))
+        assertEquals(1, viewsQuantity(1))
+        assertEquals(999, viewsQuantity(999))
+        assertEquals(1_000, viewsQuantity(1_234))
+        assertEquals(1_000, viewsQuantity(5_000_000_000))
+    }
 
     @Test fun compactCounts() {
         assertEquals("999", compactCount(999))

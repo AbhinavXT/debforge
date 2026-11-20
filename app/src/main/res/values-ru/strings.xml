@@ -1262,6 +1262,11 @@
     </plurals>
     <string name="watch_open_external">Открыть в другом приложении</string>
     <string name="watch_next_episodes">Следующие серии</string>
-    <string name="yt_views">%1$s просмотров</string>
+    <plurals name="yt_views_n">
+        <item quantity="one">%1$s просмотр</item>
+        <item quantity="few">%1$s просмотра</item>
+        <item quantity="many">%1$s просмотров</item>
+        <item quantity="other">%1$s просмотра</item>
+    </plurals>
     <string name="yt_description">Описание</string>
 </resources>
