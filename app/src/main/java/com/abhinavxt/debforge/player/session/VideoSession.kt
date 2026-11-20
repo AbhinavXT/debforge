@@ -903,6 +903,8 @@ class VideoSession @Inject constructor(
         actions.startLoop() // an A-B loop set before leaving the app
     }
 
+    internal fun timingStoreLookup(key: String) = timingStore.lookup(key)
+
     private fun timingKey(sub: SubtitleLink): String? = com.abhinavxt.debforge.player.subtitles.timingKeyFor(
         identity?.itemId, sub.url, sub.provider?.name, sub.sourceRef, sub.osFileId
     )

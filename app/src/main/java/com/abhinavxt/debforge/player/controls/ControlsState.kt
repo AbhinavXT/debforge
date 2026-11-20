@@ -14,7 +14,7 @@ import androidx.media3.common.TrackGroup
 enum class Fill { FIT, CROP, STRETCH }
 
 /** A side panel over the video. */
-enum class Panel { AUDIO, SUBTITLES, ONLINE_SUBTITLES, SPEED, MORE, CHAPTERS }
+enum class Panel { AUDIO, SUBTITLES, ONLINE_SUBTITLES, SYNC, SPEED, MORE, CHAPTERS }
 
 /** Searching OpenSubtitles from the Subtitles panel. */
 sealed interface OnlineSubs {
@@ -93,6 +93,9 @@ class ControlsState {
     /** A downloaded video on a phone or tablet: the Subtitles panel offers "Add subtitle file…". */
     var subtitleFileAvailable by mutableStateOf(false)
     var onlineSubs by mutableStateOf<OnlineSubs>(OnlineSubs.Idle)
+    /** Sync tools panel: where the user is, and the first matched line of "Two lines" while they find the second. */
+    var syncStep by mutableStateOf(SyncStep.MENU)
+    var twoLinesFirst by mutableStateOf<TwoLinePoint?>(null)
     /** Sleep timer: pause at this elapsedRealtime (0 = off)… */
     var sleepEndsAt by mutableLongStateOf(0L)
     /** …or at the end of this episode (no autoplay of the next). */

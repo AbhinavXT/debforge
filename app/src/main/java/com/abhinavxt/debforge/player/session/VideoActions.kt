@@ -131,6 +131,38 @@ class VideoActions internal constructor(private val s: VideoSession) : ControlsA
         }
     }
 
+    override fun syncSubtitle(): com.abhinavxt.debforge.player.controls.SyncSubtitle? {
+        val p = player ?: return null
+        val id = p.currentTracks.groups.firstNotNullOfOrNull { g ->
+            if (g.type != C.TRACK_TYPE_TEXT) null
+            else (0 until g.length).firstOrNull { g.isTrackSelected(it) }?.let { g.getTrackFormat(it).id }
+        } ?: return null
+        if (!com.abhinavxt.debforge.player.subtitles.isTimingKey(id)) return null
+        val timing = s.timingStoreLookup(id) ?: com.abhinavxt.debforge.player.subtitles.SubtitleTiming.IDENTITY
+        return com.abhinavxt.debforge.player.controls.SyncSubtitle(id, timing)
+    }
+
+    override fun syncCues(key: String) = s.cueBook.cues(key)
+
+    private var syncWasPlaying = false
+
+    override fun beginSyncPick() {
+        val p = player ?: return
+        syncWasPlaying = p.isPlaying || (p.playWhenReady && p.playbackState != Player.STATE_ENDED)
+        p.pause()
+    }
+
+    override fun endSyncPick() {
+        val p = player ?: return
+        if (syncWasPlaying) p.play()
+        syncWasPlaying = false
+    }
+
+    override fun applySyncTiming(key: String, timing: com.abhinavxt.debforge.player.subtitles.SubtitleTiming) =
+        s.applySubtitleTiming(key, timing)
+
+    override fun showSyncMessage(text: String) = s.showMessage(text)
+
     override fun selectTrack(type: Int, choice: TrackChoice?) {
         val p = player ?: return
         val params = p.trackSelectionParameters.buildUpon()

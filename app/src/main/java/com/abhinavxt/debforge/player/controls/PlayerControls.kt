@@ -172,6 +172,17 @@ interface ControlsActions {
     fun tracks(type: Int): List<TrackChoice>
     /** null = subtitles off. */
     fun selectTrack(type: Int, choice: TrackChoice?)
+    /** The selected subtitle when it is a side-loaded file (has a timing key) the sync tools can correct; else null. */
+    fun syncSubtitle(): SyncSubtitle? = null
+    /** Raw cues of the side-loaded subtitle [key] (file times). */
+    fun syncCues(key: String): List<com.abhinavxt.debforge.player.subtitles.RawCue> = emptyList()
+    /** Pauses for picking a line; [endSyncPick] plays again if it was playing. */
+    fun beginSyncPick() {}
+    fun endSyncPick() {}
+    /** Saves [timing] for the subtitle [key] and reloads it at the same second (the live nudge restarts at zero). */
+    fun applySyncTiming(key: String, timing: com.abhinavxt.debforge.player.subtitles.SubtitleTiming) {}
+    /** Shows a short message over the video. */
+    fun showSyncMessage(text: String) {}
     /** Look for subtitles on OpenSubtitles: the preferred language, or [anyLanguage]. */
     fun searchOnlineSubtitles(anyLanguage: Boolean)
     /** Download [sub], add it to the file and switch to it. */
@@ -228,7 +239,9 @@ fun PlayerControls(state: ControlsState, actions: ControlsActions) {
         actions.onBarsVisible(state.visible && !state.locked)
     }
     // Back closes an open panel first.
-    androidx.activity.compose.BackHandler(enabled = state.panel != null) { state.panel = null }
+    androidx.activity.compose.BackHandler(enabled = state.panel != null) {
+        if (state.panel == Panel.SYNC && state.syncStep != SyncStep.MENU) state.syncStep = SyncStep.MENU else state.panel = null
+    }
 
     // The file picker's launcher lives here, not in the side panel: the panel leaves the composition when it
     // closes, which would drop the picked file's result.
@@ -764,6 +777,7 @@ private fun SidePanel(panel: Panel, state: ControlsState, actions: ControlsActio
                     Panel.AUDIO -> R.string.player_audio
                     Panel.SUBTITLES -> R.string.player_subtitles
                     Panel.ONLINE_SUBTITLES -> R.string.player_subs_online
+                    Panel.SYNC -> R.string.player_sync_tools
                     Panel.CHAPTERS -> R.string.player_chapters
                     Panel.SPEED -> R.string.player_speed
                     Panel.MORE -> R.string.player_more
@@ -805,6 +819,9 @@ private fun SidePanel(panel: Panel, state: ControlsState, actions: ControlsActio
                             DelayRow(stringResource(R.string.player_sync_subs_hint), state.subtitleDelayMs, actions::setSubtitleDelay)
                         }
                     }
+                    if (panel == Panel.SUBTITLES && choices.any { it.selected }) {
+                        item { SyncToolsEntry(state, actions) { state.syncStep = SyncStep.MENU; state.panel = Panel.SYNC } }
+                    }
                     if (panel == Panel.SUBTITLES && state.onlineSubsAvailable) {
                         item {
                             MoreRow(Icons.Rounded.Search, stringResource(R.string.player_subs_search_online)) {
@@ -826,6 +843,7 @@ private fun SidePanel(panel: Panel, state: ControlsState, actions: ControlsActio
             }
             Panel.MORE -> MorePanel(state, actions)
             Panel.ONLINE_SUBTITLES -> OnlineSubtitlesPanel(state.onlineSubs, actions)
+            Panel.SYNC -> SyncPanel(state, actions)
             Panel.CHAPTERS -> {
                 val position = state.snapshot.positionMs
                 val current = state.chapters.indexOfLast { it.startMs <= position }
