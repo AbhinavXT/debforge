@@ -692,6 +692,13 @@
     <string name="os_detail">बिना सबटाइटल वाली फ़ाइलों के लिए सबटाइटल खोजें: प्लेयर में सबटाइटल → ऑनलाइन खोजें।</string>
     <string name="os_on_account">चालू, %1$s के रूप में साइन इन</string>
     <string name="os_on_key">चालू, आपकी API कुंजी से (दिन में कुछ डाउनलोड)</string>
+    <string name="os_when_none">सबटाइटल न होने पर ऑनलाइन सबटाइटल</string>
+    <string name="os_when_none_off">बंद</string>
+    <string name="os_when_none_ask">पूछें</string>
+    <string name="os_when_none_exact">सटीक मिलान जोड़ें</string>
+    <string name="os_when_none_detail">सटीक का मतलब है इसी फ़ाइल से मेल खाता, यानी सिंक में।</string>
+    <string name="os_fetch_on_download">डाउनलोड पूरा होने पर सबटाइटल लाएँ</string>
+    <string name="os_fetch_on_download_detail">यह आपका रोज़ का OpenSubtitles डाउनलोड कोटा इस्तेमाल करता है।</string>
     <string name="os_set_up">सेट अप करें</string>
     <string name="os_change">बदलें</string>
     <string name="os_setup_body">OpenSubtitles के लिए आपकी अपनी API कुंजी चाहिए (मुफ़्त)। OpenSubtitles पर साइन इन करें, नया consumer बनाएँ और उसकी API कुंजी यहाँ पेस्ट करें।</string>

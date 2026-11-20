@@ -657,6 +657,13 @@
     <string name="os_detail">为没有字幕的文件查找字幕：在播放器中点 字幕 → 在线搜索。</string>
     <string name="os_on_account">已开启，已登录：%1$s</string>
     <string name="os_on_key">已开启，使用你的 API 密钥（每天少量下载）</string>
+    <string name="os_when_none">无字幕时的在线字幕</string>
+    <string name="os_when_none_off">关闭</string>
+    <string name="os_when_none_ask">询问</string>
+    <string name="os_when_none_exact">添加精确匹配</string>
+    <string name="os_when_none_detail">精确指与此文件完全匹配，因此时间轴同步。</string>
+    <string name="os_fetch_on_download">下载完成时获取字幕</string>
+    <string name="os_fetch_on_download_detail">会占用你每日的 OpenSubtitles 下载额度。</string>
     <string name="os_set_up">设置</string>
     <string name="os_change">更改</string>
     <string name="os_setup_body">OpenSubtitles 需要你自己的 API 密钥（免费）。登录 OpenSubtitles，新建一个 consumer，然后把它的 API 密钥粘贴到这里。</string>

@@ -727,6 +727,13 @@
     <string name="os_detail">Trouve des sous-titres pour les fichiers qui n’en ont pas : Sous-titres → Chercher en ligne dans le lecteur.</string>
     <string name="os_on_account">Activé, connecté en tant que %1$s</string>
     <string name="os_on_key">Activé, avec ta clé API (quelques téléchargements par jour)</string>
+    <string name="os_when_none">Sous-titres en ligne si aucun</string>
+    <string name="os_when_none_off">Désactivé</string>
+    <string name="os_when_none_ask">Demander</string>
+    <string name="os_when_none_exact">Ajouter les correspondances exactes</string>
+    <string name="os_when_none_detail">Exact signifie associé à ce fichier précis, donc synchronisé.</string>
+    <string name="os_fetch_on_download">Récupérer les sous-titres à la fin d\'un téléchargement</string>
+    <string name="os_fetch_on_download_detail">Utilise ton quota quotidien de téléchargements OpenSubtitles.</string>
     <string name="os_set_up">Configurer</string>
     <string name="os_change">Modifier</string>
     <string name="os_setup_body">OpenSubtitles demande ta propre clé API (gratuite). Connecte-toi sur OpenSubtitles, crée un nouveau consumer et colle sa clé API ici.</string>

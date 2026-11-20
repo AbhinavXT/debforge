@@ -692,6 +692,13 @@
     <string name="os_detail">Altyazısız gelen dosyalar için altyazı bul: oynatıcıda Altyazılar → Çevrimiçi ara.</string>
     <string name="os_on_account">Açık, %1$s olarak giriş yapıldı</string>
     <string name="os_on_key">Açık, API anahtarınla (günde birkaç indirme)</string>
+    <string name="os_when_none">Altyazı yoksa çevrimiçi altyazı</string>
+    <string name="os_when_none_off">Kapalı</string>
+    <string name="os_when_none_ask">Sor</string>
+    <string name="os_when_none_exact">Tam eşleşmeleri ekle</string>
+    <string name="os_when_none_detail">Tam eşleşme, altyazının tam olarak bu dosyaya uyduğu, yani senkronize olduğu anlamına gelir.</string>
+    <string name="os_fetch_on_download">İndirme bitince altyazı getir</string>
+    <string name="os_fetch_on_download_detail">Günlük OpenSubtitles indirme hakkını kullanır.</string>
     <string name="os_set_up">Kur</string>
     <string name="os_change">Değiştir</string>
     <string name="os_setup_body">OpenSubtitles için kendi API anahtarın gerekiyor (ücretsiz). OpenSubtitles\'a giriş yap, yeni bir consumer oluştur ve API anahtarını buraya yapıştır.</string>

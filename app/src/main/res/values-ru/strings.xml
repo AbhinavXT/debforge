@@ -762,6 +762,13 @@
     <string name="os_detail">Ищите субтитры для файлов без них: в плеере Субтитры → Найти в интернете.</string>
     <string name="os_on_account">Включено, вход: %1$s</string>
     <string name="os_on_key">Включено, по вашему API-ключу (несколько скачиваний в день)</string>
+    <string name="os_when_none">Онлайн-субтитры, если их нет</string>
+    <string name="os_when_none_off">Выкл.</string>
+    <string name="os_when_none_ask">Спрашивать</string>
+    <string name="os_when_none_exact">Добавлять точные совпадения</string>
+    <string name="os_when_none_detail">Точное совпадение означает, что субтитры подобраны именно к этому файлу, то есть синхронны.</string>
+    <string name="os_fetch_on_download">Загружать субтитры после окончания загрузки</string>
+    <string name="os_fetch_on_download_detail">Расходует дневную квоту загрузок OpenSubtitles.</string>
     <string name="os_set_up">Настроить</string>
     <string name="os_change">Изменить</string>
     <string name="os_setup_body">Для OpenSubtitles нужен свой API-ключ (бесплатно). Войдите на OpenSubtitles, создайте новый consumer и вставьте сюда его API-ключ.</string>

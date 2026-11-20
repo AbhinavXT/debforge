@@ -657,6 +657,13 @@
     <string name="os_detail">Cari subtitle untuk file yang tidak menyertakannya: Subtitle → Cari online di pemutar.</string>
     <string name="os_on_account">Aktif, masuk sebagai %1$s</string>
     <string name="os_on_key">Aktif, dengan kunci API-mu (beberapa unduhan per hari)</string>
+    <string name="os_when_none">Subtitel online jika tidak ada</string>
+    <string name="os_when_none_off">Mati</string>
+    <string name="os_when_none_ask">Tanya</string>
+    <string name="os_when_none_exact">Tambahkan yang cocok persis</string>
+    <string name="os_when_none_detail">Persis berarti cocok dengan file ini, jadi sudah sinkron.</string>
+    <string name="os_fetch_on_download">Ambil subtitel saat unduhan selesai</string>
+    <string name="os_fetch_on_download_detail">Memakai jatah unduhan harian OpenSubtitles.</string>
     <string name="os_set_up">Siapkan</string>
     <string name="os_change">Ubah</string>
     <string name="os_setup_body">OpenSubtitles memerlukan kunci API milikmu sendiri (gratis). Masuk ke OpenSubtitles, buat consumer baru, lalu tempel kunci API-nya di sini.</string>

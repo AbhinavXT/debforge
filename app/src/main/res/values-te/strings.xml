@@ -692,6 +692,13 @@
     <string name="os_detail">సబ్‌టైటిల్స్ లేని ఫైల్‌లకు సబ్‌టైటిల్స్ కనుగొనండి: ప్లేయర్‌లో సబ్‌టైటిల్స్ → ఆన్‌లైన్‌లో వెతకండి.</string>
     <string name="os_on_account">ఆన్, %1$sగా సైన్ ఇన్</string>
     <string name="os_on_key">ఆన్, మీ API కీతో (రోజుకు కొన్ని డౌన్‌లోడ్‌లు)</string>
+    <string name="os_when_none">ఉపశీర్షికలు లేనప్పుడు ఆన్‌లైన్ ఉపశీర్షికలు</string>
+    <string name="os_when_none_off">ఆఫ్</string>
+    <string name="os_when_none_ask">అడుగు</string>
+    <string name="os_when_none_exact">ఖచ్చితమైన సరిపోలికలను జోడించు</string>
+    <string name="os_when_none_detail">ఖచ్చితమైనది అంటే ఈ ఫైల్‌కే సరిపోలేది, కాబట్టి సింక్‌లో ఉంటుంది.</string>
+    <string name="os_fetch_on_download">డౌన్‌లోడ్ పూర్తయ్యాక ఉపశీర్షికలు తెచ్చుకో</string>
+    <string name="os_fetch_on_download_detail">మీ రోజువారీ OpenSubtitles డౌన్‌లోడ్ పరిమితిని వినియోగిస్తుంది.</string>
     <string name="os_set_up">సెటప్ చేయండి</string>
     <string name="os_change">మార్చండి</string>
     <string name="os_setup_body">OpenSubtitles కోసం మీ సొంత API కీ కావాలి (ఉచితం). OpenSubtitles‌లో సైన్ ఇన్ చేసి కొత్త consumer సృష్టించి, దాని API కీని ఇక్కడ పేస్ట్ చేయండి.</string>

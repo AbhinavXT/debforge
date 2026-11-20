@@ -694,6 +694,13 @@
     <string name="os_detail">Find subtitles for files that came without any: Subtitles → Search online in the player.</string>
     <string name="os_on_account">On, signed in as %1$s</string>
     <string name="os_on_key">On, with your API key (a few downloads a day)</string>
+    <string name="os_when_none">Online subtitles when none</string>
+    <string name="os_when_none_off">Off</string>
+    <string name="os_when_none_ask">Ask</string>
+    <string name="os_when_none_exact">Add exact matches</string>
+    <string name="os_when_none_detail">Exact means matched to this very file, so it is in sync.</string>
+    <string name="os_fetch_on_download">Fetch subtitles when a download finishes</string>
+    <string name="os_fetch_on_download_detail">Uses your daily OpenSubtitles download allowance.</string>
     <string name="os_set_up">Set up</string>
     <string name="os_change">Change</string>
     <string name="os_setup_body">OpenSubtitles needs an API key of your own (free). Sign in on OpenSubtitles, create a new consumer and paste its API key here.</string>

@@ -692,6 +692,13 @@
     <string name="os_detail">সাবটাইটেল ছাড়া আসা ফাইলের জন্য সাবটাইটেল খুঁজুন: প্লেয়ারে সাবটাইটেল → অনলাইনে খুঁজুন।</string>
     <string name="os_on_account">চালু, %1$s হিসেবে সাইন ইন</string>
     <string name="os_on_key">চালু, আপনার API কী দিয়ে (দিনে কয়েকটি ডাউনলোড)</string>
+    <string name="os_when_none">সাবটাইটেল না থাকলে অনলাইন সাবটাইটেল</string>
+    <string name="os_when_none_off">বন্ধ</string>
+    <string name="os_when_none_ask">জিজ্ঞাসা করুন</string>
+    <string name="os_when_none_exact">সঠিক মিল যোগ করুন</string>
+    <string name="os_when_none_detail">সঠিক মানে ঠিক এই ফাইলের সঙ্গে মেলানো, তাই সিঙ্কে থাকে।</string>
+    <string name="os_fetch_on_download">ডাউনলোড শেষ হলে সাবটাইটেল আনুন</string>
+    <string name="os_fetch_on_download_detail">আপনার দৈনিক OpenSubtitles ডাউনলোড কোটা ব্যবহার করে।</string>
     <string name="os_set_up">সেট আপ করুন</string>
     <string name="os_change">পরিবর্তন করুন</string>
     <string name="os_setup_body">OpenSubtitles-এর জন্য আপনার নিজের API কী দরকার (বিনামূল্যে)। OpenSubtitles-এ সাইন ইন করে নতুন consumer তৈরি করুন এবং তার API কী এখানে পেস্ট করুন।</string>

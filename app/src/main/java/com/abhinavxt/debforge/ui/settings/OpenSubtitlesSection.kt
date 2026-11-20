@@ -2,6 +2,7 @@
 
 package com.abhinavxt.debforge.ui.settings
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -11,9 +12,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.icons.rounded.Subtitles
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -26,6 +32,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
@@ -36,11 +43,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import com.abhinavxt.debforge.R
+import com.abhinavxt.debforge.data.prefs.SettingsStore
 import com.abhinavxt.debforge.data.subtitles.OpenSubtitlesApi
 import com.abhinavxt.debforge.data.subtitles.OpenSubtitlesRepository
 import com.abhinavxt.debforge.data.subtitles.OpenSubtitlesStore
+import com.abhinavxt.debforge.domain.OnlineSubsWhenNone
 import com.abhinavxt.debforge.ui.components.SectionCard
 import com.abhinavxt.debforge.ui.components.SettingRow
+import com.abhinavxt.debforge.ui.components.SwitchSettingRow
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -53,8 +63,17 @@ import javax.inject.Inject
 @HiltViewModel
 class OpenSubtitlesViewModel @Inject constructor(
     private val repository: OpenSubtitlesRepository,
-    store: OpenSubtitlesStore
+    store: OpenSubtitlesStore,
+    private val settings: SettingsStore
 ) : ViewModel() {
+
+    val whenNone: StateFlow<OnlineSubsWhenNone> = settings.onlineSubsWhenNoneFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), OnlineSubsWhenNone.ASK)
+    val fetchOnDownload: StateFlow<Boolean> = settings.fetchSubsOnDownloadFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
+
+    fun setWhenNone(v: OnlineSubsWhenNone) { viewModelScope.launch { settings.setOnlineSubsWhenNone(v) } }
+    fun setFetchOnDownload(v: Boolean) { viewModelScope.launch { settings.setFetchSubsOnDownload(v) } }
 
     val apiKey: StateFlow<String?> = store.apiKeyFlow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
     val username: StateFlow<String?> = store.usernameFlow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
@@ -97,6 +116,13 @@ fun OpenSubtitlesSection(viewModel: OpenSubtitlesViewModel = hiltViewModel()) {
     val apiKey by viewModel.apiKey.collectAsStateWithLifecycle()
     val username by viewModel.username.collectAsStateWithLifecycle()
     var editing by remember { mutableStateOf(false) }
+    val whenNone by viewModel.whenNone.collectAsStateWithLifecycle()
+    val fetchOnDownload by viewModel.fetchOnDownload.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    val isTv = remember(context) {
+        (context.getSystemService(android.content.Context.UI_MODE_SERVICE) as android.app.UiModeManager).currentModeType ==
+            android.content.res.Configuration.UI_MODE_TYPE_TELEVISION
+    }
 
     SectionCard(modifier = Modifier.padding(top = 20.dp)) {
         SettingRow(
@@ -119,6 +145,16 @@ fun OpenSubtitlesSection(viewModel: OpenSubtitlesViewModel = hiltViewModel()) {
                 OutlinedButton(onClick = viewModel::remove) { Text(stringResource(R.string.action_remove)) }
             }
         }
+        if (apiKey != null && !isTv) {
+            WhenNoneRow(current = whenNone, onPick = viewModel::setWhenNone)
+            SwitchSettingRow(
+                icon = Icons.Rounded.Download,
+                title = stringResource(R.string.os_fetch_on_download),
+                subtitle = stringResource(R.string.os_fetch_on_download_detail),
+                checked = fetchOnDownload,
+                onChange = viewModel::setFetchOnDownload
+            )
+        }
     }
 
     if (editing) {
@@ -135,6 +171,36 @@ fun OpenSubtitlesSection(viewModel: OpenSubtitlesViewModel = hiltViewModel()) {
 @Composable
 fun OpenSubtitlesSetupDialog(onDismiss: () -> Unit, viewModel: OpenSubtitlesViewModel = hiltViewModel()) {
     OpenSubtitlesDialog(viewModel = viewModel, initialKey = "", initialUser = "", onDismiss = onDismiss)
+}
+
+@Composable
+private fun WhenNoneRow(current: OnlineSubsWhenNone, onPick: (OnlineSubsWhenNone) -> Unit) {
+    var open by remember { mutableStateOf(false) }
+    @Composable
+    fun label(m: OnlineSubsWhenNone) = stringResource(
+        when (m) {
+            OnlineSubsWhenNone.OFF -> R.string.os_when_none_off
+            OnlineSubsWhenNone.ASK -> R.string.os_when_none_ask
+            OnlineSubsWhenNone.EXACT -> R.string.os_when_none_exact
+        }
+    )
+    Box {
+        SettingRow(
+            icon = Icons.Rounded.Subtitles,
+            title = stringResource(R.string.os_when_none),
+            subtitle = label(current) + " · " + stringResource(R.string.os_when_none_detail),
+            onClick = { open = true }
+        )
+        DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
+            OnlineSubsWhenNone.entries.forEach { m ->
+                DropdownMenuItem(
+                    text = { Text(label(m)) },
+                    leadingIcon = { if (m == current) Icon(Icons.Rounded.Check, contentDescription = null) },
+                    onClick = { onPick(m); open = false }
+                )
+            }
+        }
+    }
 }
 
 @Composable

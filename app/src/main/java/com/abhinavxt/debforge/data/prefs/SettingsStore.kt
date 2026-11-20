@@ -8,6 +8,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.abhinavxt.debforge.data.update.InstallSource
 import com.abhinavxt.debforge.domain.DefaultQuality
+import com.abhinavxt.debforge.domain.OnlineSubsWhenNone
 import com.abhinavxt.debforge.domain.ReleasePrefs
 import com.abhinavxt.debforge.domain.SortOrder
 import com.abhinavxt.debforge.domain.ThemeMode
@@ -75,6 +76,8 @@ class SettingsStore @Inject constructor(
     private val keyClipboardSeen = androidx.datastore.preferences.core.longPreferencesKey("clipboard_seen_at")
     private val keyYouTubeQuality = stringPreferencesKey("youtube_default_quality")
     private val keyAdBlock = booleanPreferencesKey("browser_adblock")
+    private val keyOnlineSubsWhenNone = stringPreferencesKey("online_subs_when_none")
+    private val keyFetchSubsOnDownload = booleanPreferencesKey("fetch_subs_on_download")
     private val keyAdBlockOffSites = stringPreferencesKey("browser_adblock_off_sites")
 
     private val keyImportLocal = booleanPreferencesKey("import_local_files")
@@ -131,6 +134,16 @@ class SettingsStore @Inject constructor(
         DefaultQuality.entries.firstOrNull { it.name == p[keyYouTubeQuality] } ?: DefaultQuality.ASK
     }
     suspend fun setYouTubeQuality(v: DefaultQuality) = context.settingsDataStore.edit { it[keyYouTubeQuality] = v.name }
+
+    /** Player: what to do about OpenSubtitles when the file has no subtitles in the user's language. */
+    val onlineSubsWhenNoneFlow: Flow<OnlineSubsWhenNone> = context.settingsDataStore.data.map { p ->
+        OnlineSubsWhenNone.entries.firstOrNull { it.name == p[keyOnlineSubsWhenNone] } ?: OnlineSubsWhenNone.ASK
+    }
+    suspend fun setOnlineSubsWhenNone(v: OnlineSubsWhenNone) = context.settingsDataStore.edit { it[keyOnlineSubsWhenNone] = v.name }
+
+    /** Fetch a subtitle from OpenSubtitles when a download finishes. Off by default (uses the daily allowance). */
+    val fetchSubsOnDownloadFlow: Flow<Boolean> = context.settingsDataStore.data.map { it[keyFetchSubsOnDownload] ?: false }
+    suspend fun setFetchSubsOnDownload(v: Boolean) = context.settingsDataStore.edit { it[keyFetchSubsOnDownload] = v }
 
     /** Browser tab: block ads and trackers with uBlock Origin's default filter lists. On by default. */
     val adBlockFlow: Flow<Boolean> = context.settingsDataStore.data.map { it[keyAdBlock] ?: true }
@@ -342,11 +355,12 @@ class SettingsStore @Inject constructor(
         keyDynamicColor, keyPosterView, keyOrganize, keyWifiOnly, keyChargingOnly,
         keyScheduleOn, keyAutoUpdate, keyRemoveAfter, keyPureBlack, keyShowExtras, keyClipboardOffer, keyAdBlock,
         keyInternalPlayer, keyAutoplayNext, keyPip, keyAutoSkipIntro, keySponsorBlock, keyYouTubeAutoplay, keyNightMode, keyStreamPreviews,
-        keyPlayerArtColor, keyPlayerGestures, keyPlayerShowRemaining, keyPlayerBackground, keyHistoryPaused, keyVideoFullScreen
+        keyPlayerArtColor, keyPlayerGestures, keyPlayerShowRemaining, keyPlayerBackground, keyHistoryPaused, keyVideoFullScreen,
+        keyFetchSubsOnDownload
     )
     /** May be blank on purpose (nothing avoided, no site left unblocked). */
     private val backupStrings get() = listOf(keyReleaseAvoid, keyReleasePrefer, keyAdBlockOffSites, keyYouTubeQuality,
-        keyAudioLanguage, keySubtitleLanguage, keySubtitleStyle, keySponsorCategories)
+        keyAudioLanguage, keySubtitleLanguage, keySubtitleStyle, keySponsorCategories, keyOnlineSubsWhenNone)
     private val backupInts get() = listOf(keySortOrder, keyThemeMode, keyScheduleStart, keyScheduleEnd, keySpeedLimit, keyAutoDeleteDays,
         keyAudioSkipSeconds, keyStorageLimitGb)
 

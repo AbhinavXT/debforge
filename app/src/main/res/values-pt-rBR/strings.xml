@@ -727,6 +727,13 @@
     <string name="os_detail">Encontre legendas para arquivos que vieram sem: Legendas → Buscar on-line no player.</string>
     <string name="os_on_account">Ativado, conectado como %1$s</string>
     <string name="os_on_key">Ativado, com sua chave de API (poucos downloads por dia)</string>
+    <string name="os_when_none">Legendas online quando não houver</string>
+    <string name="os_when_none_off">Desativado</string>
+    <string name="os_when_none_ask">Perguntar</string>
+    <string name="os_when_none_exact">Adicionar correspondências exatas</string>
+    <string name="os_when_none_detail">Exata significa que corresponde a este arquivo, então está sincronizada.</string>
+    <string name="os_fetch_on_download">Buscar legendas quando um download terminar</string>
+    <string name="os_fetch_on_download_detail">Usa sua cota diária de downloads do OpenSubtitles.</string>
     <string name="os_set_up">Configurar</string>
     <string name="os_change">Alterar</string>
     <string name="os_setup_body">O OpenSubtitles precisa de uma chave de API sua (grátis). Entre no OpenSubtitles, crie um novo consumer e cole aqui a chave de API.</string>

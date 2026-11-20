@@ -692,6 +692,13 @@
     <string name="os_detail">வசனங்கள் இல்லாத கோப்புகளுக்கு வசனங்களைக் கண்டறியவும்: பிளேயரில் வசனங்கள் → ஆன்லைனில் தேடு.</string>
     <string name="os_on_account">இயக்கத்தில், %1$s ஆக உள்நுழைந்துள்ளது</string>
     <string name="os_on_key">இயக்கத்தில், உங்கள் API விசையுடன் (நாளுக்குச் சில பதிவிறக்கங்கள்)</string>
+    <string name="os_when_none">வசனம் இல்லாதபோது ஆன்லைன் வசனங்கள்</string>
+    <string name="os_when_none_off">முடக்கம்</string>
+    <string name="os_when_none_ask">கேள்</string>
+    <string name="os_when_none_exact">துல்லியமான பொருத்தங்களைச் சேர்</string>
+    <string name="os_when_none_detail">துல்லியம் என்றால் இந்தக் கோப்புடன் சரியாகப் பொருந்துவது, எனவே ஒத்திசைவில் இருக்கும்.</string>
+    <string name="os_fetch_on_download">பதிவிறக்கம் முடிந்ததும் வசனங்களைப் பெறு</string>
+    <string name="os_fetch_on_download_detail">உங்கள் தினசரி OpenSubtitles பதிவிறக்க வரம்பைப் பயன்படுத்தும்.</string>
     <string name="os_set_up">அமை</string>
     <string name="os_change">மாற்று</string>
     <string name="os_setup_body">OpenSubtitles-க்கு உங்கள் சொந்த API விசை தேவை (இலவசம்). OpenSubtitles-இல் உள்நுழைந்து புதிய consumer-ஐ உருவாக்கி, அதன் API விசையை இங்கே ஒட்டவும்.</string>

@@ -692,6 +692,13 @@
     <string name="os_detail">Finde Untertitel für Dateien ohne: im Player Untertitel → Online suchen.</string>
     <string name="os_on_account">An, angemeldet als %1$s</string>
     <string name="os_on_key">An, mit deinem API-Schlüssel (wenige Downloads pro Tag)</string>
+    <string name="os_when_none">Online-Untertitel, wenn keine vorhanden</string>
+    <string name="os_when_none_off">Aus</string>
+    <string name="os_when_none_ask">Fragen</string>
+    <string name="os_when_none_exact">Exakte Treffer hinzufügen</string>
+    <string name="os_when_none_detail">Exakt heißt: passend zu genau dieser Datei, also synchron.</string>
+    <string name="os_fetch_on_download">Untertitel nach Abschluss eines Downloads laden</string>
+    <string name="os_fetch_on_download_detail">Verbraucht dein tägliches OpenSubtitles-Downloadkontingent.</string>
     <string name="os_set_up">Einrichten</string>
     <string name="os_change">Ändern</string>
     <string name="os_setup_body">OpenSubtitles braucht einen eigenen API-Schlüssel (kostenlos). Melde dich bei OpenSubtitles an, lege einen neuen Consumer an und füge seinen API-Schlüssel hier ein.</string>
