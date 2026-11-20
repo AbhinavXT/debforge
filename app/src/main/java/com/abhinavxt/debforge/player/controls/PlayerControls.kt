@@ -234,6 +234,11 @@ fun PlayerControls(state: ControlsState, actions: ControlsActions) {
 
         // Side panel: audio, subtitles or speed. Tapping outside closes it.
         val panel = state.panel
+        if (state.inline) {
+            // The watch page's picture is too short for a side panel: the panel opens as a sheet over the page.
+            if (panel != null) PanelSheet(panel, state, actions)
+            return@Box
+        }
         if (panel != null) {
             Box(
                 Modifier.fillMaxSize().clickable(
@@ -694,13 +699,30 @@ private fun SlideToUnlock(onUnlock: () -> Unit, onMove: () -> Unit) {
     }
 }
 
+/** A panel as a bottom sheet (the watch page's inline player): same content, the page's full width, as tall as it needs (scrolls past the screen). */
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
-private fun SidePanel(panel: Panel, state: ControlsState, actions: ControlsActions) {
+private fun PanelSheet(panel: Panel, state: ControlsState, actions: ControlsActions) {
+    androidx.compose.material3.ModalBottomSheet(
+        onDismissRequest = { state.panel = null },
+        sheetState = androidx.compose.material3.rememberModalBottomSheetState(skipPartiallyExpanded = true),
+        containerColor = Color(0xFF1C1C1E),
+        contentColor = Color.White,
+        dragHandle = { androidx.compose.material3.BottomSheetDefaults.DragHandle(color = Color.White.copy(alpha = 0.4f)) },
+    ) {
+        SidePanel(panel, state, actions, sheet = true)
+    }
+}
+
+private val PANEL_COLOR = Color(0xF01C1C1E)
+
+@Composable
+private fun SidePanel(panel: Panel, state: ControlsState, actions: ControlsActions, sheet: Boolean = false) {
     Column(
-        Modifier
+        if (sheet) Modifier.fillMaxWidth().padding(bottom = 12.dp) else Modifier
             .fillMaxHeight()
             .width(320.dp)
-            .background(Color(0xF01C1C1E), RoundedCornerShape(topStart = 20.dp, bottomStart = 20.dp))
+            .background(PANEL_COLOR, RoundedCornerShape(topStart = 20.dp, bottomStart = 20.dp))
             .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Vertical + WindowInsetsSides.End))
             .padding(vertical = 12.dp)
     ) {
