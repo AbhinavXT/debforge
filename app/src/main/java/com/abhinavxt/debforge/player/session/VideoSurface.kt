@@ -401,6 +401,14 @@ class VideoSurface(
         return true
     }
 
+    /** Feeds [ev] in screen coordinates: this view may be scaled by the host, which would inflate the velocity. */
+    private fun android.view.VelocityTracker.track(ev: MotionEvent) {
+        val raw = MotionEvent.obtain(ev)
+        raw.setLocation(ev.rawX, ev.rawY)
+        addMovement(raw)
+        raw.recycle()
+    }
+
     /** A downward drag on the watch page's picture belongs to the host; true while it holds the touch. Taps and double taps go on as usual. */
     private fun handleHostDrag(ev: MotionEvent, engine: GestureEngine?): Boolean {
         val host = hostDrag ?: return false
@@ -411,10 +419,10 @@ class VideoSurface(
                 hostDragging = false
                 upDragging = false
                 dragTracker?.recycle()
-                dragTracker = android.view.VelocityTracker.obtain().also { it.addMovement(ev) }
+                dragTracker = android.view.VelocityTracker.obtain().also { it.track(ev) }
             }
             MotionEvent.ACTION_MOVE -> {
-                dragTracker?.addMovement(ev)
+                dragTracker?.track(ev)
                 if (upDragging) return true
                 if (!hostDragging) {
                     val dy = ev.rawY - dragDownY
@@ -454,7 +462,7 @@ class VideoSurface(
                 dragTracker = null
                 if (hostDragging) {
                     hostDragging = false
-                    tracker?.addMovement(ev)
+                    tracker?.track(ev)
                     tracker?.computeCurrentVelocity(1000)
                     val v = if (ev.actionMasked == MotionEvent.ACTION_UP) tracker?.yVelocity ?: 0f else 0f
                     tracker?.recycle()
@@ -463,7 +471,7 @@ class VideoSurface(
                 }
                 if (upDragging) {
                     upDragging = false
-                    tracker?.addMovement(ev)
+                    tracker?.track(ev)
                     tracker?.computeCurrentVelocity(1000)
                     val v = if (ev.actionMasked == MotionEvent.ACTION_UP) tracker?.yVelocity ?: 0f else 0f
                     tracker?.recycle()

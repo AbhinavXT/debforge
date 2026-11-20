@@ -14,6 +14,8 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -480,7 +482,7 @@ private fun ActiveVideoHost(
         var settleGen by remember { mutableIntStateOf(0) }
         val targetNow by rememberUpdatedState(target)
         var lastMode by remember { mutableStateOf(if (pip) VideoMode.FULL else mode) }
-        LaunchedEffect(target) {
+        LaunchedEffect(target, mode, pip) {
             val shown = if (pip) VideoMode.FULL else mode
             val modeChanged = lastMode != shown
             lastMode = shown
@@ -491,6 +493,8 @@ private fun ActiveVideoHost(
         }
         LaunchedEffect(mode) { if (mode == VideoMode.WATCH && !dragging) pageAlpha.snapTo(1f) }
         val dragLatest = rememberUpdatedState(Triple(watchRect, miniRect, travel))
+        // A rotation or resize during a drag or settle: the held layout follows the new watch layout.
+        LaunchedEffect(watchRect) { if (heldLayout != null) heldLayout = watchRect }
         // Where the picture is laid out, and where it looks to be (animated, or under the finger).
         val rectNow: () -> Rect = { heldLayout ?: rectAnim.value }
         val visualRect: () -> Rect = {
@@ -499,7 +503,7 @@ private fun ActiveVideoHost(
                 androidx.compose.ui.geometry.lerp(watch, mini, (dragOffset / trav).coerceIn(0f, 1f))
             } else rectAnim.value
         }
-        var settleJob by remember { mutableStateOf<kotlinx.coroutines.Job?>(null) }
+        val settleJobs = remember { arrayOfNulls<kotlinx.coroutines.Job>(1) }
         val drag = remember {
             object : VideoSurface.HostDrag {
                 fun begin() {
@@ -507,7 +511,7 @@ private fun ActiveVideoHost(
                         // Caught while springing back: carry on from where the picture is.
                         val resumeFrom = if (heldLayout != null) (rectAnim.value.top - dragLatest.value.first.top).coerceAtLeast(0f) else 0f
                         settleGen++
-                        settleJob?.cancel()
+                        settleJobs[0]?.cancel()
                         heldLayout = dragLatest.value.first
                         dragOffset = resumeFrom
                         dragging = true
@@ -528,7 +532,7 @@ private fun ActiveVideoHost(
                     val minimise = shouldMinimise(dragOffset, velocityY, trav)
                     val p = (dragOffset / trav).coerceIn(0f, 1f)
                     val gen = ++settleGen
-                    settleJob = scope.launch {
+                    settleJobs[0] = scope.launch {
                         try {
                             rectAnim.snapTo(androidx.compose.ui.geometry.lerp(watch, mini, p))
                             pageAlpha.snapTo(1f - p)
@@ -548,7 +552,7 @@ private fun ActiveVideoHost(
                         } finally {
                             // The layout catches up and the transform resets together, in one snapshot.
                             if (gen == settleGen) {
-                                kotlinx.coroutines.withContext(kotlinx.coroutines.NonCancellable) { rectAnim.snapTo(targetNow) }
+                                kotlinx.coroutines.withContext(kotlinx.coroutines.NonCancellable) { rectAnim.snapTo(if (minimise) dragLatest.value.second else targetNow) }
                                 heldLayout = null
                             }
                         }
@@ -641,7 +645,7 @@ private fun ActiveVideoHost(
             // ...and a watch-page drag too: back to the watch layout with no transform left over.
             if (dragging || heldLayout != null) {
                 settleGen++
-                settleJob?.cancel()
+                settleJobs[0]?.cancel()
                 dragging = false
                 rectAnim.snapTo(targetNow)
                 heldLayout = null
@@ -686,6 +690,27 @@ private fun ActiveVideoHost(
                     layout(w, h) { placeable.place(0, 0) }
                 },
         )
+        // While the picture is held (dragged, or settling after it) it is drawn away from its layout bounds, which is
+        // where touches are tested: this region over where it is drawn lets it be caught there.
+        if (mode == VideoMode.WATCH && !pip && heldLayout != null) {
+            val held = heldLayout!!
+            Box(
+                Modifier
+                    .offset { IntOffset(held.left.roundToInt(), held.top.roundToInt()) }
+                    .size(with(density) { held.width.toDp() }, with(density) { held.height.toDp() })
+                    .graphicsLayer {
+                        transformOrigin = androidx.compose.ui.graphics.TransformOrigin(0f, 0f)
+                        val l = layerFor(rectNow(), visualRect())
+                        scaleX = l.scaleX; scaleY = l.scaleY; translationX = l.translationX; translationY = l.translationY
+                    }
+                    .draggable(
+                        androidx.compose.foundation.gestures.rememberDraggableState { dy -> drag.move(dy) },
+                        androidx.compose.foundation.gestures.Orientation.Vertical,
+                        onDragStarted = { drag.start() },
+                        onDragStopped = { v -> drag.end(v) },
+                    )
+            )
+        }
         // A tap on the small picture opens the watch page (its own touch handling is off in the mini mode), and a
         // swipe that starts on it is the bar's swipe. Placed where the picture is without the swipe's offset, so the
         // touch does not move under the finger.
