@@ -112,6 +112,7 @@ class VideoSurface(
     private var dragDownX = 0f
     private var dragDownY = 0f
     private var dragLastY = 0f
+    private var dragDownTime = 0L
     private var dragMayStart = false
     private var hostDragging = false
     private var upDragging = false
@@ -415,7 +416,8 @@ class VideoSurface(
         when (ev.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
                 dragDownX = ev.rawX; dragDownY = ev.rawY; dragLastY = ev.rawY
-                dragMayStart = !touchesControl(ev)
+                dragMayStart = !blocksHostDrag(ev)
+                dragDownTime = ev.eventTime
                 hostDragging = false
                 upDragging = false
                 dragTracker?.recycle()
@@ -464,7 +466,13 @@ class VideoSurface(
                     hostDragging = false
                     tracker?.track(ev)
                     tracker?.computeCurrentVelocity(1000)
-                    val v = if (ev.actionMasked == MotionEvent.ACTION_UP) tracker?.yVelocity ?: 0f else 0f
+                    var v = if (ev.actionMasked == MotionEvent.ACTION_UP) tracker?.yVelocity ?: 0f else 0f
+                    if (ev.actionMasked == MotionEvent.ACTION_UP) {
+                        // The last stretch counts too, and a very quick drag has too few points for a velocity: use its average.
+                        host.move(ev.rawY - dragLastY)
+                        val ms = ev.eventTime - dragDownTime
+                        if (kotlin.math.abs(v) < 1f && ms > 0) v = (ev.rawY - dragDownY) * 1000f / ms
+                    }
                     tracker?.recycle()
                     host.end(v)
                     return true
@@ -491,6 +499,16 @@ class VideoSurface(
         gestureHandler.removeCallbacks(gestureTimer)
         val due = gestureEngine?.deadline ?: return
         gestureHandler.postDelayed(gestureTimer, (due - SystemClock.uptimeMillis()).coerceAtLeast(0))
+    }
+
+    /** A touch that must not turn into the host's drag: cards, an open panel or lock, the seek bar. Other buttons can be dragged from. */
+    private fun blocksHostDrag(ev: MotionEvent): Boolean {
+        if (isTv) return touchesControl(ev)
+        if (hit(startOverView, ev.x.toInt(), ev.y.toInt()) || hit(skipView, ev.x.toInt(), ev.y.toInt()) || hit(nextCard, ev.x.toInt(), ev.y.toInt())) return true
+        if (controls.locked || controls.panel != null) return true
+        val at = IntArray(2).also { getLocationInWindow(it) }
+        val seek = controls.controlBounds["seekbar"] ?: return false
+        return controls.visible && seek.contains(androidx.compose.ui.geometry.Offset(ev.x + at[0], ev.y + at[1]))
     }
 
     /** Is ([ev].x, [ev].y) on something tappable: a controller button, the seek bar, a card? */

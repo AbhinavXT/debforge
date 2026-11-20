@@ -543,11 +543,26 @@ private fun ActiveVideoHost(
                                 launch { pageAlpha.animateTo(0f, tween(160)) }
                             } else launch { pageAlpha.animateTo(1f, tween(150)) }
                             if (!fast) {
-                                rectAnim.animateTo(
-                                    if (minimise) mini else watch,
-                                    androidx.compose.animation.core.spring(dampingRatio = 1f, stiffness = 400f),
-                                    initialVelocity = Rect(0f, speed, 0f, speed),
-                                )
+                                val spring = androidx.compose.animation.core.spring<Rect>(dampingRatio = 1f, stiffness = 400f)
+                                if (!minimise) {
+                                    rectAnim.animateTo(watch, spring, initialVelocity = Rect(0f, speed, 0f, speed))
+                                } else kotlinx.coroutines.coroutineScope {
+                                    // The mini bar reports its slot a few frames after the mode changes: the picture keeps heading
+                                    // for wherever the slot turns out to be, without stopping or jumping.
+                                    var dest = mini
+                                    var anim = launch { rectAnim.animateTo(dest, spring, initialVelocity = Rect(0f, speed, 0f, speed)) }
+                                    val watcher = launch {
+                                        snapshotFlow { targetNow }.collect { t ->
+                                            if (t != dest) { dest = t; anim.cancel(); anim = launch { rectAnim.animateTo(t, spring) } }
+                                        }
+                                    }
+                                    while (true) {
+                                        anim.join()
+                                        repeat(3) { withFrameNanos { } }
+                                        if (anim.isCompleted && dest == targetNow) break
+                                    }
+                                    watcher.cancel()
+                                }
                             }
                         } finally {
                             // The layout catches up and the transform resets together, in one snapshot.
