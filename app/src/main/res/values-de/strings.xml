@@ -743,6 +743,10 @@
     <string name="player_sync_audio_hint">Ton vor dem Bild? Drück +. Hinterher? Drück −.</string>
     <string name="player_sync_value">%1$s s</string>
     <string name="player_sync_reset">Zum Zurücksetzen auf die Zeit tippen</string>
+    <string name="player_sync_earlier_1s">1 Sekunde früher</string>
+    <string name="player_sync_earlier_01s">0,1 Sekunden früher</string>
+    <string name="player_sync_later_01s">0,1 Sekunden später</string>
+    <string name="player_sync_later_1s">1 Sekunde später</string>
     <string name="player_night_mode">Nachtmodus</string>
     <string name="player_night_mode_detail">Laute Szenen leiser, Dialoge klarer</string>
     <string name="player_night_mode_unavailable">Nachtmodus ist auf diesem Gerät nicht verfügbar</string>

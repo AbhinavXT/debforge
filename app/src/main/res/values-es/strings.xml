@@ -780,6 +780,10 @@
     <string name="player_sync_audio_hint">¿El sonido va por delante de la imagen? Pulsa +. ¿Por detrás? Pulsa −.</string>
     <string name="player_sync_value">%1$s s</string>
     <string name="player_sync_reset">Toca el tiempo para restablecer</string>
+    <string name="player_sync_earlier_1s">1 segundo antes</string>
+    <string name="player_sync_earlier_01s">0,1 segundos antes</string>
+    <string name="player_sync_later_01s">0,1 segundos después</string>
+    <string name="player_sync_later_1s">1 segundo después</string>
     <string name="player_night_mode">Modo nocturno</string>
     <string name="player_night_mode_detail">Escenas fuertes más suaves, diálogos más claros</string>
     <string name="player_night_mode_unavailable">El modo nocturno no está disponible en este dispositivo</string>

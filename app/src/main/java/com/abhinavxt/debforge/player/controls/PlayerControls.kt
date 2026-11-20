@@ -100,6 +100,22 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.foundation.focusable
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.waitForUpOrCancellation
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.type
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
+import kotlinx.coroutines.coroutineScope
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
@@ -835,18 +851,17 @@ private fun SidePanel(panel: Panel, state: ControlsState, actions: ControlsActio
     }
 }
 
-/** "Subtitles too early? Press +": −/+ 100 ms, tap the value to reset. */
+/** "Subtitles too early? Press +": -1 s, -0.1, value, +0.1, +1 s (hold to repeat); tap the value to reset. */
 @Composable
 private fun DelayRow(hint: String, delayMs: Long, onChange: (Long) -> Unit) {
-    fun step(by: Long) = onChange((delayMs + by).coerceIn(-MAX_DELAY_MS, MAX_DELAY_MS))
+    val step: (Long) -> Unit = { by -> onChange(NudgeMath.step(delayMs, by)) }
     Column(Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 12.dp)) {
         Text(stringResource(R.string.player_sync), color = Color.White, style = MaterialTheme.typography.titleSmall)
         Text(hint, color = Color.White.copy(alpha = 0.6f), fontSize = 12.sp)
         Spacer(Modifier.height(8.dp))
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            StyleChip(selected = false, onClick = { step(-DELAY_STEP_MS) }) {
-                Text("\u2212", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
-            }
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            NudgeButton("\u22121", stringResource(R.string.player_sync_earlier_1s)) { step(-NudgeMath.COARSE_STEP_MS) }
+            NudgeButton("\u22120.1", stringResource(R.string.player_sync_earlier_01s)) { step(-NudgeMath.FINE_STEP_MS) }
             Box(
                 Modifier
                     .weight(1f)
@@ -860,9 +875,8 @@ private fun DelayRow(hint: String, delayMs: Long, onChange: (Long) -> Unit) {
                     fontFamily = FontFamily.Monospace
                 )
             }
-            StyleChip(selected = false, onClick = { step(DELAY_STEP_MS) }) {
-                Text("+", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
-            }
+            NudgeButton("+0.1", stringResource(R.string.player_sync_later_01s)) { step(NudgeMath.FINE_STEP_MS) }
+            NudgeButton("+1", stringResource(R.string.player_sync_later_1s)) { step(NudgeMath.COARSE_STEP_MS) }
         }
         if (delayMs != 0L) {
             Text(
@@ -875,8 +889,56 @@ private fun DelayRow(hint: String, delayMs: Long, onChange: (Long) -> Unit) {
     }
 }
 
-private const val DELAY_STEP_MS = 100L
-private const val MAX_DELAY_MS = 10_000L
+/**
+ * A step button: one step on press, then repeating while held (touch), or on
+ * each DPAD_CENTER/ENTER key event, key repeat included (TV).
+ */
+@Composable
+private fun NudgeButton(label: String, description: String, onStep: () -> Unit) {
+    val current by androidx.compose.runtime.rememberUpdatedState(onStep)
+    val source = remember { MutableInteractionSource() }
+    val focused by source.collectIsFocusedAsState()
+    Box(
+        Modifier
+            .height(36.dp)
+            .widthIn(min = 44.dp)
+            .background(Color(0x22FFFFFF), RoundedCornerShape(10.dp))
+            .then(if (focused) Modifier.border(1.5.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(10.dp)) else Modifier)
+            .semantics(mergeDescendants = true) {
+                contentDescription = description
+                role = Role.Button
+                onClick { current(); true }
+            }
+            .pointerInput(Unit) {
+                coroutineScope {
+                    awaitEachGesture {
+                        awaitFirstDown()
+                        current()
+                        val repeat = launch {
+                            var n = 0
+                            while (true) {
+                                delay(NudgeMath.repeatDelayMs(n++))
+                                current()
+                            }
+                        }
+                        waitForUpOrCancellation()
+                        repeat.cancel()
+                    }
+                }
+            }
+            .onKeyEvent { e ->
+                val k = e.key
+                if (e.type == KeyEventType.KeyDown && (k == Key.DirectionCenter || k == Key.Enter || k == Key.NumPadEnter)) {
+                    current(); true
+                } else false
+            }
+            .focusable(interactionSource = source)
+            .padding(horizontal = 8.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(label, color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+    }
+}
 
 /** OpenSubtitles results: exact matches for this file first, then the most downloaded. */
 @OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)

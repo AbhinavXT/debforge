@@ -743,6 +743,10 @@
     <string name="player_sync_audio_hint">Ses görüntünün önünde mi? + bas. Gerisinde mi? − bas.</string>
     <string name="player_sync_value">%1$s sn</string>
     <string name="player_sync_reset">Sıfırlamak için süreye dokun</string>
+    <string name="player_sync_earlier_1s">1 saniye erken</string>
+    <string name="player_sync_earlier_01s">0,1 saniye erken</string>
+    <string name="player_sync_later_01s">0,1 saniye geç</string>
+    <string name="player_sync_later_1s">1 saniye geç</string>
     <string name="player_night_mode">Gece modu</string>
     <string name="player_night_mode_detail">Yüksek sahneler kısılır, diyaloglar netleşir</string>
     <string name="player_night_mode_unavailable">Gece modu bu cihazda kullanılamıyor</string>

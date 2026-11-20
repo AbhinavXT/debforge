@@ -743,6 +743,10 @@
     <string name="player_sync_audio_hint">ஒலி படத்துக்கு முன்னதாகவா? + அழுத்தவும். பின்னதாகவா? − அழுத்தவும்.</string>
     <string name="player_sync_value">%1$s வி.</string>
     <string name="player_sync_reset">மீட்டமைக்க நேரத்தைத் தட்டவும்</string>
+    <string name="player_sync_earlier_1s">1 வினாடி முன்</string>
+    <string name="player_sync_earlier_01s">0.1 வினாடி முன்</string>
+    <string name="player_sync_later_01s">0.1 வினாடி பின்</string>
+    <string name="player_sync_later_1s">1 வினாடி பின்</string>
     <string name="player_night_mode">இரவு பயன்முறை</string>
     <string name="player_night_mode_detail">சத்தமான காட்சிகள் மென்மையாக, உரையாடல் தெளிவாக</string>
     <string name="player_night_mode_unavailable">இந்தச் சாதனத்தில் இரவு பயன்முறை இல்லை</string>

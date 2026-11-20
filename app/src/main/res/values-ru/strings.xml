@@ -817,6 +817,10 @@
     <string name="player_sync_audio_hint">Звук опережает картинку? Нажмите +. Отстаёт? Нажмите −.</string>
     <string name="player_sync_value">%1$s с</string>
     <string name="player_sync_reset">Нажмите на время, чтобы сбросить</string>
+    <string name="player_sync_earlier_1s">На 1 секунду раньше</string>
+    <string name="player_sync_earlier_01s">На 0,1 секунды раньше</string>
+    <string name="player_sync_later_01s">На 0,1 секунды позже</string>
+    <string name="player_sync_later_1s">На 1 секунду позже</string>
     <string name="player_night_mode">Ночной режим</string>
     <string name="player_night_mode_detail">Громкие сцены тише, диалоги разборчивее</string>
     <string name="player_night_mode_unavailable">Ночной режим недоступен на этом устройстве</string>

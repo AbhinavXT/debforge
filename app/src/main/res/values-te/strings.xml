@@ -743,6 +743,10 @@
     <string name="player_sync_audio_hint">శబ్దం చిత్రం కంటే ముందుందా? + నొక్కండి. వెనకుందా? − నొక్కండి.</string>
     <string name="player_sync_value">%1$s సె.</string>
     <string name="player_sync_reset">రీసెట్ చేయడానికి సమయంపై నొక్కండి</string>
+    <string name="player_sync_earlier_1s">1 సెకను ముందు</string>
+    <string name="player_sync_earlier_01s">0.1 సెకను ముందు</string>
+    <string name="player_sync_later_01s">0.1 సెకను తర్వాత</string>
+    <string name="player_sync_later_1s">1 సెకను తర్వాత</string>
     <string name="player_night_mode">నైట్ మోడ్</string>
     <string name="player_night_mode_detail">పెద్ద శబ్దాలు తగ్గి, సంభాషణ స్పష్టంగా</string>
     <string name="player_night_mode_unavailable">ఈ పరికరంలో నైట్ మోడ్ అందుబాటులో లేదు</string>

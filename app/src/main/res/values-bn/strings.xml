@@ -743,6 +743,10 @@
     <string name="player_sync_audio_hint">শব্দ ছবির আগে? + চাপুন। পিছনে? − চাপুন।</string>
     <string name="player_sync_value">%1$s সে.</string>
     <string name="player_sync_reset">রিসেট করতে সময়ে ট্যাপ করুন</string>
+    <string name="player_sync_earlier_1s">১ সেকেন্ড আগে</string>
+    <string name="player_sync_earlier_01s">০.১ সেকেন্ড আগে</string>
+    <string name="player_sync_later_01s">০.১ সেকেন্ড পরে</string>
+    <string name="player_sync_later_1s">১ সেকেন্ড পরে</string>
     <string name="player_night_mode">নাইট মোড</string>
     <string name="player_night_mode_detail">জোরালো দৃশ্য নরম, সংলাপ স্পষ্ট</string>
     <string name="player_night_mode_unavailable">এই ডিভাইসে নাইট মোড নেই</string>

@@ -780,6 +780,10 @@
     <string name="player_sync_audio_hint">Le son est en avance sur l’image ? Appuie sur +. En retard ? Appuie sur −.</string>
     <string name="player_sync_value">%1$s s</string>
     <string name="player_sync_reset">Touche la durée pour réinitialiser</string>
+    <string name="player_sync_earlier_1s">1 seconde plus tôt</string>
+    <string name="player_sync_earlier_01s">0,1 seconde plus tôt</string>
+    <string name="player_sync_later_01s">0,1 seconde plus tard</string>
+    <string name="player_sync_later_1s">1 seconde plus tard</string>
     <string name="player_night_mode">Mode nuit</string>
     <string name="player_night_mode_detail">Scènes bruyantes adoucies, dialogues plus clairs</string>
     <string name="player_night_mode_unavailable">Le mode nuit n’est pas disponible sur cet appareil</string>

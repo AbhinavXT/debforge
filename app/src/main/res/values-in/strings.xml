@@ -706,6 +706,10 @@
     <string name="player_sync_audio_hint">Suara mendahului gambar? Tekan +. Tertinggal? Tekan −.</string>
     <string name="player_sync_value">%1$s dtk</string>
     <string name="player_sync_reset">Ketuk waktu untuk mengatur ulang</string>
+    <string name="player_sync_earlier_1s">1 detik lebih awal</string>
+    <string name="player_sync_earlier_01s">0,1 detik lebih awal</string>
+    <string name="player_sync_later_01s">0,1 detik lebih lambat</string>
+    <string name="player_sync_later_1s">1 detik lebih lambat</string>
     <string name="player_night_mode">Mode malam</string>
     <string name="player_night_mode_detail">Adegan keras lebih pelan, dialog lebih jelas</string>
     <string name="player_night_mode_unavailable">Mode malam tidak tersedia di perangkat ini</string>

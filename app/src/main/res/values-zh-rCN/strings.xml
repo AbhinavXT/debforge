@@ -706,6 +706,10 @@
     <string name="player_sync_audio_hint">声音比画面早？按 +。晚？按 −。</string>
     <string name="player_sync_value">%1$s 秒</string>
     <string name="player_sync_reset">点按时间可重置</string>
+    <string name="player_sync_earlier_1s">提前 1 秒</string>
+    <string name="player_sync_earlier_01s">提前 0.1 秒</string>
+    <string name="player_sync_later_01s">延后 0.1 秒</string>
+    <string name="player_sync_later_1s">延后 1 秒</string>
     <string name="player_night_mode">夜间模式</string>
     <string name="player_night_mode_detail">压低巨响，对白更清晰</string>
     <string name="player_night_mode_unavailable">此设备不支持夜间模式</string>
