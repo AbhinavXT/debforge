@@ -563,6 +563,8 @@
     <!-- Picture-in-picture -->
     <string name="set_pip">Picture-in-picture</string>
     <string name="set_pip_detail">Ao sair do player com um vídeo tocando, ele continua numa pequena janela flutuante.</string>
+    <string name="set_video_full_screen">Abrir vídeos em tela cheia</string>
+    <string name="set_video_full_screen_detail">Os vídeos começam em tela cheia em vez da página de reprodução. Voltar fecha o vídeo.</string>
     <string name="player_next_episode">Próximo episódio</string>
 
     <!-- Direct downloads (Pixeldrain, Google Drive, file links) -->

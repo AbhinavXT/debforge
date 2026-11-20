@@ -536,6 +536,8 @@
     <!-- Picture-in-picture -->
     <string name="set_pip">Bild-im-Bild</string>
     <string name="set_pip_detail">Verlässt du den Player während ein Video läuft, spielt es in einem kleinen schwebenden Fenster weiter.</string>
+    <string name="set_video_full_screen">Videos im Vollbild öffnen</string>
+    <string name="set_video_full_screen_detail">Videos starten im Vollbild statt auf der Wiedergabeseite. Zurück schließt das Video.</string>
     <string name="player_next_episode">Nächste Folge</string>
 
     <!-- Direct downloads (Pixeldrain, Google Drive, file links) -->

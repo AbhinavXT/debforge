@@ -537,6 +537,8 @@
     <!-- Picture-in-picture -->
     <string name="set_pip">Picture-in-picture</string>
     <string name="set_pip_detail">Leaving the player while a video plays keeps it in a small floating window.</string>
+    <string name="set_video_full_screen">Open videos in full screen</string>
+    <string name="set_video_full_screen_detail">Videos start in full screen instead of the watch page. Back closes the video.</string>
     <string name="player_next_episode">Next episode</string>
 
     <!-- Direct downloads (Pixeldrain, Google Drive, file links) -->

@@ -563,6 +563,8 @@
     <!-- Picture-in-picture -->
     <string name="set_pip">Picture-in-picture</string>
     <string name="set_pip_detail">Quitter le lecteur pendant une vidéo la garde dans une petite fenêtre flottante.</string>
+    <string name="set_video_full_screen">Ouvrir les vidéos en plein écran</string>
+    <string name="set_video_full_screen_detail">Les vidéos démarrent en plein écran au lieu de la page de lecture. Retour ferme la vidéo.</string>
     <string name="player_next_episode">Épisode suivant</string>
 
     <!-- Direct downloads (Pixeldrain, Google Drive, file links) -->

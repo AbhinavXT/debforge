@@ -536,6 +536,8 @@
     <!-- Picture-in-picture -->
     <string name="set_pip">পিকচার-ইন-পিকচার</string>
     <string name="set_pip_detail">ভিডিও চলার সময় প্লেয়ার ছাড়লে সেটি ছোট ভাসমান উইন্ডোতে চলতে থাকে।</string>
+    <string name="set_video_full_screen">ভিডিও ফুল স্ক্রিনে খুলুন</string>
+    <string name="set_video_full_screen_detail">ওয়াচ পেজের বদলে ভিডিও সরাসরি ফুল স্ক্রিনে শুরু হয়। Back চাপলে ভিডিও বন্ধ হয়।</string>
     <string name="player_next_episode">পরের এপিসোড</string>
 
     <!-- Direct downloads (Pixeldrain, Google Drive, file links) -->

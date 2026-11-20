@@ -536,6 +536,8 @@
     <!-- Picture-in-picture -->
     <string name="set_pip">पिक्चर-इन-पिक्चर</string>
     <string name="set_pip_detail">वीडियो चलते समय प्लेयर छोड़ने पर वह एक छोटी फ़्लोटिंग विंडो में चलता रहता है।</string>
+    <string name="set_video_full_screen">वीडियो फ़ुल स्क्रीन में खोलें</string>
+    <string name="set_video_full_screen_detail">वीडियो वॉच पेज की जगह सीधे फ़ुल स्क्रीन में शुरू होते हैं। Back दबाने पर वीडियो बंद हो जाता है।</string>
     <string name="player_next_episode">अगला एपिसोड</string>
 
     <!-- Direct downloads (Pixeldrain, Google Drive, file links) -->

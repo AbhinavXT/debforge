@@ -509,6 +509,8 @@
     <!-- Picture-in-picture -->
     <string name="set_pip">画中画</string>
     <string name="set_pip_detail">播放视频时离开播放器，视频会在小浮窗中继续播放。</string>
+    <string name="set_video_full_screen">全屏打开视频</string>
+    <string name="set_video_full_screen_detail">视频直接以全屏开始，而不是先进入观看页。按返回键会关闭视频。</string>
     <string name="player_next_episode">下一集</string>
 
     <!-- Direct downloads (Pixeldrain, Google Drive, file links) -->

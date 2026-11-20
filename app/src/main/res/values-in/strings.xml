@@ -509,6 +509,8 @@
     <!-- Picture-in-picture -->
     <string name="set_pip">Picture-in-picture</string>
     <string name="set_pip_detail">Keluar dari pemutar saat video diputar akan membuatnya tetap berjalan di jendela mengambang kecil.</string>
+    <string name="set_video_full_screen">Buka video dalam layar penuh</string>
+    <string name="set_video_full_screen_detail">Video langsung dimulai dalam layar penuh, bukan di halaman tonton. Tombol Kembali menutup video.</string>
     <string name="player_next_episode">Episode berikutnya</string>
 
     <!-- Direct downloads (Pixeldrain, Google Drive, file links) -->

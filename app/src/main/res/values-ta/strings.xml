@@ -536,6 +536,8 @@
     <!-- Picture-in-picture -->
     <string name="set_pip">படத்தில் படம்</string>
     <string name="set_pip_detail">வீடியோ இயங்கும்போது பிளேயரை விட்டு வெளியேறினால், அது சிறிய மிதக்கும் சாளரத்தில் தொடரும்.</string>
+    <string name="set_video_full_screen">வீடியோக்களை முழுத்திரையில் திற</string>
+    <string name="set_video_full_screen_detail">வீடியோக்கள் பார்க்கும் பக்கத்திற்குப் பதில் நேரடியாக முழுத்திரையில் தொடங்கும். Back அழுத்தினால் வீடியோ மூடப்படும்.</string>
     <string name="player_next_episode">அடுத்த எபிசோட்</string>
 
     <!-- Direct downloads (Pixeldrain, Google Drive, file links) -->

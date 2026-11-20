@@ -536,6 +536,8 @@
     <!-- Picture-in-picture -->
     <string name="set_pip">Pencere içinde pencere</string>
     <string name="set_pip_detail">Video oynarken oynatıcıdan çıkarsanız küçük, yüzen bir pencerede devam eder.</string>
+    <string name="set_video_full_screen">Videoları tam ekranda aç</string>
+    <string name="set_video_full_screen_detail">Videolar izleme sayfası yerine doğrudan tam ekranda başlar. Geri tuşu videoyu kapatır.</string>
     <string name="player_next_episode">Sonraki bölüm</string>
 
     <!-- Direct downloads (Pixeldrain, Google Drive, file links) -->

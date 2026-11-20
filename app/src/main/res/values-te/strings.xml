@@ -536,6 +536,8 @@
     <!-- Picture-in-picture -->
     <string name="set_pip">పిక్చర్-ఇన్-పిక్చర్</string>
     <string name="set_pip_detail">వీడియో ప్లే అవుతుండగా ప్లేయర్ నుండి బయటకు వెళ్తే, అది చిన్న ఫ్లోటింగ్ విండోలో కొనసాగుతుంది.</string>
+    <string name="set_video_full_screen">వీడియోలను ఫుల్ స్క్రీన్‌లో తెరవండి</string>
+    <string name="set_video_full_screen_detail">వీడియోలు వాచ్ పేజీకి బదులు నేరుగా ఫుల్ స్క్రీన్‌లో ప్రారంభమవుతాయి. Back నొక్కితే వీడియో మూసివేయబడుతుంది.</string>
     <string name="player_next_episode">తర్వాతి ఎపిసోడ్</string>
 
     <!-- Direct downloads (Pixeldrain, Google Drive, file links) -->

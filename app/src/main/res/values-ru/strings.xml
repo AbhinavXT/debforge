@@ -590,6 +590,8 @@
     <!-- Picture-in-picture -->
     <string name="set_pip">Картинка в картинке</string>
     <string name="set_pip_detail">Если выйти из плеера во время воспроизведения, видео продолжится в маленьком плавающем окне.</string>
+    <string name="set_video_full_screen">Открывать видео на весь экран</string>
+    <string name="set_video_full_screen_detail">Видео сразу запускается на весь экран, а не на странице просмотра. Кнопка «Назад» закрывает видео.</string>
     <string name="player_next_episode">Следующая серия</string>
 
     <!-- Direct downloads (Pixeldrain, Google Drive, file links) -->

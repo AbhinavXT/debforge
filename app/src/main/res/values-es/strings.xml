@@ -563,6 +563,8 @@
     <!-- Picture-in-picture -->
     <string name="set_pip">Imagen en imagen</string>
     <string name="set_pip_detail">Si sales del reproductor mientras suena un vídeo, sigue en una pequeña ventana flotante.</string>
+    <string name="set_video_full_screen">Abrir los vídeos a pantalla completa</string>
+    <string name="set_video_full_screen_detail">Los vídeos empiezan a pantalla completa en lugar de en la página de reproducción. Atrás cierra el vídeo.</string>
     <string name="player_next_episode">Siguiente episodio</string>
 
     <!-- Direct downloads (Pixeldrain, Google Drive, file links) -->

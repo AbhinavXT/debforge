@@ -536,6 +536,8 @@
     <!-- Picture-in-picture -->
     <string name="set_pip">पिक्चर-इन-पिक्चर</string>
     <string name="set_pip_detail">व्हिडिओ चालू असताना प्लेयर सोडल्यास तो छोट्या तरंगत्या विंडोमध्ये चालू राहतो.</string>
+    <string name="set_video_full_screen">व्हिडिओ फुल स्क्रीनमध्ये उघडा</string>
+    <string name="set_video_full_screen_detail">व्हिडिओ वॉच पेजऐवजी थेट फुल स्क्रीनमध्ये सुरू होतात. Back दाबल्यावर व्हिडिओ बंद होतो.</string>
     <string name="player_next_episode">पुढचा एपिसोड</string>
 
     <!-- Direct downloads (Pixeldrain, Google Drive, file links) -->
