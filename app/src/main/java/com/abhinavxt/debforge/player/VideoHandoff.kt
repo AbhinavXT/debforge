@@ -12,7 +12,9 @@ import com.abhinavxt.debforge.domain.YouTubeLinks
 import com.abhinavxt.debforge.download.LocalFiles
 import com.abhinavxt.debforge.download.youtube.EnqueueMode
 import com.abhinavxt.debforge.download.youtube.choiceForMode
+import com.abhinavxt.debforge.player.youtube.SubtitleChoice
 import com.abhinavxt.debforge.player.youtube.YouTubeStreaming
+import com.abhinavxt.debforge.player.youtube.pickSubtitle
 import com.abhinavxt.debforge.ui.browse.PlayRequest
 import com.abhinavxt.debforge.ui.browse.youTubePlayRequest
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -41,6 +43,13 @@ class VideoHandoff @Inject constructor(
     private val resolver: YouTubeResolver,
     private val settings: SettingsStore
 ) {
+    private var carried: Pair<String, SubtitleChoice>? = null
+
+    /** The subtitle on in the video of [videoId] when it went to audio (null: none), for "Watch video" to bring back. */
+    @Synchronized fun carrySubtitle(videoId: String, choice: SubtitleChoice?) { carried = choice?.let { videoId to it } }
+
+    @Synchronized private fun takeCarried(videoId: String): SubtitleChoice? = carried?.takeIf { it.first == videoId }?.second.also { carried = null }
+
     /**
      * The audio track for the video being watched: a local download by [itemId] (its download id), or a streamed YouTube
      * video by [videoId], using [audioUrl] and [audioItag] when known (else the audio player looks the stream up).
@@ -92,7 +101,7 @@ class VideoHandoff @Inject constructor(
         // The resolver takes a link, not a bare id: a bare id is "not a video link" and always failed.
         val video = resolver.resolve(YouTubeLinks.watchUrl(videoId))
         val choices = YouTubeFormats.choices(video.streams, android.os.Build.VERSION.SDK_INT, video.durationSec)
-        choiceForMode(choices, EnqueueMode.VIDEO, settings.youTubeQualityFlow.first())?.let { youTubePlayRequest(video, it, emptyList()) }
+        choiceForMode(choices, EnqueueMode.VIDEO, settings.youTubeQualityFlow.first())?.let { youTubePlayRequest(video, it, listOfNotNull(pickSubtitle(video.subtitles, takeCarried(videoId)))) }
     } catch (e: CancellationException) {
         throw e
     } catch (e: Exception) {

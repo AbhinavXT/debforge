@@ -91,7 +91,11 @@ internal class VideoRefresh(private val s: VideoSession) {
             val video = s.youTubeResolver.resolve("https://www.youtube.com/watch?v=${yt.videoId}")
             val choices = com.abhinavxt.debforge.domain.YouTubeFormats.choices(video.streams, android.os.Build.VERSION.SDK_INT, video.durationSec)
             val choice = pick(ref, yt.height, choices) ?: return YtRefresh.GONE
-            com.abhinavxt.debforge.ui.browse.youTubePlayRequest(video, choice) ?: return YtRefresh.GONE
+            // Exactly the subtitles that were attached (new links), not every track of the video.
+            val attached = s.subtitles.filter { !it.url.startsWith("file:") }.map { com.abhinavxt.debforge.player.youtube.SubtitleChoice(it.language, it.label) }
+            com.abhinavxt.debforge.ui.browse.youTubePlayRequest(
+                video, choice, com.abhinavxt.debforge.player.youtube.reattachSubtitles(video.subtitles, attached)
+            ) ?: return YtRefresh.GONE
         } catch (e: kotlinx.coroutines.CancellationException) {
             throw e
         } catch (e: com.abhinavxt.debforge.data.youtube.YouTubeException.Network) {
@@ -102,9 +106,8 @@ internal class VideoRefresh(private val s: VideoSession) {
         val fresh = request.youtube ?: return YtRefresh.GONE
         s.uri = request.uri
         s.youtube = fresh
-        // Same languages as before (new links), plus subtitles added from OpenSubtitles.
-        val had = s.subtitles.mapNotNull { it.language }.toSet()
-        s.subtitles = s.subtitles.filter { it.url.startsWith("file:") } + request.subtitles.filter { it.language in had }
+        // The same subtitles as before (new links), plus those added from OpenSubtitles.
+        s.subtitles = s.subtitles.filter { it.url.startsWith("file:") } + request.subtitles
         s.reloadMediaItem(position, play = true)
         return YtRefresh.OK
     }

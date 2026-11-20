@@ -38,12 +38,12 @@ data class YtStream(
 
 /**
  * A request to stream [choice] of [video] (video-only URL + audio URL merged by the player), with its
- * subtitles as WebVTT links. Null for an audio-only choice or when the choice's streams are missing.
+ * [subtitles] (only those to show, as WebVTT links). Null for an audio-only choice or when the choice's streams are missing.
  */
 fun youTubePlayRequest(
     video: com.abhinavxt.debforge.domain.YouTubeVideo,
     choice: com.abhinavxt.debforge.domain.FormatChoice,
-    subtitles: List<com.abhinavxt.debforge.domain.YouTubeSubtitle> = video.subtitles
+    subtitles: List<com.abhinavxt.debforge.domain.YouTubeSubtitle>
 ): PlayRequest? {
     val videoItag = choice.videoItag ?: return null
     val v = video.streams.firstOrNull { it.itag == videoItag && it.kind == com.abhinavxt.debforge.domain.StreamKind.VIDEO } ?: return null

@@ -622,6 +622,20 @@ class VideoSession @Inject constructor(
         return offer && !lifecycle.handingOff
     }
 
+    /** The subtitle showing now (language and label), or null when none is on. */
+    fun selectedSubtitle(): com.abhinavxt.debforge.player.youtube.SubtitleChoice? {
+        val p = player ?: return null
+        if (C.TRACK_TYPE_TEXT in p.trackSelectionParameters.disabledTrackTypes) return null
+        for (g in p.currentTracks.groups) {
+            if (g.type != C.TRACK_TYPE_TEXT) continue
+            for (i in 0 until g.length) if (g.isTrackSelected(i)) {
+                val f = g.getTrackFormat(i)
+                return com.abhinavxt.debforge.player.youtube.SubtitleChoice(f.language, f.label.orEmpty())
+            }
+        }
+        return null
+    }
+
     /** "Play as audio": save the spot, hand the item to the audio player at this position and speed, and close. */
     fun handOffToAudio() {
         val track = audioHandoffTrack ?: return
@@ -632,6 +646,7 @@ class VideoSession @Inject constructor(
         val speed = p.playbackParameters.speed
         p.pause()
         savePosition()
+        track.youtube?.let { videoHandoff.carrySubtitle(it.videoId, selectedSubtitle()) }
         audioPlayer.playHandoff(track, at, speed)
         host?.close()
     }

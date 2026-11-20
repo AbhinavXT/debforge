@@ -28,7 +28,7 @@ class YouTubePlayRequestTest {
     private fun choice(v: Int?, a: Int) = FormatChoice(v, a, "mp4", 0, true, 1080, 30, Container.MP4, 128_000)
 
     @Test fun buildsRequestFromChoice() {
-        val r = youTubePlayRequest(video, choice(137, 140))!!
+        val r = youTubePlayRequest(video, choice(137, 140), video.subtitles)!!
         assertEquals("https://v/137", r.uri.toString())
         assertEquals("A video", r.title)
         val yt = r.youtube!!
@@ -41,11 +41,14 @@ class YouTubePlayRequestTest {
         assertFalse(r.subtitles.single().forced)
     }
 
-    @Test fun audioOnlyChoiceIsNotAVideoRequest() = assertNull(youTubePlayRequest(video, choice(null, 140)))
+    @Test fun attachesOnlyTheGivenSubtitles() =
+        assertTrue(youTubePlayRequest(video, choice(137, 140), emptyList())!!.subtitles.isEmpty())
+
+    @Test fun audioOnlyChoiceIsNotAVideoRequest() = assertNull(youTubePlayRequest(video, choice(null, 140), video.subtitles))
 
     @Test fun missingStreamGivesNull() {
-        assertNull(youTubePlayRequest(video, choice(137, 251)))
-        assertNull(youTubePlayRequest(video, choice(299, 140)))
+        assertNull(youTubePlayRequest(video, choice(137, 251), video.subtitles))
+        assertNull(youTubePlayRequest(video, choice(299, 140), video.subtitles))
     }
 
     @Test fun streamPositionsStayOutOfContinueWatching() {

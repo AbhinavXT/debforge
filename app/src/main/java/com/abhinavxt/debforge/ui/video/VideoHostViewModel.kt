@@ -192,7 +192,9 @@ class VideoHostViewModel @Inject constructor(
             audioPlayer.play(listOf(youtubeAudioTrack(video, stream)), 0)
             return true
         }
-        val request = youTubePlayRequest(video, choice, emptyList()) ?: return false
+        // Keep the language that is on, when this video has it; else none.
+        val subtitle = com.abhinavxt.debforge.player.youtube.pickSubtitle(video.subtitles, launcher.session.selectedSubtitle())
+        val request = youTubePlayRequest(video, choice, listOfNotNull(subtitle)) ?: return false
         launcher.open(context, request, video = video)
         return true
     }
