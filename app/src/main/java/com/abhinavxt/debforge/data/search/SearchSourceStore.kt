@@ -51,6 +51,9 @@ class SearchSourceStore @Inject constructor(
 
     suspend fun remove(id: String) = write { list -> list.filterNot { it.id == id } }
 
+    /** Replaces the whole list in one write. */
+    suspend fun replaceAll(list: List<SearchSource>) = write { list }
+
     private suspend fun write(change: (List<SearchSource>) -> List<SearchSource>) {
         val next = change(all())
         context.searchSourcesDataStore.edit { it[key] = TokenCipher.encrypt(adapter.toJson(next)) }

@@ -50,7 +50,7 @@ object SecretsBackup {
         }
         val sources = (secrets["searchSources"] as? List<*>).orEmpty().mapNotNull { e ->
             val m = e as? Map<*, *> ?: return@mapNotNull null
-            SearchSource(str(m, "id") ?: return@mapNotNull null, str(m, "name") ?: "", str(m, "url") ?: return@mapNotNull null, str(m, "apiKey") ?: return@mapNotNull null)
+            SearchSource(str(m, "id") ?: return@mapNotNull null, str(m, "name") ?: "", str(m, "url") ?: return@mapNotNull null, (m["apiKey"] as? String).orEmpty())
         }
         val trakt = (secrets["trakt"] as? Map<*, *>)?.let { m ->
             str(m, "clientId")?.let {
@@ -59,4 +59,41 @@ object SecretsBackup {
         }
         return Model(os, sources, trakt)
     }
+
+    /** What to write for OpenSubtitles, or null for nothing. The account comes only as a whole pair; else the local one stays. */
+    fun mergeOpenSubtitles(local: OpenSubtitles?, backup: OpenSubtitles): OpenSubtitles? {
+        if (backup.apiKey.isBlank()) return null
+        val bothAccount = !backup.username.isNullOrBlank() && !backup.password.isNullOrEmpty()
+        return if (bothAccount) backup else OpenSubtitles(backup.apiKey, local?.username, local?.password)
+    }
+
+    fun normalizeUrl(url: String): String {
+        val t = url.trim().trimEnd('/')
+        val i = t.indexOf("://")
+        if (i < 0) return t.lowercase()
+        val rest = t.substring(i + 3)
+        val slash = rest.indexOf('/')
+        val host = if (slash < 0) rest else rest.substring(0, slash)
+        val path = if (slash < 0) "" else rest.substring(slash)
+        return t.substring(0, i).lowercase() + "://" + host.lowercase() + path
+    }
+
+    /** Backup sources added to [local]: same id or same normalised URL is the same source (blank local key gets filled). */
+    fun mergeSearchSources(local: List<SearchSource>, backup: List<SearchSource>): List<SearchSource> {
+        val out = local.toMutableList()
+        for (b in backup) {
+            val i = out.indexOfFirst { it.id == b.id || normalizeUrl(it.url) == normalizeUrl(b.url) }
+            if (i < 0) out += b
+            else if (out[i].apiKey.isBlank() && b.apiKey.isNotBlank()) out[i] = out[i].copy(apiKey = b.apiKey)
+        }
+        return out
+    }
+
+    data class TraktPlan(val value: Trakt, val resetWatched: Boolean)
+
+    /** Trakt restored as one unit; null = leave local alone. */
+    fun planTrakt(local: Trakt?, backup: Trakt): TraktPlan? =
+        if (backup.accessToken != null) TraktPlan(backup, backup.username != local?.username)
+        else if (local?.accessToken == null) TraktPlan(backup.copy(refreshToken = null, expiresAt = null, username = null), false)
+        else null
 }

@@ -136,17 +136,20 @@ class TraktStore @Inject constructor(private val context: Context) {
         )
     }
 
-    /** Restores a backed-up sign-in as it was (tokens are encrypted again here). */
+    /** Restores a backed-up Trakt sign-in as one unit, per [com.abhinavxt.debforge.data.backup.SecretsBackup.planTrakt]. */
     suspend fun restoreFromBackup(b: com.abhinavxt.debforge.data.backup.SecretsBackup.Trakt) {
+        val plan = com.abhinavxt.debforge.data.backup.SecretsBackup.planTrakt(backupValues(), b) ?: return
+        val v = plan.value
         context.traktDataStore.edit {
-            it[keyClientId] = TokenCipher.encrypt(b.clientId.trim())
+            it[keyClientId] = TokenCipher.encrypt(v.clientId.trim())
             it.remove(keyClientSecret)
-            if (b.accessToken != null) {
-                it[keyAccess] = TokenCipher.encrypt(b.accessToken)
-                if (b.refreshToken != null) it[keyRefresh] = TokenCipher.encrypt(b.refreshToken)
-                it[keyExpiresAt] = b.expiresAt ?: 0L
-                if (b.username != null) it[keyUser] = b.username
+            if (v.accessToken != null) {
+                it[keyAccess] = TokenCipher.encrypt(v.accessToken)
+                if (v.refreshToken != null) it[keyRefresh] = TokenCipher.encrypt(v.refreshToken) else it.remove(keyRefresh)
+                it[keyExpiresAt] = v.expiresAt ?: 0L
+                if (v.username != null) it[keyUser] = v.username else it.remove(keyUser)
             }
+            if (plan.resetWatched) { it.remove(keyWatched); it.remove(keyLastActivity); it.remove(keyLastSync) }
         }
     }
 

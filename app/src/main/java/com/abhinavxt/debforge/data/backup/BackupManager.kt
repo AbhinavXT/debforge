@@ -189,10 +189,15 @@ class BackupManager @Inject constructor(
             services = signIns.keys.toList()
             // Extras: only present values are written; a missing or empty one never wipes a local value.
             val extra = SecretsBackup.fromMap(opened)
-            extra.openSubtitles?.let {
-                runCatching { openSubtitles.save(it.apiKey, it.username.orEmpty(), it.password.orEmpty()) }
+            extra.openSubtitles?.let { b ->
+                runCatching {
+                    SecretsBackup.mergeOpenSubtitles(openSubtitles.backupValues(), b)
+                        ?.let { openSubtitles.save(it.apiKey, it.username.orEmpty(), it.password.orEmpty()) }
+                }
             }
-            extra.searchSources.forEach { runCatching { searchSources.save(it) } }
+            if (extra.searchSources.isNotEmpty()) runCatching {
+                searchSources.replaceAll(SecretsBackup.mergeSearchSources(searchSources.all(), extra.searchSources))
+            }
             extra.trakt?.let { runCatching { trakt.restoreFromBackup(it) } }
         }
         return Result(

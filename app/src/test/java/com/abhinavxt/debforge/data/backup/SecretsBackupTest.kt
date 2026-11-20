@@ -51,4 +51,49 @@ class SecretsBackupTest {
         assertTrue(m.searchSources.isEmpty())
         assertNull(m.trakt)
     }
+
+    @Test fun openSubtitlesKeepsLocalAccountUnlessBackupHasBoth() {
+        val local = SecretsBackup.OpenSubtitles("old", "me", "pw")
+        assertEquals(
+            SecretsBackup.OpenSubtitles("new", "me", "pw"),
+            SecretsBackup.mergeOpenSubtitles(local, SecretsBackup.OpenSubtitles("new", null, null))
+        )
+        assertEquals(
+            SecretsBackup.OpenSubtitles("new", "me", "pw"),
+            SecretsBackup.mergeOpenSubtitles(local, SecretsBackup.OpenSubtitles("new", "me", null))
+        )
+        assertEquals(
+            SecretsBackup.OpenSubtitles("new", "u2", "p2"),
+            SecretsBackup.mergeOpenSubtitles(local, SecretsBackup.OpenSubtitles("new", "u2", "p2"))
+        )
+    }
+
+    @Test fun blankKeySourcesSurviveParsing() {
+        val m = SecretsBackup.fromMap(viaJson(mapOf("searchSources" to listOf(mapOf("id" to "1", "name" to "J", "url" to "http://h", "apiKey" to "")))))
+        assertEquals(listOf(SearchSource("1", "J", "http://h", "")), m.searchSources)
+    }
+
+    @Test fun searchSourcesMergeByIdAndUrl() {
+        val local = listOf(SearchSource("1", "A", "http://Host:9117/", ""), SearchSource("2", "B", "http://b", "kb"))
+        val backup = listOf(
+            SearchSource("x", "A2", " http://host:9117 ", "filled"),
+            SearchSource("2", "B2", "http://other", "zzz"),
+            SearchSource("3", "C", "http://c", "kc")
+        )
+        val out = SecretsBackup.mergeSearchSources(local, backup)
+        assertEquals(listOf(SearchSource("1", "A", "http://Host:9117/", "filled"), SearchSource("2", "B", "http://b", "kb"), SearchSource("3", "C", "http://c", "kc")), out)
+    }
+
+    @Test fun traktPlanIsAUnit() {
+        val local = SecretsBackup.Trakt("c", "a", "r", 5L, "u1")
+        val full = SecretsBackup.Trakt("c2", "a2", null, null, "u2")
+        val p = SecretsBackup.planTrakt(local, full)!!
+        assertEquals(full, p.value)
+        assertTrue(p.resetWatched)
+        assertTrue(!SecretsBackup.planTrakt(local, full.copy(username = "u1"))!!.resetWatched)
+        val idOnly = SecretsBackup.Trakt("c3", null, null, null, null)
+        assertNull(SecretsBackup.planTrakt(local, idOnly))
+        assertEquals(idOnly, SecretsBackup.planTrakt(null, idOnly)!!.value)
+        assertEquals(idOnly, SecretsBackup.planTrakt(SecretsBackup.Trakt("c", null, null, null, null), idOnly)!!.value)
+    }
 }
