@@ -104,6 +104,10 @@ fun WatchPage(
     actions: WatchActions,
     wide: Boolean,
     modifier: Modifier = Modifier,
+    /** [wide]: room above the left pane's details for the video the host draws there. */
+    headerTopPadding: androidx.compose.ui.unit.Dp = 0.dp,
+    /** [wide]: room above the right pane's list (the status bar). */
+    listTopPadding: androidx.compose.ui.unit.Dp = 0.dp,
 ) {
     var sheet by rememberSaveable { mutableStateOf(false) }
     val onChip: (WatchChip) -> Unit = rememberChipHandler(state, details, actions) { sheet = true }
@@ -115,8 +119,8 @@ fun WatchPage(
     }
     if (wide) {
         Row(modifier.fillMaxSize()) {
-            LazyColumn(Modifier.weight(1f).fillMaxSize()) { header() }
-            LazyColumn(Modifier.weight(1f).fillMaxSize(), contentPadding = androidx.compose.foundation.layout.PaddingValues(bottom = 16.dp)) { list() }
+            LazyColumn(Modifier.weight(1f).fillMaxSize(), contentPadding = androidx.compose.foundation.layout.PaddingValues(top = headerTopPadding)) { header() }
+            LazyColumn(Modifier.weight(1f).fillMaxSize(), contentPadding = androidx.compose.foundation.layout.PaddingValues(top = listTopPadding, bottom = 16.dp)) { list() }
         }
     } else {
         LazyColumn(modifier.fillMaxSize(), contentPadding = androidx.compose.foundation.layout.PaddingValues(bottom = 16.dp)) { header(); list() }

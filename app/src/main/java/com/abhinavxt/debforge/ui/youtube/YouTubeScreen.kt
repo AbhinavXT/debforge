@@ -201,8 +201,9 @@ fun YouTubeScreen(
     val msgQueueAlready = stringResource(R.string.yt_queue_already)
     val viewDownloads = stringResource(R.string.yt_view_downloads)
 
+    val videoLauncher = com.abhinavxt.debforge.player.rememberVideoLauncher()
     LaunchedEffect(Unit) {
-        viewModel.playRequests.collect { context.startActivity(com.abhinavxt.debforge.player.PlayerActivity.intent(context, it)) }
+        viewModel.playRequests.collect { videoLauncher.open(context, it.request, video = it.video) }
     }
     val streamingUrl by viewModel.streamingUrl.collectAsStateWithLifecycle()
 

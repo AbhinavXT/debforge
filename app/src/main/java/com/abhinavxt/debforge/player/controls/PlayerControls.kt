@@ -68,6 +68,8 @@ import androidx.compose.material.icons.rounded.PictureInPictureAlt
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Replay10
 import androidx.compose.material.icons.rounded.ScreenRotation
+import androidx.compose.material.icons.rounded.Fullscreen
+import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material.icons.rounded.SkipNext
 import androidx.compose.material.icons.rounded.SkipPrevious
 import androidx.compose.material.icons.rounded.NightsStay
@@ -285,11 +287,16 @@ private fun TopBar(state: ControlsState, actions: ControlsActions, modifier: Mod
     Row(
         modifier
             .fillMaxWidth()
-            .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal))
+            .then(if (state.inline) Modifier else Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)))
             .padding(horizontal = 4.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        ControlIcon(state, "back", Icons.AutoMirrored.Rounded.ArrowBack, stringResource(R.string.player_back)) { actions.back() }
+        if (state.inline) {
+            // On the watch page the way back is down: the video shrinks to the mini bar.
+            ControlIcon(state, "back", Icons.Rounded.KeyboardArrowDown, stringResource(R.string.video_minimise)) { actions.back() }
+        } else {
+            ControlIcon(state, "back", Icons.AutoMirrored.Rounded.ArrowBack, stringResource(R.string.player_back)) { actions.back() }
+        }
         Text(
             state.title,
             color = Color.White,
@@ -386,7 +393,7 @@ private fun BottomBar(state: ControlsState, actions: ControlsActions, modifier: 
     Column(
         modifier
             .fillMaxWidth()
-            .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal))
+            .then(if (state.inline) Modifier else Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal)))
             .padding(horizontal = 12.dp, vertical = 4.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -434,7 +441,11 @@ private fun BottomBar(state: ControlsState, actions: ControlsActions, modifier: 
                 Fill.STRETCH -> Icons.Rounded.AspectRatio to Fill.FIT
             }
             ControlIcon(state, "fill", fillIcon, stringResource(fillLabel(state.fill))) { actions.setFill(next) }
-            ControlIcon(state, "rotate", Icons.Rounded.ScreenRotation, stringResource(R.string.player_rotate)) { actions.rotate() }
+            if (state.inline) {
+                ControlIcon(state, "rotate", Icons.Rounded.Fullscreen, stringResource(R.string.video_full_screen)) { actions.rotate() }
+            } else {
+                ControlIcon(state, "rotate", Icons.Rounded.ScreenRotation, stringResource(R.string.player_rotate)) { actions.rotate() }
+            }
             if (state.pipAvailable) {
                 ControlIcon(state, "pip", Icons.Rounded.PictureInPictureAlt, stringResource(R.string.set_pip)) { actions.enterPip() }
             }

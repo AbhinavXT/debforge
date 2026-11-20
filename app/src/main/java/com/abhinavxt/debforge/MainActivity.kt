@@ -38,6 +38,7 @@ class MainActivity : ComponentActivity() {
     @Inject lateinit var localImporter: com.abhinavxt.debforge.download.LocalImporter
     @Inject lateinit var settingsStore: com.abhinavxt.debforge.data.prefs.SettingsStore
     @Inject lateinit var audioPlayer: com.abhinavxt.debforge.player.AudioPlayer
+    @Inject lateinit var videoLauncher: com.abhinavxt.debforge.player.VideoLauncher
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,6 +63,7 @@ class MainActivity : ComponentActivity() {
             if (intent.flags and Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY == 0) takePlayRestored(intent)
         }
         takeExpandRequest(intent)
+        takeOpenVideo(intent)
         setContent {
             val appVm: AppViewModel = hiltViewModel()
             val mode by appVm.themeMode.collectAsStateWithLifecycle()
@@ -98,7 +100,15 @@ class MainActivity : ComponentActivity() {
         pendingAdds.offerFromIntent(intent)
         handleAppAction(intent)
         takeExpandRequest(intent)
+        takeOpenVideo(intent)
         takePlayRestored(intent)
+    }
+
+    /** The video's notification: show the watch page of the video playing (nothing when it has ended). */
+    private fun takeOpenVideo(intent: Intent?) {
+        if (intent?.getBooleanExtra(com.abhinavxt.debforge.player.VideoLauncher.EXTRA_OPEN_VIDEO, false) != true) return
+        intent.removeExtra(com.abhinavxt.debforge.player.VideoLauncher.EXTRA_OPEN_VIDEO)
+        videoLauncher.dispatch(com.abhinavxt.debforge.ui.video.VideoModeEvent.Expand)
     }
 
     /** The player widget's Play button when it cannot start playback itself: the app is in front now, so it may. */

@@ -120,6 +120,13 @@ import androidx.compose.foundation.background
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.DisposableEffect
+import com.abhinavxt.debforge.ui.video.InAppVideoHost
+import com.abhinavxt.debforge.ui.video.VideoHostViewModel
+import com.abhinavxt.debforge.ui.video.VideoMiniBar
+import com.abhinavxt.debforge.ui.video.VideoMode
+import com.abhinavxt.debforge.ui.video.VideoModeEvent
+import com.abhinavxt.debforge.ui.video.WatchViewModel
+import com.abhinavxt.debforge.ui.video.rememberVideoPulse
 
 private enum class HomeTab(
     val route: String,
@@ -175,6 +182,21 @@ fun HomeScreen(signedIn: Boolean) {
     val activeCount by shell.activeCount.collectAsStateWithLifecycle()
     val watchBusy by shell.watchBusy.collectAsStateWithLifecycle()
     val homeContext = androidx.compose.ui.platform.LocalContext.current
+    // The in-app video (watch page, full screen, mini bar); a TV opens its own player screen instead.
+    val videoVm: VideoHostViewModel = hiltViewModel()
+    val watchVm: WatchViewModel = hiltViewModel()
+    val videoLauncher = videoVm.launcher
+    val videoActive by videoLauncher.active.collectAsStateWithLifecycle()
+    val videoMode by videoLauncher.mode.collectAsStateWithLifecycle()
+    val videoRevision by videoLauncher.revision.collectAsStateWithLifecycle()
+    val videoShown = videoActive != null
+    val videoExpanded = videoMode == VideoMode.WATCH || videoMode == VideoMode.FULL
+    val isTablet = LocalConfiguration.current.smallestScreenWidthDp >= 600
+    LaunchedEffect(isTablet) { videoLauncher.isTablet = isTablet }
+    var videoSlot by remember { mutableStateOf(androidx.compose.ui.geometry.Rect.Zero) }
+    val videoPulse = rememberVideoPulse(videoLauncher.session, videoShown)
+    var videoBarTitle by remember { mutableStateOf("") }
+    LaunchedEffect(videoActive, videoRevision) { if (videoShown) videoBarTitle = videoLauncher.session.title }
     val msgFileMissing = stringResource(R.string.dl_file_missing)
     val msgStreamFailed = stringResource(R.string.media_stream_failed)
     var nowPlaying by rememberSaveable { mutableStateOf(false) }
@@ -188,12 +210,7 @@ fun HomeScreen(signedIn: Boolean) {
             when (e) {
                 is WatchEvent.Launch -> {
                     nowPlaying = false
-                    homeContext.startActivity(
-                        VideoStartExtras.put(
-                            com.abhinavxt.debforge.player.PlayerActivity.intent(homeContext, e.request),
-                            VideoStart(e.startMs, e.speed)
-                        )
-                    )
+                    videoLauncher.open(homeContext, e.request, start = VideoStart(e.startMs, e.speed))
                 }
                 WatchEvent.FileMissing -> android.widget.Toast.makeText(homeContext, msgFileMissing, android.widget.Toast.LENGTH_LONG).show()
                 WatchEvent.StreamFailed -> android.widget.Toast.makeText(homeContext, msgStreamFailed, android.widget.Toast.LENGTH_LONG).show()
@@ -217,6 +234,11 @@ fun HomeScreen(signedIn: Boolean) {
             }
         )
     }
+    // A video opens: the full audio player gives way. Audio starting while a video is open closes the video
+    // (opening a video parks the audio, so audio playing again means the user asked for it).
+    LaunchedEffect(videoShown) { if (videoShown) nowPlaying = false }
+    val videoShownNow by rememberUpdatedState(videoShown)
+    LaunchedEffect(audio.isPlaying) { if (audio.isPlaying && videoShownNow) videoLauncher.close() }
     // The queue ended or was cleared: nothing left to show.
     LaunchedEffect(audio.track == null) { if (audio.track == null) nowPlaying = false }
 
@@ -412,6 +434,23 @@ fun HomeScreen(signedIn: Boolean) {
     var miniHasFocus by remember { mutableStateOf(false) }
     // Only for D-pad/keyboard use: on touch a programmatic focus would leave a focus ring showing.
     val inputMode = androidx.compose.ui.platform.LocalInputModeManager.current
+    // The watch page and full screen cover the app: nothing underneath takes focus; back at the mini bar, focus returns to it.
+    val videoMiniFocus = remember { FocusRequester() }
+    var videoWasExpanded by remember { mutableStateOf(false) }
+    LaunchedEffect(videoExpanded) {
+        val keys = inputMode.inputMode == androidx.compose.ui.input.InputMode.Keyboard
+        if (videoExpanded) videoWasExpanded = true
+        else if (videoWasExpanded) {
+            videoWasExpanded = false
+            if (keys && videoMode == VideoMode.MINI) {
+                var tries = 0
+                while (tries++ < 12) {
+                    androidx.compose.runtime.withFrameNanos { }
+                    if (runCatching { videoMiniFocus.requestFocus() }.isSuccess) break
+                }
+            }
+        }
+    }
     LaunchedEffect(playerOpen) {
         val keys = inputMode.inputMode == androidx.compose.ui.input.InputMode.Keyboard
         if (playerOpen) {
@@ -437,9 +476,28 @@ fun HomeScreen(signedIn: Boolean) {
     }
 
     val shellBody: @Composable (SharedTransitionScope?) -> Unit = { sharedScope ->
+    // The video bar: over the tabs (beside the rail on wide screens); the picture itself is InAppVideoHost's, on its slot.
+    val videoMini: @Composable () -> Unit = {
+        AnimatedVisibility(
+            visible = videoShown,
+            enter = slideInVertically { it } + androidx.compose.animation.fadeIn(),
+            exit = slideOutVertically { it } + androidx.compose.animation.fadeOut()
+        ) {
+            VideoMiniBar(
+                title = videoBarTitle,
+                playing = videoPulse.playing,
+                progress = videoPulse.progress,
+                onToggle = { videoLauncher.session.player?.let { if (it.isPlaying) it.pause() else it.play() } },
+                onClose = videoLauncher::close,
+                onExpand = { videoLauncher.dispatch(VideoModeEvent.Expand) },
+                onVideoSlot = { videoSlot = it },
+                toggleFocus = videoMiniFocus,
+            )
+        }
+    }
     val miniPlayer: @Composable () -> Unit = {
         AnimatedVisibility(
-            visible = audio.track != null,
+            visible = audio.track != null && !videoShown,
             enter = slideInVertically { it } + androidx.compose.animation.fadeIn(),
             exit = slideOutVertically { it } + androidx.compose.animation.fadeOut()
         ) {
@@ -464,7 +522,7 @@ fun HomeScreen(signedIn: Boolean) {
         // While the full player is open nothing underneath may take focus or key presses.
         // Only ever set canFocus to false: assigning true here would also override the non-focusable focus
         // groups of lazy lists and scroll containers below, and 2D (arrow key) search would skip their items.
-        Box(Modifier.fillMaxSize().focusProperties { if (playerOpen) canFocus = false }) {
+        Box(Modifier.fillMaxSize().focusProperties { if (playerOpen || videoExpanded) canFocus = false }) {
         if (wide) {
             Row(Modifier.fillMaxSize()) {
                 NavigationRail(
@@ -494,13 +552,14 @@ fun HomeScreen(signedIn: Boolean) {
                 }
                 Column(Modifier.weight(1f).fillMaxHeight()) {
                     content(Modifier.weight(1f).fillMaxWidth())
-                    Box(Modifier.windowInsetsPadding(WindowInsets.navigationBars)) { miniPlayer() }
+                    Box(Modifier.windowInsetsPadding(WindowInsets.navigationBars)) { Column { videoMini(); miniPlayer() } }
                 }
             }
         } else {
             Scaffold(
                 bottomBar = {
                     Column {
+                        videoMini()
                         miniPlayer()
                         NavigationBar(containerColor = MaterialTheme.colorScheme.surfaceContainer) {
                             HomeTab.entries.filter { it.inBar }.forEach { tab ->
@@ -577,6 +636,13 @@ fun HomeScreen(signedIn: Boolean) {
                 )
             }
         }
+        InAppVideoHost(
+            viewModel = videoVm,
+            watchViewModel = watchVm,
+            miniSlot = videoSlot,
+            isTablet = isTablet,
+            onChannel = openChannel,
+        )
     }
     }
     if (sharedMotion) SharedTransitionLayout(Modifier.fillMaxSize()) { shellBody(this) } else shellBody(null)

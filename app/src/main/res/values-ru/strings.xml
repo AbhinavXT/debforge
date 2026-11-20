@@ -639,6 +639,9 @@
 
     <!-- Player controls -->
     <string name="player_back">Назад</string>
+    <string name="video_minimise">Свернуть</string>
+    <string name="video_full_screen">Во весь экран</string>
+    <string name="video_mini_expand">Открыть видео</string>
     <string name="player_audio">Аудио</string>
     <string name="player_subtitles">Субтитры</string>
     <string name="player_subtitles_off">Выкл.</string>

@@ -199,10 +199,14 @@ fun BrowseScreen(
             if (result == SnackbarResult.ActionPerformed) onAddText(links)
         }
     })
+    val videoLauncher = com.abhinavxt.debforge.player.rememberVideoLauncher()
     LaunchedEffect(Unit) {
         viewModel.playRequests.collect { req ->
             if (viewModel.useInternalPlayer.value) {
-                context.startActivity(com.abhinavxt.debforge.player.PlayerActivity.intent(context, req))
+                // The video opens over the app: a title's sheet left open would sit on top of its watch page.
+                openGroupKey = null
+                openFile = null
+                videoLauncher.open(context, req)
             } else if (!context.playExternally(req)) {
                 viewModel.reportNoPlayer()
             }

@@ -42,6 +42,9 @@ internal class VideoEpisodes(private val s: VideoSession) {
     val hasNext get() = queue.isNotEmpty()
     val hasPrevious get() = previousQueue.isNotEmpty()
 
+    /** The episodes after this one, nearest first (the watch page's list). */
+    val upcoming: List<QueuedEpisode> get() = queue.toList()
+
     /** The queue handed over with the file that starts ([UpNext.take]). */
     fun load(q: UpNext.Queue) {
         queue.addAll(q.next)
@@ -148,7 +151,28 @@ internal class VideoEpisodes(private val s: VideoSession) {
         }
     }
 
-    private suspend fun switchTo(episode: QueuedEpisode, backwards: Boolean = false) {
+    /** Jumps to the upcoming episode [itemId] (a tap in the watch page's list); the ones skipped over move behind this one. */
+    fun jumpTo(itemId: String) {
+        if (switching) return
+        val index = queue.indexOfFirst { it.item.id == itemId }
+        if (index < 0) return
+        val episode = queue[index]
+        val skipped = queue.take(index)
+        switching = true
+        hideCard()
+        s.savePosition()
+        s.scrobbleStopped()
+        s.player?.pause()
+        s.scope.launch {
+            try {
+                switchTo(episode, skipped = skipped)
+            } finally {
+                switching = false
+            }
+        }
+    }
+
+    private suspend fun switchTo(episode: QueuedEpisode, backwards: Boolean = false, skipped: List<QueuedEpisode> = emptyList()) {
         prefetchJob?.join()
         val ready = prepared?.takeIf { it.episode == episode } ?: prepare(episode)
         prepared = null
@@ -161,8 +185,11 @@ internal class VideoEpisodes(private val s: VideoSession) {
             previousQueue.removeFirst()
             currentEpisode?.let { queue.addFirst(it) }
         } else {
+            repeat(skipped.size) { queue.removeFirst() }
             queue.removeFirst()
             currentEpisode?.let { previousQueue.addFirst(it) }
+            // Nearest first: the one just before the target, then the ones before that.
+            skipped.forEach { previousQueue.addFirst(it) }
         }
         currentEpisode = episode
         s.episodePlayer?.queueChanged()

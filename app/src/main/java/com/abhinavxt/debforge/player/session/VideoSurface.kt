@@ -390,7 +390,11 @@ class VideoSurface(
         val x = ev.x.toInt()
         val y = ev.y.toInt()
         if (hit(startOverView, x, y) || hit(skipView, x, y) || hit(nextCard, x, y)) return true
-        if (!isTv) return controls.isOnControl(ev.x, ev.y)
+        if (!isTv) {
+            // The controls record their bounds in the window; this view may sit anywhere in it (the watch page).
+            val at = IntArray(2).also { getLocationInWindow(it) }
+            return controls.isOnControl(ev.x + at[0], ev.y + at[1])
+        }
         if (!playerView.isControllerFullyVisible) return false
         // The controller's views report their bounds in the window: convert the touch to it.
         val at = IntArray(2).also { getLocationInWindow(it) }

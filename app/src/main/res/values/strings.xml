@@ -581,6 +581,9 @@
 
     <!-- Player controls -->
     <string name="player_back">Back</string>
+    <string name="video_minimise">Minimise</string>
+    <string name="video_full_screen">Full screen</string>
+    <string name="video_mini_expand">Open video</string>
     <string name="player_audio">Audio</string>
     <string name="player_subtitles">Subtitles</string>
     <string name="player_subtitles_off">Off</string>

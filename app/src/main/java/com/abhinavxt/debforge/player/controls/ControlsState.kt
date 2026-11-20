@@ -68,6 +68,8 @@ class ControlsState {
     /** The file's chapters (Matroska): marks on the seek bar and the Chapters list. */
     var chapters by mutableStateOf<List<com.abhinavxt.debforge.domain.MkvChapters.Chapter>>(emptyList())
     var pipAvailable by mutableStateOf(false)
+    /** Shown in the watch page's video area (not full screen): back becomes "minimise", rotate becomes "full screen", no insets. */
+    var inline by mutableStateOf(false)
     /** The item has an audio track to hand over to the background player ("Play as audio"). */
     var audioHandoffReady by mutableStateOf(false)
     /** Playing on a TV (DLNA). */

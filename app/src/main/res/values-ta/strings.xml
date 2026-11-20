@@ -579,6 +579,9 @@
 
     <!-- Player controls -->
     <string name="player_back">பின்செல்</string>
+    <string name="video_minimise">சிறிதாக்கு</string>
+    <string name="video_full_screen">முழுத்திரை</string>
+    <string name="video_mini_expand">வீடியோவைத் திற</string>
     <string name="player_audio">ஆடியோ</string>
     <string name="player_subtitles">வசனங்கள்</string>
     <string name="player_subtitles_off">முடக்கம்</string>

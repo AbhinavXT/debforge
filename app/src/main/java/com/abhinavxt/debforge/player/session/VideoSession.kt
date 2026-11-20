@@ -418,6 +418,10 @@ class VideoSession @Inject constructor(
 
     val hasNext get() = episodes.hasNext
     val hasPrevious get() = episodes.hasPrevious
+    /** The episodes after this one, nearest first. */
+    val upcomingEpisodes get() = episodes.upcoming
+    /** Plays the upcoming episode [itemId] in this same player. */
+    fun playEpisode(itemId: String) = episodes.jumpTo(itemId)
 
     /** Switches to the next episode in this same player. */
     fun playNext() = episodes.playNext()

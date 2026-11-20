@@ -579,6 +579,9 @@
 
     <!-- Player controls -->
     <string name="player_back">వెనుకకు</string>
+    <string name="video_minimise">చిన్నదిగా చేయి</string>
+    <string name="video_full_screen">పూర్తి స్క్రీన్</string>
+    <string name="video_mini_expand">వీడియో తెరవండి</string>
     <string name="player_audio">ఆడియో</string>
     <string name="player_subtitles">ఉపశీర్షికలు</string>
     <string name="player_subtitles_off">ఆఫ్</string>

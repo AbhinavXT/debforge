@@ -73,7 +73,6 @@ import com.abhinavxt.debforge.ui.browse.playExternally
 import com.abhinavxt.debforge.ui.components.BannerCard
 import com.abhinavxt.debforge.ui.components.MessageState
 import com.abhinavxt.debforge.ui.components.ScreenHeader
-import com.abhinavxt.debforge.player.PlayerActivity
 
 /**
  * Recently played audio and video, newest first. Tap replays; the trash button removes one row; the menu pauses
@@ -95,11 +94,12 @@ fun HistoryScreen(
     val menuFocus = remember { FocusRequester() }
     val keys = LocalInputModeManager.current.inputMode == InputMode.Keyboard
 
+    val videoLauncher = com.abhinavxt.debforge.player.rememberVideoLauncher()
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
                 is HistoryEvent.Play ->
-                    if (viewModel.useInternalPlayer.value) runCatching { context.startActivity(PlayerActivity.intent(context, event.request)) }
+                    if (viewModel.useInternalPlayer.value) runCatching { videoLauncher.open(context, event.request) }
                     else if (!context.playExternally(event.request)) scope.launch { snackbar.showSnackbar(noPlayer) }
                 is HistoryEvent.OpenYouTube -> onOpenYouTube(event.url)
                 is HistoryEvent.Unplayable -> {

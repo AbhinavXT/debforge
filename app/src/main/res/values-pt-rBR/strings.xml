@@ -609,6 +609,9 @@
 
     <!-- Player controls -->
     <string name="player_back">Voltar</string>
+    <string name="video_minimise">Minimizar</string>
+    <string name="video_full_screen">Tela cheia</string>
+    <string name="video_mini_expand">Abrir vídeo</string>
     <string name="player_audio">Áudio</string>
     <string name="player_subtitles">Legendas</string>
     <string name="player_subtitles_off">Desativadas</string>

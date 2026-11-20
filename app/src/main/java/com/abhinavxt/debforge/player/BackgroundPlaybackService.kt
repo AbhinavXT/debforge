@@ -54,6 +54,20 @@ class BackgroundPlaybackService : MediaSessionService() {
     private var session: MediaSession? = null
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
+    /** The video's notification: a TV returns to its player screen, a phone or tablet to the app's watch page. */
+    private fun videoOpenIntent(): Intent {
+        val tv = (getSystemService(UI_MODE_SERVICE) as android.app.UiModeManager).currentModeType ==
+            android.content.res.Configuration.UI_MODE_TYPE_TELEVISION
+        return if (tv) {
+            Intent(this, PlayerActivity::class.java)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_REORDER_TO_FRONT or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+        } else {
+            Intent(this, com.abhinavxt.debforge.MainActivity::class.java)
+                .putExtra(VideoLauncher.EXTRA_OPEN_VIDEO, true)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_REORDER_TO_FRONT or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+        }
+    }
+
     override fun onCreate() {
         super.onCreate()
         BackgroundPlayback.service = this
@@ -62,9 +76,7 @@ class BackgroundPlaybackService : MediaSessionService() {
         // (audio: the app with "now playing" open).
         val open = PendingIntent.getActivity(
             this, 0,
-            BackgroundPlayback.openIntent
-                ?: Intent(this, PlayerActivity::class.java)
-                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_REORDER_TO_FRONT or Intent.FLAG_ACTIVITY_SINGLE_TOP),
+            BackgroundPlayback.openIntent ?: videoOpenIntent(),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
         // Only the audio player (it sets openIntent) gets skip buttons; video keeps the plain session.

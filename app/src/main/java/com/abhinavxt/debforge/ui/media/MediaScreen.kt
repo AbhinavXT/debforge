@@ -118,7 +118,6 @@ import com.abhinavxt.debforge.domain.ProviderId
 import com.abhinavxt.debforge.domain.SortOrder
 import com.abhinavxt.debforge.download.LocalFiles
 import com.abhinavxt.debforge.download.artworkFile
-import com.abhinavxt.debforge.player.PlayerActivity
 import com.abhinavxt.debforge.ui.browse.formatSize
 import com.abhinavxt.debforge.ui.components.BannerCard
 import com.abhinavxt.debforge.ui.components.GeneratedArt
@@ -150,8 +149,9 @@ fun MediaScreen(
     val msgMissing = stringResource(R.string.dl_file_missing)
     val msgNoApp = stringResource(R.string.media_err_no_app)
     val tell: (String) -> Unit = { m -> scope.launch { snackbar.currentSnackbarData?.dismiss(); snackbar.showSnackbar(m) } }
+    val videoLauncher = com.abhinavxt.debforge.player.rememberVideoLauncher()
     LaunchedEffect(Unit) {
-        viewModel.playRequests.collect { context.startActivity(PlayerActivity.intent(context, it)) }
+        viewModel.playRequests.collect { videoLauncher.open(context, it) }
     }
     val msgStream = stringResource(R.string.media_stream_failed)
     val msgBulkFailed = stringResource(R.string.media_download_all_failed)

@@ -100,6 +100,9 @@ sealed interface YouTubeEvent {
 }
 
 /** What to tell the user after the video's own enqueue [video] and the chosen subtitle's [sub] (null: none chosen). */
+/** A YouTube stream to play, with the video it came from (the watch page shows its related videos). */
+data class StreamPlay(val request: PlayRequest, val video: YouTubeVideo)
+
 internal fun downloadOutcome(video: YouTubeEvent, sub: YouTubeEvent?): YouTubeEvent = when (video) {
     YouTubeEvent.QUEUED -> if (sub == YouTubeEvent.QUEUE_FAILED) YouTubeEvent.QUEUED_NO_SUBTITLE else YouTubeEvent.QUEUED
     YouTubeEvent.ALREADY_QUEUED -> when (sub) {
@@ -142,7 +145,7 @@ class YouTubeViewModel @Inject constructor(
     private val _events = Channel<YouTubeEvent>(Channel.BUFFERED)
     val events = _events.receiveAsFlow()
 
-    private val _playRequests = Channel<PlayRequest>(Channel.BUFFERED)
+    private val _playRequests = Channel<StreamPlay>(Channel.BUFFERED)
     /** Video streams for the screen to open in the player. */
     val playRequests = _playRequests.receiveAsFlow()
 
@@ -544,7 +547,7 @@ class YouTubeViewModel @Inject constructor(
             return true
         }
         val req = youTubePlayRequest(video, choice, subtitles) ?: return false
-        return _playRequests.trySend(req).isSuccess
+        return _playRequests.trySend(StreamPlay(req, video)).isSuccess
     }
 
     /** The playlists, for the add-to-playlist dialog. */
