@@ -767,6 +767,15 @@
     <string name="player_sync_no_lines">Keine Untertitelzeilen in der Nähe</string>
     <string name="player_sync_applied">Untertitel synchronisiert</string>
     <string name="player_sync_reset_done">Timing zurückgesetzt</string>
+    <string name="player_sync_auto">Automatisch synchronisieren</string>
+    <string name="player_sync_auto_hint">Hört auf den Ton des Videos und passt die Untertitel an die Sprache an</string>
+    <string name="player_sync_auto_listening">Höre zu… %1$d%%</string>
+    <string name="player_sync_auto_matching">Abgleich…</string>
+    <string name="player_sync_auto_cancel">Abbrechen</string>
+    <string name="player_sync_auto_done">Synchronisiert: %1$s</string>
+    <string name="player_sync_auto_no_match">Keine sichere Übereinstimmung – versuche „Mit Zeile synchronisieren“</string>
+    <string name="player_sync_auto_failed">Der Ton dieses Videos konnte nicht gelesen werden</string>
+    <string name="player_sync_auto_no_decoder">Dieses Gerät kann den Ton dieses Videos nicht dekodieren</string>
     <string name="player_sync_first_set">Erste Zeile gesetzt. Spiele weiter und wähle die zweite.</string>
     <string name="player_sync_too_close">Wähle eine Zeile mit mindestens 2 Minuten Abstand zur ersten</string>
     <string name="player_sync_implausible">Diese zwei Zeilen passen zu keiner Bildrate. Versuche andere Zeilen.</string>

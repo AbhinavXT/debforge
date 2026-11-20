@@ -730,6 +730,15 @@
     <string name="player_sync_no_lines">Tidak ada baris subtitle di dekat saat ini</string>
     <string name="player_sync_applied">Subtitle disinkronkan</string>
     <string name="player_sync_reset_done">Waktu diatur ulang</string>
+    <string name="player_sync_auto">Sinkronkan otomatis</string>
+    <string name="player_sync_auto_hint">Mendengarkan suara video dan menyelaraskan subtitle dengan ucapan</string>
+    <string name="player_sync_auto_listening">Mendengarkan… %1$d%%</string>
+    <string name="player_sync_auto_matching">Mencocokkan…</string>
+    <string name="player_sync_auto_cancel">Batal</string>
+    <string name="player_sync_auto_done">Tersinkron: %1$s</string>
+    <string name="player_sync_auto_no_match">Tidak ada kecocokan yang meyakinkan — coba Sinkronkan ke satu baris</string>
+    <string name="player_sync_auto_failed">Suara video ini tidak dapat dibaca</string>
+    <string name="player_sync_auto_no_decoder">Perangkat ini tidak dapat men-decode suara video ini</string>
     <string name="player_sync_first_set">Baris pertama diatur. Lanjutkan dan pilih yang kedua.</string>
     <string name="player_sync_too_close">Pilih baris minimal 2 menit setelah yang pertama</string>
     <string name="player_sync_implausible">Kedua baris itu tidak cocok dengan satu frame rate. Coba baris lain.</string>

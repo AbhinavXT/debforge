@@ -767,6 +767,15 @@
     <string name="player_sync_no_lines">इस समय के आसपास कोई उपशीर्षक पंक्ति नहीं</string>
     <string name="player_sync_applied">उपशीर्षक सिंक हो गए</string>
     <string name="player_sync_reset_done">टाइमिंग रीसेट हुई</string>
+    <string name="player_sync_auto">अपने आप सिंक करें</string>
+    <string name="player_sync_auto_hint">वीडियो की आवाज़ सुनकर उपशीर्षक को बोलचाल से मिलाता है</string>
+    <string name="player_sync_auto_listening">सुन रहे हैं… %1$d%%</string>
+    <string name="player_sync_auto_matching">मिलान हो रहा है…</string>
+    <string name="player_sync_auto_cancel">रद्द करें</string>
+    <string name="player_sync_auto_done">सिंक हुआ: %1$s</string>
+    <string name="player_sync_auto_no_match">पक्का मिलान नहीं मिला — \"एक लाइन से सिंक\" आज़माएँ</string>
+    <string name="player_sync_auto_failed">इस वीडियो की आवाज़ पढ़ी नहीं जा सकी</string>
+    <string name="player_sync_auto_no_decoder">यह डिवाइस इस वीडियो की आवाज़ डिकोड नहीं कर सकता</string>
     <string name="player_sync_first_set">पहली पंक्ति तय हुई। आगे चलाएँ और दूसरी चुनें।</string>
     <string name="player_sync_too_close">पहली से कम से कम 2 मिनट दूर की पंक्ति चुनें</string>
     <string name="player_sync_implausible">ये दोनों पंक्तियाँ किसी एक फ़्रेम दर से मेल नहीं खातीं। दूसरी पंक्तियाँ आज़माएँ।</string>

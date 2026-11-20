@@ -841,6 +841,15 @@
     <string name="player_sync_no_lines">Рядом нет строк субтитров</string>
     <string name="player_sync_applied">Субтитры синхронизированы</string>
     <string name="player_sync_reset_done">Синхронизация сброшена</string>
+    <string name="player_sync_auto">Синхронизировать автоматически</string>
+    <string name="player_sync_auto_hint">Слушает звук видео и подгоняет субтитры под речь</string>
+    <string name="player_sync_auto_listening">Слушаю… %1$d%%</string>
+    <string name="player_sync_auto_matching">Сопоставление…</string>
+    <string name="player_sync_auto_cancel">Отмена</string>
+    <string name="player_sync_auto_done">Синхронизировано: %1$s</string>
+    <string name="player_sync_auto_no_match">Уверенного совпадения нет — попробуйте «Синхронизировать по строке»</string>
+    <string name="player_sync_auto_failed">Не удалось прочитать звук этого видео</string>
+    <string name="player_sync_auto_no_decoder">Это устройство не может декодировать звук этого видео</string>
     <string name="player_sync_first_set">Первая строка задана. Смотрите дальше и выберите вторую.</string>
     <string name="player_sync_too_close">Выберите строку не ближе 2 минут от первой</string>
     <string name="player_sync_implausible">Эти две строки не подходят ни к одной частоте кадров. Попробуйте другие.</string>

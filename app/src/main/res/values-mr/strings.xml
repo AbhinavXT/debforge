@@ -767,6 +767,15 @@
     <string name="player_sync_no_lines">या क्षणाजवळ उपशीर्षक ओळी नाहीत</string>
     <string name="player_sync_applied">उपशीर्षके सिंक झाली</string>
     <string name="player_sync_reset_done">टायमिंग रीसेट झाले</string>
+    <string name="player_sync_auto">आपोआप सिंक करा</string>
+    <string name="player_sync_auto_hint">व्हिडिओचा आवाज ऐकून उपशीर्षके संवादाशी जुळवते</string>
+    <string name="player_sync_auto_listening">ऐकत आहे… %1$d%%</string>
+    <string name="player_sync_auto_matching">जुळवत आहे…</string>
+    <string name="player_sync_auto_cancel">रद्द करा</string>
+    <string name="player_sync_auto_done">सिंक झाले: %1$s</string>
+    <string name="player_sync_auto_no_match">खात्रीशीर जुळणी नाही — \"एका ओळीशी सिंक\" वापरून पहा</string>
+    <string name="player_sync_auto_failed">या व्हिडिओचा आवाज वाचता आला नाही</string>
+    <string name="player_sync_auto_no_decoder">हे डिव्हाइस या व्हिडिओचा आवाज डीकोड करू शकत नाही</string>
     <string name="player_sync_first_set">पहिली ओळ ठरली. पुढे चालवा आणि दुसरी निवडा.</string>
     <string name="player_sync_too_close">पहिलीपासून किमान 2 मिनिटे दूरची ओळ निवडा</string>
     <string name="player_sync_implausible">या दोन ओळी कोणत्याही एका फ्रेम रेटशी जुळत नाहीत. इतर ओळी वापरून पहा.</string>

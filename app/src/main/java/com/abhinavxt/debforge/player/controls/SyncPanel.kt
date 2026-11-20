@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.abhinavxt.debforge.R
 import com.abhinavxt.debforge.player.gestures.GestureMath
+import com.abhinavxt.debforge.player.subtitles.AutoSyncState
 import com.abhinavxt.debforge.player.subtitles.SubtitleTiming
 import java.util.Locale
 
@@ -75,6 +77,35 @@ private fun SyncRow(title: String, detail: String? = null, enabled: Boolean = tr
     }
 }
 
+/** "Sync automatically", or its progress with Cancel while it runs. */
+@Composable
+private fun AutoSyncRow(state: ControlsState, actions: ControlsActions, key: String) {
+    when (val s = state.autoSync) {
+        AutoSyncState.Idle ->
+            SyncRow(stringResource(R.string.player_sync_auto), stringResource(R.string.player_sync_auto_hint)) { actions.startAutoSync(key) }
+        else -> Column(Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 12.dp)) {
+            val listening = s as? AutoSyncState.Listening
+            Text(
+                if (listening != null) stringResource(R.string.player_sync_auto_listening, (listening.progress * 100).toInt())
+                else stringResource(R.string.player_sync_auto_matching),
+                color = Color.White,
+                fontSize = 15.sp
+            )
+            if (listening != null) {
+                LinearProgressIndicator(progress = { listening.progress }, modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp))
+            } else {
+                LinearProgressIndicator(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp))
+            }
+            Text(
+                stringResource(R.string.player_sync_auto_cancel),
+                color = MaterialTheme.colorScheme.primary,
+                fontSize = 14.sp,
+                modifier = Modifier.clickable { actions.cancelAutoSync() }.padding(vertical = 4.dp)
+            )
+        }
+    }
+}
+
 @Composable
 private fun Hint(text: String) {
     Text(
@@ -113,6 +144,9 @@ internal fun SyncPanel(state: ControlsState, actions: ControlsActions) {
             val current = correctionText(SyncMath.summary(sub.timing, state.subtitleDelayMs, state.snapshot.positionMs)) { unit.replace("\u0000", it) }
             val first = state.twoLinesFirst?.takeIf { it.key == sub.key }
             LazyColumn {
+                if (actions.autoSyncAvailable() || state.autoSync != AutoSyncState.Idle) {
+                    item { AutoSyncRow(state, actions, sub.key) }
+                }
                 item {
                     Hint(current?.let { stringResource(R.string.player_sync_current, it) } ?: stringResource(R.string.player_sync_none))
                 }

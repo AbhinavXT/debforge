@@ -184,6 +184,11 @@ interface ControlsActions {
     fun applySyncTiming(key: String, timing: com.abhinavxt.debforge.player.subtitles.SubtitleTiming) {}
     /** Shows a short message over the video. */
     fun showSyncMessage(text: String) {}
+    /** "Sync automatically" is offered: a side-loaded subtitle on a file on this device. */
+    fun autoSyncAvailable(): Boolean = false
+    /** Listens to the video's sound and lines subtitle [key] up with the speech; progress is in [ControlsState.autoSync]. */
+    fun startAutoSync(key: String) {}
+    fun cancelAutoSync() {}
     /** Look for subtitles on OpenSubtitles: the preferred language, or [anyLanguage]. */
     fun searchOnlineSubtitles(anyLanguage: Boolean)
     /** Download [sub], add it to the file and switch to it. */

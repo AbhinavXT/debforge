@@ -163,6 +163,55 @@ class VideoActions internal constructor(private val s: VideoSession) : ControlsA
 
     override fun showSyncMessage(text: String) = s.showMessage(text)
 
+    private var autoSyncJob: kotlinx.coroutines.Job? = null
+
+    override fun autoSyncAvailable() = s.isLocalFile() && syncSubtitle() != null
+
+    /**
+     * Playback is left alone while the sound is read (it is a background-priority thread, and the user may want to
+     * keep watching); applying the result reloads the file, which pauses at the same second as any sync tool does.
+     */
+    override fun startAutoSync(key: String) {
+        if (autoSyncJob?.isActive == true || !s.isLocalFile()) return
+        val cues = s.cueBook.cues(key).map { com.abhinavxt.debforge.player.subtitles.CueSpan(it.startMs, it.endMs) }
+        val language = player?.currentTracks?.groups?.firstNotNullOfOrNull { g ->
+            if (g.type != C.TRACK_TYPE_AUDIO) null
+            else (0 until g.length).firstOrNull { g.isTrackSelected(it) }?.let { g.getTrackFormat(it).language }
+        }
+        val scanner = com.abhinavxt.debforge.player.subtitles.AudioSpeechScanner(s.context)
+        autoSyncJob = s.scope.launch {
+            try {
+                val outcome = com.abhinavxt.debforge.player.subtitles.AutoSync.run(
+                    scan = { progress -> scanner.scan(s.uri, language, progress) },
+                    cues = cues,
+                    onState = { controls.autoSync = it },
+                )
+                when (outcome) {
+                    is com.abhinavxt.debforge.player.subtitles.AutoSyncOutcome.Synced -> {
+                        // The subtitle may have been switched while listening.
+                        if (syncSubtitle()?.key == key) {
+                            val unit = s.string(R.string.player_sync_value, "\u0000")
+                            val text = com.abhinavxt.debforge.player.controls.correctionText(
+                                com.abhinavxt.debforge.player.controls.SyncMath.summary(outcome.timing, 0, player?.currentPosition ?: 0)
+                            ) { unit.replace("\u0000", it) } ?: unit.replace("\u0000", "+0.0")
+                            s.applySubtitleTiming(key, outcome.timing)
+                            s.showMessage(s.string(R.string.player_sync_auto_done, text))
+                        }
+                    }
+                    com.abhinavxt.debforge.player.subtitles.AutoSyncOutcome.NoMatch -> s.showMessage(s.string(R.string.player_sync_auto_no_match))
+                    com.abhinavxt.debforge.player.subtitles.AutoSyncOutcome.NoDecoder -> s.showMessage(s.string(R.string.player_sync_auto_no_decoder))
+                    com.abhinavxt.debforge.player.subtitles.AutoSyncOutcome.Failed -> s.showMessage(s.string(R.string.player_sync_auto_failed))
+                }
+            } finally {
+                controls.autoSync = com.abhinavxt.debforge.player.subtitles.AutoSyncState.Idle
+            }
+        }
+    }
+
+    override fun cancelAutoSync() {
+        autoSyncJob?.cancel()
+    }
+
     override fun selectTrack(type: Int, choice: TrackChoice?) {
         val p = player ?: return
         val params = p.trackSelectionParameters.buildUpon()

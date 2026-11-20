@@ -98,6 +98,8 @@ class ControlsState {
     /** Sync tools panel: where the user is, and the first matched line of "Two lines" while they find the second. */
     var syncStep by mutableStateOf(SyncStep.MENU)
     var twoLinesFirst by mutableStateOf<TwoLinePoint?>(null)
+    /** "Sync automatically" (listening to the video's sound) in progress. */
+    var autoSync by mutableStateOf<com.abhinavxt.debforge.player.subtitles.AutoSyncState>(com.abhinavxt.debforge.player.subtitles.AutoSyncState.Idle)
     /** Sleep timer: pause at this elapsedRealtime (0 = off)… */
     var sleepEndsAt by mutableLongStateOf(0L)
     /** …or at the end of this episode (no autoplay of the next). */

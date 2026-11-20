@@ -767,6 +767,15 @@
     <string name="player_sync_no_lines">இந்த நேரத்துக்கு அருகில் வசன வரிகள் இல்லை</string>
     <string name="player_sync_applied">வசனங்கள் ஒத்திசைக்கப்பட்டன</string>
     <string name="player_sync_reset_done">நேரம் மீட்டமைக்கப்பட்டது</string>
+    <string name="player_sync_auto">தானாக ஒத்திசை</string>
+    <string name="player_sync_auto_hint">வீடியோவின் ஒலியைக் கேட்டு வசனங்களைப் பேச்சுடன் பொருத்தும்</string>
+    <string name="player_sync_auto_listening">கேட்கிறது… %1$d%%</string>
+    <string name="player_sync_auto_matching">பொருத்துகிறது…</string>
+    <string name="player_sync_auto_cancel">ரத்து செய்</string>
+    <string name="player_sync_auto_done">ஒத்திசைந்தது: %1$s</string>
+    <string name="player_sync_auto_no_match">உறுதியான பொருத்தம் இல்லை — \"ஒரு வரியுடன் ஒத்திசை\" முயற்சிக்கவும்</string>
+    <string name="player_sync_auto_failed">இந்த வீடியோவின் ஒலியைப் படிக்க முடியவில்லை</string>
+    <string name="player_sync_auto_no_decoder">இந்தச் சாதனத்தால் இந்த வீடியோவின் ஒலியை டிகோட் செய்ய முடியாது</string>
     <string name="player_sync_first_set">முதல் வரி அமைக்கப்பட்டது. தொடர்ந்து இயக்கி இரண்டாவதைத் தேர்ந்தெடுக்கவும்.</string>
     <string name="player_sync_too_close">முதலாவதிலிருந்து குறைந்தது 2 நிமிடம் தள்ளிய வரியைத் தேர்ந்தெடுக்கவும்</string>
     <string name="player_sync_implausible">இந்த இரண்டு வரிகளும் ஒரே பிரேம் வீதத்துடன் பொருந்தவில்லை. வேறு வரிகளை முயலவும்.</string>

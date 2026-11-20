@@ -767,6 +767,15 @@
     <string name="player_sync_no_lines">ఈ క్షణానికి దగ్గరలో ఉపశీర్షిక లైన్లు లేవు</string>
     <string name="player_sync_applied">ఉపశీర్షికలు సింక్ అయ్యాయి</string>
     <string name="player_sync_reset_done">టైమింగ్ రీసెట్ అయింది</string>
+    <string name="player_sync_auto">ఆటోమేటిక్‌గా సింక్ చేయి</string>
+    <string name="player_sync_auto_hint">వీడియో శబ్దాన్ని విని ఉపశీర్షికలను మాటలతో సరిపోల్చుతుంది</string>
+    <string name="player_sync_auto_listening">వింటోంది… %1$d%%</string>
+    <string name="player_sync_auto_matching">సరిపోల్చుతోంది…</string>
+    <string name="player_sync_auto_cancel">రద్దు చేయి</string>
+    <string name="player_sync_auto_done">సింక్ అయింది: %1$s</string>
+    <string name="player_sync_auto_no_match">నమ్మదగిన సరిపోలిక లేదు — \"ఒక లైన్‌తో సింక్\" ప్రయత్నించండి</string>
+    <string name="player_sync_auto_failed">ఈ వీడియో శబ్దాన్ని చదవలేకపోయాం</string>
+    <string name="player_sync_auto_no_decoder">ఈ పరికరం ఈ వీడియో శబ్దాన్ని డీకోడ్ చేయలేదు</string>
     <string name="player_sync_first_set">మొదటి లైన్ సెట్ అయింది. ప్లే చేస్తూ రెండోది ఎంచుకోండి.</string>
     <string name="player_sync_too_close">మొదటి దానికి కనీసం 2 నిమిషాల దూరంలో ఉన్న లైన్‌ను ఎంచుకోండి</string>
     <string name="player_sync_implausible">ఈ రెండు లైన్లు ఒకే ఫ్రేమ్ రేట్‌కు సరిపోవు. ఇతర లైన్లు ప్రయత్నించండి.</string>

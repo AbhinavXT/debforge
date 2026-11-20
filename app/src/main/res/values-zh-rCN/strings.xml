@@ -730,6 +730,15 @@
     <string name="player_sync_no_lines">此刻附近没有字幕行</string>
     <string name="player_sync_applied">字幕已同步</string>
     <string name="player_sync_reset_done">时间已重置</string>
+    <string name="player_sync_auto">自动同步</string>
+    <string name="player_sync_auto_hint">聆听视频声音，并将字幕与语音对齐</string>
+    <string name="player_sync_auto_listening">正在聆听… %1$d%%</string>
+    <string name="player_sync_auto_matching">正在匹配…</string>
+    <string name="player_sync_auto_cancel">取消</string>
+    <string name="player_sync_auto_done">已同步：%1$s</string>
+    <string name="player_sync_auto_no_match">没有可靠的匹配，请尝试“按某一行同步”</string>
+    <string name="player_sync_auto_failed">无法读取此视频的声音</string>
+    <string name="player_sync_auto_no_decoder">此设备无法解码此视频的声音</string>
     <string name="player_sync_first_set">已设定第一行。请继续播放并选择第二行。</string>
     <string name="player_sync_too_close">请选择与第一行相隔至少 2 分钟的一行</string>
     <string name="player_sync_implausible">这两行不符合任何一种帧率。请试试其他行。</string>

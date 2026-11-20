@@ -804,6 +804,15 @@
     <string name="player_sync_no_lines">Aucune ligne de sous-titres près de ce moment</string>
     <string name="player_sync_applied">Sous-titres synchronisés</string>
     <string name="player_sync_reset_done">Décalage réinitialisé</string>
+    <string name="player_sync_auto">Synchroniser automatiquement</string>
+    <string name="player_sync_auto_hint">Écoute le son de la vidéo et cale les sous-titres sur la parole</string>
+    <string name="player_sync_auto_listening">Écoute… %1$d%%</string>
+    <string name="player_sync_auto_matching">Comparaison…</string>
+    <string name="player_sync_auto_cancel">Annuler</string>
+    <string name="player_sync_auto_done">Synchronisé : %1$s</string>
+    <string name="player_sync_auto_no_match">Aucune correspondance fiable : essayez Synchroniser sur une ligne</string>
+    <string name="player_sync_auto_failed">Impossible de lire le son de cette vidéo</string>
+    <string name="player_sync_auto_no_decoder">Cet appareil ne peut pas décoder le son de cette vidéo</string>
     <string name="player_sync_first_set">Première ligne définie. Avance et choisis la deuxième.</string>
     <string name="player_sync_too_close">Choisis une ligne située au moins 2 minutes après la première</string>
     <string name="player_sync_implausible">Ces deux lignes ne correspondent à aucune cadence. Essaie d\'autres lignes.</string>

@@ -769,6 +769,15 @@
     <string name="player_sync_no_lines">No subtitle lines near this moment</string>
     <string name="player_sync_applied">Subtitles synced</string>
     <string name="player_sync_reset_done">Timing reset</string>
+    <string name="player_sync_auto">Sync automatically</string>
+    <string name="player_sync_auto_hint">Listens to the video\'s sound and lines the subtitles up with the speech</string>
+    <string name="player_sync_auto_listening">Listening… %1$d%%</string>
+    <string name="player_sync_auto_matching">Matching…</string>
+    <string name="player_sync_auto_cancel">Cancel</string>
+    <string name="player_sync_auto_done">Synced: %1$s</string>
+    <string name="player_sync_auto_no_match">No confident match — try Sync to a line</string>
+    <string name="player_sync_auto_failed">Couldn\'t read the sound of this video</string>
+    <string name="player_sync_auto_no_decoder">This device can\'t decode this video\'s sound</string>
     <string name="player_sync_first_set">First line set. Play on and pick the second.</string>
     <string name="player_sync_too_close">Pick a line at least 2 minutes from the first</string>
     <string name="player_sync_implausible">Those two lines do not fit one frame rate. Try other lines.</string>

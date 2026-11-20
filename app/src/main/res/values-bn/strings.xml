@@ -767,6 +767,15 @@
     <string name="player_sync_no_lines">এই মুহূর্তের কাছে কোনো সাবটাইটেল লাইন নেই</string>
     <string name="player_sync_applied">সাবটাইটেল সিঙ্ক হয়েছে</string>
     <string name="player_sync_reset_done">টাইমিং রিসেট হয়েছে</string>
+    <string name="player_sync_auto">স্বয়ংক্রিয়ভাবে সিঙ্ক করুন</string>
+    <string name="player_sync_auto_hint">ভিডিওর শব্দ শুনে সাবটাইটেলকে কথার সঙ্গে মেলায়</string>
+    <string name="player_sync_auto_listening">শোনা হচ্ছে… %1$d%%</string>
+    <string name="player_sync_auto_matching">মেলানো হচ্ছে…</string>
+    <string name="player_sync_auto_cancel">বাতিল</string>
+    <string name="player_sync_auto_done">সিঙ্ক হয়েছে: %1$s</string>
+    <string name="player_sync_auto_no_match">নিশ্চিত মিল পাওয়া যায়নি — \"একটি লাইনে সিঙ্ক\" চেষ্টা করুন</string>
+    <string name="player_sync_auto_failed">এই ভিডিওর শব্দ পড়া যায়নি</string>
+    <string name="player_sync_auto_no_decoder">এই ডিভাইস এই ভিডিওর শব্দ ডিকোড করতে পারে না</string>
     <string name="player_sync_first_set">প্রথম লাইন ঠিক হয়েছে। চালিয়ে যান ও দ্বিতীয়টি বেছে নিন।</string>
     <string name="player_sync_too_close">প্রথমটির অন্তত ২ মিনিট দূরের একটি লাইন বেছে নিন</string>
     <string name="player_sync_implausible">এই দুটি লাইন কোনো একটি ফ্রেম রেটের সঙ্গে মেলে না। অন্য লাইন চেষ্টা করুন।</string>

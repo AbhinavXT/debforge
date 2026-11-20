@@ -804,6 +804,15 @@
     <string name="player_sync_no_lines">Nenhuma linha de legenda perto deste momento</string>
     <string name="player_sync_applied">Legendas sincronizadas</string>
     <string name="player_sync_reset_done">Sincronia redefinida</string>
+    <string name="player_sync_auto">Sincronizar automaticamente</string>
+    <string name="player_sync_auto_hint">Ouve o som do vídeo e alinha as legendas com a fala</string>
+    <string name="player_sync_auto_listening">Ouvindo… %1$d%%</string>
+    <string name="player_sync_auto_matching">Comparando…</string>
+    <string name="player_sync_auto_cancel">Cancelar</string>
+    <string name="player_sync_auto_done">Sincronizado: %1$s</string>
+    <string name="player_sync_auto_no_match">Sem correspondência confiável — tente Sincronizar com uma linha</string>
+    <string name="player_sync_auto_failed">Não foi possível ler o som deste vídeo</string>
+    <string name="player_sync_auto_no_decoder">Este dispositivo não consegue decodificar o som deste vídeo</string>
     <string name="player_sync_first_set">Primeira linha definida. Continue e escolha a segunda.</string>
     <string name="player_sync_too_close">Escolha uma linha pelo menos 2 minutos depois da primeira</string>
     <string name="player_sync_implausible">Essas duas linhas não combinam com uma taxa de quadros. Tente outras linhas.</string>

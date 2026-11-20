@@ -804,6 +804,15 @@
     <string name="player_sync_no_lines">No hay líneas de subtítulos cerca de este momento</string>
     <string name="player_sync_applied">Subtítulos sincronizados</string>
     <string name="player_sync_reset_done">Sincronización restablecida</string>
+    <string name="player_sync_auto">Sincronizar automáticamente</string>
+    <string name="player_sync_auto_hint">Escucha el sonido del vídeo y ajusta los subtítulos al habla</string>
+    <string name="player_sync_auto_listening">Escuchando… %1$d%%</string>
+    <string name="player_sync_auto_matching">Comparando…</string>
+    <string name="player_sync_auto_cancel">Cancelar</string>
+    <string name="player_sync_auto_done">Sincronizado: %1$s</string>
+    <string name="player_sync_auto_no_match">Sin coincidencia fiable: prueba Sincronizar con una línea</string>
+    <string name="player_sync_auto_failed">No se pudo leer el sonido de este vídeo</string>
+    <string name="player_sync_auto_no_decoder">Este dispositivo no puede decodificar el sonido de este vídeo</string>
     <string name="player_sync_first_set">Primera línea fijada. Sigue y elige la segunda.</string>
     <string name="player_sync_too_close">Elige una línea al menos 2 minutos después de la primera</string>
     <string name="player_sync_implausible">Esas dos líneas no encajan con una misma velocidad de fotogramas. Prueba con otras.</string>

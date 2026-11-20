@@ -767,6 +767,15 @@
     <string name="player_sync_no_lines">Bu ana yakın altyazı satırı yok</string>
     <string name="player_sync_applied">Altyazılar eşitlendi</string>
     <string name="player_sync_reset_done">Zamanlama sıfırlandı</string>
+    <string name="player_sync_auto">Otomatik eşitle</string>
+    <string name="player_sync_auto_hint">Videonun sesini dinler ve altyazıyı konuşmayla hizalar</string>
+    <string name="player_sync_auto_listening">Dinleniyor… %1$d%%</string>
+    <string name="player_sync_auto_matching">Eşleştiriliyor…</string>
+    <string name="player_sync_auto_cancel">İptal</string>
+    <string name="player_sync_auto_done">Eşitlendi: %1$s</string>
+    <string name="player_sync_auto_no_match">Güvenilir eşleşme yok — \"Bir satıra göre eşitle\"yi deneyin</string>
+    <string name="player_sync_auto_failed">Bu videonun sesi okunamadı</string>
+    <string name="player_sync_auto_no_decoder">Bu cihaz bu videonun sesini çözemiyor</string>
     <string name="player_sync_first_set">İlk satır belirlendi. İzlemeye devam et ve ikinciyi seç.</string>
     <string name="player_sync_too_close">İlkinden en az 2 dakika uzakta bir satır seç</string>
     <string name="player_sync_implausible">Bu iki satır tek bir kare hızına uymuyor. Başka satırlar dene.</string>
