@@ -42,6 +42,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -65,6 +66,7 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.compose.currentStateAsState
 import androidx.media3.common.util.UnstableApi
 import com.abhinavxt.debforge.R
 import com.abhinavxt.debforge.data.playback.Playlist
@@ -81,7 +83,12 @@ import com.abhinavxt.debforge.ui.youtube.YouTubeAddToPlaylistFlow
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.math.roundToInt
+
+/** After the floating window: how long to wait for the full-size configuration, then a moment more for a second step. */
+private const val PIP_SETTLE_MS = 1_000L
+private const val PIP_SETTLE_EXTRA_MS = 300L
 
 /** What the engine asked of the screen that needs the user's attention (dialogs over the app). */
 private sealed interface HostDialog {
@@ -137,6 +144,8 @@ fun InAppVideoHost(
     isTablet: Boolean,
     /** A channel name tapped on the watch page: the app opens the channel (the video minimises first). */
     onChannel: (name: String, url: String) -> Unit,
+    /** The mini bar's swipe: a swipe that starts on the small picture (over the bar's slot) moves the bar too. */
+    miniSwipe: MiniBarSwipe = remember { MiniBarSwipe() },
     /** The app is in the floating window: only the picture, filling it. */
     pip: Boolean = rememberInPip(),
 ) {
@@ -145,7 +154,7 @@ fun InAppVideoHost(
     val mode by launcher.mode.collectAsStateWithLifecycle()
     val shown = active ?: return
     val shownMode = mode ?: return
-    key(shown.token) { ActiveVideoHost(viewModel, watchViewModel, shown, shownMode, miniSlot, isTablet, onChannel, pip) }
+    key(shown.token) { ActiveVideoHost(viewModel, watchViewModel, shown, shownMode, miniSlot, isTablet, onChannel, pip, miniSwipe) }
 }
 
 @androidx.annotation.OptIn(UnstableApi::class)
@@ -159,6 +168,7 @@ private fun ActiveVideoHost(
     isTablet: Boolean,
     onChannel: (String, String) -> Unit,
     pip: Boolean,
+    miniSwipe: MiniBarSwipe,
 ) {
     val context = LocalContext.current
     val activity = remember { context.findComponentActivity() } ?: return
@@ -287,34 +297,72 @@ private fun ActiveVideoHost(
     var videoPortrait by remember { mutableStateOf(false) }
     var sizeKnown by remember { mutableStateOf(false) }
     var lock by remember { mutableStateOf(OrientationLock.NONE) }
-    var lockedFrom by remember { mutableStateOf(mode) }
-    if (lockedFrom != mode) {
+    // Picture-in-picture: the small window is no rotated phone. The rules wait while in it and until the first
+    // configuration after it (the full-size window), so expanding returns to the mode it had before.
+    var settlingAfterPip by remember { mutableStateOf(false) }
+    var wasPip by remember { mutableStateOf(pip) }
+    if (wasPip != pip) {
+        if (!pip) settlingAfterPip = true
+        wasPip = pip
+    }
+    val configurationNow by rememberUpdatedState(configuration)
+    LaunchedEffect(settlingAfterPip) {
+        if (!settlingAfterPip) return@LaunchedEffect
+        val left = configurationNow
+        withTimeoutOrNull(PIP_SETTLE_MS) { snapshotFlow { configurationNow }.first { it !== left } }
+        delay(PIP_SETTLE_EXTRA_MS) // the window can report its size and its orientation in two steps
+        settlingAfterPip = false
+    }
+    val rulesApply = orientationRulesApply(pip, settlingAfterPip)
+    // null: this video has just opened. Opened straight in full screen (the setting), it takes the lock the button would.
+    var lockedFrom by remember { mutableStateOf<VideoMode?>(null) }
+    if (lockedFrom != mode && rulesApply) {
         // Decided as the mode changes (before the plan below reads it), whichever way full screen was entered or left.
-        if (mode == VideoMode.FULL) lock = lockOnEnterFull(videoPortrait, landscape)
-        else if (lockedFrom == VideoMode.FULL) lock = lockOnExitFull(smallestWidth, landscape)
+        val from = lockedFrom
+        if (from == null) lock = lockOnOpen(mode, videoPortrait, landscape)
+        else if (mode == VideoMode.FULL) lock = lockOnEnterFull(videoPortrait, landscape)
+        else if (from == VideoMode.FULL) lock = lockOnExitFull(smallestWidth, landscape)
         lockedFrom = mode
     }
-    val plan = orientationPlan(mode, smallestWidth, autoRotate, videoPortrait, landscape, lock, sizeKnown)
+    var lastRequested by remember { mutableIntStateOf(android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED) }
+    val plan = if (rulesApply) orientationPlan(mode, smallestWidth, autoRotate, videoPortrait, landscape, lock, sizeKnown)
+    else OrientationPlan(mode, lastRequested) // in (or just out of) the floating window: nothing changes
     LaunchedEffect(plan.mode, mode) { if (plan.mode != mode) launcher.dispatch(VideoModeEvent.Rotated(landscape)) }
-    LaunchedEffect(plan.requested) { activity.requestedOrientation = plan.requested }
+    LaunchedEffect(plan.requested) {
+        lastRequested = plan.requested
+        activity.requestedOrientation = plan.requested
+    }
     DisposableEffect(Unit) { onDispose { activity.requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED } }
     // A portrait picture found out late: no landscape hold after all.
     LaunchedEffect(videoPortrait) { if (videoPortrait && lock == OrientationLock.LANDSCAPE) lock = OrientationLock.NONE }
+    // Auto-rotate switched off in full screen that the sensor turned sideways: stay sideways, as the button would.
+    LaunchedEffect(autoRotate) { if (!autoRotate) lock = lockOnAutoRotateOff(lock, modeNow, videoPortrait) }
     val landscapeNow by rememberUpdatedState(landscape)
     LaunchedEffect(rotateScreenRequests) {
         if (rotateScreenRequests > 0 && modeNow == VideoMode.FULL) lock = lockOnRotateScreen(landscapeNow)
     }
     val lockNow by rememberUpdatedState(lock)
     val autoRotateNow by rememberUpdatedState(autoRotate)
-    DisposableEffect(lock != OrientationLock.NONE) {
+    // The sensor is read only while a lock waits on it and the app is on screen (not in the background or the window).
+    val started = lifecycle.currentStateAsState().value.isAtLeast(Lifecycle.State.STARTED)
+    DisposableEffect(lock != OrientationLock.NONE && started && rulesApply) {
         val listener = object : android.view.OrientationEventListener(context) {
             override fun onOrientationChanged(degrees: Int) { lock = lockAfterSensor(lockNow, holdOf(degrees), autoRotateNow) }
         }
-        if (lock != OrientationLock.NONE && listener.canDetectOrientation()) listener.enable()
+        if (lock != OrientationLock.NONE && started && rulesApply && listener.canDetectOrientation()) listener.enable()
         onDispose { listener.disable() }
     }
     // With auto-rotate off the portrait hold simply ends after a moment.
     LaunchedEffect(lock, autoRotate) { if (lock == OrientationLock.PORTRAIT && !autoRotate) { delay(2_000); lock = OrientationLock.NONE } }
+    // The watch page opened from a search: the keyboard must not stay up over it.
+    val keyboard = androidx.compose.ui.platform.LocalSoftwareKeyboardController.current
+    val focusManager = androidx.compose.ui.platform.LocalFocusManager.current
+    LaunchedEffect(mode != VideoMode.MINI) {
+        if (mode != VideoMode.MINI) {
+            focusManager.clearFocus(force = true)
+            keyboard?.hide()
+        }
+    }
     // Over the black strip behind the video the status bar icons must be light, whatever the app's theme.
     DisposableEffect(mode != VideoMode.MINI) {
         val controller = WindowCompat.getInsetsController(activity.window, activity.window.decorView)
@@ -528,17 +576,20 @@ private fun ActiveVideoHost(
                     layout(w, h) { placeable.place(0, 0) }
                 },
         )
-        // A tap on the small picture opens the watch page (its own touch handling is off in the mini mode).
+        // A tap on the small picture opens the watch page (its own touch handling is off in the mini mode), and a
+        // swipe that starts on it is the bar's swipe. Placed where the picture is without the swipe's offset, so the
+        // touch does not move under the finger.
         if (mode == VideoMode.MINI && !pip) {
             Box(
                 Modifier
-                    .offset { rectNow().let { IntOffset(it.left.roundToInt(), it.top.roundToInt()) } }
+                    .offset { rectNow().let { IntOffset((it.left - miniSwipe.dragX).roundToInt(), it.top.roundToInt()) } }
                     .layout { measurable, _ ->
                         val w = rectNow().width.roundToInt().coerceAtLeast(1)
                         val h = rectNow().height.roundToInt().coerceAtLeast(1)
                         val placeable = measurable.measure(Constraints.fixed(w, h))
                         layout(w, h) { placeable.place(0, 0) }
                     }
+                    .miniBarSwipe(miniSwipe)
                     .pointerInput(Unit) { detectTapGestures { launcher.dispatch(VideoModeEvent.Expand) } }
             )
         }

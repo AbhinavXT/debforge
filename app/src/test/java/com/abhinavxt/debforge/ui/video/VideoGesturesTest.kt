@@ -81,4 +81,35 @@ class VideoGesturesTest {
         assertFalse(relatedStillWanted(from = 7, now = null)) // closed meanwhile
         assertFalse(relatedStillWanted(from = 7, now = 8)) // another video opened meanwhile
     }
+
+    @Test fun openingStraightInFullTakesTheButtonsLock() {
+        // Portrait phone, landscape (or not yet known) picture: held sideways like the full screen button.
+        assertEquals(OrientationLock.LANDSCAPE, lockOnOpen(VideoMode.FULL, videoPortrait = false, landscapeNow = false))
+        assertEquals(OrientationLock.NONE, lockOnOpen(VideoMode.FULL, videoPortrait = true, landscapeNow = false))
+        assertEquals(OrientationLock.NONE, lockOnOpen(VideoMode.FULL, videoPortrait = false, landscapeNow = true))
+        assertEquals(OrientationLock.NONE, lockOnOpen(VideoMode.WATCH, videoPortrait = false, landscapeNow = false))
+        // With that lock, the portrait phone does not drop back to the watch page, and turns sideways once the size is known.
+        val lock = lockOnOpen(VideoMode.FULL, false, false)
+        assertEquals(OrientationPlan(VideoMode.FULL, ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED),
+            orientationPlan(VideoMode.FULL, 360, autoRotate = true, videoPortrait = false, landscape = false, lock = lock, sizeKnown = false))
+        assertEquals(OrientationPlan(VideoMode.FULL, ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE),
+            orientationPlan(VideoMode.FULL, 360, autoRotate = false, videoPortrait = false, landscape = false, lock = lock))
+        // A tablet too.
+        assertEquals(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE,
+            orientationPlan(VideoMode.FULL, 800, autoRotate = true, videoPortrait = false, landscape = false, lock = lock).requested)
+    }
+
+    @Test fun autoRotateOffInSensorFullKeepsLandscape() {
+        assertEquals(OrientationLock.LANDSCAPE, lockOnAutoRotateOff(OrientationLock.NONE, VideoMode.FULL, videoPortrait = false))
+        assertEquals(OrientationLock.NONE, lockOnAutoRotateOff(OrientationLock.NONE, VideoMode.FULL, videoPortrait = true))
+        assertEquals(OrientationLock.NONE, lockOnAutoRotateOff(OrientationLock.NONE, VideoMode.WATCH, videoPortrait = false))
+        assertEquals(OrientationLock.TURNED_PORTRAIT, lockOnAutoRotateOff(OrientationLock.TURNED_PORTRAIT, VideoMode.FULL, false))
+        assertEquals(OrientationLock.PORTRAIT, lockOnAutoRotateOff(OrientationLock.PORTRAIT, VideoMode.WATCH, false))
+    }
+
+    @Test fun noOrientationRulesInOrJustOutOfTheFloatingWindow() {
+        assertTrue(orientationRulesApply(pip = false, settlingAfterPip = false))
+        assertFalse(orientationRulesApply(pip = true, settlingAfterPip = false))
+        assertFalse(orientationRulesApply(pip = false, settlingAfterPip = true))
+    }
 }

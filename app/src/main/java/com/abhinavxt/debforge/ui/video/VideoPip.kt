@@ -41,6 +41,13 @@ internal fun shouldEnterPip(
     webFullscreen: Boolean,
 ): Boolean = supported && allowed && videoShown && playing && !webFullscreen
 
+/**
+ * Pure: Android 11 (no automatic entry) enters the floating window when the user leaves, but not when the app itself
+ * opened another activity (share sheet, file picker, external player): that is not leaving.
+ */
+internal fun pipOnLeaveHint(sdk: Int, canEnter: Boolean, ownActivityStarting: Boolean): Boolean =
+    sdk < Build.VERSION_CODES.S && canEnter && !ownActivityStarting
+
 /** The mode shown after the floating window is expanded: the mini bar opens the watch page, the others stay. */
 internal fun modeAfterPipExpand(mode: VideoMode): VideoMode = if (mode == VideoMode.MINI) VideoMode.WATCH else mode
 
@@ -131,9 +138,18 @@ internal class VideoPip(
         runCatching { activity.setPictureInPictureParams(params()) }
     }
 
+    /** The app is opening another activity of its own: until it is back, that is not the user leaving. */
+    private var ownActivityStarting = false
+
+    /** Called by the activity before it starts any activity (startActivity, result launchers, intent senders). */
+    fun ownActivityStarting() { ownActivityStarting = true }
+
+    /** The activity is in front again. */
+    fun resumed() { ownActivityStarting = false }
+
     /** Android 11 has no automatic entry: enter when the user leaves. */
     fun onUserLeaveHint() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S && canEnter()) {
+        if (pipOnLeaveHint(Build.VERSION.SDK_INT, canEnter(), ownActivityStarting)) {
             runCatching { activity.enterPictureInPictureMode(params()) }
         }
     }

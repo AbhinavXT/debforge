@@ -191,10 +191,15 @@ fun HomeScreen(signedIn: Boolean) {
     val videoRevision by videoLauncher.revision.collectAsStateWithLifecycle()
     val videoShown = videoActive != null
     val videoExpanded = videoMode == VideoMode.WATCH || videoMode == VideoMode.FULL
-    val isTablet = LocalConfiguration.current.smallestScreenWidthDp >= 600
+    // The floating window's small size says nothing about the device: it keeps what it was before.
+    val inPip = com.abhinavxt.debforge.ui.video.rememberInPip()
+    val tabletBeforePip = remember { booleanArrayOf(false) }
+    val isTablet = if (inPip) tabletBeforePip[0] else (LocalConfiguration.current.smallestScreenWidthDp >= 600).also { tabletBeforePip[0] = it }
     LaunchedEffect(isTablet) { videoLauncher.isTablet = isTablet }
     // Written while the mini bar moves (every frame of its slide): kept as a State and read only by the video host.
     val videoSlot = remember { mutableStateOf(androidx.compose.ui.geometry.Rect.Zero) }
+    // The mini bar's sideways swipe, run by the bar and by the picture sitting on its slot.
+    val videoMiniSwipe = remember { com.abhinavxt.debforge.ui.video.MiniBarSwipe() }
     var videoBarTitle by remember { mutableStateOf("") }
     LaunchedEffect(videoActive, videoRevision) { if (videoShown) videoBarTitle = videoLauncher.session.title }
     val msgFileMissing = stringResource(R.string.dl_file_missing)
@@ -491,6 +496,7 @@ fun HomeScreen(signedIn: Boolean) {
                 onExpand = { videoLauncher.dispatch(VideoModeEvent.Expand) },
                 onVideoSlot = { videoSlot.value = it },
                 toggleFocus = videoMiniFocus,
+                swipe = videoMiniSwipe,
             )
         }
     }
@@ -641,6 +647,7 @@ fun HomeScreen(signedIn: Boolean) {
             miniSlot = { videoSlot.value },
             isTablet = isTablet,
             onChannel = openChannel,
+            miniSwipe = videoMiniSwipe,
         )
     }
     }

@@ -95,6 +95,36 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    // Every activity the app starts goes through these two (startActivity and the result launchers included):
+    // Android 11's leave hint must not take that for the user leaving.
+    @Deprecated("Deprecated in Java")
+    @Suppress("DEPRECATION")
+    override fun startActivityForResult(intent: Intent, requestCode: Int, options: android.os.Bundle?) {
+        if (::videoPip.isInitialized) videoPip.ownActivityStarting()
+        // Nothing started (no app for it): nothing will resume us, so the flag must not linger.
+        try { super.startActivityForResult(intent, requestCode, options) } catch (e: RuntimeException) { if (::videoPip.isInitialized) videoPip.resumed(); throw e }
+    }
+
+    @Deprecated("Deprecated in Java")
+    @Suppress("DEPRECATION")
+    override fun startIntentSenderForResult(
+        intent: android.content.IntentSender, requestCode: Int, fillInIntent: Intent?, flagsMask: Int, flagsValues: Int,
+        extraFlags: Int, options: android.os.Bundle?,
+    ) {
+        if (::videoPip.isInitialized) videoPip.ownActivityStarting()
+        try {
+            super.startIntentSenderForResult(intent, requestCode, fillInIntent, flagsMask, flagsValues, extraFlags, options)
+        } catch (e: Exception) {
+            if (::videoPip.isInitialized) videoPip.resumed()
+            throw e
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        videoPip.resumed()
+    }
+
     /** Android 11 and older: leaving while a video plays enters the floating window (12+ enters by itself). */
     override fun onUserLeaveHint() {
         super.onUserLeaveHint()

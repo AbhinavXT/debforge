@@ -36,4 +36,11 @@ class VideoPipTest {
         assertEquals(VideoMode.WATCH, modeAfterPipExpand(VideoMode.WATCH))
         assertEquals(VideoMode.FULL, modeAfterPipExpand(VideoMode.FULL))
     }
+
+    @Test fun leaveHintIgnoresTheAppsOwnActivities() {
+        assertTrue(pipOnLeaveHint(30, canEnter = true, ownActivityStarting = false))
+        assertFalse(pipOnLeaveHint(30, canEnter = true, ownActivityStarting = true))
+        assertFalse(pipOnLeaveHint(30, canEnter = false, ownActivityStarting = false))
+        assertFalse(pipOnLeaveHint(31, canEnter = true, ownActivityStarting = false)) // 12+ enters by itself
+    }
 }

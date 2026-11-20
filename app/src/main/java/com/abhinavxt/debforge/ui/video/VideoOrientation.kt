@@ -59,6 +59,23 @@ fun orientationPlan(
 fun lockOnEnterFull(videoPortrait: Boolean, landscapeNow: Boolean): OrientationLock =
     if (videoPortrait || landscapeNow) OrientationLock.NONE else OrientationLock.LANDSCAPE
 
+/**
+ * Pure: the lock a video starts with. Opened straight in full screen (the "open videos in full screen" setting) it
+ * is the button's: a landscape picture turns the screen sideways (once its size is known), a portrait one does not.
+ */
+fun lockOnOpen(mode: VideoMode, videoPortrait: Boolean, landscapeNow: Boolean): OrientationLock =
+    if (mode == VideoMode.FULL) lockOnEnterFull(videoPortrait, landscapeNow) else OrientationLock.NONE
+
+/**
+ * Pure: the lock when the system's auto-rotate is switched off. Full screen of a landscape picture that the sensor
+ * turned sideways (no lock) keeps landscape, as full screen entered by the button does; anything else is unchanged.
+ */
+fun lockOnAutoRotateOff(lock: OrientationLock, mode: VideoMode, videoPortrait: Boolean): OrientationLock =
+    if (mode == VideoMode.FULL && lock == OrientationLock.NONE && !videoPortrait) OrientationLock.LANDSCAPE else lock
+
+/** Pure: do the orientation rules run? Not in the floating window, nor until the first configuration after it. */
+fun orientationRulesApply(pip: Boolean, settlingAfterPip: Boolean): Boolean = !pip && !settlingAfterPip
+
 /** Pure: the lock to start when full screen is left ([landscapeNow]: the screen is sideways, on a phone it must not bounce back in). */
 fun lockOnExitFull(smallestWidthDp: Int, landscapeNow: Boolean): OrientationLock =
     if (smallestWidthDp < TABLET_SMALLEST_WIDTH_DP && landscapeNow) OrientationLock.PORTRAIT else OrientationLock.NONE
