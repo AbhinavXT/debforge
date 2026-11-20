@@ -288,7 +288,16 @@ private fun ActiveVideoHost(
     DisposableEffect(mode == VideoMode.FULL) {
         val full = mode == VideoMode.FULL
         if (full) FullScreen.bars(activity, false)
-        onDispose { if (full) FullScreen.bars(activity, true) }
+        // The screen turning in full screen (it is already black and full) cross-fades instead of the default spin.
+        val window = activity.window
+        val before = window.attributes.rotationAnimation
+        if (full) window.attributes = window.attributes.apply { rotationAnimation = android.view.WindowManager.LayoutParams.ROTATION_ANIMATION_CROSSFADE }
+        onDispose {
+            if (full) {
+                FullScreen.bars(activity, true)
+                window.attributes = window.attributes.apply { rotationAnimation = before }
+            }
+        }
     }
     // --- orientation (section 4): the plan from the settings, the sensor and the lock the button / Back asked for ---
     val configuration = androidx.compose.ui.platform.LocalConfiguration.current
@@ -470,6 +479,7 @@ private fun ActiveVideoHost(
         val target = videoRect(if (pip) VideoMode.FULL else mode, width, height, top, isTablet, slot)
         val watchRect = videoRect(VideoMode.WATCH, width, height, top, isTablet, slot)
         val miniRect = videoRect(VideoMode.MINI, width, height, top, isTablet, slot)
+        val fullRect = videoRect(VideoMode.FULL, width, height, top, isTablet, slot)
         // The picture's rectangle: animated between modes, following the finger while the watch page is dragged down.
         val rectAnim = remember { androidx.compose.animation.core.Animatable(target, Rect.VectorConverter) }
         val pageAlpha = remember { androidx.compose.animation.core.Animatable(1f) }
@@ -480,6 +490,13 @@ private fun ActiveVideoHost(
         // page and only its View transform changes (no measuring each frame); then the layout catches up in one snapshot.
         var heldLayout by remember { mutableStateOf<Rect?>(null) }
         var settleGen by remember { mutableIntStateOf(0) }
+        // A swipe up to full screen: [upActive] while the picture grows (finger or settle), [upProgress] 0..1, and the black
+        // scrim stays [scrimHold] a moment after the mode changes, until full screen's own black is in.
+        var upActive by remember { mutableStateOf(false) }
+        var upProgress by remember { mutableFloatStateOf(0f) }
+        var scrimHold by remember { mutableStateOf(false) }
+        val upTravel = enterFullTravel(watchRect, fullRect)
+        val upLatest = rememberUpdatedState(Triple(watchRect, fullRect, upTravel))
         val targetNow by rememberUpdatedState(target)
         var lastMode by remember { mutableStateOf(if (pip) VideoMode.FULL else mode) }
         LaunchedEffect(target, mode, pip) {
@@ -501,13 +518,16 @@ private fun ActiveVideoHost(
             if (dragging) {
                 val (watch, mini, trav) = dragLatest.value
                 androidx.compose.ui.geometry.lerp(watch, mini, (dragOffset / trav).coerceIn(0f, 1f))
+            } else if (upActive) {
+                val (watch, full, _) = upLatest.value
+                enterFullRect(watch, full, upProgress)
             } else rectAnim.value
         }
         val settleJobs = remember { arrayOfNulls<kotlinx.coroutines.Job>(1) }
         val drag = remember {
             object : VideoSurface.HostDrag {
                 fun begin() {
-                    if (modeNow == VideoMode.WATCH && !dragging) {
+                    if (modeNow == VideoMode.WATCH && !dragging && !upActive) {
                         // Caught while springing back: carry on from where the picture is.
                         val resumeFrom = if (heldLayout != null) (rectAnim.value.top - dragLatest.value.first.top).coerceAtLeast(0f) else 0f
                         settleGen++
@@ -522,9 +542,49 @@ private fun ActiveVideoHost(
                 fun by(dy: Float) { if (dragging) dragOffset = (dragOffset + dy).coerceAtLeast(0f) }
                 override fun start() = begin()
                 override fun move(dy: Float) = by(dy)
-                override fun swipeUp(up: Float, velocityY: Float) {
-                    val minPx = ENTER_FULL_DP * activity.resources.displayMetrics.density
-                    if (modeNow == VideoMode.WATCH && !dragging && shouldEnterFull(up, velocityY, minPx)) launcher.dispatch(VideoModeEvent.EnterFull)
+                override fun upStart() {
+                    if (modeNow != VideoMode.WATCH || dragging || upActive) return
+                    settleGen++
+                    settleJobs[0]?.cancel()
+                    heldLayout = upLatest.value.first
+                    upProgress = 0f
+                    upActive = true
+                    session.controls.visible = false
+                    surface.playerView.hideController()
+                }
+                override fun upMove(up: Float) {
+                    if (upActive && up.isFinite()) upProgress = (upProgress + up / upLatest.value.third).coerceIn(0f, 1f)
+                }
+                override fun upEnd(velocityY: Float, cancelled: Boolean) {
+                    if (!upActive) return
+                    val travel = upLatest.value.third
+                    val commit = !cancelled && shouldEnterFull(upProgress, velocityY)
+                    val gen = ++settleGen
+                    settleJobs[0] = scope.launch {
+                        try {
+                            val spring = androidx.compose.animation.core.spring<Float>(dampingRatio = 1f, stiffness = 400f)
+                            val end = if (commit) 1f else 0f
+                            if (fast) upProgress = end
+                            else androidx.compose.animation.core.animate(
+                                upProgress, end, enterFullSettleVelocity(velocityY, travel, commit), spring,
+                            ) { v, _ -> upProgress = v }
+                            if (commit) {
+                                // Full and black first; only then the mode changes, and with it the request to turn the screen.
+                                scrimHold = true
+                                pageAlpha.snapTo(0f)
+                                launcher.dispatch(VideoModeEvent.EnterFull)
+                                withTimeoutOrNull(1_000) { snapshotFlow { modeNow }.first { it == VideoMode.FULL } }
+                                scope.launch { delay(250); scrimHold = false }
+                            }
+                        } finally {
+                            if (gen == settleGen) {
+                                kotlinx.coroutines.withContext(kotlinx.coroutines.NonCancellable) { rectAnim.snapTo(targetNow) }
+                                heldLayout = null
+                                upActive = false
+                                upProgress = 0f
+                            }
+                        }
+                    }
                 }
                 override fun end(velocityY: Float) {
                     if (!dragging) return
@@ -602,7 +662,13 @@ private fun ActiveVideoHost(
         AnimatedVisibility(visible = mode == VideoMode.WATCH && !pip, enter = fadeIn(tween(220)), exit = fadeOut(tween(160))) {
             Surface(
                 Modifier.fillMaxSize()
-                    .graphicsLayer { alpha = if (dragging) 1f - (dragOffset / travel).coerceIn(0f, 1f) else pageAlpha.value }
+                    .graphicsLayer {
+                        alpha = when {
+                            dragging -> 1f - (dragOffset / travel).coerceIn(0f, 1f)
+                            upActive -> enterFullPageAlpha(upProgress)
+                            else -> pageAlpha.value
+                        }
+                    }
                     .nestedScroll(pageScroll),
                 color = MaterialTheme.colorScheme.background,
             ) {
@@ -629,6 +695,10 @@ private fun ActiveVideoHost(
         }
         AnimatedVisibility(visible = mode == VideoMode.FULL || pip, enter = fadeIn(tween(160)), exit = fadeOut(tween(160))) {
             Box(Modifier.fillMaxSize().background(Color.Black))
+        }
+        // The black that comes in as the picture grows under a swipe up.
+        if (upActive || scrimHold) {
+            Box(Modifier.fillMaxSize().graphicsLayer { alpha = if (upActive) enterFullScrimAlpha(upProgress) else 1f }.background(Color.Black))
         }
 
         // The mini bar's swipe moves the picture with a View transform on the surface itself, set from the same state in the
@@ -658,10 +728,12 @@ private fun ActiveVideoHost(
             if (!pip) return@LaunchedEffect
             miniSwipe.reset()
             // ...and a watch-page drag too: back to the watch layout with no transform left over.
-            if (dragging || heldLayout != null) {
+            if (dragging || heldLayout != null || upActive) {
                 settleGen++
                 settleJobs[0]?.cancel()
                 dragging = false
+                upActive = false
+                upProgress = 0f
                 rectAnim.snapTo(targetNow)
                 heldLayout = null
                 pageAlpha.snapTo(1f)
@@ -707,7 +779,7 @@ private fun ActiveVideoHost(
         )
         // While the picture is held (dragged, or settling after it) it is drawn away from its layout bounds, which is
         // where touches are tested: this region over where it is drawn lets it be caught there.
-        if (mode == VideoMode.WATCH && !pip && heldLayout != null) {
+        if (mode == VideoMode.WATCH && !pip && heldLayout != null && !upActive) {
             val held = heldLayout!!
             Box(
                 Modifier

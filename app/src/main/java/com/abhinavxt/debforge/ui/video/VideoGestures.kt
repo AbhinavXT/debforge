@@ -16,15 +16,43 @@ internal fun shouldMinimise(offset: Float, velocity: Float, travel: Float): Bool
     return offset / travel >= MINIMISE_FRACTION
 }
 
-/** How far up (dp) a swipe on the watch page's picture must go to enter full screen on release. */
-internal const val ENTER_FULL_DP = 64f
+/** Share of the way to full screen a swipe up must reach to commit on release. */
+internal const val ENTER_FULL_FRACTION = 0.3f
 /** An upward fling faster than this (px/s) enters full screen whatever the distance. */
 internal const val ENTER_FULL_FLING = 1200f
+/** The finger travels this share of the picture's growth to reach full (the picture grows faster than the finger). */
+internal const val ENTER_FULL_TRAVEL = 0.4f
 
-/** Pure: does releasing an upward drag of [up] px (up is positive) at [velocity] px/s (down is positive) enter full screen? */
-internal fun shouldEnterFull(up: Float, velocity: Float, minDistance: Float): Boolean {
-    if (!up.isFinite() || !velocity.isFinite() || !minDistance.isFinite() || up <= 0f) return false
-    return up >= minDistance || velocity <= -ENTER_FULL_FLING
+/** Pure: how far (px) the finger goes for the picture to be fully grown, from the watch rect to the full rect. */
+internal fun enterFullTravel(watch: Rect, full: Rect): Float =
+    ((full.bottom - watch.bottom) * ENTER_FULL_TRAVEL).takeIf { it.isFinite() }?.coerceAtLeast(1f) ?: 1f
+
+/** Pure: the swipe's progress 0..1 for a finger that moved [up] px (up positive) of [travel] px. */
+internal fun enterFullProgress(up: Float, travel: Float): Float =
+    if (!up.isFinite() || !travel.isFinite() || travel <= 0f) 0f else (up / travel).coerceIn(0f, 1f)
+
+/** Pure: the picture's rectangle at swipe [progress]: the watch rect grown toward the full rect. */
+internal fun enterFullRect(watch: Rect, full: Rect, progress: Float): Rect =
+    androidx.compose.ui.geometry.lerp(watch, full, progress.coerceIn(0f, 1f))
+
+/** Pure: the watch page's opacity at [progress]: it fades out as the picture grows. */
+internal fun enterFullPageAlpha(progress: Float): Float = 1f - progress.coerceIn(0f, 1f)
+
+/** Pure: the black scrim's opacity at [progress]: it fades in as the page fades out. */
+internal fun enterFullScrimAlpha(progress: Float): Float = progress.coerceIn(0f, 1f)
+
+/** Pure: does releasing a swipe up at [progress] (0..1) and [velocity] px/s (down is positive) enter full screen? */
+internal fun shouldEnterFull(progress: Float, velocity: Float): Boolean {
+    if (!progress.isFinite() || !velocity.isFinite() || progress <= 0f) return false
+    if (velocity >= ENTER_FULL_FLING) return false
+    return progress >= ENTER_FULL_FRACTION || velocity <= -ENTER_FULL_FLING
+}
+
+/** Pure: the release velocity (px/s, down positive) as progress per second toward [commit]'s end (1 or 0); speed against it is dropped. */
+internal fun enterFullSettleVelocity(velocityY: Float, travel: Float, commit: Boolean): Float {
+    if (!velocityY.isFinite() || !travel.isFinite() || travel <= 0f) return 0f
+    val perSecond = -velocityY / travel
+    return if (commit) perSecond.coerceAtLeast(0f) else perSecond.coerceAtMost(0f)
 }
 
 /** What a swipe on the mini bar does. */

@@ -145,12 +145,36 @@ class VideoGesturesTest {
         assertFalse(orientationRulesApply(pip = false, settlingAfterPip = true))
     }
 
-    @Test fun swipeUpEntersFullByDistanceOrFling() {
-        assertTrue(shouldEnterFull(up = 200f, velocity = 0f, minDistance = 150f))
-        assertFalse(shouldEnterFull(up = 100f, velocity = -200f, minDistance = 150f))
-        assertTrue(shouldEnterFull(up = 30f, velocity = -2000f, minDistance = 150f))
-        assertFalse(shouldEnterFull(up = -50f, velocity = -2000f, minDistance = 150f))
-        assertFalse(shouldEnterFull(up = Float.NaN, velocity = 0f, minDistance = 150f))
+    @Test fun swipeUpEntersFullByProgressOrFling() {
+        assertTrue(shouldEnterFull(progress = 0.5f, velocity = 0f))
+        assertFalse(shouldEnterFull(progress = 0.1f, velocity = -200f))
+        assertTrue(shouldEnterFull(progress = 0.05f, velocity = -2000f))
+        assertFalse(shouldEnterFull(progress = 0.9f, velocity = 2000f))
+        assertFalse(shouldEnterFull(progress = 0f, velocity = -2000f))
+        assertFalse(shouldEnterFull(progress = Float.NaN, velocity = 0f))
+    }
+
+    @Test fun swipeUpProgressMapsToRectAndAlphas() {
+        val watch = androidx.compose.ui.geometry.Rect(0f, 100f, 400f, 325f)
+        val full = androidx.compose.ui.geometry.Rect(0f, 0f, 400f, 900f)
+        assertEquals(230f, enterFullTravel(watch, full), 0.01f)
+        assertEquals(0.5f, enterFullProgress(115f, 230f), 0.001f)
+        assertEquals(1f, enterFullProgress(1000f, 230f), 0f)
+        assertEquals(0f, enterFullProgress(-5f, 230f), 0f)
+        assertEquals(watch, enterFullRect(watch, full, 0f))
+        assertEquals(full, enterFullRect(watch, full, 1f))
+        assertEquals(450f, enterFullRect(watch, full, 0.5f).height + 0f - 112.5f, 0.01f)
+        assertEquals(1f, enterFullPageAlpha(0f), 0f)
+        assertEquals(0f, enterFullPageAlpha(1f), 0f)
+        assertEquals(0.25f, enterFullScrimAlpha(0.25f), 0f)
+        assertEquals(0.75f, enterFullPageAlpha(0.25f), 0f)
+    }
+
+    @Test fun swipeUpSettleVelocityKeepsOnlyTheRightDirection() {
+        assertEquals(2f, enterFullSettleVelocity(-460f, 230f, commit = true), 0.001f)
+        assertEquals(0f, enterFullSettleVelocity(460f, 230f, commit = true), 0f)
+        assertEquals(-2f, enterFullSettleVelocity(460f, 230f, commit = false), 0.001f)
+        assertEquals(0f, enterFullSettleVelocity(Float.NaN, 230f, commit = true), 0f)
     }
 
     @Test fun swipeUpAndDownMoveBetweenWatchAndFull() {

@@ -101,8 +101,12 @@ class VideoSurface(
         fun move(dy: Float)
         /** The finger lifted (or the touch was cancelled): [velocityY] px/s, down is positive. */
         fun end(velocityY: Float)
-        /** An upward drag on the picture ended: [up] px travelled, [velocityY] px/s (down is positive). */
-        fun swipeUp(up: Float, velocityY: Float) {}
+        /** An upward drag on the picture has started (past the touch slop). */
+        fun upStart() {}
+        /** [up]: pixels moved since the last call (up is positive). */
+        fun upMove(up: Float) {}
+        /** The upward drag ended: [velocityY] px/s (down is positive); [cancelled] when the system took the touch. */
+        fun upEnd(velocityY: Float, cancelled: Boolean) {}
     }
 
     /** A downward swipe from the middle of the full-screen picture (leave full screen). */
@@ -413,6 +417,7 @@ class VideoSurface(
     /** A downward drag on the watch page's picture belongs to the host; true while it holds the touch. Taps and double taps go on as usual. */
     private fun handleHostDrag(ev: MotionEvent, engine: GestureEngine?): Boolean {
         val host = hostDrag ?: return false
+        if (isTv) return false
         when (ev.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
                 dragDownX = ev.rawX; dragDownY = ev.rawY; dragLastY = ev.rawY
@@ -425,7 +430,11 @@ class VideoSurface(
             }
             MotionEvent.ACTION_MOVE -> {
                 dragTracker?.track(ev)
-                if (upDragging) return true
+                if (upDragging) {
+                    host.upMove(dragLastY - ev.rawY)
+                    dragLastY = ev.rawY
+                    return true
+                }
                 if (!hostDragging) {
                     val dy = ev.rawY - dragDownY
                     val dx = ev.rawX - dragDownX
@@ -450,6 +459,9 @@ class VideoSurface(
                         val cancel = MotionEvent.obtain(ev).also { it.action = MotionEvent.ACTION_CANCEL }
                         super.dispatchTouchEvent(cancel)
                         cancel.recycle()
+                        host.upStart()
+                        host.upMove(-dy)
+                        dragLastY = ev.rawY
                         return true
                     }
                     if (kotlin.math.abs(dx) > slop) dragMayStart = false
@@ -481,9 +493,15 @@ class VideoSurface(
                     upDragging = false
                     tracker?.track(ev)
                     tracker?.computeCurrentVelocity(1000)
-                    val v = if (ev.actionMasked == MotionEvent.ACTION_UP) tracker?.yVelocity ?: 0f else 0f
+                    val up = ev.actionMasked == MotionEvent.ACTION_UP
+                    var v = if (up) tracker?.yVelocity ?: 0f else 0f
+                    if (up) {
+                        host.upMove(dragLastY - ev.rawY)
+                        val ms = ev.eventTime - dragDownTime
+                        if (kotlin.math.abs(v) < 1f && ms > 0) v = (ev.rawY - dragDownY) * 1000f / ms
+                    }
                     tracker?.recycle()
-                    if (ev.actionMasked == MotionEvent.ACTION_UP) host.swipeUp(dragDownY - ev.rawY, v)
+                    host.upEnd(v, !up)
                     return true
                 }
                 tracker?.recycle()
