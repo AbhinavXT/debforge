@@ -82,7 +82,6 @@ class SpeechAlignTest {
         val t0 = System.nanoTime()
         val res = SpeechAlign.align(s.speech, shifted(s.bursts, -7300)) as AlignResult.Match
         val ms = (System.nanoTime() - t0) / 1_000_000
-        println("2h align took $ms ms")
         assertEquals(7300.0, res.bMs, 20.0)
         assertTrue("took $ms ms", ms < 10_000)
     }

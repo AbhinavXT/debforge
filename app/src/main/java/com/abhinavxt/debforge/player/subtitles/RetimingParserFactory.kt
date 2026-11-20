@@ -26,8 +26,8 @@ class RetimingParserFactory(
 
     override fun create(format: Format): SubtitleParser {
         val inner = delegate.create(format)
-        // Keys always contain ':'; ids of embedded tracks do not.
-        val key = format.id?.takeIf { ':' in it } ?: return inner
+        // Only ids made by timingKeyFor are ours; embedded tracks (HLS "1:en", DASH ids) are left alone.
+        val key = format.id?.takeIf(::isTimingKey) ?: return inner
         book?.begin(key)
         return RetimingParser(inner, key, timingFor(key)?.takeUnless { it.isIdentity }, book)
     }

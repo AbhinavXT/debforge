@@ -1,6 +1,7 @@
 package com.abhinavxt.debforge.player.subtitles
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -58,11 +59,42 @@ class SubtitleTimingTest {
     @Test fun keys() {
         assertEquals("os:42", timingKeyFor("v1", "file:///x/a.srt", null, null, 42))
         assertEquals("REAL_DEBRID:abc", timingKeyFor("v1", "https://x/y", "REAL_DEBRID", "abc"))
-        assertEquals("local:Movie.en.srt|v1", timingKeyFor("v1", "file:///data/Movie.en.srt", null, null))
+        assertEquals("local:data/Movie.en.srt|v1", timingKeyFor("v1", "file:///data/Movie.en.srt", null, null))
         assertEquals("local:Movie.en.srt|v1", timingKeyFor("v1", "content://x.files/dl/Movie.en.srt", null, null))
-        assertEquals("local:Movie.en.srt|v1", timingKeyFor("v1", "content://com.android.externalstorage.documents/tree/p%3AM/document/p%3AM%2FMovie.en.srt", null, null))
+        assertEquals("local:M/Movie.en.srt|v1", timingKeyFor("v1", "content://com.android.externalstorage.documents/tree/p%3AM/document/p%3AM%2FMovie.en.srt", null, null))
         assertEquals("local:a.srt|", timingKeyFor(null, "/sdcard/a.srt", null, null))
         assertNull(timingKeyFor("v1", "https://x/y", null, null))
+    }
+
+    @Test fun localKeyKeepsTheRelativePath() {
+        val a = timingKeyFor("v1", "file:///storage/emulated/0/Movies/Subs/A/English.srt", null, null)
+        val b = timingKeyFor("v1", "file:///storage/emulated/0/Movies/Subs/B/English.srt", null, null)
+        assertEquals("local:Movies/Subs/A/English.srt|v1", a)
+        assertTrue(a != b)
+        // the same file linked as a document id gives the same key
+        assertEquals(a, timingKeyFor("v1", "content://com.android.externalstorage.documents/tree/primary%3AMovies/document/primary%3AMovies%2FSubs%2FA%2FEnglish.srt", null, null))
+        assertEquals("local:Movies/a.srt|", timingKeyFor(null, "/sdcard/Movies/a.srt", null, null))
+    }
+
+    @Test fun legacyKeyIsTheFileName() {
+        assertEquals("local:English.srt|v|1", legacyTimingKey("local:Movies/Subs/English.srt|v|1"))
+        assertNull(legacyTimingKey("local:English.srt|v1"))
+        assertNull(legacyTimingKey("os:5"))
+    }
+
+    @Test fun onlyOurIdsAreTimingKeys() {
+        assertTrue(isTimingKey("os:1"))
+        assertTrue(isTimingKey("local:a.srt|v"))
+        assertTrue(isTimingKey("REAL_DEBRID:abc"))
+        assertFalse(isTimingKey("1:en"))
+        assertFalse(isTimingKey("3"))
+        assertFalse(isTimingKey("sub:2"))
+    }
+
+    @Test fun decodeRejectsBadRates() {
+        val text = listOf("0.0\t5.0\tz", "-1.0\t5.0\tn", "NaN\t1.0\tnan", "Infinity\t1.0\tinf", "1.0\tNaN\tbn", "1.01\t5.0\tgood")
+            .joinToString("\n")
+        assertEquals(listOf("good"), SubtitleTimingStore.decode(text).keys.toList())
     }
 
     @Test fun storeEncodingAndLru() {

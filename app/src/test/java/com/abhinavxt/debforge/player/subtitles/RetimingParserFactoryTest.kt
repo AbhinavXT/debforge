@@ -6,6 +6,7 @@ import androidx.media3.common.MimeTypes
 import androidx.media3.extractor.text.CuesWithTiming
 import androidx.media3.extractor.text.SubtitleParser
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -51,6 +52,28 @@ class RetimingParserFactoryTest {
         assertEquals(10_000_000L, parse(f, srtFormat(null), srt)[0].startTimeUs)
         val none = RetimingParserFactory({ null }, CueBook())
         assertEquals(10_000_000L, parse(none, srtFormat("os:9"), srt)[0].startTimeUs)
+    }
+
+    @Test fun hlsStyleIdsWithColonAreNotOurs() {
+        val book = CueBook()
+        val f = RetimingParserFactory({ SubtitleTiming(2.0, 0.0) }, book)
+        assertEquals(10_000_000L, parse(f, srtFormat("1:en"), srt)[0].startTimeUs)
+        assertTrue(book.cues("1:en").isEmpty())
+        assertEquals(20_000_000L, parse(f, srtFormat("local:a.srt|v"), srt)[0].startTimeUs)
+    }
+
+    @Test fun cueBookKeepsOldCuesUntilTheNewParseStartsAndFlagsTruncation() {
+        val book = CueBook(maxCuesPerKey = 2)
+        book.add("k", RawCue(1, 2, "a"))
+        book.begin("k")
+        assertEquals(1, book.cues("k").size)
+        book.add("k", RawCue(5, 6, "b"))
+        assertEquals(listOf("b"), book.cues("k").map { it.text })
+        assertFalse(book.isTruncated("k"))
+        book.add("k", RawCue(7, 8, "c"))
+        book.add("k", RawCue(9, 10, "d"))
+        assertEquals(2, book.cues("k").size)
+        assertTrue(book.isTruncated("k"))
     }
 
     @Test fun cuesMovedBeforeZeroAreClampedOrDropped() {

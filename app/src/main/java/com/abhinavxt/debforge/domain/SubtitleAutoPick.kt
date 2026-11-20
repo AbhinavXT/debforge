@@ -6,7 +6,7 @@ import com.abhinavxt.debforge.data.subtitles.OnlineSubtitle
 enum class OnlineSubsWhenNone { OFF, ASK, EXACT }
 
 /** A text track of the playing file, reduced to what [SubtitleAutoPick.needsSubtitles] needs. */
-data class TextTrackInfo(val language: String?)
+data class TextTrackInfo(val language: String?, val forced: Boolean = false)
 
 /** What to do with the OpenSubtitles results. */
 sealed interface AutoPickResult {
@@ -20,11 +20,11 @@ object SubtitleAutoPick {
 
     enum class Context { PLAYER_START, DOWNLOAD_COMPLETE }
 
-    /** True when no text track is in any of [languages] (codes like "en", "pt-br"; compared by base language). */
+    /** True when no full text track (forced-only ones do not count) is in any of [languages] (codes like "en", "pt-br"; compared by base language). */
     fun needsSubtitles(textTracks: List<TextTrackInfo>, languages: List<String>): Boolean {
         val wanted = languages.map(::base).filter { it.isNotEmpty() }.toSet()
         if (wanted.isEmpty()) return false
-        return textTracks.none { base(it.language) in wanted }
+        return textTracks.none { !it.forced && base(it.language) in wanted }
     }
 
     fun pick(
@@ -50,14 +50,17 @@ object SubtitleAutoPick {
         }
     }
 
-    /** Language preference order, then hash match, then (for the rest) fewer hearing-impaired and forced, then downloads. Stable. */
+    /**
+     * The best language first (preferred order); within it, results that are neither hearing-impaired nor forced when
+     * there are any, then hash match, then downloads. Stable.
+     */
     private fun best(results: List<OnlineSubtitle>, languages: List<String>): OnlineSubtitle? {
-        val clean = results.filter { !it.hearingImpaired }.ifEmpty { results }
+        val top = results.minOfOrNull { rank(it, languages) } ?: return null
+        val inTop = results.filter { rank(it, languages) == top }
+        val clean = inTop.filter { !it.hearingImpaired }.ifEmpty { inTop }
         val unforced = clean.filter { !isForced(it) }.ifEmpty { clean }
         return unforced.sortedWith(
-            compareBy<OnlineSubtitle> { rank(it, languages) }
-                .thenByDescending { it.hashMatch }
-                .thenByDescending { it.downloads }
+            compareByDescending<OnlineSubtitle> { it.hashMatch }.thenByDescending { it.downloads }
         ).firstOrNull()
     }
 

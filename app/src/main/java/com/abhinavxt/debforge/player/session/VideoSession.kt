@@ -103,7 +103,7 @@ class VideoSession @Inject constructor(
 
     /** Raw cues of the side-loaded subtitles, for the sync tools. */
     internal val cueBook = com.abhinavxt.debforge.player.subtitles.CueBook()
-    private val retimingParsers = com.abhinavxt.debforge.player.subtitles.RetimingParserFactory({ timingStore.cached(it) }, cueBook)
+    private val retimingParsers = com.abhinavxt.debforge.player.subtitles.RetimingParserFactory({ timingStore.lookup(it) }, cueBook)
 
     var player: ExoPlayer? = null
         private set
@@ -201,6 +201,8 @@ class VideoSession @Inject constructor(
     internal var onlineSubsJob: Job? = null
     /** A subtitle just added from OpenSubtitles: switch to it once the reloaded file lists it. */
     internal var pendingTextLabel: String? = null
+    /** With [pendingTextLabel]: the track's format id (its timing key), which tells equal labels apart; tried first. */
+    internal var pendingTextId: String? = null
 
     /** Bumped per file, so a slow chapter read for the last one is dropped. */
     internal var fileGeneration = 0
@@ -409,6 +411,7 @@ class VideoSession @Inject constructor(
         movieHash = null
         onlineSubsJob = null
         pendingTextLabel = null
+        pendingTextId = null
         sleepJob = null
         loopMessage = null
         resumePosition = 0L
@@ -701,6 +704,7 @@ class VideoSession @Inject constructor(
         onlineSubsJob?.cancel()
         controls.onlineSubs = com.abhinavxt.debforge.player.controls.OnlineSubs.Idle
         pendingTextLabel = null
+        pendingTextId = null
         val key = identity?.let { it.showKey ?: it.itemId }
         remembered = key?.let { k -> scope.async { trackMemory.get(k) } }
         if (identity?.showKey != null) {
@@ -920,13 +924,17 @@ class VideoSession @Inject constructor(
      * parsed again with the new times. The chosen subtitle track stays on. Works for both hosts.
      */
     fun applySubtitleTiming(key: String, timing: com.abhinavxt.debforge.player.subtitles.SubtitleTiming) {
-        timingStore.updateCache(key, timing)
-        scope.launch { runCatching { timingStore.set(key, timing) } }
+        timingStore.save(key, timing)
+        // The sync tool's result already includes whatever the live nudge fixed, so the nudge starts again at zero.
+        applyDelays(0, tuning.audioDelayMs)
+        remember { it.copy(subtitleDelayMs = null) }
         val p = player ?: return
-        pendingTextLabel = p.currentTracks.groups.firstNotNullOfOrNull { g ->
+        val selected = p.currentTracks.groups.firstNotNullOfOrNull { g ->
             if (g.type != C.TRACK_TYPE_TEXT) null
-            else (0 until g.length).firstOrNull { g.isTrackSelected(it) }?.let { g.getTrackFormat(it).label }
+            else (0 until g.length).firstOrNull { g.isTrackSelected(it) }?.let { g.getTrackFormat(it) }
         }
+        pendingTextLabel = selected?.label
+        pendingTextId = selected?.id
         reloadMediaItem(p.currentPosition, play = false)
     }
 

@@ -192,6 +192,7 @@ class VideoActions internal constructor(private val s: VideoSession) : ControlsA
             }
             s.subtitles = s.subtitles.filterNot { it.url == link.url } + link
             s.pendingTextLabel = link.label
+            s.pendingTextId = null
             controls.panel = null
             s.player?.let { p -> s.reloadMediaItem(p.currentPosition, play = p.playWhenReady) }
         }
@@ -419,6 +420,7 @@ class VideoActions internal constructor(private val s: VideoSession) : ControlsA
             }
             s.subtitles = s.subtitles.filterNot { it.label == label || it.url == link.url } + link
             s.pendingTextLabel = label
+            s.pendingTextId = null
             controls.panel = null
             s.player?.let { p -> s.reloadMediaItem(p.currentPosition, play = false) }
         }

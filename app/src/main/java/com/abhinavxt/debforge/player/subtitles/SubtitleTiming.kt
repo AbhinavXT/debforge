@@ -17,6 +17,7 @@ data class SubtitleTiming(val a: Double = 1.0, val bMs: Double = 0.0) {
     /** This correction first, then [next]. */
     fun compose(next: SubtitleTiming): SubtitleTiming = SubtitleTiming(next.a * a, next.a * bMs + next.bMs)
 
+    /** Needs a > 0; the store rejects anything else on load. */
     fun inverse(): SubtitleTiming = SubtitleTiming(1.0 / a, -bMs / a)
 
     /** Scales by [ratio] around [anchorMs] (displayed time), so the cue shown there stays put. */
@@ -72,7 +73,8 @@ data class SubtitleTiming(val a: Double = 1.0, val bMs: Double = 0.0) {
 
 /**
  * The key a subtitle's correction is remembered under: an OpenSubtitles pick by file id, a file from the
- * debrid service by provider and source reference, a local file by name and video. Null when none applies.
+ * debrid service by provider and source reference, a local file by its path (below the storage root) and video.
+ * Null when none applies.
  */
 fun timingKeyFor(
     videoId: String?,
@@ -83,17 +85,37 @@ fun timingKeyFor(
 ): String? {
     if (osFileId != null) return "os:$osFileId"
     if (provider != null && sourceRef != null) return "$provider:$sourceRef"
-    if (url.startsWith("file:") || url.startsWith("/")) {
-        val name = url.substringBefore('?').substringAfterLast('/').ifEmpty { return null }
-        return "local:$name|${videoId.orEmpty()}"
+    val path = when {
+        url.startsWith("file:") || url.startsWith("/") ->
+            decodeQuietly(url.substringBefore('?').removePrefix("file://").removePrefix("file:"))
+        // A sidecar linked through the file provider or the picked folder: the last part of the (percent-encoded)
+        // URL; the text after its last ':' is the path inside the storage (the document id).
+        url.startsWith("content:") -> decodeQuietly(url.substringBefore('?').substringAfterLast('/')).substringAfterLast(':')
+        else -> return null
     }
-    if (url.startsWith("content:")) {
-        // A sidecar next to the video, linked through the file provider or the picked folder: the file name is the last
-        // part of the (possibly percent-encoded) path.
-        val path = url.substringBefore('?').substringAfterLast('/')
-        val decoded = runCatching { java.net.URLDecoder.decode(path.replace("+", "%2B"), "UTF-8") }.getOrDefault(path)
-        val name = decoded.substringAfterLast('/').substringAfterLast(':').ifEmpty { return null }
-        return "local:$name|${videoId.orEmpty()}"
-    }
-    return null
+    val relative = relativeStoragePath(path)
+    if (relative.substringAfterLast('/').isEmpty()) return null
+    return "local:$relative|${videoId.orEmpty()}"
 }
+
+private fun decodeQuietly(s: String) = runCatching { java.net.URLDecoder.decode(s.replace("+", "%2B"), "UTF-8") }.getOrDefault(s)
+
+private val STORAGE_ROOT = Regex("^/(?:storage/emulated/\\d+|storage/[^/]+|sdcard|mnt/sdcard)/")
+
+/** [path] without a leading storage root, so one file gives one key whether linked as a path or a document id. */
+internal fun relativeStoragePath(path: String): String = path.replaceFirst(STORAGE_ROOT, "").trimStart('/')
+
+/** The key used before local keys held the whole path (`local:<file name>|video`); null for other keys. */
+fun legacyTimingKey(key: String): String? {
+    if (!key.startsWith("local:")) return null
+    val bar = key.lastIndexOf('|')
+    if (bar < 0) return null
+    val name = key.substring(6, bar).substringAfterLast('/')
+    return "local:$name${key.substring(bar)}".takeIf { it != key }
+}
+
+/** True for the ids [timingKeyFor] makes; false for ids of embedded tracks (such as "1:en" in HLS). */
+fun isTimingKey(id: String): Boolean =
+    id.startsWith("os:") || id.startsWith("local:") ||
+        com.abhinavxt.debforge.domain.ProviderId.values().any { id.startsWith(it.name + ":") }
+

@@ -81,4 +81,19 @@ class SubtitleAutoPickTest {
         assertFalse(SubtitleAutoPick.needsSubtitles(listOf(TextTrackInfo("pt")), listOf("pt-br", "pt-pt")))
         assertFalse(SubtitleAutoPick.needsSubtitles(emptyList(), emptyList()))
     }
+
+    @Test fun firstLanguageHearingImpairedOnlyBeatsCleanSecondLanguage() {
+        val r = SubtitleAutoPick.pick(listOf(sub(1, "en", hi = true), sub(2, "fr")), listOf("en", "fr"), OnlineSubsWhenNone.ASK, PLAYER_START)
+        assertEquals(1L, (r as AutoPickResult.Offer).subtitle.fileId)
+    }
+
+    @Test fun cleanBeatsHearingImpairedWithinALanguage() {
+        val r = SubtitleAutoPick.pick(listOf(sub(1, "en", hi = true, downloads = 99), sub(2, "en")), en, OnlineSubsWhenNone.ASK, PLAYER_START)
+        assertEquals(2L, (r as AutoPickResult.Offer).subtitle.fileId)
+    }
+
+    @Test fun forcedOnlyTrackDoesNotSatisfyTheLanguage() {
+        assertTrue(SubtitleAutoPick.needsSubtitles(listOf(TextTrackInfo("en", forced = true)), en))
+        assertFalse(SubtitleAutoPick.needsSubtitles(listOf(TextTrackInfo("en", forced = true), TextTrackInfo("en")), en))
+    }
 }
