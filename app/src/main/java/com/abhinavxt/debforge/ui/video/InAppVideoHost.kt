@@ -474,23 +474,47 @@ private fun ActiveVideoHost(
         var dragging by remember { mutableStateOf(false) }
         var dragOffset by remember { mutableFloatStateOf(0f) }
         val travel = (miniRect.top - watchRect.top).coerceAtLeast(1f)
-        var lastMode by remember { mutableStateOf(mode) }
+        // While the watch page is dragged, and while the picture settles after it, the picture stays laid out as the watch
+        // page and only its View transform changes (no measuring each frame); then the layout catches up in one snapshot.
+        var heldLayout by remember { mutableStateOf<Rect?>(null) }
+        var settleGen by remember { mutableIntStateOf(0) }
+        val targetNow by rememberUpdatedState(target)
+        var lastMode by remember { mutableStateOf(if (pip) VideoMode.FULL else mode) }
         LaunchedEffect(target) {
-            val wasMini = lastMode == VideoMode.MINI
-            lastMode = mode
-            if (dragging) return@LaunchedEffect
-            // The mini bar being dragged sideways moves the slot: the picture follows at once, not a beat behind.
-            if (mode == VideoMode.MINI && wasMini && !rectAnim.isRunning || fast) rectAnim.snapTo(target)
+            val shown = if (pip) VideoMode.FULL else mode
+            val modeChanged = lastMode != shown
+            lastMode = shown
+            if (dragging || heldLayout != null) return@LaunchedEffect
+            // A size change in the same mode (rotation, a slot moving under a swipe) jumps instead of sliding.
+            if (shouldSnapRect(modeChanged, rectAnim.isRunning, fast)) rectAnim.snapTo(target)
             else rectAnim.animateTo(target, tween(280))
         }
         LaunchedEffect(mode) { if (mode == VideoMode.WATCH && !dragging) pageAlpha.snapTo(1f) }
-        val rectNow: () -> Rect = {
-            if (dragging) androidx.compose.ui.geometry.lerp(watchRect, miniRect, (dragOffset / travel).coerceIn(0f, 1f)) else rectAnim.value
-        }
         val dragLatest = rememberUpdatedState(Triple(watchRect, miniRect, travel))
+        // Where the picture is laid out, and where it looks to be (animated, or under the finger).
+        val rectNow: () -> Rect = { heldLayout ?: rectAnim.value }
+        val visualRect: () -> Rect = {
+            if (dragging) {
+                val (watch, mini, trav) = dragLatest.value
+                androidx.compose.ui.geometry.lerp(watch, mini, (dragOffset / trav).coerceIn(0f, 1f))
+            } else rectAnim.value
+        }
+        var settleJob by remember { mutableStateOf<kotlinx.coroutines.Job?>(null) }
         val drag = remember {
             object : VideoSurface.HostDrag {
-                fun begin() { if (modeNow == VideoMode.WATCH && !dragging) { dragOffset = 0f; dragging = true } }
+                fun begin() {
+                    if (modeNow == VideoMode.WATCH && !dragging) {
+                        // Caught while springing back: carry on from where the picture is.
+                        val resumeFrom = if (heldLayout != null) (rectAnim.value.top - dragLatest.value.first.top).coerceAtLeast(0f) else 0f
+                        settleGen++
+                        settleJob?.cancel()
+                        heldLayout = dragLatest.value.first
+                        dragOffset = resumeFrom
+                        dragging = true
+                        session.controls.visible = false
+                        surface.playerView.hideController()
+                    }
+                }
                 fun by(dy: Float) { if (dragging) dragOffset = (dragOffset + dy).coerceAtLeast(0f) }
                 override fun start() = begin()
                 override fun move(dy: Float) = by(dy)
@@ -503,16 +527,30 @@ private fun ActiveVideoHost(
                     val (watch, mini, trav) = dragLatest.value
                     val minimise = shouldMinimise(dragOffset, velocityY, trav)
                     val p = (dragOffset / trav).coerceIn(0f, 1f)
-                    scope.launch {
-                        rectAnim.snapTo(androidx.compose.ui.geometry.lerp(watch, mini, p))
-                        pageAlpha.snapTo(1f - p)
-                        dragging = false
-                        if (minimise) {
-                            launcher.dispatch(VideoModeEvent.Minimise)
-                            pageAlpha.animateTo(0f, tween(160))
-                        } else {
-                            launch { pageAlpha.animateTo(1f, tween(150)) }
-                            rectAnim.animateTo(watch, androidx.compose.animation.core.spring(stiffness = 400f))
+                    val gen = ++settleGen
+                    settleJob = scope.launch {
+                        try {
+                            rectAnim.snapTo(androidx.compose.ui.geometry.lerp(watch, mini, p))
+                            pageAlpha.snapTo(1f - p)
+                            dragging = false
+                            val speed = settleVelocity(velocityY, minimise)
+                            if (minimise) {
+                                launcher.dispatch(VideoModeEvent.Minimise)
+                                launch { pageAlpha.animateTo(0f, tween(160)) }
+                            } else launch { pageAlpha.animateTo(1f, tween(150)) }
+                            if (!fast) {
+                                rectAnim.animateTo(
+                                    if (minimise) mini else watch,
+                                    androidx.compose.animation.core.spring(dampingRatio = 1f, stiffness = 400f),
+                                    initialVelocity = Rect(0f, speed, 0f, speed),
+                                )
+                            }
+                        } finally {
+                            // The layout catches up and the transform resets together, in one snapshot.
+                            if (gen == settleGen) {
+                                kotlinx.coroutines.withContext(kotlinx.coroutines.NonCancellable) { rectAnim.snapTo(targetNow) }
+                                heldLayout = null
+                            }
                         }
                     }
                 }
@@ -580,14 +618,37 @@ private fun ActiveVideoHost(
         // moves, fades and is covered by the tabs exactly like the bar; back at rest the live picture returns, then the still goes.
         val miniPicture = remember { MiniPicture() }
         val miniNow = mode == VideoMode.MINI && !pip
+        val layoutNow by rememberUpdatedState(rectNow)
+        val visualNow by rememberUpdatedState(visualRect)
+        // The picture's View transform: the layout-to-visual difference, plus the mini bar's swipe offset.
         fun applyMini() {
             val m = miniPicture.active
-            surface.translationX = when { !m -> 0f; miniPicture.hidden -> MINI_PICTURE_AWAY; else -> miniSwipe.dragX }
-            surface.translationY = if (m && !miniPicture.hidden) miniSwipe.dragY else 0f
+            val layer = layerFor(layoutNow(), visualNow())
+            surface.pivotX = 0f
+            surface.pivotY = 0f
+            surface.scaleX = layer.scaleX
+            surface.scaleY = layer.scaleY
+            surface.translationX = layer.translationX + when { !m -> 0f; miniPicture.hidden -> MINI_PICTURE_AWAY; else -> miniSwipe.dragX }
+            surface.translationY = layer.translationY + if (m && !miniPicture.hidden) miniSwipe.dragY else 0f
         }
+        // Set in the frame the state changes, not through a re-measure.
+        LaunchedEffect(Unit) { snapshotFlow { layerFor(layoutNow(), visualNow()) }.collect { applyMini() } }
         miniPicture.active = miniNow
         // Entering picture-in-picture mid-drag: drop the swipe so nothing is left held or offset when the app returns.
-        LaunchedEffect(pip) { if (pip) { miniSwipe.reset(); applyMini() } }
+        LaunchedEffect(pip) {
+            if (!pip) return@LaunchedEffect
+            miniSwipe.reset()
+            // ...and a watch-page drag too: back to the watch layout with no transform left over.
+            if (dragging || heldLayout != null) {
+                settleGen++
+                settleJob?.cancel()
+                dragging = false
+                rectAnim.snapTo(targetNow)
+                heldLayout = null
+                pageAlpha.snapTo(1f)
+            }
+            applyMini()
+        }
         SideEffect { miniSwipe.onMoved = { applyMini() }; applyMini() }
         LaunchedEffect(miniNow) {
             if (!miniNow) return@LaunchedEffect
@@ -610,7 +671,7 @@ private fun ActiveVideoHost(
             }
         }
         DisposableEffect(miniNow) {
-            onDispose { miniPicture.hidden = false; miniSwipe.frame = null; surface.translationX = 0f; surface.translationY = 0f }
+            onDispose { miniPicture.hidden = false; miniSwipe.frame = null; applyMini() }
         }
 
         // The one picture.
@@ -628,7 +689,7 @@ private fun ActiveVideoHost(
         // A tap on the small picture opens the watch page (its own touch handling is off in the mini mode), and a
         // swipe that starts on it is the bar's swipe. Placed where the picture is without the swipe's offset, so the
         // touch does not move under the finger.
-        if (mode == VideoMode.MINI && !pip) {
+        if (mode == VideoMode.MINI && !pip && heldLayout == null) {
             Box(
                 Modifier
                     .offset { rectNow().let { IntOffset(it.left.roundToInt(), it.top.roundToInt()) } }

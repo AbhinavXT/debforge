@@ -1,5 +1,6 @@
 package com.abhinavxt.debforge.ui.video
 
+import androidx.compose.ui.geometry.Rect
 import kotlin.math.abs
 
 /** How far down (of the way to the mini bar) a drag must go to minimise on release. */
@@ -87,3 +88,31 @@ internal fun miniExitTarget(swipe: MiniSwipe, width: Float, height: Float): Pair
 
 /** Pure: the release velocity [v] carried into a slide of [distance] px to go: only when it points the same way, else 0 (no pull-back). */
 internal fun velocityToward(v: Float, distance: Float): Float = if (v.isFinite() && distance.isFinite() && v * distance > 0f) v else 0f
+
+/** A View transform (pivot at the top left) that makes a view laid out at one rectangle look like it is at another. */
+internal data class PictureLayer(val scaleX: Float, val scaleY: Float, val translationX: Float, val translationY: Float) {
+    companion object { val Identity = PictureLayer(1f, 1f, 0f, 0f) }
+}
+
+/**
+ * Pure: the transform that shows a picture laid out at [layout] at [visual] instead, so it moves and shrinks without
+ * being measured again each frame. Identity when they are equal or [layout] has no size.
+ */
+internal fun layerFor(layout: Rect, visual: Rect): PictureLayer {
+    val values = floatArrayOf(layout.left, layout.top, layout.width, layout.height, visual.left, visual.top, visual.width, visual.height)
+    if (values.any { !it.isFinite() } || layout.width <= 0f || layout.height <= 0f) return PictureLayer.Identity
+    return PictureLayer(visual.width / layout.width, visual.height / layout.height, visual.left - layout.left, visual.top - layout.top)
+}
+
+/**
+ * Pure: does the picture's rectangle jump to its new place rather than animate? Yes with animations off, and when only
+ * the size changed (a rotation, a two-step configuration change, a moving slot) with no mode change and nothing animating.
+ */
+internal fun shouldSnapRect(modeChanged: Boolean, animating: Boolean, animationsOff: Boolean): Boolean =
+    animationsOff || (!modeChanged && !animating)
+
+/** Pure: the release velocity (px/s, down positive) as the spring's start speed toward its destination; speed against it is dropped. */
+internal fun settleVelocity(velocityY: Float, towardsMini: Boolean): Float {
+    if (!velocityY.isFinite()) return 0f
+    return if (towardsMini) velocityY.coerceAtLeast(0f) else velocityY.coerceAtMost(0f)
+}

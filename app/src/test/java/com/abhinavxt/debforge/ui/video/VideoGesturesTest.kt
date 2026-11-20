@@ -170,4 +170,40 @@ class VelocityTowardTest {
         org.junit.Assert.assertEquals(0f, velocityToward(Float.NaN, 300f), 0f)
         org.junit.Assert.assertEquals(0f, velocityToward(800f, 0f), 0f)
     }
+
+    @Test fun layerForSameRectIsIdentity() {
+        val r = androidx.compose.ui.geometry.Rect(0f, 100f, 1080f, 709f)
+        assertEquals(PictureLayer.Identity, layerFor(r, r))
+    }
+
+    @Test fun layerForShrinksFromTheTopLeft() {
+        val layout = androidx.compose.ui.geometry.Rect(0f, 100f, 1000f, 600f)
+        val visual = androidx.compose.ui.geometry.Rect(200f, 400f, 700f, 650f)
+        val l = layerFor(layout, visual)
+        assertEquals(0.5f, l.scaleX, 0f)
+        assertEquals(0.5f, l.scaleY, 0f)
+        assertEquals(200f, l.translationX, 0f)
+        assertEquals(300f, l.translationY, 0f)
+    }
+
+    @Test fun layerForBadInputIsIdentity() {
+        val visual = androidx.compose.ui.geometry.Rect(0f, 0f, 10f, 10f)
+        assertEquals(PictureLayer.Identity, layerFor(androidx.compose.ui.geometry.Rect(0f, 0f, 0f, 0f), visual))
+        assertEquals(PictureLayer.Identity, layerFor(visual, androidx.compose.ui.geometry.Rect(0f, 0f, Float.NaN, 10f)))
+    }
+
+    @Test fun sizeChangeInTheSameModeSnaps() {
+        assertTrue(shouldSnapRect(modeChanged = false, animating = false, animationsOff = false))
+        assertFalse(shouldSnapRect(modeChanged = true, animating = false, animationsOff = false))
+        assertFalse(shouldSnapRect(modeChanged = false, animating = true, animationsOff = false))
+        assertTrue(shouldSnapRect(modeChanged = true, animating = false, animationsOff = true))
+    }
+
+    @Test fun settleVelocityKeepsOnlyTheWayToTheDestination() {
+        assertEquals(900f, settleVelocity(900f, towardsMini = true), 0f)
+        assertEquals(0f, settleVelocity(-900f, towardsMini = true), 0f)
+        assertEquals(-900f, settleVelocity(-900f, towardsMini = false), 0f)
+        assertEquals(0f, settleVelocity(900f, towardsMini = false), 0f)
+        assertEquals(0f, settleVelocity(Float.NaN, towardsMini = true), 0f)
+    }
 }
