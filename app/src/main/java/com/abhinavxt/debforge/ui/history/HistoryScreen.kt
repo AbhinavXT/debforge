@@ -43,6 +43,8 @@ import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import coil.request.ImageRequest
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -69,7 +71,7 @@ import coil.compose.AsyncImage
 import com.abhinavxt.debforge.R
 import com.abhinavxt.debforge.data.history.HistoryEntity
 import com.abhinavxt.debforge.data.history.HistoryKind
-import com.abhinavxt.debforge.download.artworkFile
+import com.abhinavxt.debforge.download.ArtworkProbe
 import com.abhinavxt.debforge.ui.browse.playExternally
 import com.abhinavxt.debforge.ui.components.BannerCard
 import com.abhinavxt.debforge.ui.components.MessageState
@@ -252,10 +254,11 @@ private fun HistoryRow(e: HistoryEntity, onClick: () -> Unit, onRemove: () -> Un
 private fun Artwork(e: HistoryEntity, modifier: Modifier) {
     val context = LocalContext.current
     val cs = MaterialTheme.colorScheme
-    val file = remember(e.itemId) { artworkFile(context, e.itemId).takeIf { it.exists() } }
+    val file by produceState(ArtworkProbe.cachedFile(e.itemId), e.itemId) { value = ArtworkProbe.existing(context, e.itemId) }
     val url = e.artworkUrl?.takeIf { isSafeArtworkUrl(it) }
+    val local = file
     when {
-        file != null -> AsyncImage(file, null, modifier, contentScale = ContentScale.Crop)
+        local != null -> AsyncImage(ImageRequest.Builder(context).data(local.file).memoryCacheKey(local.key).build(), null, modifier, contentScale = ContentScale.Crop)
         url != null -> AsyncImage(url, null, modifier, contentScale = ContentScale.Crop)
         else -> Box(modifier.background(cs.surfaceContainerHigh), contentAlignment = Alignment.Center) {
             Icon(if (e.kind == HistoryKind.AUDIO) Icons.Rounded.GraphicEq else Icons.Rounded.PlayArrow, null, tint = cs.onSurfaceVariant)

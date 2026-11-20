@@ -3,6 +3,7 @@ package com.abhinavxt.debforge.ui.player
 import android.graphics.Bitmap
 import android.util.LruCache
 import androidx.compose.runtime.Composable
+import com.abhinavxt.debforge.download.ArtworkProbe
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -85,7 +86,7 @@ internal fun rememberArtColor(track: AudioTrack, enabled: Boolean): Color? {
         if (!enabled) { result = null; return@LaunchedEffect }
         // Same source and cache key as TrackArt, so a bitmap the mini player decoded is reused.
         val (data, key) = withContext(Dispatchers.IO) {
-            artFile?.takeIf { it.exists() }?.let { it to "art:${it.path}:${it.lastModified()}" }
+            artFile?.let { f -> ArtworkProbe.key(f)?.let { f to it } }
         } ?: artUrl?.let { it to "art:$it" } ?: run { result = null; return@LaunchedEffect }
         val cached = colorCache.get(key)
         if (cached != null) { result = if (cached == NONE) null else Color(cached); return@LaunchedEffect }
@@ -96,7 +97,7 @@ internal fun rememberArtColor(track: AudioTrack, enabled: Boolean): Color? {
                     ?.takeIf { it.config != Bitmap.Config.HARDWARE }
                 var ok = mem != null
                 val bmp = mem ?: (context.imageLoader.execute(
-                    ImageRequest.Builder(context).data(data).size(96, 96).allowHardware(false)
+                    ImageRequest.Builder(context).data(data).memoryCacheKey(key).size(96, 96).allowHardware(false)
                         .memoryCachePolicy(CachePolicy.DISABLED).build()
                 ) as? SuccessResult)?.drawable?.let {
                     ok = true

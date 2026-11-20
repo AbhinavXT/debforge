@@ -70,6 +70,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.produceState
+import com.abhinavxt.debforge.download.ArtworkProbe
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
@@ -112,9 +114,12 @@ internal fun TrackArt(track: AudioTrack, modifier: Modifier = Modifier) {
         val context = LocalContext.current
         // Disk and cache lookups happen once per artwork file, not on every recomposition.
         val artUrl = track.artworkUrl
-        val art = remember(artFile, artUrl) {
+        val fileKey by produceState(artFile?.let { ArtworkProbe.cachedKey(it) }, artFile) {
+            value = artFile?.let { ArtworkProbe.key(it) }
+        }
+        val art = remember(artFile, artUrl, fileKey) {
             // A local file wins; a streamed YouTube track uses its thumbnail URL.
-            val source: Pair<Any, String>? = artFile?.takeIf { it.exists() }?.let { it to "art:${it.path}:${it.lastModified()}" }
+            val source: Pair<Any, String>? = fileKey?.let { artFile!! to it }
                 ?: artUrl?.let { it to "art:$it" }
             source?.let { (data, key) ->
                 // One cache key at every size. The bitmap the mini player already decoded is read straight from

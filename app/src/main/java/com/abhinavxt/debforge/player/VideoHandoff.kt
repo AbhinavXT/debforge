@@ -76,7 +76,7 @@ class VideoHandoff @Inject constructor(
         }
         val row = withContext(Dispatchers.IO) { downloadDao.getById(itemId) } ?: return null
         if (row.state != DownloadState.COMPLETED) return null
-        return audioTrackFor(context, row)?.takeIf { it.canWatch }
+        return withContext(Dispatchers.IO) { audioTrackFor(context, row) }?.takeIf { it.canWatch }
     }
 
     /** The video to open for [track]: a local video file, a local video download of the YouTube video, else its stream. */

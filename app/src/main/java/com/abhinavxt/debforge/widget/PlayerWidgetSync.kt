@@ -13,6 +13,8 @@ import com.abhinavxt.debforge.player.AudioPlayer
 import com.abhinavxt.debforge.player.AudioTrack
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
@@ -104,7 +106,7 @@ class PlayerWidgetSync @Inject constructor(
     }
 
     private suspend fun loadArt(track: AudioTrack): Bitmap? {
-        val data: Any = track.artworkFile?.takeIf { it.exists() } ?: track.artworkUrl ?: return null
+        val data: Any = track.artworkFile?.let { f -> withContext(Dispatchers.IO) { f.takeIf { it.exists() } } } ?: track.artworkUrl ?: return null
         return try {
             val request = ImageRequest.Builder(context).data(data)
                 .size(ART_PX).allowHardware(false)

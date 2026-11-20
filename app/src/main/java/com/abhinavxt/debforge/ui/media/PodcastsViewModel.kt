@@ -1,5 +1,6 @@
 package com.abhinavxt.debforge.ui.media
 
+import kotlinx.coroutines.withContext
 import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.ViewModel
@@ -148,7 +149,7 @@ class PodcastsViewModel @Inject constructor(
         val url = item.mediaUrl ?: return null
         downloadDao.getById(DirectLinkParser.itemId(url))
             ?.takeIf { it.state == DownloadState.COMPLETED }
-            ?.let { audioTrackFor(context, it) }
+            ?.let { withContext(Dispatchers.IO) { audioTrackFor(context, it) } }
             ?.let { return it }
         val uri = Uri.parse(url).takeIf { it.scheme == "http" || it.scheme == "https" } ?: return null
         return AudioTrack(

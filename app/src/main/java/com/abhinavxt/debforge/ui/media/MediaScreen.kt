@@ -92,6 +92,8 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import coil.request.ImageRequest
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
@@ -125,7 +127,7 @@ import com.abhinavxt.debforge.domain.FileKind
 import com.abhinavxt.debforge.domain.ProviderId
 import com.abhinavxt.debforge.domain.SortOrder
 import com.abhinavxt.debforge.download.LocalFiles
-import com.abhinavxt.debforge.download.artworkFile
+import com.abhinavxt.debforge.download.ArtworkProbe
 import com.abhinavxt.debforge.ui.browse.formatSize
 import com.abhinavxt.debforge.ui.components.BannerCard
 import com.abhinavxt.debforge.ui.components.GeneratedArt
@@ -707,8 +709,11 @@ private fun Modifier.mediaClickable(
 private fun Art(e: DownloadEntity, modifier: Modifier, tag: String) {
     val context = LocalContext.current
     // The metadata pass saves art before it sets the title, so a changed title/artist re-checks the file.
-    val file = remember(e.id, e.title, e.artist, e.updatedAt) { artworkFile(context, e.id).takeIf { it.exists() } }
-    if (file != null) AsyncImage(file, null, modifier, contentScale = ContentScale.Crop)
+    val file by produceState(ArtworkProbe.cachedFile(e.id), e.id, e.title, e.artist, e.updatedAt) {
+        value = ArtworkProbe.existing(context, e.id) ?: value
+    }
+    val art = file
+    if (art != null) AsyncImage(ImageRequest.Builder(context).data(art.file).memoryCacheKey(art.key).build(), null, modifier, contentScale = ContentScale.Crop)
     else GeneratedArt(e.displayTitle(), tag, modifier, showTitle = false)
 }
 

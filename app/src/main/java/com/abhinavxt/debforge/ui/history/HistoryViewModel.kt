@@ -1,5 +1,7 @@
 package com.abhinavxt.debforge.ui.history
 
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.Dispatchers
 import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.ViewModel
@@ -106,7 +108,9 @@ class HistoryViewModel @Inject constructor(
     private suspend fun playAudio(e: HistoryEntity) {
         val row = downloads.getById(e.sourceRef)?.takeIf { it.state == DownloadState.COMPLETED }
         // The path may point at a file that was moved, or a content:// uri whose permission is gone.
-        val track = row?.takeIf { r -> r.finalFilePath?.let(LocalFiles::exists) == true }?.let { audioTrackFor(context, it) }
+        val track = withContext(Dispatchers.IO) {
+            row?.takeIf { r -> r.finalFilePath?.let(LocalFiles::exists) == true }?.let { audioTrackFor(context, it) }
+        }
         if (track == null) unplayable(e, missing(e)) else audio.play(listOf(track), 0)
     }
 

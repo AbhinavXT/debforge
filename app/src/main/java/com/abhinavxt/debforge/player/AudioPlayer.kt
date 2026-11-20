@@ -1508,7 +1508,7 @@ class AudioPlayer @Inject constructor(
             MediaMetadata.Builder()
                 .setTitle(title)
                 .setArtist(artist)
-                .setArtworkUri(artworkFile?.takeIf { it.exists() }?.toUri() ?: artworkUrl?.let { Uri.parse(it) })
+                .setArtworkUri(artworkFile?.toUri() ?: artworkUrl?.let { Uri.parse(it) })
                 .build()
         )
         .build()
