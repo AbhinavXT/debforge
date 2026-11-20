@@ -65,6 +65,10 @@ internal class SwipeDownState(val onDismiss: () -> Unit) {
     /** True from a committed dismiss until the next touch or [reset]; the dismiss is final and fires once. */
     var committed = false
     internal var fired = false
+    /** False while the parent is hiding the sheet; a touch then must not bring the sheet back mid-exit. */
+    var open = true
+    /** True while a dismiss is in flight and cannot be taken back: committed, or fired and the sheet is closing. */
+    internal val locked: Boolean get() = committed || (fired && !open)
 
     /** Fires [onDismiss] once per commit. */
     fun fire() {
@@ -88,6 +92,7 @@ internal fun rememberSwipeDown(onDismiss: () -> Unit, open: Boolean = true, slid
     val latest by rememberUpdatedState(onDismiss)
     val state = remember { SwipeDownState { latest() } }
     state.slideOut = slideOut
+    state.open = open
     // Shown again while an earlier dismiss was still fading out: the same composition lives on, so start from the top.
     LaunchedEffect(open) { if (open) state.reset() }
     return state
@@ -102,14 +107,14 @@ internal fun Modifier.swipeDownToDismiss(state: SwipeDownState): Modifier = comp
     val animate = animatorDurationScale(LocalContext.current) > 0f
     val animateNow by rememberUpdatedState(animate)
     fun touch() {
-        if (state.committed) return
+        if (state.locked) return
         state.job?.cancel()
         if (state.fired) state.reset()
     }
     // Leaving mid-slide must still close: the dismiss is final once committed.
     DisposableEffect(state) { onDispose { if (state.committed) state.fire() } }
     fun settle(velocity: Float) {
-        if (state.committed) return
+        if (state.locked) return
         state.job?.cancel()
         val dismiss = shouldDismissSwipe(state.offset, velocity, state.height)
         if (dismiss) {
@@ -141,7 +146,7 @@ internal fun Modifier.swipeDownToDismiss(state: SwipeDownState): Modifier = comp
     val connection = remember {
         object : NestedScrollConnection {
             override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
-                if (state.committed) return if (source == NestedScrollSource.UserInput) available else Offset.Zero
+                if (state.locked) return if (source == NestedScrollSource.UserInput) available else Offset.Zero
                 if (source == NestedScrollSource.UserInput) touch()
                 if (source != NestedScrollSource.UserInput || state.offset <= 0f || available.y >= 0f) return Offset.Zero
                 val next = (state.offset + available.y).coerceAtLeast(0f)
@@ -150,20 +155,20 @@ internal fun Modifier.swipeDownToDismiss(state: SwipeDownState): Modifier = comp
                 return Offset(0f, used)
             }
             override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
-                if (state.committed) return Offset.Zero
+                if (state.locked) return Offset.Zero
                 if (source != NestedScrollSource.UserInput || available.y <= 0f) return Offset.Zero
                 state.offset += available.y
                 return Offset(0f, available.y)
             }
             override suspend fun onPreFling(available: Velocity): Velocity {
-                if (state.committed) return available
+                if (state.locked) return available
                 if (state.offset <= 0f) return Velocity.Zero
                 settle(available.y)
                 return available
             }
         }
     }
-    val drag = rememberDraggableState { if (!state.committed) state.offset = (state.offset + it).coerceAtLeast(0f) }
+    val drag = rememberDraggableState { if (!state.locked) state.offset = (state.offset + it).coerceAtLeast(0f) }
     this
         .onSizeChanged { state.height = it.height.toFloat() }
         .nestedScroll(connection)

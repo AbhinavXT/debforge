@@ -586,6 +586,8 @@ private fun ActiveVideoHost(
             surface.translationY = if (m && !miniPicture.hidden) miniSwipe.dragY else 0f
         }
         miniPicture.active = miniNow
+        // Entering picture-in-picture mid-drag: drop the swipe so nothing is left held or offset when the app returns.
+        LaunchedEffect(pip) { if (pip) { miniSwipe.reset(); applyMini() } }
         SideEffect { miniSwipe.onMoved = { applyMini() }; applyMini() }
         LaunchedEffect(miniNow) {
             if (!miniNow) return@LaunchedEffect

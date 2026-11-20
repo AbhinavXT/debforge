@@ -275,10 +275,24 @@ private fun Artwork(state: AudioState, share: ArtworkShare?, onNext: () -> Unit,
     }
     // Next sits on the right in LTR (swiping left brings it in), previous on the left; mirrored in RTL.
     val nextSide = if (rtl) -1 else 1
+    // The neighbours only change with the queue position, so they are not recomputed on every position tick.
+    val memo = remember { NeighbourMemo() }
+    val neighbours = memo.get(listOf(state.index, state.order, state.repeat, state.queue, state.track?.id, state.positionMs > PREVIOUS_RESTARTS_AFTER_MS)) {
+        artworkNeighbour(state, 1) to artworkNeighbour(state, -1)
+    }
+    // Set when a swipe landed on a track not known ahead (previous under shuffle): the placeholder stays in the centre until the player reports the new track.
+    var holdId by remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(holdId, current?.id) {
+        if (holdId == null) return@LaunchedEffect
+        if (holdId != current?.id) { holdId = null; return@LaunchedEffect }
+        kotlinx.coroutines.delay(1500)
+        holdId = null
+    }
+    val holding = holdId != null && holdId == current?.id && frozen == null
     fun neighbourAt(side: Int): AudioTrack? {
         val dir = if (side == nextSide) 1 else -1
         frozen?.let { (_, arriving, slideDir) -> return if (side == arrivingSide(slideDir, rtl)) arriving else null }
-        return if (pinnedSet && centre?.id != current?.id) null else artworkNeighbour(state, dir)
+        return if (holding || (pinnedSet && centre?.id != current?.id)) null else if (dir > 0) neighbours.first else neighbours.second
     }
     val swipe = Modifier.artworkSwipe(
         swipeState,
@@ -290,6 +304,7 @@ private fun Artwork(state: AudioState, share: ArtworkShare?, onNext: () -> Unit,
             if (dir > 0) onNext() else onPrevious()
         },
         onLanded = {
+            if (frozen?.second == null) holdId = stateNow.track?.id
             arrived[0] = frozen?.second?.id
             pinned = frozen?.second
             pinnedSet = true
@@ -312,7 +327,7 @@ private fun Artwork(state: AudioState, share: ArtworkShare?, onNext: () -> Unit,
         val used = HashSet<String>()
         fun keyFor(t: AudioTrack, slot: Int): String = if (used.add(t.id)) t.id else "${t.id}#$slot".also { used.add(it) }
         val slots = buildList {
-            centre?.let { add(Triple(it, 0, keyFor(it, 0))) }
+            if (!holding) centre?.let { add(Triple(it, 0, keyFor(it, 0))) }
             for (side in intArrayOf(1, -1)) neighbourAt(side)?.let { add(Triple(it, side, keyFor(it, side))) }
         }
         for ((t, side, k) in slots) androidx.compose.runtime.key(k) {
@@ -324,6 +339,7 @@ private fun Artwork(state: AudioState, share: ArtworkShare?, onNext: () -> Unit,
             // One call site for every slot, so the arriving artwork keeps its composition (and its drawn image) as it becomes the centre.
             TrackArt(t, layer.then(artMod).sharedArtwork(share?.transition?.takeIf { side == 0 }, t.id, visible).clip(ArtShape))
         }
+        if (holding) Box(Modifier.fillMaxSize().clip(ArtShape).background(cs.surfaceVariant))
         // A committed swipe whose track is not known ahead (previous under shuffle) still slides something in.
         frozen?.let { (_, arriving, slideDir) ->
             if (arriving == null) {

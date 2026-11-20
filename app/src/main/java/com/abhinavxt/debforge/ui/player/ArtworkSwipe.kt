@@ -208,3 +208,15 @@ internal fun Modifier.artworkSwipe(
             }
         }
 }
+
+/** Remembers one computed value per key, so a recomposition with an equal key does not compute it again. */
+internal class NeighbourMemo {
+    private var key: Any? = null
+    private var value: Any? = null
+    private var has = false
+    @Suppress("UNCHECKED_CAST")
+    fun <T> get(key: Any?, compute: () -> T): T {
+        if (!has || this.key != key) { value = compute(); this.key = key; has = true }
+        return value as T
+    }
+}

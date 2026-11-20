@@ -25,4 +25,22 @@ class SwipeDownTest {
         assertFalse(shouldDismissSwipe(900f, Float.NaN, 2400f))
         assertFalse(shouldDismissSwipe(900f, 0f, Float.POSITIVE_INFINITY))
     }
+
+    @Test fun firedWhileClosingIsLockedUntilReopened() {
+        val st = SwipeDownState {}
+        assertFalse(st.locked)
+        st.fire(); st.open = false
+        assertTrue(st.locked)
+        st.open = true
+        assertFalse(st.locked)
+    }
+
+    @Test fun neighbourMemoComputesOncePerKey() {
+        val memo = NeighbourMemo()
+        var n = 0
+        repeat(5) { memo.get(listOf(1, "a")) { n++ } }
+        assertTrue(n == 1)
+        memo.get(listOf(2, "a")) { n++ }
+        assertTrue(n == 2)
+    }
 }
