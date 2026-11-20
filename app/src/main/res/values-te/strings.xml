@@ -682,6 +682,11 @@
     <string name="player_subs_search_failed">OpenSubtitles‌లో వెతకలేకపోయాం. కనెక్షన్ తనిఖీ చేయండి.</string>
     <string name="player_subs_quota">ఈరోజు OpenSubtitles డౌన్‌లోడ్‌లు అయిపోయాయి. ఎక్కువ కోసం సెట్టింగ్స్‌లో మీ OpenSubtitles ఖాతాను జోడించండి.</string>
     <string name="player_subs_download_failed">ఆ సబ్‌టైటిల్ డౌన్‌లోడ్ కాలేదు.</string>
+    <string name="player_subs_find_online">ఆన్‌లైన్‌లో సబ్‌టైటిల్స్ వెతకండి</string>
+    <string name="player_subs_find_online_hint">OpenSubtitles సెటప్ చేయండి (ఉచితం)</string>
+    <string name="player_subs_add_file">సబ్‌టైటిల్ ఫైల్ జోడించండి…</string>
+    <string name="player_subs_file_invalid">ఇది సబ్‌టైటిల్ ఫైల్‌లా లేదు (.srt, .ass, .vtt).</string>
+    <string name="player_subs_file_failed">ఆ సబ్‌టైటిల్ ఫైల్‌ను జోడించలేకపోయాం.</string>
     <string name="player_subs_online_label">%1$s (OpenSubtitles)</string>
     <string name="os_title">OpenSubtitles</string>
     <string name="os_detail">సబ్‌టైటిల్స్ లేని ఫైల్‌లకు సబ్‌టైటిల్స్ కనుగొనండి: ప్లేయర్‌లో సబ్‌టైటిల్స్ → ఆన్‌లైన్‌లో వెతకండి.</string>

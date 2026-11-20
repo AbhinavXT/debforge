@@ -717,6 +717,11 @@
     <string name="player_subs_search_failed">Não foi possível buscar no OpenSubtitles. Verifique a conexão.</string>
     <string name="player_subs_quota">Os downloads de hoje do OpenSubtitles acabaram. Adicione sua conta do OpenSubtitles nas Configurações para ter mais.</string>
     <string name="player_subs_download_failed">Não foi possível baixar essa legenda.</string>
+    <string name="player_subs_find_online">Encontrar legendas on-line</string>
+    <string name="player_subs_find_online_hint">Configurar o OpenSubtitles (grátis)</string>
+    <string name="player_subs_add_file">Adicionar arquivo de legenda…</string>
+    <string name="player_subs_file_invalid">Isso não parece um arquivo de legenda (.srt, .ass, .vtt).</string>
+    <string name="player_subs_file_failed">Não foi possível adicionar esse arquivo de legenda.</string>
     <string name="player_subs_online_label">%1$s (OpenSubtitles)</string>
     <string name="os_title">OpenSubtitles</string>
     <string name="os_detail">Encontre legendas para arquivos que vieram sem: Legendas → Buscar on-line no player.</string>

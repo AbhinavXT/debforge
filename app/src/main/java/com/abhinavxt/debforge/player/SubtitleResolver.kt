@@ -46,14 +46,16 @@ class SubtitleResolver @Inject constructor(
                     val url = f.item.downloadUrl
                         ?: (repository.resolveLink(f.item.provider, f.item.sourceRef) as? DataResult.Success)?.data?.url
                     url?.let {
+                        // A file on the device has no service to refresh its link from.
+                        val local = it.startsWith("content:") || it.startsWith("file:")
                         SubtitleLink(
                             url = it,
                             mimeType = f.mimeType,
                             language = f.language,
                             label = Subtitles.label(f, display, forcedWord),
                             forced = f.forced,
-                            provider = f.item.provider,
-                            sourceRef = f.item.sourceRef
+                            provider = f.item.provider.takeUnless { local },
+                            sourceRef = f.item.sourceRef.takeUnless { local }
                         )
                     }
                 }

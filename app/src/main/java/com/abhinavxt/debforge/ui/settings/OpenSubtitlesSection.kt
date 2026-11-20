@@ -131,6 +131,12 @@ fun OpenSubtitlesSection(viewModel: OpenSubtitlesViewModel = hiltViewModel()) {
     }
 }
 
+/** The OpenSubtitles setup on its own (the player's Subtitles panel opens it when no key is saved). */
+@Composable
+fun OpenSubtitlesSetupDialog(onDismiss: () -> Unit, viewModel: OpenSubtitlesViewModel = hiltViewModel()) {
+    OpenSubtitlesDialog(viewModel = viewModel, initialKey = "", initialUser = "", onDismiss = onDismiss)
+}
+
 @Composable
 private fun OpenSubtitlesDialog(
     viewModel: OpenSubtitlesViewModel,

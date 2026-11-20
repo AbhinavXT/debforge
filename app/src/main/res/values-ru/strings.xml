@@ -752,6 +752,11 @@
     <string name="player_subs_search_failed">Не удалось выполнить поиск в OpenSubtitles. Проверьте подключение.</string>
     <string name="player_subs_quota">Лимит скачиваний OpenSubtitles на сегодня исчерпан. Добавьте аккаунт OpenSubtitles в настройках, чтобы получить больше.</string>
     <string name="player_subs_download_failed">Не удалось скачать эти субтитры.</string>
+    <string name="player_subs_find_online">Найти субтитры в интернете</string>
+    <string name="player_subs_find_online_hint">Настроить OpenSubtitles (бесплатно)</string>
+    <string name="player_subs_add_file">Добавить файл субтитров…</string>
+    <string name="player_subs_file_invalid">Это не похоже на файл субтитров (.srt, .ass, .vtt).</string>
+    <string name="player_subs_file_failed">Не удалось добавить файл субтитров.</string>
     <string name="player_subs_online_label">%1$s (OpenSubtitles)</string>
     <string name="os_title">OpenSubtitles</string>
     <string name="os_detail">Ищите субтитры для файлов без них: в плеере Субтитры → Найти в интернете.</string>

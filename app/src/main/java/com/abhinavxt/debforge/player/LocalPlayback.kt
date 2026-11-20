@@ -12,6 +12,7 @@ import com.abhinavxt.debforge.domain.ReleaseNameParser
 import com.abhinavxt.debforge.domain.Subtitles
 import com.abhinavxt.debforge.download.LocalFiles
 import com.abhinavxt.debforge.download.SafPaths
+import com.abhinavxt.debforge.download.SubtitleImporter
 import com.abhinavxt.debforge.ui.browse.PlayRequest
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -57,17 +58,26 @@ class LocalPlayback @Inject constructor(
                 (info.kind == MediaKind.SHOW && ReleaseNameParser.parse(other.filename).groupKey == info.groupKey))
         }
         val video = entity.toLocalItem(uri, folder)
-        val pool = listOf(video) + related.mapNotNull { other ->
+        val rows = listOf(video) + related.mapNotNull { other ->
             val p = other.finalFilePath ?: return@mapNotNull null
             LocalFiles.uriFor(context, p)?.let { other.toLocalItem(it, folderOf(p)) }
         }
+        // Subtitle files lying next to the video (copied there, or from a computer), whatever service
+        // the video came from; a subtitle already in the pool as a download isn't added twice.
+        val known = rows.filter(Subtitles::isSubtitle).mapTo(HashSet()) { it.filename }
+        // Copies kept in app storage (picked in the player when the folder couldn't be written) count too.
+        val sidecars = (LocalFiles.subtitleSiblings(context, path) + SubtitleImporter.appStorageSubtitles(context, entity.id))
+            .filterKeys { it !in known }
+            .map { (name, u) -> Subtitles.sidecarItem(name, u.toString(), video.parentRef!!) }
+        val pool = rows + sidecars
+        val folderFiles = LocalFiles.folderFileNames(context, path)
 
         val candidates = pool.map { NextEpisode.Candidate(it, ReleaseNameParser.parse(it.filename)) }
         fun queued(c: NextEpisode.Candidate) = QueuedEpisode(
             item = c.item.copy(parentRef = null),
             title = c.info.displayTitle,
             showKey = c.info.groupKey.takeIf { c.info.kind == MediaKind.SHOW },
-            subtitles = Subtitles.forVideo(c.item, pool)
+            subtitles = Subtitles.forVideo(c.item, pool, anyProvider = true, folderFileNames = folderFiles)
         )
         upNext.set(
             video.id,
@@ -85,7 +95,7 @@ class LocalPlayback @Inject constructor(
             // pair subtitles, and mustn't be saved as the file's torrent.
             item = video.copy(parentRef = null),
             showKey = info.groupKey.takeIf { info.kind == MediaKind.SHOW },
-            subtitles = subtitleResolver.resolve(Subtitles.forVideo(video, pool))
+            subtitles = subtitleResolver.resolve(Subtitles.forVideo(video, pool, anyProvider = true, folderFileNames = folderFiles))
         )
     }
 

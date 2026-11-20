@@ -88,6 +88,10 @@ class ControlsState {
     var subStyle by mutableStateOf(com.abhinavxt.debforge.player.tracks.SubtitleStyle())
     /** OpenSubtitles is set up (Settings): the Subtitles panel offers "Search online". */
     var onlineSubsAvailable by mutableStateOf(false)
+    /** OpenSubtitles isn't set up yet: the Subtitles panel offers "Find subtitles online" (opens the setup). */
+    var onlineSubsNeedsSetup by mutableStateOf(false)
+    /** A downloaded video on a phone or tablet: the Subtitles panel offers "Add subtitle file…". */
+    var subtitleFileAvailable by mutableStateOf(false)
     var onlineSubs by mutableStateOf<OnlineSubs>(OnlineSubs.Idle)
     /** Sleep timer: pause at this elapsedRealtime (0 = off)… */
     var sleepEndsAt by mutableLongStateOf(0L)

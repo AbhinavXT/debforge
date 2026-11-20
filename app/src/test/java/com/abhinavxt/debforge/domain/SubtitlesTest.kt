@@ -90,4 +90,41 @@ class SubtitlesTest {
         assertEquals("S10E120", Subtitles.episodeOf("Show S10 E120"))
         assertEquals(null, Subtitles.episodeOf("Movie.2023.srt"))
     }
+
+    private fun dl(name: String, provider: ProviderId) = f(name).copy(provider = provider, parentRef = "local:/d")
+    private fun side(name: String) = Subtitles.sidecarItem(name, "content://x/$name", "local:/d")
+
+    @Test fun sidecarPairsAcrossProviders() {
+        val video = dl("Movie.2023.mkv", ProviderId.TORBOX)
+        val subs = listOf(side("Movie.2023.srt"), side("Movie.2023.en.srt"), side("Movie.2023.English.srt"))
+        val found = Subtitles.forVideo(video, listOf(video) + subs, anyProvider = true)
+        assertEquals(3, found.size)
+        assertEquals("en", found.first { it.item.filename == "Movie.2023.English.srt" }.language)
+        assertTrue(Subtitles.forVideo(video, listOf(video) + subs).isEmpty())
+    }
+
+    @Test fun loneSubsInFolderWithSeveralVideosDoesNotAttachToAll() {
+        val a = dl("Alpha.Film.2020.mkv", ProviderId.TORBOX)
+        val b = dl("Beta.Film.2021.mkv", ProviderId.LOCAL)
+        val pool = listOf(a, b, side("subs.srt"), side("Alpha.Film.2020.en.srt"))
+        assertEquals(listOf("Alpha.Film.2020.en.srt"), names(Subtitles.forVideo(a, pool, anyProvider = true)))
+        assertTrue(Subtitles.forVideo(b, pool, anyProvider = true).isEmpty())
+    }
+
+    @Test fun unlistedVideoInFolderStopsUnrelatedSidecarAttaching() {
+        val video = dl("My.Film.2020.mkv", ProviderId.TORBOX)
+        val pool = listOf(video, side("Other.Movie.srt"), side("My.Film.2020.en.srt"))
+        val files = listOf("My.Film.2020.mkv", "Other.Movie.mkv", "Other.Movie.srt", "My.Film.2020.en.srt")
+        assertEquals(
+            listOf("My.Film.2020.en.srt"),
+            names(Subtitles.forVideo(video, pool, anyProvider = true, folderFileNames = files))
+        )
+    }
+
+    @Test fun lonelyVideoFolderStillTakesAnySidecar() {
+        val video = dl("My.Film.2020.mkv", ProviderId.TORBOX)
+        val pool = listOf(video, side("subs.srt"))
+        val files = listOf("My.Film.2020.mkv", "subs.srt", "cover.jpg")
+        assertEquals(listOf("subs.srt"), names(Subtitles.forVideo(video, pool, anyProvider = true, folderFileNames = files)))
+    }
 }

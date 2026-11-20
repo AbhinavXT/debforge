@@ -682,6 +682,11 @@
     <string name="player_subs_search_failed">OpenSubtitles वर शोधता आले नाही. कनेक्शन तपासा.</string>
     <string name="player_subs_quota">आजचे OpenSubtitles डाउनलोड संपले. अधिकसाठी सेटिंग्जमध्ये तुमचे OpenSubtitles खाते जोडा.</string>
     <string name="player_subs_download_failed">ते सबटायटल डाउनलोड झाले नाही.</string>
+    <string name="player_subs_find_online">ऑनलाइन सबटायटल शोधा</string>
+    <string name="player_subs_find_online_hint">OpenSubtitles सेट अप करा (मोफत)</string>
+    <string name="player_subs_add_file">सबटायटल फाइल जोडा…</string>
+    <string name="player_subs_file_invalid">ही सबटायटल फाइल वाटत नाही (.srt, .ass, .vtt).</string>
+    <string name="player_subs_file_failed">ती सबटायटल फाइल जोडता आली नाही.</string>
     <string name="player_subs_online_label">%1$s (OpenSubtitles)</string>
     <string name="os_title">OpenSubtitles</string>
     <string name="os_detail">सबटायटल नसलेल्या फाइल्ससाठी सबटायटल शोधा: प्लेयरमध्ये सबटायटल → ऑनलाइन शोधा.</string>

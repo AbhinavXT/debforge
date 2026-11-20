@@ -647,6 +647,11 @@
     <string name="player_subs_search_failed">无法搜索 OpenSubtitles，请检查网络。</string>
     <string name="player_subs_quota">今天的 OpenSubtitles 下载次数已用完。在设置中添加你的 OpenSubtitles 账号可获得更多。</string>
     <string name="player_subs_download_failed">无法下载该字幕。</string>
+    <string name="player_subs_find_online">在线查找字幕</string>
+    <string name="player_subs_find_online_hint">设置 OpenSubtitles（免费）</string>
+    <string name="player_subs_add_file">添加字幕文件…</string>
+    <string name="player_subs_file_invalid">这看起来不是字幕文件（.srt、.ass、.vtt）。</string>
+    <string name="player_subs_file_failed">无法添加该字幕文件。</string>
     <string name="player_subs_online_label">%1$s（OpenSubtitles）</string>
     <string name="os_title">OpenSubtitles</string>
     <string name="os_detail">为没有字幕的文件查找字幕：在播放器中点 字幕 → 在线搜索。</string>

@@ -50,17 +50,27 @@ object Subtitles {
      * Subtitles for [video] among [siblings] (the other files of its
      * torrent, same service). A torrent with one video: all of them. A pack
      * with several: those whose path names the video, or whose
-     * season/episode matches.
+     * season/episode matches. [anyProvider]: device files, where the same
+     * folder is enough (a subtitle copied next to a downloaded video). [folderFileNames]: every file
+     * name in that folder, so videos that aren't known downloads still count.
      */
-    fun forVideo(video: DownloadItem, siblings: List<DownloadItem>): List<Found> {
+    fun forVideo(
+        video: DownloadItem,
+        siblings: List<DownloadItem>,
+        anyProvider: Boolean = false,
+        folderFileNames: Collection<String> = emptyList()
+    ): List<Found> {
         val sameTorrent = siblings.filter {
-            it.id != video.id && it.provider == video.provider &&
+            it.id != video.id && (anyProvider || it.provider == video.provider) &&
                 video.parentRef != null && it.parentRef == video.parentRef
         }
         val subs = sameTorrent.filter(::isSubtitle)
         if (subs.isEmpty()) return emptyList()
         // Real videos only: a sample clip doesn't make it a multi-video pack.
-        val videos = ExtraFiles.hideInTorrent(sameTorrent + video).filter(ExtraFiles::isVideo)
+        val known = (sameTorrent + video).mapTo(HashSet()) { it.filename }
+        // Files lying in the folder that aren't known downloads still make it a multi-video folder.
+        val unlisted = folderFileNames.filter { it !in known }.map { sidecarItem(it, "", video.parentRef!!) }
+        val videos = ExtraFiles.hideInTorrent(sameTorrent + video + unlisted).filter(ExtraFiles::isVideo)
         val picked = if (videos.size <= 1) subs else {
             val base = video.filename.substringBeforeLast('.').lowercase()
             val episode = episodeOf(video.path ?: video.filename)
@@ -76,6 +86,23 @@ object Subtitles {
             .sortedWith(compareBy<Found>({ it.language == null }, { it.language }, { it.forced }, { it.sdh }))
             .take(MAX_TRACKS)
     }
+
+    /**
+     * A subtitle file lying next to a video on the device, as an item for [forVideo] with
+     * `anyProvider`. [folderRef] is the video's parentRef; [uri] is the file's content URI.
+     */
+    fun sidecarItem(name: String, uri: String, folderRef: String) = DownloadItem(
+        id = "sidecar:$folderRef/$name",
+        provider = ProviderId.LOCAL,
+        filename = name,
+        sourceRef = uri,
+        downloadUrl = uri,
+        host = "",
+        filesize = 0L,
+        maxConnections = 1,
+        addedAt = null,
+        parentRef = folderRef
+    )
 
     private val EPISODE = Regex("""s(\d{1,2})[ ._-]?e(\d{1,3})""", RegexOption.IGNORE_CASE)
 

@@ -682,6 +682,11 @@
     <string name="player_subs_search_failed">OpenSubtitles\'ta arama yapılamadı. Bağlantını kontrol et.</string>
     <string name="player_subs_quota">Bugünkü OpenSubtitles indirmeleri bitti. Daha fazlası için Ayarlar\'a OpenSubtitles hesabını ekle.</string>
     <string name="player_subs_download_failed">Bu altyazı indirilemedi.</string>
+    <string name="player_subs_find_online">Çevrimiçi altyazı bul</string>
+    <string name="player_subs_find_online_hint">OpenSubtitles\'i kur (ücretsiz)</string>
+    <string name="player_subs_add_file">Altyazı dosyası ekle…</string>
+    <string name="player_subs_file_invalid">Bu bir altyazı dosyasına benzemiyor (.srt, .ass, .vtt).</string>
+    <string name="player_subs_file_failed">Bu altyazı dosyası eklenemedi.</string>
     <string name="player_subs_online_label">%1$s (OpenSubtitles)</string>
     <string name="os_title">OpenSubtitles</string>
     <string name="os_detail">Altyazısız gelen dosyalar için altyazı bul: oynatıcıda Altyazılar → Çevrimiçi ara.</string>

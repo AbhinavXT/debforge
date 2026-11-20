@@ -92,6 +92,7 @@ class VideoSession @Inject constructor(
     private val chapterReader: ChapterReader,
     internal val youTubeResolver: com.abhinavxt.debforge.data.youtube.YouTubeResolver,
     internal val networkMonitor: com.abhinavxt.debforge.download.NetworkMonitor,
+    internal val subtitleImporter: com.abhinavxt.debforge.download.SubtitleImporter,
 ) {
     private val lifecycle = VideoLifecycle(Steps())
 
@@ -262,6 +263,7 @@ class VideoSession @Inject constructor(
         identity?.let { episodes.load(upNext.take(it.itemId)) }
         controls.title = title
         controls.castAvailable = !isTv && !isLocalFile() && youtube == null
+        controls.subtitleFileAvailable = subtitleFileAllowed()
         controls.externalAvailable = youtube == null
         startFile()
         refreshAudioHandoff()
@@ -270,7 +272,7 @@ class VideoSession @Inject constructor(
             controls.showRemaining = settings.playerShowRemainingFlow.first()
             controls.subStyle = SubtitleStyle.decode(settings.subtitleStyleFlow.first())
             controls.background = settings.playerBackgroundFlow.first()
-            controls.onlineSubsAvailable = !isTv && openSubtitles.enabled.first()
+            refreshOnlineSubs()
             skips.autoSkipIntro = settings.autoSkipIntroFlow.first()
             controls.nightMode = settings.nightModeFlow.first()
             streamPreviews = settings.streamPreviewsFlow.first()
@@ -433,6 +435,16 @@ class VideoSession @Inject constructor(
     internal fun durationOrNull(): Long? = player?.duration?.takeIf { it != C.TIME_UNSET && it > 0 }
 
     fun isLocalFile() = uri.scheme == "content" || uri.scheme == "file"
+
+    /** "Add subtitle file…": a downloaded or imported video on a phone or tablet (a stream has no file to put it next to). */
+    internal fun subtitleFileAllowed() = !isTv && youtube == null && identity != null && isLocalFile()
+
+    /** Reads whether OpenSubtitles is set up: the Subtitles panel then offers the search, or how to set it up. */
+    internal suspend fun refreshOnlineSubs() {
+        val on = openSubtitles.enabled.first()
+        controls.onlineSubsAvailable = !isTv && on
+        controls.onlineSubsNeedsSetup = !isTv && !on
+    }
 
     val hasNext get() = episodes.hasNext
     val hasPrevious get() = episodes.hasPrevious
@@ -713,6 +725,7 @@ class VideoSession @Inject constructor(
         host?.titleChanged(title)
         controls.title = title
         controls.castAvailable = !isTv && !isLocalFile() && youtube == null
+        controls.subtitleFileAvailable = subtitleFileAllowed()
         controls.externalAvailable = youtube == null
         handoffStart = null // a later episode is not the handed-over item
         startFile()

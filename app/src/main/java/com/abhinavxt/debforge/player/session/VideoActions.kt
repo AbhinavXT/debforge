@@ -155,6 +155,52 @@ class VideoActions internal constructor(private val s: VideoSession) : ControlsA
 
     override fun pickOnlineSubtitle(sub: com.abhinavxt.debforge.data.subtitles.OnlineSubtitle) = pickOnline(sub)
 
+    override fun refreshOnlineSubs() {
+        s.scope.launch { s.refreshOnlineSubs() }
+    }
+
+    /** Copies the picked file next to the video (or into app storage), then reloads at the same second and switches to it. */
+    override fun addSubtitleFile(uri: Uri) {
+        val id = s.identity?.itemId ?: return
+        if (!s.subtitleFileAllowed()) return
+        s.scope.launch {
+            val added = try {
+                s.subtitleImporter.add(id, uri)
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
+            } catch (e: com.abhinavxt.debforge.download.SubtitleImporter.Problem) {
+                toast(s.string(e.reason))
+                return@launch
+            } catch (e: Exception) {
+                toast(s.string(R.string.player_subs_file_failed))
+                return@launch
+            }
+            val (language, forced, sdh) = com.abhinavxt.debforge.domain.Subtitles.describe(added.name)
+            val ext = added.name.substringAfterLast('.').lowercase()
+            val found = com.abhinavxt.debforge.domain.Subtitles.Found(
+                item = com.abhinavxt.debforge.domain.Subtitles.sidecarItem(added.name, added.uri.toString(), "added"),
+                mimeType = com.abhinavxt.debforge.domain.Subtitles.MIME_TYPES.getValue(ext),
+                language = language, forced = forced, sdh = sdh
+            )
+            var link = s.subtitleResolver.resolve(listOf(found)).firstOrNull() ?: run {
+                toast(s.string(R.string.player_subs_file_failed))
+                return@launch
+            }
+            // The track is picked by its label: keep it different from the ones already listed.
+            if (s.subtitles.any { it.label == link.label && it.url != link.url }) {
+                link = link.copy(label = added.name.substringBeforeLast('.'))
+            }
+            s.subtitles = s.subtitles.filterNot { it.url == link.url } + link
+            s.pendingTextLabel = link.label
+            controls.panel = null
+            s.player?.let { p -> s.reloadMediaItem(p.currentPosition, play = p.playWhenReady) }
+        }
+    }
+
+    private fun toast(text: String) {
+        android.widget.Toast.makeText(s.context, text, android.widget.Toast.LENGTH_SHORT).show()
+    }
+
     override fun setSpeed(speed: Float) {
         player?.setPlaybackSpeed(speed)
         controls.panel = null

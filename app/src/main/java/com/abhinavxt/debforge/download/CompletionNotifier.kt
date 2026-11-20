@@ -10,6 +10,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.FileProvider
 import com.abhinavxt.debforge.R
 import com.abhinavxt.debforge.data.local.DownloadEntity
+import com.abhinavxt.debforge.domain.Subtitles
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.File
 import javax.inject.Inject
@@ -88,6 +89,24 @@ object LocalFiles {
         for (p in plain) uriFor(context, p)?.let { out[p] = it }
         return out
     }
+
+    /** Subtitle files (.srt/.ass/.ssa/.vtt) in the folder holding [path]: name to content URI. Blocking. */
+    fun subtitleSiblings(context: Context, path: String): Map<String, Uri> {
+        fun isSub(name: String) = name.substringAfterLast('.', "").lowercase() in Subtitles.MIME_TYPES
+        if (SafPaths.isSaf(path)) return SafStore.listSiblings(context, path).filterKeys(::isSub)
+        val files = File(path).parentFile?.listFiles() ?: return emptyMap()
+        val out = LinkedHashMap<String, Uri>()
+        for (f in files) {
+            if (!f.isFile || !isSub(f.name)) continue
+            uriFor(context, f.path)?.let { out[f.name] = it }
+        }
+        return out
+    }
+
+    /** Every file name in the folder holding [path]. Blocking. */
+    fun folderFileNames(context: Context, path: String): Set<String> =
+        if (SafPaths.isSaf(path)) SafStore.listSiblings(context, path).keys
+        else File(path).parentFile?.list()?.toSet().orEmpty()
 
     fun mimeType(fileName: String): String =
         MimeTypeMap.getSingleton().getMimeTypeFromExtension(fileName.substringAfterLast('.', "").lowercase()) ?: "*/*"

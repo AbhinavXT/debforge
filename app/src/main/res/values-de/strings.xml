@@ -682,6 +682,11 @@
     <string name="player_subs_search_failed">OpenSubtitles-Suche fehlgeschlagen. Prüfe deine Verbindung.</string>
     <string name="player_subs_quota">Die heutigen OpenSubtitles-Downloads sind aufgebraucht. Füge in den Einstellungen dein OpenSubtitles-Konto hinzu, um mehr zu bekommen.</string>
     <string name="player_subs_download_failed">Dieser Untertitel konnte nicht geladen werden.</string>
+    <string name="player_subs_find_online">Untertitel online finden</string>
+    <string name="player_subs_find_online_hint">OpenSubtitles einrichten (kostenlos)</string>
+    <string name="player_subs_add_file">Untertiteldatei hinzufügen…</string>
+    <string name="player_subs_file_invalid">Das sieht nicht nach einer Untertiteldatei aus (.srt, .ass, .vtt).</string>
+    <string name="player_subs_file_failed">Die Untertiteldatei konnte nicht hinzugefügt werden.</string>
     <string name="player_subs_online_label">%1$s (OpenSubtitles)</string>
     <string name="os_title">OpenSubtitles</string>
     <string name="os_detail">Finde Untertitel für Dateien ohne: im Player Untertitel → Online suchen.</string>

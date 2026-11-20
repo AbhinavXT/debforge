@@ -114,6 +114,33 @@ internal object SafStore {
         return out
     }
 
+    /** Names and document URIs of the files in the folder holding [path] (one listing). Empty if unreadable. */
+    fun listSiblings(context: Context, path: String): Map<String, Uri> = try {
+        val p = parsed(path)
+        val tree = Uri.parse(p.treeUri)
+        val dir = folder(context, p, create = false)
+        val out = LinkedHashMap<String, Uri>()
+        if (dir != null) {
+            val children = DocumentsContract.buildChildDocumentsUriUsingTree(tree, DocumentsContract.getDocumentId(dir))
+            context.contentResolver.query(
+                children, arrayOf(Document.COLUMN_DOCUMENT_ID, Document.COLUMN_DISPLAY_NAME), null, null, null
+            )?.use { c ->
+                while (c.moveToNext()) {
+                    val name = c.getString(1) ?: continue
+                    out.putIfAbsent(name, DocumentsContract.buildDocumentUriUsingTree(tree, c.getString(0)))
+                }
+            }
+        }
+        out
+    } catch (e: SecurityException) {
+        emptyMap()
+    } catch (e: FileNotFoundException) {
+        dirCache.clear()
+        emptyMap()
+    } catch (e: IllegalArgumentException) {
+        emptyMap()
+    }
+
     fun exists(context: Context, path: String): Boolean = find(context, path) != null
 
     /** Finds or creates [path] (and its folders). */

@@ -682,6 +682,11 @@
     <string name="player_subs_search_failed">OpenSubtitles-এ খোঁজা যায়নি। সংযোগ দেখুন।</string>
     <string name="player_subs_quota">আজকের OpenSubtitles ডাউনলোড শেষ। আরও পেতে সেটিংসে আপনার OpenSubtitles অ্যাকাউন্ট যোগ করুন।</string>
     <string name="player_subs_download_failed">সাবটাইটেলটি ডাউনলোড করা যায়নি।</string>
+    <string name="player_subs_find_online">অনলাইনে সাবটাইটেল খুঁজুন</string>
+    <string name="player_subs_find_online_hint">OpenSubtitles সেট আপ করুন (বিনামূল্যে)</string>
+    <string name="player_subs_add_file">সাবটাইটেল ফাইল যোগ করুন…</string>
+    <string name="player_subs_file_invalid">এটি সাবটাইটেল ফাইল বলে মনে হচ্ছে না (.srt, .ass, .vtt)।</string>
+    <string name="player_subs_file_failed">সাবটাইটেল ফাইলটি যোগ করা যায়নি।</string>
     <string name="player_subs_online_label">%1$s (OpenSubtitles)</string>
     <string name="os_title">OpenSubtitles</string>
     <string name="os_detail">সাবটাইটেল ছাড়া আসা ফাইলের জন্য সাবটাইটেল খুঁজুন: প্লেয়ারে সাবটাইটেল → অনলাইনে খুঁজুন।</string>

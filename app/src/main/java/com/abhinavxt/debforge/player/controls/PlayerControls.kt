@@ -45,6 +45,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.OpenInNew
+import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.AspectRatio
 import androidx.compose.material.icons.rounded.Bedtime
 import androidx.compose.material.icons.rounded.Headphones
@@ -159,6 +160,10 @@ interface ControlsActions {
     fun searchOnlineSubtitles(anyLanguage: Boolean)
     /** Download [sub], add it to the file and switch to it. */
     fun pickOnlineSubtitle(sub: com.abhinavxt.debforge.data.subtitles.OnlineSubtitle)
+    /** Copy the subtitle file the user picked next to this video, then load and select it. */
+    fun addSubtitleFile(uri: android.net.Uri) {}
+    /** OpenSubtitles may have just been set up: re-read it (the panel shows the search instead of the setup row). */
+    fun refreshOnlineSubs() {}
     fun setSpeed(speed: Float)
     fun setShowRemaining(show: Boolean)
     fun setSubtitleStyle(style: SubtitleStyle)
@@ -209,6 +214,14 @@ fun PlayerControls(state: ControlsState, actions: ControlsActions) {
     // Back closes an open panel first.
     androidx.activity.compose.BackHandler(enabled = state.panel != null) { state.panel = null }
 
+    // The file picker's launcher lives here, not in the side panel: the panel leaves the composition when it
+    // closes, which would drop the picked file's result.
+    val subtitlePicker = androidx.activity.compose.rememberLauncherForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.OpenDocument()
+    ) { uri -> if (uri != null) actions.addSubtitleFile(uri) }
+    val pickSubtitleFile: () -> Unit = { subtitlePicker.launch(com.abhinavxt.debforge.download.SubtitleFiles.PICKER_TYPES) }
+
+    androidx.compose.runtime.CompositionLocalProvider(LocalPickSubtitleFile provides pickSubtitleFile) {
     Box(Modifier.fillMaxSize()) {
         AnimatedVisibility(
             visible = state.visible && !state.locked,
@@ -259,7 +272,10 @@ fun PlayerControls(state: ControlsState, actions: ControlsActions) {
             SidePanel(shown, state, actions)
         }
     }
+    }
 }
+
+private val LocalPickSubtitleFile = androidx.compose.runtime.staticCompositionLocalOf<() -> Unit> { {} }
 
 /** Records this element's bounds so touches on it skip the gestures. */
 @Composable
@@ -781,6 +797,12 @@ private fun SidePanel(panel: Panel, state: ControlsState, actions: ControlsActio
                             }
                         }
                     }
+                    if (panel == Panel.SUBTITLES && state.onlineSubsNeedsSetup) {
+                        item { FindOnlineSetupRow(actions) }
+                    }
+                    if (panel == Panel.SUBTITLES && state.subtitleFileAvailable) {
+                        item { AddSubtitleFileRow() }
+                    }
                     if (panel == Panel.SUBTITLES) {
                         item { StyleSection(state.subStyle, actions::setSubtitleStyle) }
                     }
@@ -1058,6 +1080,28 @@ private fun MoreRow(icon: ImageVector, title: String, detail: String? = null, on
             if (detail != null) Text(detail, color = Color.White.copy(alpha = 0.6f), fontSize = 12.sp)
         }
     }
+}
+
+/** "Find subtitles online" while OpenSubtitles has no key: tapping opens its setup; saving it turns the search on. */
+@Composable
+private fun FindOnlineSetupRow(actions: ControlsActions) {
+    var setup by remember { mutableStateOf(false) }
+    MoreRow(Icons.Rounded.Search, stringResource(R.string.player_subs_find_online), stringResource(R.string.player_subs_find_online_hint)) {
+        setup = true
+    }
+    if (setup) {
+        com.abhinavxt.debforge.ui.settings.OpenSubtitlesSetupDialog(onDismiss = {
+            setup = false
+            actions.refreshOnlineSubs()
+        })
+    }
+}
+
+/** "Add subtitle file…": the system file picker; the engine copies the file next to the video. */
+@Composable
+private fun AddSubtitleFileRow() {
+    val pick = LocalPickSubtitleFile.current
+    MoreRow(Icons.Rounded.Add, stringResource(R.string.player_subs_add_file)) { pick() }
 }
 
 /** Size, look and height of subtitles, changed live. */

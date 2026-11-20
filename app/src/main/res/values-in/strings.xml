@@ -647,6 +647,11 @@
     <string name="player_subs_search_failed">Tidak bisa mencari di OpenSubtitles. Periksa koneksi.</string>
     <string name="player_subs_quota">Jatah unduhan OpenSubtitles hari ini habis. Tambahkan akun OpenSubtitles di Setelan untuk mendapat lebih banyak.</string>
     <string name="player_subs_download_failed">Subtitle itu tidak bisa diunduh.</string>
+    <string name="player_subs_find_online">Cari subtitle online</string>
+    <string name="player_subs_find_online_hint">Siapkan OpenSubtitles (gratis)</string>
+    <string name="player_subs_add_file">Tambah file subtitle…</string>
+    <string name="player_subs_file_invalid">Itu sepertinya bukan file subtitle (.srt, .ass, .vtt).</string>
+    <string name="player_subs_file_failed">File subtitle itu tidak bisa ditambahkan.</string>
     <string name="player_subs_online_label">%1$s (OpenSubtitles)</string>
     <string name="os_title">OpenSubtitles</string>
     <string name="os_detail">Cari subtitle untuk file yang tidak menyertakannya: Subtitle → Cari online di pemutar.</string>

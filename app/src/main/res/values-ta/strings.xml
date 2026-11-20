@@ -682,6 +682,11 @@
     <string name="player_subs_search_failed">OpenSubtitles-இல் தேட முடியவில்லை. இணைப்பைச் சரிபார்க்கவும்.</string>
     <string name="player_subs_quota">இன்றைய OpenSubtitles பதிவிறக்கங்கள் தீர்ந்தன. மேலும் பெற அமைப்புகளில் உங்கள் OpenSubtitles கணக்கைச் சேர்க்கவும்.</string>
     <string name="player_subs_download_failed">அந்த வசனத்தைப் பதிவிறக்க முடியவில்லை.</string>
+    <string name="player_subs_find_online">ஆன்லைனில் வசனங்களைத் தேடு</string>
+    <string name="player_subs_find_online_hint">OpenSubtitles ஐ அமைக்கவும் (இலவசம்)</string>
+    <string name="player_subs_add_file">வசனக் கோப்பைச் சேர்…</string>
+    <string name="player_subs_file_invalid">இது வசனக் கோப்பாகத் தெரியவில்லை (.srt, .ass, .vtt).</string>
+    <string name="player_subs_file_failed">அந்த வசனக் கோப்பைச் சேர்க்க முடியவில்லை.</string>
     <string name="player_subs_online_label">%1$s (OpenSubtitles)</string>
     <string name="os_title">OpenSubtitles</string>
     <string name="os_detail">வசனங்கள் இல்லாத கோப்புகளுக்கு வசனங்களைக் கண்டறியவும்: பிளேயரில் வசனங்கள் → ஆன்லைனில் தேடு.</string>
