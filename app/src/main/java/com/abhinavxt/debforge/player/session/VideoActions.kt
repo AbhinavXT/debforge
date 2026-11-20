@@ -137,9 +137,9 @@ class VideoActions internal constructor(private val s: VideoSession) : ControlsA
             if (g.type != C.TRACK_TYPE_TEXT) null
             else (0 until g.length).firstOrNull { g.isTrackSelected(it) }?.let { g.getTrackFormat(it).id }
         } ?: return null
-        if (!com.abhinavxt.debforge.player.subtitles.isTimingKey(id)) return null
-        val timing = s.timingStoreLookup(id) ?: com.abhinavxt.debforge.player.subtitles.SubtitleTiming.IDENTITY
-        return com.abhinavxt.debforge.player.controls.SyncSubtitle(id, timing)
+        val key = com.abhinavxt.debforge.player.subtitles.timingKeyOfTrackId(id) ?: return null
+        val timing = s.timingStoreLookup(key) ?: com.abhinavxt.debforge.player.subtitles.SubtitleTiming.IDENTITY
+        return com.abhinavxt.debforge.player.controls.SyncSubtitle(key, timing)
     }
 
     override fun syncCues(key: String) = s.cueBook.cues(key)
@@ -277,7 +277,8 @@ class VideoActions internal constructor(private val s: VideoSession) : ControlsA
             }
             s.subtitles = s.subtitles.filterNot { it.url == link.url } + link
             s.pendingTextLabel = link.label
-            s.pendingTextId = null
+            // The id also covers a pick identical to a sidecar already listed: that track is selected.
+            s.pendingTextId = s.timingKey(link)
             controls.panel = null
             s.player?.let { p -> s.reloadMediaItem(p.currentPosition, play = p.playWhenReady) }
         }

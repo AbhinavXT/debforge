@@ -917,7 +917,7 @@ class VideoSession @Inject constructor(
         timingStore.save(key, com.abhinavxt.debforge.player.subtitles.SubtitleTiming.IDENTITY)
     }
 
-    private fun timingKey(sub: SubtitleLink): String? = com.abhinavxt.debforge.player.subtitles.timingKeyFor(
+    internal fun timingKey(sub: SubtitleLink): String? = com.abhinavxt.debforge.player.subtitles.timingKeyFor(
         identity?.itemId, sub.url, sub.provider?.name, sub.sourceRef, sub.osFileId
     )
 

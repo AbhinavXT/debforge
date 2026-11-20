@@ -119,3 +119,18 @@ fun isTimingKey(id: String): Boolean =
     id.startsWith("os:") || id.startsWith("local:") ||
         com.abhinavxt.debforge.domain.ProviderId.values().any { id.startsWith(it.name + ":") }
 
+/**
+ * The timing key behind a selected text track's Format.id. Media3's MergingMediaPeriod prefixes every track id with
+ * its source index ("1:local:..."), so the prefix is stripped, but only when what is left is a timing key; embedded
+ * ids such as HLS "1:en" give null.
+ */
+fun timingKeyOfTrackId(id: String?): String? {
+    var rest = id ?: return null
+    while (true) {
+        if (isTimingKey(rest)) return rest
+        val colon = rest.indexOf(':')
+        if (colon <= 0 || !rest.substring(0, colon).all { it in '0'..'9' }) return null
+        rest = rest.substring(colon + 1)
+    }
+}
+

@@ -56,6 +56,12 @@ internal class VideoTracks(private val s: VideoSession) {
         if (s.handoffStart == null) memory?.speed?.let { if (it != p.playbackParameters.speed) p.setPlaybackSpeed(it) }
     }
 
+    /** True when both ids are the same subtitle, whatever source-index prefix Media3 put on them. */
+    private fun sameTrackKey(a: String?, b: String?): Boolean {
+        val key = com.abhinavxt.debforge.player.subtitles.timingKeyOfTrackId(a) ?: return false
+        return key == com.abhinavxt.debforge.player.subtitles.timingKeyOfTrackId(b)
+    }
+
     /** After an OpenSubtitles file was added: turn it on as soon as it's listed. */
     fun selectPending(tracks: Tracks) {
         val label = s.pendingTextLabel
@@ -66,7 +72,7 @@ internal class VideoTracks(private val s: VideoSession) {
         fun find(match: (androidx.media3.common.Format) -> Boolean) = textGroups.firstNotNullOfOrNull { g ->
             (0 until g.length).firstOrNull { match(g.getTrackFormat(it)) }?.let { g to it }
         }
-        val target = id?.let { want -> find { it.id == want } } ?: label?.let { want -> find { it.label == want } } ?: return
+        val target = id?.let { want -> find { it.id == want || sameTrackKey(it.id, want) } } ?: label?.let { want -> find { it.label == want } } ?: return
         s.pendingTextLabel = null
         s.pendingTextId = null
         p.trackSelectionParameters = p.trackSelectionParameters.buildUpon()
