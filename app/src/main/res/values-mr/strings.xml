@@ -336,7 +336,7 @@
     <string name="backup_restore">रिस्टोअर करा</string>
     <string name="backup_what">डाउनलोडचे नियम, फोल्डर, स्वरूप, फॉलो केलेले शो, आवडते, प्लेलिस्ट, प्ले इतिहास, अलीकडील शोध आणि इतर सेटिंग्ज नेहमी समाविष्ट असतात.</string>
     <string name="backup_include_signins">साइन-इन समाविष्ट करा</string>
-    <string name="backup_include_signins_detail">सेवांचे लॉगिन आणि तुमची TMDB key, पासवर्डने एन्क्रिप्ट केलेले.</string>
+    <string name="backup_include_signins_detail">सेवांचे लॉगिन, पासवर्ड आणि API key (TMDB, सबटायटल, शोध स्रोत, Trakt), पासवर्डने एन्क्रिप्ट केलेले.</string>
     <string name="backup_password">पासवर्ड</string>
     <string name="backup_password_again">पासवर्ड पुन्हा टाका</string>
     <string name="backup_password_short">किमान %1$d अक्षरे</string>

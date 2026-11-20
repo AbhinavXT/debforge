@@ -323,7 +323,7 @@
     <string name="backup_restore">Pulihkan</string>
     <string name="backup_what">Aturan unduhan, folder, tampilan, serial yang diikuti, favorit, playlist, riwayat pemutaran, pencarian terbaru, dan setelan lainnya selalu disertakan.</string>
     <string name="backup_include_signins">Sertakan info masuk</string>
-    <string name="backup_include_signins_detail">Login layanan dan key TMDB Anda, dienkripsi dengan sandi.</string>
+    <string name="backup_include_signins_detail">Login layanan, sandi, dan key API (TMDB, subtitel, sumber pencarian, Trakt), dienkripsi dengan sandi.</string>
     <string name="backup_password">Sandi</string>
     <string name="backup_password_again">Ulangi sandi</string>
     <string name="backup_password_short">Minimal %1$d karakter</string>

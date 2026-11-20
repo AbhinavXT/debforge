@@ -337,7 +337,7 @@
     <string name="backup_restore">Restore</string>
     <string name="backup_what">Download rules, folder, appearance, followed shows, favourites, playlists, play history, recent searches and other settings are always included.</string>
     <string name="backup_include_signins">Include sign-ins</string>
-    <string name="backup_include_signins_detail">Service logins and your TMDB key, encrypted with a password.</string>
+    <string name="backup_include_signins_detail">Service logins, passwords and API keys (TMDB, subtitles, search sources, Trakt), encrypted with a password.</string>
     <string name="backup_password">Password</string>
     <string name="backup_password_again">Repeat password</string>
     <string name="backup_password_short">At least %1$d characters</string>

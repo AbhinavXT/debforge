@@ -336,7 +336,7 @@
     <string name="backup_restore">রিস্টোর করুন</string>
     <string name="backup_what">ডাউনলোডের নিয়ম, ফোল্ডার, চেহারা, ফলো করা শো, ফেভারিট, প্লেলিস্ট, প্লে ইতিহাস, সাম্প্রতিক সার্চ ও অন্যান্য সেটিংস সবসময় থাকে।</string>
     <string name="backup_include_signins">সাইন-ইনও রাখুন</string>
-    <string name="backup_include_signins_detail">সার্ভিস লগইন ও আপনার TMDB key, পাসওয়ার্ড দিয়ে এনক্রিপ্ট করা।</string>
+    <string name="backup_include_signins_detail">সার্ভিস লগইন, পাসওয়ার্ড ও API key (TMDB, সাবটাইটেল, সার্চ সোর্স, Trakt), পাসওয়ার্ড দিয়ে এনক্রিপ্ট করা।</string>
     <string name="backup_password">পাসওয়ার্ড</string>
     <string name="backup_password_again">আবার পাসওয়ার্ড দিন</string>
     <string name="backup_password_short">কমপক্ষে %1$dটি অক্ষর</string>

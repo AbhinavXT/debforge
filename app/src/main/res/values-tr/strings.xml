@@ -336,7 +336,7 @@
     <string name="backup_restore">Geri yükle</string>
     <string name="backup_what">İndirme kuralları, klasör, görünüm, takip edilen diziler, favoriler, oynatma listeleri, oynatma geçmişi, son aramalar ve diğer ayarlar her zaman dahil edilir.</string>
     <string name="backup_include_signins">Giriş bilgilerini dahil et</string>
-    <string name="backup_include_signins_detail">Hizmet girişleri ve TMDB anahtarınız, bir şifreyle şifrelenir.</string>
+    <string name="backup_include_signins_detail">Hizmet girişleri, şifreler ve API anahtarları (TMDB, altyazı, arama kaynakları, Trakt), bir şifreyle şifrelenir.</string>
     <string name="backup_password">Şifre</string>
     <string name="backup_password_again">Şifreyi tekrarlayın</string>
     <string name="backup_password_short">En az %1$d karakter</string>

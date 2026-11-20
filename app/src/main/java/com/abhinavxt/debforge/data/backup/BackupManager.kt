@@ -22,7 +22,8 @@ import javax.inject.Singleton
  *      "secrets":{"kdf":"PBKDF2WithHmacSHA256","iterations":310000,
  *                 "salt":"…","iv":"…","data":"…"}}      <- only if opted in
  *
- * Sign-ins (service tokens, refresh credentials) and the TMDB key are written
+ * Every credential (service sign-ins, TMDB key, OpenSubtitles key and account,
+ * search source keys, Trakt Client ID and tokens) is written
  * ONLY inside "secrets", encrypted with a password the user picks
  * ([BackupCrypto]); never in plain text.
  */
@@ -36,6 +37,9 @@ class BackupManager @Inject constructor(
     private val searchStore: com.abhinavxt.debforge.data.search.SearchHistoryStore,
     private val youtubeSearchStore: com.abhinavxt.debforge.data.search.YouTubeSearchHistoryStore,
     private val subscriptions: com.abhinavxt.debforge.data.subscriptions.SubscriptionDao,
+    private val openSubtitles: com.abhinavxt.debforge.data.subtitles.OpenSubtitlesRepository,
+    private val searchSources: com.abhinavxt.debforge.data.search.SearchSourceStore,
+    private val trakt: com.abhinavxt.debforge.data.trakt.TraktStore,
     moshi: Moshi
 ) {
     private val mapAdapter: JsonAdapter<Map<String, Any?>> = moshi.adapter<Map<String, Any?>>(
@@ -72,6 +76,15 @@ class BackupManager @Inject constructor(
                     )
                 }.toMap(),
                 "tmdbKey" to settings.tmdbKeyForBackup()
+            )
+            // Each extra part on its own, so a failing store cannot lose the rest. Older versions ignore these keys.
+            SecretsBackup.addTo(
+                secrets,
+                SecretsBackup.Model(
+                    openSubtitles = runCatching { openSubtitles.backupValues() }.getOrNull(),
+                    searchSources = runCatching { searchSources.all() }.getOrDefault(emptyList()),
+                    trakt = runCatching { trakt.backupValues() }.getOrNull()
+                )
             )
             val sealed = BackupCrypto.seal(mapAdapter.toJson(secrets).toByteArray(), password)
             root["secrets"] = linkedMapOf(
@@ -174,6 +187,13 @@ class BackupManager @Inject constructor(
             tokens.importSignIns(signIns, ProviderId.fromName(opened["active"] as? String))
             (opened["tmdbKey"] as? String)?.takeIf { it.isNotBlank() }?.let { settings.setTmdbKey(it) }
             services = signIns.keys.toList()
+            // Extras: only present values are written; a missing or empty one never wipes a local value.
+            val extra = SecretsBackup.fromMap(opened)
+            extra.openSubtitles?.let {
+                runCatching { openSubtitles.save(it.apiKey, it.username.orEmpty(), it.password.orEmpty()) }
+            }
+            extra.searchSources.forEach { runCatching { searchSources.save(it) } }
+            extra.trakt?.let { runCatching { trakt.restoreFromBackup(it) } }
         }
         return Result(
             outcome.applied, services, outcome.skippedFolder, followsAdded, follows.all().isNotEmpty(),

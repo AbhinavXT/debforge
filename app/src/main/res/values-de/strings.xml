@@ -336,7 +336,7 @@
     <string name="backup_restore">Wiederherstellen</string>
     <string name="backup_what">Download-Regeln, Ordner, Darstellung, gefolgte Serien, Favoriten, Playlists, Wiedergabeverlauf, letzte Suchen und weitere Einstellungen sind immer enthalten.</string>
     <string name="backup_include_signins">Anmeldungen einschließen</string>
-    <string name="backup_include_signins_detail">Dienst-Anmeldungen und dein TMDB-Schlüssel, mit einem Passwort verschlüsselt.</string>
+    <string name="backup_include_signins_detail">Dienst-Anmeldungen, Passwörter und API-Schlüssel (TMDB, Untertitel, Suchquellen, Trakt), mit einem Passwort verschlüsselt.</string>
     <string name="backup_password">Passwort</string>
     <string name="backup_password_again">Passwort wiederholen</string>
     <string name="backup_password_short">Mindestens %1$d Zeichen</string>

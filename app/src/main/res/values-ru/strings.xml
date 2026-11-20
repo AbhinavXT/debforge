@@ -362,7 +362,7 @@
     <string name="backup_restore">Восстановить</string>
     <string name="backup_what">Правила загрузки, папка, оформление, отслеживаемые сериалы, избранное, плейлисты, история воспроизведения, недавние запросы и другие настройки включаются всегда.</string>
     <string name="backup_include_signins">Включить данные входа</string>
-    <string name="backup_include_signins_detail">Входы в сервисы и ваш ключ TMDB, зашифрованные паролем.</string>
+    <string name="backup_include_signins_detail">Входы в сервисы, пароли и ключи API (TMDB, субтитры, источники поиска, Trakt), зашифрованные паролем.</string>
     <string name="backup_password">Пароль</string>
     <string name="backup_password_again">Повторите пароль</string>
     <string name="backup_password_short">Не менее %1$d символов</string>

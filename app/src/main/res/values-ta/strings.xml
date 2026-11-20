@@ -336,7 +336,7 @@
     <string name="backup_restore">மீட்டெடு</string>
     <string name="backup_what">பதிவிறக்க விதிகள், கோப்புறை, தோற்றம், பின்தொடரும் தொடர்கள், பிடித்தவை, பிளேலிஸ்ட்கள், இயக்க வரலாறு, சமீபத்திய தேடல்கள் மற்றும் பிற அமைப்புகள் எப்போதும் சேர்க்கப்படும்.</string>
     <string name="backup_include_signins">உள்நுழைவுகளையும் சேர்</string>
-    <string name="backup_include_signins_detail">சேவை உள்நுழைவுகளும் உங்கள் TMDB key-உம், கடவுச்சொல்லால் என்க்ரிப்ட் செய்யப்பட்டு.</string>
+    <string name="backup_include_signins_detail">சேவை உள்நுழைவுகள், கடவுச்சொற்கள், API key-கள் (TMDB, வசனம், தேடல் மூலங்கள், Trakt), கடவுச்சொல்லால் என்க்ரிப்ட் செய்யப்பட்டு.</string>
     <string name="backup_password">கடவுச்சொல்</string>
     <string name="backup_password_again">கடவுச்சொல்லை மீண்டும் உள்ளிடு</string>
     <string name="backup_password_short">குறைந்தது %1$d எழுத்துகள்</string>

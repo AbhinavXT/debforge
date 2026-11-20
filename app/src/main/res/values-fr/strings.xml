@@ -349,7 +349,7 @@
     <string name="backup_restore">Restaurer</string>
     <string name="backup_what">Les règles de téléchargement, le dossier, l\'apparence, les séries suivies, les favoris, les playlists, l\'historique de lecture, les recherches récentes et les autres paramètres sont toujours inclus.</string>
     <string name="backup_include_signins">Inclure les connexions</string>
-    <string name="backup_include_signins_detail">Identifiants des services et votre clé TMDB, chiffrés avec un mot de passe.</string>
+    <string name="backup_include_signins_detail">Identifiants, mots de passe et clés d\'API (TMDB, sous-titres, sources de recherche, Trakt), chiffrés avec un mot de passe.</string>
     <string name="backup_password">Mot de passe</string>
     <string name="backup_password_again">Confirmer le mot de passe</string>
     <string name="backup_password_short">Au moins %1$d caractères</string>

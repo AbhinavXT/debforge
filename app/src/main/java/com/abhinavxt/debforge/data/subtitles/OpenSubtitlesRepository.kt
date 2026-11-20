@@ -46,7 +46,7 @@ data class OnlineSubtitle(
 /**
  * The user's OpenSubtitles API key (and, optionally, account for the bigger
  * daily download allowance), encrypted with the Keystore key like service
- * tokens. Not part of backups.
+ * tokens. Included in backups only inside the password-encrypted secrets section.
  */
 @Singleton
 class OpenSubtitlesStore @Inject constructor(private val context: Context) {
@@ -81,6 +81,13 @@ class OpenSubtitlesStore @Inject constructor(private val context: Context) {
     }
 
     suspend fun clear() = context.openSubtitlesDataStore.edit { it.clear() }
+
+    /** The key and account for the encrypted backup; null without a key. */
+    suspend fun backupValues(): com.abhinavxt.debforge.data.backup.SecretsBackup.OpenSubtitles? {
+        val p = context.openSubtitlesDataStore.data.first()
+        val key = p.secret(keyApiKey) ?: return null
+        return com.abhinavxt.debforge.data.backup.SecretsBackup.OpenSubtitles(key, p.secret(keyUser), p.secret(keyPassword))
+    }
 }
 
 /**
@@ -131,6 +138,8 @@ class OpenSubtitlesRepository @Inject constructor(
         store.save(apiKey, username, password)
         token = null
     }
+
+    suspend fun backupValues() = store.backupValues()
 
     suspend fun remove() {
         store.clear()

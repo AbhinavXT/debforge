@@ -323,7 +323,7 @@
     <string name="backup_restore">恢复</string>
     <string name="backup_what">始终包含下载规则、文件夹、外观、已追剧集、收藏、播放列表、播放历史、最近搜索和其他设置。</string>
     <string name="backup_include_signins">包含登录信息</string>
-    <string name="backup_include_signins_detail">服务登录信息和 TMDB 密钥，使用密码加密。</string>
+    <string name="backup_include_signins_detail">服务登录信息、密码和 API 密钥（TMDB、字幕、搜索源、Trakt），使用密码加密。</string>
     <string name="backup_password">密码</string>
     <string name="backup_password_again">再次输入密码</string>
     <string name="backup_password_short">至少 %1$d 个字符</string>

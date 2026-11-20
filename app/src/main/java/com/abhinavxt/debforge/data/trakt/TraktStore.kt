@@ -21,7 +21,8 @@ private val Context.traktDataStore by preferencesDataStore(name = "debforge_trak
 /**
  * Trakt sign-in and sync state. The app's Client ID (the user's own Trakt
  * app, like the TMDB key) and the tokens are encrypted with the
- * Keystore key ([TokenCipher]); this file is not part of backups.
+ * Keystore key ([TokenCipher]); only the Client ID and tokens go into backups, and only inside
+ * the password-encrypted secrets section.
  */
 @Singleton
 class TraktStore @Inject constructor(private val context: Context) {
@@ -124,6 +125,29 @@ class TraktStore @Inject constructor(private val context: Context) {
 
     suspend fun removeWatched(keys: Collection<String>) = context.traktDataStore.edit {
         it[keyWatched] = it[keyWatched].orEmpty() - keys.toSet()
+    }
+
+    /** The Client ID and sign-in for the encrypted backup; null without a Client ID. */
+    suspend fun backupValues(): com.abhinavxt.debforge.data.backup.SecretsBackup.Trakt? {
+        val p = context.traktDataStore.data.first()
+        val id = p.secret(keyClientId) ?: return null
+        return com.abhinavxt.debforge.data.backup.SecretsBackup.Trakt(
+            id, p.secret(keyAccess), p.secret(keyRefresh), p[keyExpiresAt], p[keyUser]
+        )
+    }
+
+    /** Restores a backed-up sign-in as it was (tokens are encrypted again here). */
+    suspend fun restoreFromBackup(b: com.abhinavxt.debforge.data.backup.SecretsBackup.Trakt) {
+        context.traktDataStore.edit {
+            it[keyClientId] = TokenCipher.encrypt(b.clientId.trim())
+            it.remove(keyClientSecret)
+            if (b.accessToken != null) {
+                it[keyAccess] = TokenCipher.encrypt(b.accessToken)
+                if (b.refreshToken != null) it[keyRefresh] = TokenCipher.encrypt(b.refreshToken)
+                it[keyExpiresAt] = b.expiresAt ?: 0L
+                if (b.username != null) it[keyUser] = b.username
+            }
+        }
     }
 
     /** Signs out but keeps the Client ID, so signing in again is one tap. */

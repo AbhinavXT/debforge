@@ -336,7 +336,7 @@
     <string name="backup_restore">वापस लाएँ</string>
     <string name="backup_what">डाउनलोड नियम, फ़ोल्डर, रूप-रंग, फ़ॉलो किए गए शो, पसंदीदा, प्लेलिस्ट, चलाने का इतिहास, हाल की खोजें और बाकी सेटिंग्स हमेशा शामिल होती हैं।</string>
     <string name="backup_include_signins">साइन-इन भी शामिल करें</string>
-    <string name="backup_include_signins_detail">सेवा लॉगिन और आपकी TMDB key, पासवर्ड से एन्क्रिप्ट की हुई।</string>
+    <string name="backup_include_signins_detail">सेवा लॉगिन, पासवर्ड और API key (TMDB, सबटाइटल, सर्च सोर्स, Trakt), पासवर्ड से एन्क्रिप्ट की हुई।</string>
     <string name="backup_password">पासवर्ड</string>
     <string name="backup_password_again">पासवर्ड दोबारा</string>
     <string name="backup_password_short">कम से कम %1$d अक्षर</string>

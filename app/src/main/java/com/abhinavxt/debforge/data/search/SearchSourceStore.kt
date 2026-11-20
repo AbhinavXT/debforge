@@ -30,7 +30,7 @@ data class SearchSource(
 
 /**
  * The user's search sources. Stored as one JSON list encrypted with the
- * Keystore key like service tokens (it holds API keys). Not part of backups.
+ * Keystore key like service tokens (it holds API keys). Included in backups only inside the password-encrypted secrets section.
  */
 @Singleton
 class SearchSourceStore @Inject constructor(

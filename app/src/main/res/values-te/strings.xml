@@ -336,7 +336,7 @@
     <string name="backup_restore">రీస్టోర్ చేయి</string>
     <string name="backup_what">డౌన్‌లోడ్ నియమాలు, ఫోల్డర్, రూపురేఖలు, ఫాలో చేస్తున్న షోలు, ఇష్టమైనవి, ప్లేలిస్ట్‌లు, ప్లే చరిత్ర, ఇటీవలి శోధనలు, ఇతర సెట్టింగ్‌లు ఎల్లప్పుడూ చేర్చబడతాయి.</string>
     <string name="backup_include_signins">సైన్-ఇన్‌లను కూడా చేర్చు</string>
-    <string name="backup_include_signins_detail">సర్వీస్ లాగిన్‌లు, మీ TMDB key, పాస్‌వర్డ్‌తో ఎన్‌క్రిప్ట్ చేయబడి.</string>
+    <string name="backup_include_signins_detail">సర్వీస్ లాగిన్‌లు, పాస్‌వర్డ్‌లు, API key‌లు (TMDB, సబ్‌టైటిల్స్, సెర్చ్ సోర్స్‌లు, Trakt), పాస్‌వర్డ్‌తో ఎన్‌క్రిప్ట్ చేయబడి.</string>
     <string name="backup_password">పాస్‌వర్డ్</string>
     <string name="backup_password_again">పాస్‌వర్డ్‌ను మళ్లీ ఎంటర్ చేయండి</string>
     <string name="backup_password_short">కనీసం %1$d అక్షరాలు</string>
