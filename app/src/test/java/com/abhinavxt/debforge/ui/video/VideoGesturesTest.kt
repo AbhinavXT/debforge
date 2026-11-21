@@ -154,6 +154,28 @@ class VideoGesturesTest {
         assertFalse(shouldEnterFull(progress = Float.NaN, velocity = 0f))
     }
 
+    @Test fun swipeDownLeavesFullByDistanceOrFling() {
+        assertTrue(shouldLeaveFull(dy = 200f, velocity = 0f, height = 1000f))
+        assertFalse(shouldLeaveFull(dy = 100f, velocity = 200f, height = 1000f))
+        assertTrue(shouldLeaveFull(dy = 20f, velocity = 1500f, height = 1000f))
+        assertFalse(shouldLeaveFull(dy = 400f, velocity = -1500f, height = 1000f))
+        assertFalse(shouldLeaveFull(dy = 0f, velocity = 3000f, height = 1000f))
+        assertFalse(shouldLeaveFull(dy = Float.NaN, velocity = 0f, height = 1000f))
+        assertFalse(shouldLeaveFull(dy = 300f, velocity = 0f, height = 0f))
+    }
+
+    @Test fun leaveRectFollowsTheFingerAndShrinksALittle() {
+        val full = androidx.compose.ui.geometry.Rect(0f, 0f, 400f, 800f)
+        assertEquals(full, leaveFullRect(full, 0f, 800f))
+        assertEquals(full, leaveFullRect(full, -50f, 800f))
+        val r = leaveFullRect(full, 400f, 800f) // the whole travel
+        assertEquals(400f, r.top, 0.01f)
+        assertEquals(340f, r.width, 0.01f)
+        assertEquals(30f, r.left, 0.01f)
+        assertEquals(680f, r.height, 0.01f)
+        assertEquals(r.width, leaveFullRect(full, 900f, 800f).width, 0.01f) // the shrink stops
+    }
+
     @Test fun swipeUpProgressMapsToRectAndAlphas() {
         val watch = androidx.compose.ui.geometry.Rect(0f, 100f, 400f, 325f)
         val full = androidx.compose.ui.geometry.Rect(0f, 0f, 400f, 900f)

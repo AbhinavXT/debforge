@@ -107,10 +107,13 @@ class VideoSurface(
         fun upMove(up: Float) {}
         /** The upward drag ended: [velocityY] px/s (down is positive); [cancelled] when the system took the touch. */
         fun upEnd(velocityY: Float, cancelled: Boolean) {}
+        /** A downward swipe from the middle of the full-screen picture has started (leave full screen). */
+        fun leaveStart() {}
+        /** [dy]: pixels moved down since the touch began, in screen pixels. */
+        fun leaveMove(dy: Float) {}
+        /** The swipe ended: [velocityY] px/s (down positive); [cancelled] when the touch was taken away. */
+        fun leaveEnd(velocityY: Float, cancelled: Boolean) {}
     }
-
-    /** A downward swipe from the middle of the full-screen picture (leave full screen). */
-    var onSwipeDownFromCenter: (() -> Unit)? = null
 
     var hostDrag: HostDrag? = null
     private var dragDownX = 0f
@@ -121,6 +124,13 @@ class VideoSurface(
     private var hostDragging = false
     private var upDragging = false
     private var dragTracker: android.view.VelocityTracker? = null
+    /** The full-screen swipe down is in progress: the engine is fed screen-based positions, as this view moves under the finger. */
+    private var centerDragging = false
+    private var centerDownLocalX = 0f
+    private var centerDownLocalY = 0f
+    private var centerDownRawX = 0f
+    private var centerDownRawY = 0f
+    private var centerTracker: android.view.VelocityTracker? = null
 
     private var gestureEngine: GestureEngine? = null
     /** The current touch belongs to the gestures (not to a button). */
@@ -323,6 +333,13 @@ class VideoSurface(
     /** Picture-in-picture entered or left: in the small window only the video shows. */
     fun setPictureInPicture(on: Boolean) {
         inPictureInPicture = on
+        if (on && centerDragging) {
+            centerDragging = false
+            centerTracker?.recycle()
+            centerTracker = null
+            gestureEngine?.cancel(SystemClock.uptimeMillis())
+            hostDrag?.leaveEnd(0f, true)
+        }
         playerView.useController = !on
         overlay.visibility = if (on) GONE else if (features.overlays) VISIBLE else GONE
         applyZoom() // the small window always shows the whole picture
@@ -391,15 +408,23 @@ class VideoSurface(
             // Even with gestures off, taps on the video still show / hide the controls.
             gesturing = engine != null && features.overlays && !inPictureInPicture && !touchesControl(ev)
             if (gesturing && playerView.width > 0) engine?.resize(playerView.width.toFloat(), playerView.height.toFloat())
+            centerDownLocalX = ev.x; centerDownLocalY = ev.y
+            centerDownRawX = ev.rawX; centerDownRawY = ev.rawY
+            centerTracker?.recycle()
+            centerTracker = if (gesturing && engine?.centerSwipeDown == true && !isTv && hostDrag != null) android.view.VelocityTracker.obtain() else null
         }
         if (!gesturing || engine == null) return super.dispatchTouchEvent(ev)
+        centerTracker?.track(ev)
         val t = ev.eventTime
+        // Once the picture follows the finger this view moves too, so its own coordinates would drift: use the screen's.
+        val x = if (centerDragging) centerDownLocalX + (ev.rawX - centerDownRawX) else ev.getX(0)
+        val y = if (centerDragging) centerDownLocalY + (ev.rawY - centerDownRawY) else ev.getY(0)
         when (ev.actionMasked) {
             MotionEvent.ACTION_DOWN -> engine.down(ev.x, ev.y, t)
             MotionEvent.ACTION_POINTER_DOWN -> engine.pointerDown(ev.pointerCount, span(ev), t)
-            MotionEvent.ACTION_MOVE -> engine.move(ev.getX(0), ev.getY(0), t, ev.pointerCount, span(ev))
+            MotionEvent.ACTION_MOVE -> engine.move(x, y, t, ev.pointerCount, span(ev))
             MotionEvent.ACTION_POINTER_UP -> engine.pointerUp(ev.pointerCount - 1, t)
-            MotionEvent.ACTION_UP -> engine.up(ev.x, ev.y, t)
+            MotionEvent.ACTION_UP -> engine.up(x, y, t)
             MotionEvent.ACTION_CANCEL -> engine.cancel(t)
         }
         scheduleGestureTimer()
@@ -587,8 +612,29 @@ class VideoSurface(
         private var volume = 0f
         private val audio by lazy { context.getSystemService(Context.AUDIO_SERVICE) as android.media.AudioManager }
 
-        override fun onCenterSwipeDown() {
-            if (features.levels) onSwipeDownFromCenter?.invoke()
+        override fun onCenterDragStart() {
+            val host = hostDrag ?: return
+            if (isTv || inPictureInPicture || !features.levels) return
+            centerDragging = true
+            host.leaveStart()
+        }
+
+        override fun onCenterDrag(dy: Float) {
+            if (centerDragging) hostDrag?.leaveMove(dy)
+        }
+
+        override fun onCenterDragEnd(cancelled: Boolean) {
+            if (!centerDragging) return
+            centerDragging = false
+            val tracker = centerTracker
+            centerTracker = null
+            var v = 0f
+            if (!cancelled && tracker != null) {
+                tracker.computeCurrentVelocity(1000)
+                v = tracker.yVelocity
+            }
+            tracker?.recycle()
+            hostDrag?.leaveEnd(v, cancelled)
         }
 
         override fun onSingleTap() {

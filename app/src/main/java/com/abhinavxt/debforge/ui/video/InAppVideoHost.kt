@@ -181,6 +181,9 @@ private fun ActiveVideoHost(
     val session = launcher.session
     val scope = rememberCoroutineScope()
     val modeNow by rememberUpdatedState(mode)
+    // A swipe down in full screen is leaving (the finger, the spring back, or the exit animation): the screen's own
+    // rotation style stays and nothing else may move the picture.
+    var leaving by remember { mutableStateOf(false) }
     val details by watchVm.details.collectAsStateWithLifecycle()
     val revision by launcher.revision.collectAsStateWithLifecycle()
     var dialog by remember { mutableStateOf<HostDialog?>(null) }
@@ -212,8 +215,6 @@ private fun ActiveVideoHost(
             surface.setPictureInPicture(false)
             surface.playerView.useController = session.isTv // the phone's own controls, not Media3's
         }
-        // A swipe down from the middle leaves full screen like Back does (closing when the setting opened it there).
-        surface.onSwipeDownFromCenter = { if (modeNow == VideoMode.FULL) launcher.dispatch(VideoModeEvent.Back) }
         session.controls.inline = mode == VideoMode.WATCH
         session.controls.exitFullScreen = mode == VideoMode.FULL
     }
@@ -285,17 +286,20 @@ private fun ActiveVideoHost(
     LaunchedEffect(active.video) { if (active.video != null && watchVm.details.value.video?.id != active.video.id) watchVm.show(active.video, false) }
 
     // --- full screen: immersive bars, landscape for a landscape picture ---
+    val rotationBase = remember { activity.window.attributes.rotationAnimation.takeIf { it != android.view.WindowManager.LayoutParams.ROTATION_ANIMATION_CROSSFADE } ?: android.view.WindowManager.LayoutParams.ROTATION_ANIMATION_ROTATE }
+    val restoreRotation = remember { Runnable { activity.window.attributes = activity.window.attributes.apply { rotationAnimation = rotationBase } } }
     DisposableEffect(mode == VideoMode.FULL) {
         val full = mode == VideoMode.FULL
-        if (full) FullScreen.bars(activity, false)
-        // The screen turning in full screen (it is already black and full) cross-fades instead of the default spin.
         val window = activity.window
-        val before = window.attributes.rotationAnimation
+        window.decorView.removeCallbacks(restoreRotation)
+        if (full) FullScreen.bars(activity, false)
         if (full) window.attributes = window.attributes.apply { rotationAnimation = android.view.WindowManager.LayoutParams.ROTATION_ANIMATION_CROSSFADE }
         onDispose {
             if (full) {
                 FullScreen.bars(activity, true)
-                window.attributes = window.attributes.apply { rotationAnimation = before }
+                // Leaving full screen can turn the screen back too: that rotation cross-fades as well, so the old style
+                // returns only after it has had time to start.
+                window.decorView.postDelayed(restoreRotation, EXIT_ROTATION_HOLD_MS)
             }
         }
     }
@@ -508,16 +512,24 @@ private fun ActiveVideoHost(
             if (shouldSnapRect(modeChanged, rectAnim.isRunning, fast)) rectAnim.snapTo(target)
             else rectAnim.animateTo(target, tween(280))
         }
-        LaunchedEffect(mode) { if (mode == VideoMode.WATCH && !dragging) pageAlpha.snapTo(1f) }
+        LaunchedEffect(mode) { if (mode == VideoMode.WATCH && !dragging && !leaving) pageAlpha.snapTo(1f) }
         val dragLatest = rememberUpdatedState(Triple(watchRect, miniRect, travel))
         // A rotation or resize during a drag or settle: the held layout follows the new watch layout.
-        LaunchedEffect(watchRect) { if (heldLayout != null) heldLayout = watchRect }
+        LaunchedEffect(watchRect, fullRect, leaving) { if (heldLayout != null) heldLayout = if (leaving) fullRect else watchRect }
+        // A swipe down in full screen: the picture follows the finger by [leaveOffset] while [leaveActive]; [leaveCover] is the black over it.
+        var leaveActive by remember { mutableStateOf(false) }
+        var leaveOffset by remember { mutableFloatStateOf(0f) }
+        var leaveCover by remember { mutableFloatStateOf(0f) }
+        val leaveLatest = rememberUpdatedState(Pair(fullRect, height))
         // Where the picture is laid out, and where it looks to be (animated, or under the finger).
         val rectNow: () -> Rect = { heldLayout ?: rectAnim.value }
         val visualRect: () -> Rect = {
             if (dragging) {
                 val (watch, mini, trav) = dragLatest.value
                 androidx.compose.ui.geometry.lerp(watch, mini, (dragOffset / trav).coerceIn(0f, 1f))
+            } else if (leaveActive) {
+                val (full, h) = leaveLatest.value
+                leaveFullRect(full, leaveOffset, h)
             } else if (upActive) {
                 val (watch, full, _) = upLatest.value
                 enterFullRect(watch, full, upProgress)
@@ -527,7 +539,7 @@ private fun ActiveVideoHost(
         val drag = remember {
             object : VideoSurface.HostDrag {
                 fun begin() {
-                    if (modeNow == VideoMode.WATCH && !dragging) {
+                    if (modeNow == VideoMode.WATCH && !dragging && !leaving) {
                         // Caught while springing back: carry on from where the picture is.
                         val resumeFrom = if (heldLayout != null) (rectAnim.value.top - dragLatest.value.first.top).coerceAtLeast(0f) else 0f
                         settleGen++
@@ -546,7 +558,7 @@ private fun ActiveVideoHost(
                 override fun start() = begin()
                 override fun move(dy: Float) = by(dy)
                 override fun upStart() {
-                    if (modeNow != VideoMode.WATCH || dragging) return
+                    if (modeNow != VideoMode.WATCH || dragging || leaving) return
                     // Caught while settling: carry on from where the picture is.
                     settleGen++
                     settleJobs[0]?.cancel()
@@ -593,6 +605,86 @@ private fun ActiveVideoHost(
                             }
                             // However this ended, the black does not stay.
                             if (scrimHold) scope.launch { delay(250); scrimHold = false }
+                        }
+                    }
+                }
+                // A swipe down in full screen: the picture follows the finger, then leaves (or springs back).
+                var leaveTouch = false
+                var leaveBase = 0f
+                var committed = false
+                override fun leaveStart() {
+                    if (modeNow != VideoMode.FULL || committed) return
+                    // Caught while springing back: carry on from where the picture is.
+                    leaveBase = if (leaveActive) leaveOffset else 0f
+                    settleGen++
+                    settleJobs[0]?.cancel()
+                    heldLayout = leaveLatest.value.first
+                    leaveOffset = leaveBase
+                    leaveActive = true
+                    leaving = true
+                    leaveTouch = true
+                    session.controls.visible = false
+                    surface.playerView.hideController()
+                }
+                fun resetLeave() { leaveTouch = false; committed = false }
+                override fun leaveMove(dy: Float) {
+                    if (leaveTouch && dy.isFinite()) leaveOffset = (leaveBase + dy).coerceAtLeast(0f)
+                }
+                override fun leaveEnd(velocityY: Float, cancelled: Boolean) {
+                    if (!leaveTouch) return
+                    leaveTouch = false
+                    val h = leaveLatest.value.second
+                    val commit = !cancelled && shouldLeaveFull(leaveOffset, velocityY, h)
+                    val gen = ++settleGen
+                    settleJobs[0]?.cancel()
+                    settleJobs[0] = scope.launch {
+                        try {
+                            if (!commit) {
+                                val spring = androidx.compose.animation.core.spring<Float>(dampingRatio = 1f, stiffness = 400f)
+                                if (fast) leaveOffset = 0f
+                                else androidx.compose.animation.core.animate(leaveOffset, 0f, velocityY.coerceAtMost(0f), spring) { v, _ -> leaveOffset = v }
+                                return@launch
+                            }
+                            committed = true
+                            val closes = launcher.backWouldClose()
+                            val turns = !closes && !isTablet && landscapeNow
+                            if (closes || turns) {
+                                // The screen goes black (the picture fades out) before the video closes or the screen turns.
+                                if (fast) leaveCover = 1f
+                                else androidx.compose.animation.core.animate(0f, 1f, animationSpec = tween(140)) { v, _ -> leaveCover = v }
+                                pageAlpha.snapTo(0f)
+                                launcher.dispatch(VideoModeEvent.Back)
+                                if (closes) return@launch
+                                // The turn back to portrait, with the screen black and the old rotation style (cross-fade) still in effect.
+                                withTimeoutOrNull(LEAVE_ROTATION_WAIT_MS) { snapshotFlow { landscapeNow }.first { !it } }
+                                repeat(2) { withFrameNanos { } }
+                                heldLayout = leaveLatest.value.first
+                                rectAnim.snapTo(leaveLatest.value.first)
+                                leaveActive = false
+                                withFrameNanos { }
+                                leaveCover = 0f
+                            } else {
+                                rectAnim.snapTo(leaveFullRect(leaveLatest.value.first, leaveOffset, h))
+                                leaveActive = false
+                                pageAlpha.snapTo(0f)
+                                launcher.dispatch(VideoModeEvent.Back)
+                            }
+                            // From the full picture to the watch rectangle while the page comes in.
+                            launch { pageAlpha.animateTo(1f, tween(if (fast) 0 else 220)) }
+                            if (!fast) rectAnim.animateTo(dragLatest.value.first, androidx.compose.animation.core.spring(dampingRatio = 1f, stiffness = 400f))
+                        } finally {
+                            if (gen == settleGen) {
+                                kotlinx.coroutines.withContext(kotlinx.coroutines.NonCancellable) {
+                                    rectAnim.snapTo(targetNow)
+                                    if (modeNow != VideoMode.FULL) pageAlpha.snapTo(1f)
+                                }
+                                heldLayout = null
+                                leaveActive = false
+                                leaveOffset = 0f
+                                leaveCover = 0f
+                                committed = false
+                                leaving = false
+                            }
                         }
                     }
                 }
@@ -738,10 +830,15 @@ private fun ActiveVideoHost(
             if (!pip) return@LaunchedEffect
             miniSwipe.reset()
             // ...and a watch-page drag too: back to the watch layout with no transform left over.
-            if (dragging || heldLayout != null || upActive) {
+            if (dragging || heldLayout != null || upActive || leaving) {
                 settleGen++
                 settleJobs[0]?.cancel()
                 dragging = false
+                drag.resetLeave()
+                leaveActive = false
+                leaveOffset = 0f
+                leaveCover = 0f
+                leaving = false
                 upActive = false
                 upProgress = 0f
                 rectAnim.snapTo(targetNow)
@@ -787,9 +884,11 @@ private fun ActiveVideoHost(
                     layout(w, h) { placeable.place(0, 0) }
                 },
         )
+        // The black over the picture when a swipe down in full screen commits.
+        if (leaveCover > 0f) Box(Modifier.fillMaxSize().graphicsLayer { alpha = leaveCover }.background(Color.Black))
         // While the picture is held (dragged, or settling after it) it is drawn away from its layout bounds, which is
         // where touches are tested: this region over where it is drawn lets it be caught there.
-        if (mode == VideoMode.WATCH && !pip && heldLayout != null && !upActive) {
+        if (mode == VideoMode.WATCH && !pip && heldLayout != null && !upActive && !leaving) {
             val held = heldLayout!!
             Box(
                 Modifier
@@ -931,6 +1030,12 @@ internal object FullScreen {
     fun autoRotate(context: Context): Boolean =
         android.provider.Settings.System.getInt(context.contentResolver, android.provider.Settings.System.ACCELEROMETER_ROTATION, 1) == 1
 }
+
+/** How long the cross-fading screen rotation stays in effect after leaving full screen, so the exit rotation uses it too. */
+private const val EXIT_ROTATION_HOLD_MS = 1_000L
+
+/** How long leaving full screen waits for the screen to turn back before it carries on. */
+private const val LEAVE_ROTATION_WAIT_MS = 600L
 
 /** Where the live mini picture goes while a still of it stands in on the swiped bar: far off-screen (the surface is kept, not destroyed). */
 private const val MINI_PICTURE_AWAY = -100_000f

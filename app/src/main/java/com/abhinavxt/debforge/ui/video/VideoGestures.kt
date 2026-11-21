@@ -58,6 +58,35 @@ internal fun enterFullSettleVelocity(velocityY: Float, travel: Float, commit: Bo
     return if (commit) perSecond.coerceAtLeast(0f) else perSecond.coerceAtMost(0f)
 }
 
+/** Share of the screen height a swipe down in full screen must travel to leave on release. */
+internal const val LEAVE_FULL_FRACTION = 0.15f
+/** A downward fling faster than this (px/s) leaves full screen whatever the distance. */
+internal const val LEAVE_FULL_FLING = 1000f
+/** The finger travels this share of the screen height for the picture to be fully shrunk. */
+internal const val LEAVE_FULL_TRAVEL = 0.5f
+/** How much smaller the picture gets at the end of that travel (0.15 = 85% of its size). */
+internal const val LEAVE_FULL_SHRINK = 0.15f
+
+/** Pure: does releasing a swipe down in full screen that moved [dy] px at [velocity] px/s (down positive) of a [height] px screen leave? */
+internal fun shouldLeaveFull(dy: Float, velocity: Float, height: Float): Boolean {
+    if (!dy.isFinite() || !velocity.isFinite() || !height.isFinite() || height <= 0f || dy <= 0f) return false
+    if (velocity <= -LEAVE_FULL_FLING) return false
+    if (velocity >= LEAVE_FULL_FLING) return true
+    return dy / height >= LEAVE_FULL_FRACTION
+}
+
+/** Pure: the picture's rectangle while a swipe down in full screen has moved [dy] px: [full] moved down with the finger, a little smaller. */
+internal fun leaveFullRect(full: Rect, dy: Float, height: Float): Rect {
+    if (!dy.isFinite() || !height.isFinite() || height <= 0f) return full
+    val down = dy.coerceAtLeast(0f)
+    val p = (down / (height * LEAVE_FULL_TRAVEL)).coerceIn(0f, 1f)
+    val s = 1f - LEAVE_FULL_SHRINK * p
+    val w = full.width * s
+    val h = full.height * s
+    val left = full.left + (full.width - w) / 2f
+    return Rect(left, full.top + down, left + w, full.top + down + h)
+}
+
 /** What a swipe on the mini bar does. */
 internal enum class MiniSwipe { NONE, CLOSE_LEFT, CLOSE_RIGHT, CLOSE_DOWN, EXPAND }
 

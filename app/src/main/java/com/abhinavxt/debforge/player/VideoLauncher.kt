@@ -105,6 +105,9 @@ class VideoLauncher @Inject constructor(
         if (next == null) _active.value = null
     }
 
+    /** Back from the shown mode would end the video (full screen opened by the setting). */
+    fun backWouldClose(): Boolean = nextMode(_mode.value, VideoModeEvent.Back, isTablet, backClosesFull) == null
+
     /** Ends the video: saved, the parked audio told where it stopped, the player released. */
     fun close() {
         if (_active.value == null && !session.isOpen) return

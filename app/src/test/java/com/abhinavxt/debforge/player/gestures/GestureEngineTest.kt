@@ -28,7 +28,9 @@ class GestureEngineTest {
         override fun onPinchStart() { log += "pinch" }
         override fun onPinch(scale: Float) { log += "p:%.1f".format(scale) }
         override fun onPinchEnd() { log += "pinchEnd" }
-        override fun onCenterSwipeDown() { log += "centerDown" }
+        override fun onCenterDragStart() { log += "cStart" }
+        override fun onCenterDrag(dy: Float) { log += "c:%.0f".format(dy) }
+        override fun onCenterDragEnd(cancelled: Boolean) { log += if (cancelled) "cCancel" else "cEnd" }
     }
 
     private val rec = Rec()
@@ -183,10 +185,33 @@ class GestureEngineTest {
         g.up(x, y, 500)
     }
 
+    @Test fun centerSwipeDownFollowsTheFingerAndEnds() {
+        g.centerSwipeDown = true
+        drag(500f, 150f, 350f)
+        assertEquals("cStart", rec.log.first())
+        assertEquals("cEnd", rec.log.last())
+        assertEquals("c:200", rec.log[rec.log.size - 2])
+        assertEquals(1, rec.log.count { it == "cStart" })
+    }
+
+    @Test fun centerSwipeDownCancelsWhenTheTouchIsTaken() {
+        g.centerSwipeDown = true
+        g.down(500f, 150f, 0)
+        g.move(500f, 200f, 10)
+        g.move(500f, 250f, 20)
+        g.cancel(30)
+        assertEquals("cCancel", rec.log.last())
+        rec.log.clear()
+        g.down(500f, 150f, 100)
+        g.move(500f, 250f, 110)
+        g.pointerDown(2, 100f, 120)
+        assertEquals("cCancel", rec.log.dropLast(1).last())
+    }
+
     @Test fun centerSwipeDownFiresOnlyWhenOnAndFromTheMiddle() {
         g.centerSwipeDown = true
         drag(500f, 150f, 350f)
-        assertEquals(listOf("centerDown"), rec.log)
+        assertEquals("cStart", rec.log.first())
         rec.log.clear()
         drag(100f, 100f, 300f) // left side: brightness
         assertTrue(rec.log.first().startsWith("v:LEFT"))
