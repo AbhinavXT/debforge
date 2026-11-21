@@ -517,7 +517,9 @@ fun HomeScreen(signedIn: Boolean) {
         // groups of lazy lists and scroll containers below, and 2D (arrow key) search would skip their items.
         Box(Modifier.fillMaxSize().focusProperties { if (playerOpen || videoExpanded) canFocus = false }) {
         if (wide) {
-            Row(Modifier.fillMaxSize()) {
+            // The rail layout has no Scaffold to paint the page, so screens that draw no background of their own
+            // (Media) showed the window's light default.
+            Row(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
                 NavigationRail(
                     modifier = Modifier.fillMaxHeight(),
                     containerColor = MaterialTheme.colorScheme.surfaceContainer
