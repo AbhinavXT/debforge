@@ -43,6 +43,7 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.material3.NavigationRailItem
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.activity.compose.BackHandler
 import androidx.compose.ui.focus.FocusRequester
@@ -517,9 +518,10 @@ fun HomeScreen(signedIn: Boolean) {
         // groups of lazy lists and scroll containers below, and 2D (arrow key) search would skip their items.
         Box(Modifier.fillMaxSize().focusProperties { if (playerOpen || videoExpanded) canFocus = false }) {
         if (wide) {
-            // The rail layout has no Scaffold to paint the page, so screens that draw no background of their own
-            // (Media) showed the window's light default.
-            Row(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+            // The rail layout has no Scaffold, so it needs its own Surface: it paints the page and sets the
+            // content colour (without it Media showed the window's light default, then black text on black).
+            Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+            Row(Modifier.fillMaxSize()) {
                 NavigationRail(
                     modifier = Modifier.fillMaxHeight(),
                     containerColor = MaterialTheme.colorScheme.surfaceContainer
@@ -549,6 +551,7 @@ fun HomeScreen(signedIn: Boolean) {
                     content(Modifier.weight(1f).fillMaxWidth())
                     Box(Modifier.windowInsetsPadding(WindowInsets.navigationBars)) { Column { videoMini(); miniPlayer() } }
                 }
+            }
             }
         } else {
             Scaffold(
