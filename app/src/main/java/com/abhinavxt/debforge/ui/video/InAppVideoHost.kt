@@ -527,13 +527,16 @@ private fun ActiveVideoHost(
         val drag = remember {
             object : VideoSurface.HostDrag {
                 fun begin() {
-                    if (modeNow == VideoMode.WATCH && !dragging && !upActive) {
+                    if (modeNow == VideoMode.WATCH && !dragging) {
                         // Caught while springing back: carry on from where the picture is.
                         val resumeFrom = if (heldLayout != null) (rectAnim.value.top - dragLatest.value.first.top).coerceAtLeast(0f) else 0f
                         settleGen++
                         settleJobs[0]?.cancel()
                         heldLayout = dragLatest.value.first
                         dragOffset = resumeFrom
+                        // Caught while the picture was growing or springing back from a swipe up: this drag takes over.
+                        upActive = false
+                        upProgress = 0f
                         dragging = true
                         session.controls.visible = false
                         surface.playerView.hideController()
@@ -543,11 +546,12 @@ private fun ActiveVideoHost(
                 override fun start() = begin()
                 override fun move(dy: Float) = by(dy)
                 override fun upStart() {
-                    if (modeNow != VideoMode.WATCH || dragging || upActive) return
+                    if (modeNow != VideoMode.WATCH || dragging) return
+                    // Caught while settling: carry on from where the picture is.
                     settleGen++
                     settleJobs[0]?.cancel()
                     heldLayout = upLatest.value.first
-                    upProgress = 0f
+                    if (!upActive) upProgress = 0f
                     upActive = true
                     session.controls.visible = false
                     surface.playerView.hideController()
@@ -560,6 +564,7 @@ private fun ActiveVideoHost(
                     val travel = upLatest.value.third
                     val commit = !cancelled && shouldEnterFull(upProgress, velocityY)
                     val gen = ++settleGen
+                    settleJobs[0]?.cancel()
                     settleJobs[0] = scope.launch {
                         try {
                             val spring = androidx.compose.animation.core.spring<Float>(dampingRatio = 1f, stiffness = 400f)
@@ -574,15 +579,20 @@ private fun ActiveVideoHost(
                                 pageAlpha.snapTo(0f)
                                 launcher.dispatch(VideoModeEvent.EnterFull)
                                 withTimeoutOrNull(1_000) { snapshotFlow { modeNow }.first { it == VideoMode.FULL } }
-                                scope.launch { delay(250); scrimHold = false }
                             }
                         } finally {
                             if (gen == settleGen) {
-                                kotlinx.coroutines.withContext(kotlinx.coroutines.NonCancellable) { rectAnim.snapTo(targetNow) }
+                                kotlinx.coroutines.withContext(kotlinx.coroutines.NonCancellable) {
+                                    rectAnim.snapTo(targetNow)
+                                    // Full screen did not come: the page is back, not left invisible.
+                                    if (modeNow != VideoMode.FULL) pageAlpha.snapTo(1f)
+                                }
                                 heldLayout = null
                                 upActive = false
                                 upProgress = 0f
                             }
+                            // However this ended, the black does not stay.
+                            if (scrimHold) scope.launch { delay(250); scrimHold = false }
                         }
                     }
                 }

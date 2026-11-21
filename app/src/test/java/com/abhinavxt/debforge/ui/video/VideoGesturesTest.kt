@@ -163,10 +163,12 @@ class VideoGesturesTest {
         assertEquals(0f, enterFullProgress(-5f, 230f), 0f)
         assertEquals(watch, enterFullRect(watch, full, 0f))
         assertEquals(full, enterFullRect(watch, full, 1f))
-        assertEquals(450f, enterFullRect(watch, full, 0.5f).height + 0f - 112.5f, 0.01f)
+        assertEquals(562.5f, enterFullRect(watch, full, 0.5f).height, 0.01f)
         assertEquals(1f, enterFullPageAlpha(0f), 0f)
         assertEquals(0f, enterFullPageAlpha(1f), 0f)
-        assertEquals(0.25f, enterFullScrimAlpha(0.25f), 0f)
+        assertEquals(0.25f, enterFullScrimAlpha(0.2f), 0.001f)
+        assertEquals(1f, enterFullScrimAlpha(0.8f), 0f)
+        assertEquals(1f, enterFullScrimAlpha(1f), 0f)
         assertEquals(0.75f, enterFullPageAlpha(0.25f), 0f)
     }
 

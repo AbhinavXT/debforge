@@ -86,6 +86,7 @@ import androidx.compose.runtime.snapshotFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withTimeoutOrNull
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -292,11 +293,16 @@ fun SettingsScreen(onConnect: () -> Unit, onBack: (() -> Unit)? = null, viewMode
             }
 
             item(key = "folder") {
+                // The storage lookup touches the disk: off the main thread.
+                val inAppStorage by produceState(false, dir) {
+                    value = dir.isNotBlank() && !SafPaths.isTreeUri(dir) &&
+                        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { StorageAccess.isAppStorage(context, dir) }
+                }
                 SectionCard(title = stringResource(R.string.set_download_folder)) {
                     SettingRow(
                         icon = Icons.Rounded.Folder,
                         // A friendly name; the full path (which wraps) sits underneath for plain paths.
-                        title = if (dir.isNotBlank() && !SafPaths.isTreeUri(dir) && StorageAccess.isAppStorage(context, dir))
+                        title = if (dir.isNotBlank() && !SafPaths.isTreeUri(dir) && inAppStorage)
                             stringResource(R.string.set_folder_app_storage)
                         else StorageAccess.label(context, dir),
                         subtitle = dir.takeIf { it.isNotBlank() && !SafPaths.isTreeUri(it) },

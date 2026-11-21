@@ -38,8 +38,11 @@ internal fun enterFullRect(watch: Rect, full: Rect, progress: Float): Rect =
 /** Pure: the watch page's opacity at [progress]: it fades out as the picture grows. */
 internal fun enterFullPageAlpha(progress: Float): Float = 1f - progress.coerceIn(0f, 1f)
 
-/** Pure: the black scrim's opacity at [progress]: it fades in as the page fades out. */
-internal fun enterFullScrimAlpha(progress: Float): Float = progress.coerceIn(0f, 1f)
+/** Progress at which the scrim is fully black (before the picture has quite filled the screen). */
+internal const val SCRIM_FULL_AT = 0.8f
+
+/** Pure: the black scrim's opacity at [progress]: it fades in as the page fades out, fully black by [SCRIM_FULL_AT]. */
+internal fun enterFullScrimAlpha(progress: Float): Float = (progress / SCRIM_FULL_AT).coerceIn(0f, 1f)
 
 /** Pure: does releasing a swipe up at [progress] (0..1) and [velocity] px/s (down is positive) enter full screen? */
 internal fun shouldEnterFull(progress: Float, velocity: Float): Boolean {

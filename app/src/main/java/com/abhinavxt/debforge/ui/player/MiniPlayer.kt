@@ -119,7 +119,7 @@ internal fun TrackArt(track: AudioTrack, modifier: Modifier = Modifier) {
         }
         val art = remember(artFile, artUrl, fileKey) {
             // A local file wins; a streamed YouTube track uses its thumbnail URL.
-            val source: Pair<Any, String>? = fileKey?.let { artFile!! to it }
+            val source: Pair<Any, String>? = artFile?.let { file -> fileKey?.let { file to it } }
                 ?: artUrl?.let { it to "art:$it" }
             source?.let { (data, key) ->
                 // One cache key at every size. The bitmap the mini player already decoded is read straight from
