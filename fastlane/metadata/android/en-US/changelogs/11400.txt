@@ -1,0 +1,7 @@
+• Media: browse audio by folder, artist and album
+• YouTube-style watch page, mini player, picture-in-picture
+• Smooth swipes in every player; full screen follows your finger and turns with a fade
+• Subtitles: files next to a video, Add subtitle file, online setup shortcut
+• Subtitle sync: finer steps, sync to a line, drift fix, auto-sync by listening
+• Offer or fetch online subtitles automatically (OpenSubtitles)
+• Fixes: emoji in titles, faster start-up, landscape Media page, crashes
