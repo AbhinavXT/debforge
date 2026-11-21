@@ -131,6 +131,8 @@ class VideoSurface(
     private var centerDownRawX = 0f
     private var centerDownRawY = 0f
     private var centerTracker: android.view.VelocityTracker? = null
+    /** The touch began on a control (shown controls) but may still become the swipe down: decided past the touch slop. */
+    private var leaveFromControl = false
 
     private var gestureEngine: GestureEngine? = null
     /** The current touch belongs to the gestures (not to a button). */
@@ -403,6 +405,7 @@ class VideoSurface(
      */
     override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
         val engine = gestureEngine
+        if (handleLeaveFromControl(ev, engine)) return true
         if (features.hostDrag && hostDrag != null && !inPictureInPicture && handleHostDrag(ev, engine)) return true
         if (ev.actionMasked == MotionEvent.ACTION_DOWN) {
             // Even with gestures off, taps on the video still show / hide the controls.
@@ -410,8 +413,10 @@ class VideoSurface(
             if (gesturing && playerView.width > 0) engine?.resize(playerView.width.toFloat(), playerView.height.toFloat())
             centerDownLocalX = ev.x; centerDownLocalY = ev.y
             centerDownRawX = ev.rawX; centerDownRawY = ev.rawY
-            centerTracker?.recycle()
-            centerTracker = if (gesturing && engine?.centerSwipeDown == true && !isTv && hostDrag != null) android.view.VelocityTracker.obtain() else null
+            if (!leaveFromControl) {
+                centerTracker?.recycle()
+                centerTracker = if (gesturing && engine?.centerSwipeDown == true && !isTv && hostDrag != null) android.view.VelocityTracker.obtain() else null
+            }
         }
         if (!gesturing || engine == null) return super.dispatchTouchEvent(ev)
         centerTracker?.track(ev)
@@ -430,6 +435,73 @@ class VideoSurface(
         scheduleGestureTimer()
         return true
     }
+
+    /**
+     * A swipe down that starts on the shown controls (not the seek bar, a card, a panel or a lock) and in the middle
+     * still leaves full screen: the buttons give up the touch once it is a drag. A tap still reaches them.
+     */
+    private fun handleLeaveFromControl(ev: MotionEvent, engine: GestureEngine?): Boolean {
+        val host = hostDrag ?: return false
+        if (isTv || engine == null || !engine.centerSwipeDown || inPictureInPicture || !features.levels) return false
+        when (ev.actionMasked) {
+            MotionEvent.ACTION_DOWN -> {
+                leaveFromControl = false
+                val w = width.toFloat()
+                val h = height.toFloat()
+                val edge = 40f * resources.displayMetrics.density
+                if (gesturingOnControl(ev) && ev.x in (w * 0.35f)..(w * 0.65f) && ev.y > h * 0.25f && ev.y < h - edge && ev.x > edge && ev.x < w - edge && !blocksHostDrag(ev)) {
+                    leaveFromControl = true
+                    centerDownLocalX = ev.x; centerDownLocalY = ev.y
+                    centerDownRawX = ev.rawX; centerDownRawY = ev.rawY
+                    centerTracker?.recycle()
+                    centerTracker = android.view.VelocityTracker.obtain().also { it.track(ev) }
+                }
+                return false
+            }
+            MotionEvent.ACTION_MOVE -> {
+                if (!leaveFromControl) return false
+                centerTracker?.track(ev)
+                val dy = ev.rawY - centerDownRawY
+                val dx = ev.rawX - centerDownRawX
+                if (ev.pointerCount > 1) { endLeaveFromControl(true); return false }
+                if (centerDragging) { host.leaveMove(dy); return true }
+                val slop = android.view.ViewConfiguration.get(context).scaledTouchSlop
+                if (dy > slop && dy > 1.5f * kotlin.math.abs(dx)) {
+                    centerDragging = true
+                    val cancel = MotionEvent.obtain(ev).also { it.action = MotionEvent.ACTION_CANCEL }
+                    super.dispatchTouchEvent(cancel)
+                    cancel.recycle()
+                    host.leaveStart()
+                    host.leaveMove(dy)
+                    return true
+                }
+                if (kotlin.math.abs(dx) > slop || dy < -slop) leaveFromControl = false
+                return false
+            }
+            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                if (!leaveFromControl) return false
+                centerTracker?.track(ev)
+                val was = centerDragging
+                endLeaveFromControl(ev.actionMasked == MotionEvent.ACTION_CANCEL)
+                return was
+            }
+        }
+        return false
+    }
+
+    private fun endLeaveFromControl(cancelled: Boolean) {
+        leaveFromControl = false
+        if (!centerDragging) { centerTracker?.recycle(); centerTracker = null; return }
+        centerDragging = false
+        val tracker = centerTracker
+        centerTracker = null
+        var v = 0f
+        if (!cancelled && tracker != null) { tracker.computeCurrentVelocity(1000); v = tracker.yVelocity }
+        tracker?.recycle()
+        hostDrag?.leaveEnd(v, cancelled)
+    }
+
+    private fun gesturingOnControl(ev: MotionEvent): Boolean = features.overlays && touchesControl(ev)
 
     /** Feeds [ev] in screen coordinates: this view may be scaled by the host, which would inflate the velocity. */
     private fun android.view.VelocityTracker.track(ev: MotionEvent) {
@@ -590,6 +662,13 @@ class VideoSurface(
         if (!v.isShown) return false
         val r = Rect()
         return v.getGlobalVisibleRect(r) && r.contains(x, y)
+    }
+
+    /** The View is scaled or moved by the host: its bars are see-through, so they do not scale over the page. */
+    fun setTransformed(on: Boolean) {
+        val color = if (on) Color.TRANSPARENT else Color.BLACK
+        playerView.setBackgroundColor(color)
+        playerView.setShutterBackgroundColor(color)
     }
 
     private fun applyZoom() {

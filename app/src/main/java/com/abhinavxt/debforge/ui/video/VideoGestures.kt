@@ -154,14 +154,39 @@ internal data class PictureLayer(val scaleX: Float, val scaleY: Float, val trans
     companion object { val Identity = PictureLayer(1f, 1f, 0f, 0f) }
 }
 
+/** How the video sits in its view: whole picture with bars (FIT), cropped to fill (FILL), or stretched to the view (STRETCH). */
+internal enum class PictureFit { FIT, FILL, STRETCH }
+
+/** Pure: the rectangle the picture itself covers inside [rect] for a video of [aspect] (width / height). */
+internal fun contentRect(rect: Rect, aspect: Float, fit: PictureFit): Rect {
+    if (fit == PictureFit.STRETCH || !aspect.isFinite() || aspect <= 0f || rect.width <= 0f || rect.height <= 0f) return rect
+    val wider = rect.width / rect.height > aspect
+    // FIT: limited by the shorter side; FILL: by the longer one.
+    val byHeight = if (fit == PictureFit.FIT) wider else !wider
+    val w = if (byHeight) rect.height * aspect else rect.width
+    val h = if (byHeight) rect.height else rect.width / aspect
+    val left = rect.left + (rect.width - w) / 2f
+    val top = rect.top + (rect.height - h) / 2f
+    return Rect(left, top, left + w, top + h)
+}
+
 /**
  * Pure: the transform that shows a picture laid out at [layout] at [visual] instead, so it moves and shrinks without
- * being measured again each frame. Identity when they are equal or [layout] has no size.
+ * being measured again each frame. The video's own picture ([aspect] unknown: 0) keeps its shape: both axes scale by the
+ * same amount, taken from where the picture sits inside each rectangle, so a 16:9 picture never stretches on its way to
+ * a tall full-screen rectangle. Identity when they are equal or [layout] has no size.
  */
-internal fun layerFor(layout: Rect, visual: Rect): PictureLayer {
+internal fun layerFor(layout: Rect, visual: Rect, aspect: Float = 0f, fit: PictureFit = PictureFit.FIT): PictureLayer {
     val values = floatArrayOf(layout.left, layout.top, layout.width, layout.height, visual.left, visual.top, visual.width, visual.height)
     if (values.any { !it.isFinite() } || layout.width <= 0f || layout.height <= 0f) return PictureLayer.Identity
-    return PictureLayer(visual.width / layout.width, visual.height / layout.height, visual.left - layout.left, visual.top - layout.top)
+    if (fit == PictureFit.STRETCH || !aspect.isFinite() || aspect <= 0f) {
+        return PictureLayer(visual.width / layout.width, visual.height / layout.height, visual.left - layout.left, visual.top - layout.top)
+    }
+    val cl = contentRect(layout, aspect, fit)
+    val cv = contentRect(visual, aspect, fit)
+    if (cl.width <= 0f) return PictureLayer.Identity
+    val s = cv.width / cl.width
+    return PictureLayer(s, s, cv.left - layout.left - s * (cl.left - layout.left), cv.top - layout.top - s * (cl.top - layout.top))
 }
 
 /**

@@ -399,11 +399,14 @@ private fun ActiveVideoHost(
     // --- what the watch page shows ---
     var canPlayAsAudio by remember { mutableStateOf(false) }
     var pictureHeight by remember { mutableIntStateOf(0) }
+    // The picture's shape (width / height), 0 until known: the transforms keep it.
+    var videoAspect by remember { mutableFloatStateOf(0f) }
     LaunchedEffect(Unit) {
         while (true) {
             canPlayAsAudio = session.canPlayAsAudio()
             pictureHeight = session.player?.videoSize?.height ?: 0
             val size = session.player?.videoSize
+            videoAspect = if (size != null && size.width > 0 && size.height > 0) size.width * size.pixelWidthHeightRatio / size.height else 0f
             sizeKnown = size != null && size.width > 0
             videoPortrait = size != null && size.width > 0 && size.height > size.width
             delay(1_000)
@@ -737,6 +740,21 @@ private fun ActiveVideoHost(
                 }
             }
         }
+        // Back (or any mode change) in the middle of the swipe: nothing stays held until the finger lifts.
+        LaunchedEffect(mode) {
+            if (mode != VideoMode.FULL && leaving && !drag.committed) {
+                settleGen++
+                settleJobs[0]?.cancel()
+                drag.resetLeave()
+                leaveActive = false
+                leaveOffset = 0f
+                leaveCover = 0f
+                rectAnim.snapTo(targetNow)
+                heldLayout = null
+                pageAlpha.snapTo(1f)
+                leaving = false
+            }
+        }
         SideEffect { surface.hostDrag = drag }
         // The page's own list: pulling down at its top drags the video down too.
         val pageScroll = remember {
@@ -809,12 +827,22 @@ private fun ActiveVideoHost(
         // moves, fades and is covered by the tabs exactly like the bar; back at rest the live picture returns, then the still goes.
         val miniPicture = remember { MiniPicture() }
         val miniNow = mode == VideoMode.MINI && !pip
+        val aspectNow by rememberUpdatedState({ videoAspect })
+        val fitNow: () -> PictureFit = {
+            when (surface.playerView.resizeMode) {
+                androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_ZOOM -> PictureFit.FILL
+                androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FILL -> PictureFit.STRETCH
+                else -> PictureFit.FIT
+            }
+        }
         val layoutNow by rememberUpdatedState(rectNow)
         val visualNow by rememberUpdatedState(visualRect)
         // The picture's View transform: the layout-to-visual difference, plus the mini bar's swipe offset.
         fun applyMini() {
             val m = miniPicture.active
-            val layer = layerFor(layoutNow(), visualNow())
+            val layer = layerFor(layoutNow(), visualNow(), aspectNow(), fitNow())
+            // Transformed, the bars around the picture would scale over what is behind: they are see-through then.
+            surface.setTransformed(layer != PictureLayer.Identity)
             surface.pivotX = 0f
             surface.pivotY = 0f
             surface.scaleX = layer.scaleX
@@ -823,7 +851,7 @@ private fun ActiveVideoHost(
             surface.translationY = layer.translationY + if (m && !miniPicture.hidden) miniSwipe.dragY else 0f
         }
         // Set in the frame the state changes, not through a re-measure.
-        LaunchedEffect(Unit) { snapshotFlow { layerFor(layoutNow(), visualNow()) }.collect { applyMini() } }
+        LaunchedEffect(Unit) { snapshotFlow { layerFor(layoutNow(), visualNow(), aspectNow(), fitNow()) }.collect { applyMini() } }
         miniPicture.active = miniNow
         // Entering picture-in-picture mid-drag: drop the swipe so nothing is left held or offset when the app returns.
         LaunchedEffect(pip) {
@@ -896,7 +924,7 @@ private fun ActiveVideoHost(
                     .size(with(density) { held.width.toDp() }, with(density) { held.height.toDp() })
                     .graphicsLayer {
                         transformOrigin = androidx.compose.ui.graphics.TransformOrigin(0f, 0f)
-                        val l = layerFor(rectNow(), visualRect())
+                        val l = layerFor(rectNow(), visualRect(), aspectNow(), fitNow())
                         scaleX = l.scaleX; scaleY = l.scaleY; translationX = l.translationX; translationY = l.translationY
                     }
                     .draggable(

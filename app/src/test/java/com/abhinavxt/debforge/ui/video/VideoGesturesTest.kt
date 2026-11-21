@@ -234,6 +234,54 @@ class VelocityTowardTest {
         assertEquals(300f, l.translationY, 0f)
     }
 
+    /** Where the picture ends up on screen under [l] for a view laid out at [layout]: its top left and size. */
+    private fun shown(layout: androidx.compose.ui.geometry.Rect, aspect: Float, l: PictureLayer, fit: PictureFit = PictureFit.FIT): androidx.compose.ui.geometry.Rect {
+        val c = contentRect(layout, aspect, fit)
+        val left = layout.left + l.scaleX * (c.left - layout.left) + l.translationX
+        val top = layout.top + l.scaleY * (c.top - layout.top) + l.translationY
+        return androidx.compose.ui.geometry.Rect(left, top, left + c.width * l.scaleX, top + c.height * l.scaleY)
+    }
+
+    @Test fun layerForKeepsTheAspectBetweenWatchFullAndMini() {
+        val ar = 16f / 9f
+        val watch = androidx.compose.ui.geometry.Rect(0f, 50f, 1080f, 50f + 607.5f)
+        val full = androidx.compose.ui.geometry.Rect(0f, 0f, 1080f, 2160f)
+        val mini = androidx.compose.ui.geometry.Rect(16f, 2000f, 16f + 228f, 2000f + 128f)
+        for ((a, b) in listOf(watch to full, full to watch, watch to mini, full to mini, mini to full)) {
+            for (p in listOf(0f, 0.3f, 0.9f, 1f)) {
+                val v = androidx.compose.ui.geometry.lerp(a, b, p)
+                val l = layerFor(a, v, ar)
+                assertEquals(l.scaleX, l.scaleY, 0.0001f)
+                val r = shown(a, ar, l)
+                assertEquals(ar, r.width / r.height, 0.01f)
+                val want = contentRect(v, ar, PictureFit.FIT)
+                assertEquals(want.left, r.left, 0.5f); assertEquals(want.top, r.top, 0.5f); assertEquals(want.width, r.width, 0.5f)
+            }
+        }
+    }
+
+    @Test fun layerForKeepsAPortraitPictureInAWideRectangle() {
+        val ar = 9f / 16f
+        val full = androidx.compose.ui.geometry.Rect(0f, 0f, 1080f, 2160f)
+        val watch = androidx.compose.ui.geometry.Rect(0f, 0f, 1080f, 607f)
+        val l = layerFor(full, watch, ar)
+        assertEquals(l.scaleX, l.scaleY, 0.0001f)
+        val r = shown(full, ar, l)
+        assertEquals(ar, r.width / r.height, 0.01f)
+        assertTrue(r.height <= 607.5f)
+    }
+
+    @Test fun layerForFillAndStretch() {
+        val ar = 16f / 9f
+        val layout = androidx.compose.ui.geometry.Rect(0f, 0f, 400f, 900f)
+        val visual = androidx.compose.ui.geometry.Rect(0f, 0f, 400f, 225f)
+        val fill = layerFor(layout, visual, ar, PictureFit.FILL)
+        assertEquals(fill.scaleX, fill.scaleY, 0.0001f)
+        val stretch = layerFor(layout, visual, ar, PictureFit.STRETCH)
+        assertEquals(1f, stretch.scaleX, 0f)
+        assertEquals(0.25f, stretch.scaleY, 0f)
+    }
+
     @Test fun layerForBadInputIsIdentity() {
         val visual = androidx.compose.ui.geometry.Rect(0f, 0f, 10f, 10f)
         assertEquals(PictureLayer.Identity, layerFor(androidx.compose.ui.geometry.Rect(0f, 0f, 0f, 0f), visual))
