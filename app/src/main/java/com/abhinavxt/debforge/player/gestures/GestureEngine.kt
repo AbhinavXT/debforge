@@ -218,13 +218,19 @@ class GestureEngine(config: Config, private val cb: Callbacks) {
     }
 
     fun up(x: Float, y: Float, t: Long) {
+        // A flick so quick that no move came before the lift: where it lifted tells which drag it was.
+        if (mode == Mode.PRESSED) decide(x, y)
         when (mode) {
             Mode.PRESSED -> tap(x, y, t)
             Mode.VERTICAL -> cb.onVerticalEnd(verticalSide)
             Mode.SCRUB -> cb.onScrubEnd()
             Mode.LONG_PRESS -> cb.onLongPressEnd()
             Mode.PINCH -> cb.onPinchEnd()
-            Mode.CENTER -> cb.onCenterDragEnd(false)
+            Mode.CENTER -> {
+                // A quick flick may have too few moves to reach where the finger lifted.
+                cb.onCenterDrag(y - downY)
+                cb.onCenterDragEnd(false)
+            }
             Mode.IDLE, Mode.IGNORED -> Unit
         }
         mode = Mode.IDLE

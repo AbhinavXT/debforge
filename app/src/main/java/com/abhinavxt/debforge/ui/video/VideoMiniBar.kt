@@ -208,6 +208,9 @@ private class SwipeCoords { var c: LayoutCoordinates? = null }
 private val SpringBack = spring<Float>(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessMedium)
 private val SlideOut = spring<Float>(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessMedium, visibilityThreshold = 1f)
 
+/** The speed (dp/s) of a flick that closes the video mini bar sideways or down whatever the distance. */
+internal const val MINI_BAR_FLING_DP = 450f
+
 /**
  * The [MiniBarSwipe] gesture: one pointer loop, the axis locked after the touch slop. Positions are read in the root's
  * coordinates, so it works on a node that itself moves with the swipe (the host's picture overlay moves with the bar).
@@ -223,9 +226,14 @@ fun Modifier.miniBarSwipe(swipe: MiniBarSwipe): Modifier {
         val slop = viewConfiguration.touchSlop
         awaitEachGesture {
             var released = false
+            var downT = 0L
+            var lastMoveT = 0L
+            var liftT = 0L
+            var liftTotal = Offset.Zero
             var dragging = false
             try {
             val down = awaitFirstDown(requireUnconsumed = false)
+            downT = down.uptimeMillis; lastMoveT = downT; liftT = downT
             fun root(c: PointerInputChange): Offset = coords.c?.takeIf { it.isAttached }?.localToRoot(c.position) ?: c.position
             val start = root(down)
             tracker.resetTracking()
@@ -239,11 +247,19 @@ fun Modifier.miniBarSwipe(swipe: MiniBarSwipe): Modifier {
                 val change = event.changes.firstOrNull { it.id == down.id } ?: return@awaitEachGesture
                 if (!change.pressed) {
                     if (horizontal == null) return@awaitEachGesture
+                    // Where the finger lifted counts too: a flick can lift well past its last move, and the speed needs that point.
+                    val lift = root(change)
+                    tracker.addPosition(change.uptimeMillis, lift)
+                    val total = lift - start
+                    liftT = change.uptimeMillis
+                    liftTotal = total
+                    along = if (horizontal == true) pastSlop(total.x, slop) else pastSlop(total.y, slop)
                     break
                 }
                 if (horizontal == null && change.isConsumed) return@awaitEachGesture
                 val pos = root(change)
                 tracker.addPosition(change.uptimeMillis, pos)
+                lastMoveT = change.uptimeMillis
                 val total = pos - start
                 if (horizontal == null) {
                     if (total.getDistance() < slop) continue
@@ -265,8 +281,16 @@ fun Modifier.miniBarSwipe(swipe: MiniBarSwipe): Modifier {
             }
             released = true
             val isHorizontal = horizontal == true
-            val v = tracker.calculateVelocity()
-            val fling = DISMISS_FLING_DP * density.density
+            var v = tracker.calculateVelocity()
+            // Events arriving far apart (a loaded device, a very quick flick) leave the tracker with little or no speed: when
+            // the finger was still moving as it lifted, the average speed of the whole swipe stands in if it is greater.
+            val ms = liftT - downT
+            if (ms > 0 && liftT - lastMoveT <= 80) {
+                val ax = liftTotal.x * 1000f / ms
+                val ay = liftTotal.y * 1000f / ms
+                v = androidx.compose.ui.unit.Velocity(if (kotlin.math.abs(ax) > kotlin.math.abs(v.x)) ax else v.x, if (kotlin.math.abs(ay) > kotlin.math.abs(v.y)) ay else v.y)
+            }
+            val fling = MINI_BAR_FLING_DP * density.density
             val result = miniSwipe(
                 if (isHorizontal) along else 0f, if (isHorizontal) 0f else along,
                 if (isHorizontal) v.x else 0f, if (isHorizontal) 0f else v.y,

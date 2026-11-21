@@ -133,6 +133,9 @@ class VideoSurface(
     private var centerTracker: android.view.VelocityTracker? = null
     /** The touch began on a control (shown controls) but may still become the swipe down: decided past the touch slop. */
     private var leaveFromControl = false
+    private var centerDownTime = 0L
+    private var centerLastRawY = 0f
+    private var centerLastTime = 0L
 
     private var gestureEngine: GestureEngine? = null
     /** The current touch belongs to the gestures (not to a button). */
@@ -413,6 +416,7 @@ class VideoSurface(
             if (gesturing && playerView.width > 0) engine?.resize(playerView.width.toFloat(), playerView.height.toFloat())
             centerDownLocalX = ev.x; centerDownLocalY = ev.y
             centerDownRawX = ev.rawX; centerDownRawY = ev.rawY
+            centerDownTime = ev.eventTime
             if (!leaveFromControl) {
                 centerTracker?.recycle()
                 centerTracker = if (gesturing && engine?.centerSwipeDown == true && !isTv && hostDrag != null) android.view.VelocityTracker.obtain() else null
@@ -420,6 +424,7 @@ class VideoSurface(
         }
         if (!gesturing || engine == null) return super.dispatchTouchEvent(ev)
         centerTracker?.track(ev)
+        centerLastRawY = ev.rawY; centerLastTime = ev.eventTime
         val t = ev.eventTime
         // Once the picture follows the finger this view moves too, so its own coordinates would drift: use the screen's.
         val x = if (centerDragging) centerDownLocalX + (ev.rawX - centerDownRawX) else ev.getX(0)
@@ -453,6 +458,7 @@ class VideoSurface(
                     leaveFromControl = true
                     centerDownLocalX = ev.x; centerDownLocalY = ev.y
                     centerDownRawX = ev.rawX; centerDownRawY = ev.rawY
+                    centerDownTime = ev.eventTime
                     centerTracker?.recycle()
                     centerTracker = android.view.VelocityTracker.obtain().also { it.track(ev) }
                 }
@@ -461,6 +467,7 @@ class VideoSurface(
             MotionEvent.ACTION_MOVE -> {
                 if (!leaveFromControl) return false
                 centerTracker?.track(ev)
+                centerLastRawY = ev.rawY; centerLastTime = ev.eventTime
                 val dy = ev.rawY - centerDownRawY
                 val dx = ev.rawX - centerDownRawX
                 if (ev.pointerCount > 1) { endLeaveFromControl(true); return false }
@@ -481,8 +488,24 @@ class VideoSurface(
             MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                 if (!leaveFromControl) return false
                 centerTracker?.track(ev)
+                centerLastRawY = ev.rawY; centerLastTime = ev.eventTime
+                val up = ev.actionMasked == MotionEvent.ACTION_UP
+                if (!centerDragging && up) {
+                    // A flick so quick that no move came before the lift: it is a drag all the same.
+                    val dy = ev.rawY - centerDownRawY
+                    val dx = ev.rawX - centerDownRawX
+                    val slop = android.view.ViewConfiguration.get(context).scaledTouchSlop
+                    if (dy > slop && dy > 1.5f * kotlin.math.abs(dx)) {
+                        centerDragging = true
+                        val cancel = MotionEvent.obtain(ev).also { it.action = MotionEvent.ACTION_CANCEL }
+                        super.dispatchTouchEvent(cancel)
+                        cancel.recycle()
+                        host.leaveStart()
+                    }
+                }
+                if (centerDragging) host.leaveMove(ev.rawY - centerDownRawY)
                 val was = centerDragging
-                endLeaveFromControl(ev.actionMasked == MotionEvent.ACTION_CANCEL)
+                endLeaveFromControl(!up)
                 return was
             }
         }
@@ -496,9 +519,15 @@ class VideoSurface(
         val tracker = centerTracker
         centerTracker = null
         var v = 0f
-        if (!cancelled && tracker != null) { tracker.computeCurrentVelocity(1000); v = tracker.yVelocity }
+        if (!cancelled && tracker != null) { tracker.computeCurrentVelocity(1000); v = flickVelocity(tracker.yVelocity) }
         tracker?.recycle()
         hostDrag?.leaveEnd(v, cancelled)
+    }
+
+    /** [measured] velocity, or when a very quick flick left too few points for one, the average from the touch down to the last point. */
+    private fun flickVelocity(measured: Float): Float {
+        val ms = centerLastTime - centerDownTime
+        return if (kotlin.math.abs(measured) < 1f && ms > 0) (centerLastRawY - centerDownRawY) * 1000f / ms else measured
     }
 
     private fun gesturingOnControl(ev: MotionEvent): Boolean = features.overlays && touchesControl(ev)
@@ -600,6 +629,30 @@ class VideoSurface(
                     tracker?.recycle()
                     host.upEnd(v, !up)
                     return true
+                }
+                // A flick so quick that no move came before the lift is a drag all the same.
+                if (ev.actionMasked == MotionEvent.ACTION_UP && dragMayStart && ev.pointerCount == 1) {
+                    val dy = ev.rawY - dragDownY
+                    val dx = ev.rawX - dragDownX
+                    val slop = android.view.ViewConfiguration.get(context).scaledTouchSlop
+                    val down = dy > slop && dy > kotlin.math.abs(dx)
+                    val up = -dy > slop && -dy > kotlin.math.abs(dx)
+                    if (down || up) {
+                        tracker?.track(ev)
+                        tracker?.computeCurrentVelocity(1000)
+                        var v = tracker?.yVelocity ?: 0f
+                        val ms = ev.eventTime - dragDownTime
+                        if (kotlin.math.abs(v) < 1f && ms > 0) v = dy * 1000f / ms
+                        tracker?.recycle()
+                        gesturing = false
+                        engine?.cancel(ev.eventTime)
+                        val cancel = MotionEvent.obtain(ev).also { it.action = MotionEvent.ACTION_CANCEL }
+                        super.dispatchTouchEvent(cancel)
+                        cancel.recycle()
+                        if (down) { host.start(); host.move(dy); host.end(v) }
+                        else { host.upStart(); host.upMove(-dy); host.upEnd(v, false) }
+                        return true
+                    }
                 }
                 tracker?.recycle()
             }
@@ -710,7 +763,7 @@ class VideoSurface(
             var v = 0f
             if (!cancelled && tracker != null) {
                 tracker.computeCurrentVelocity(1000)
-                v = tracker.yVelocity
+                v = flickVelocity(tracker.yVelocity)
             }
             tracker?.recycle()
             hostDrag?.leaveEnd(v, cancelled)
