@@ -30,6 +30,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
@@ -64,6 +65,13 @@ class HistoryViewModel @Inject constructor(
     val state: StateFlow<HistoryUiState> = history.observe()
         .map { HistoryUiState(it, loaded = true) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), HistoryUiState())
+
+    /** The Media screen's "Continue watching" row. */
+    val continueItems: StateFlow<List<HistoryEntity>> = combine(history.observe(), settings.continueHiddenFlow) { rows, hidden ->
+        continueWatching(rows, decodeHidden(hidden))
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    fun hideContinue(e: HistoryEntity) { viewModelScope.launch { runCatching { settings.hideContinue(encodeHidden(e.itemId, e.playedAt)) } } }
 
     val paused: StateFlow<Boolean> = settings.historyPausedFlow
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)

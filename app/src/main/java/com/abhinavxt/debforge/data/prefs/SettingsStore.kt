@@ -5,6 +5,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.abhinavxt.debforge.data.update.InstallSource
 import com.abhinavxt.debforge.domain.DefaultQuality
@@ -64,7 +65,8 @@ class SettingsStore @Inject constructor(
     private val keyNightMode = booleanPreferencesKey("player_night_mode")
     private val keyStreamPreviews = booleanPreferencesKey("player_stream_previews")
     private val keyPlayerArtColor = booleanPreferencesKey("player_art_color")
-    private val keyHistoryPaused = booleanPreferencesKey("history_paused")
+    private val keyContinueHidden = stringSetPreferencesKey("continue_hidden")
+    private val keyHistoryPaused =booleanPreferencesKey("history_paused")
     private val keyStorageLimitGb = intPreferencesKey("storage_limit_gb")
     private val keyAudioSkipSeconds = intPreferencesKey("audio_skip_seconds")
     private val keyPlayerGestures = booleanPreferencesKey("player_gestures")
@@ -277,6 +279,11 @@ class SettingsStore @Inject constructor(
     /** Play history recording is off while true. */
     val historyPausedFlow: Flow<Boolean> = context.settingsDataStore.data.map { it[keyHistoryPaused] ?: false }
     suspend fun setHistoryPaused(v: Boolean) = context.settingsDataStore.edit { it[keyHistoryPaused] = v }
+
+    /** Media "Continue watching" entries the user removed, as `playedAt|itemId` (see ui/history/ContinueWatching.kt). */
+    val continueHiddenFlow: Flow<Set<String>> = context.settingsDataStore.data.map { it[keyContinueHidden] ?: emptySet() }
+    // shortcut: the set only grows (one short string per removal); prune if it ever matters.
+    suspend fun hideContinue(entry: String) = context.settingsDataStore.edit { it[keyContinueHidden] = (it[keyContinueHidden] ?: emptySet()) + entry }
 
     /** Cap on DebForge's own downloads in GB; 0 = off. */
     val storageLimitGbFlow: Flow<Int> = context.settingsDataStore.data.map { validStorageLimitGb(it[keyStorageLimitGb]) }

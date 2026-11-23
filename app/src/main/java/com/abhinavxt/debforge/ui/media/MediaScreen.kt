@@ -49,6 +49,7 @@ import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.Shuffle
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.Sort
@@ -134,6 +135,7 @@ import com.abhinavxt.debforge.ui.components.GeneratedArt
 import com.abhinavxt.debforge.ui.components.HeaderNavActions
 import com.abhinavxt.debforge.ui.components.MessageState
 import com.abhinavxt.debforge.ui.components.holdFocus
+import com.abhinavxt.debforge.ui.browse.playExternally
 import com.abhinavxt.debforge.ui.components.ScreenHeader
 import com.abhinavxt.debforge.ui.components.SearchPill
 import com.abhinavxt.debforge.ui.theme.DebforgeTheme
@@ -147,8 +149,10 @@ fun MediaScreen(
     onOpenSettings: () -> Unit,
     onOpenYouTube: () -> Unit,
     onOpenHistory: () -> Unit = {},
-    viewModel: MediaViewModel = hiltViewModel()
+    viewModel: MediaViewModel = hiltViewModel(),
+    historyViewModel: com.abhinavxt.debforge.ui.history.HistoryViewModel = hiltViewModel()
 ) {
+    val continueItems by historyViewModel.continueItems.collectAsStateWithLifecycle()
     val state by viewModel.state.collectAsStateWithLifecycle()
     val watch by viewModel.watch.collectAsStateWithLifecycle()
     val refreshing by viewModel.refreshing.collectAsStateWithLifecycle()
@@ -162,6 +166,19 @@ fun MediaScreen(
     val videoLauncher = com.abhinavxt.debforge.player.rememberVideoLauncher()
     LaunchedEffect(Unit) {
         viewModel.playRequests.collect { videoLauncher.open(context, it) }
+    }
+    val msgNoPlayer = stringResource(R.string.msg_no_player)
+    LaunchedEffect(Unit) {
+        // A tapped tile replays through History's own path; the saved position makes it resume.
+        historyViewModel.events.collect { ev ->
+            when (ev) {
+                is com.abhinavxt.debforge.ui.history.HistoryEvent.Play ->
+                    if (historyViewModel.useInternalPlayer.value) runCatching { videoLauncher.open(context, ev.request) }
+                    else if (!context.playExternally(ev.request)) tell(msgNoPlayer)
+                is com.abhinavxt.debforge.ui.history.HistoryEvent.Unplayable -> tell(ev.text)
+                is com.abhinavxt.debforge.ui.history.HistoryEvent.OpenYouTube -> Unit
+            }
+        }
     }
     val msgStream = stringResource(R.string.media_stream_failed)
     val msgBulkFailed = stringResource(R.string.media_download_all_failed)
@@ -195,6 +212,9 @@ fun MediaScreen(
     MediaContent(
         state = state,
         watch = watch,
+        continueItems = continueItems,
+        onContinue = historyViewModel::replay,
+        onHideContinue = historyViewModel::hideContinue,
         internalPlayer = internalPlayer,
         playingId = playingId,
         onKind = viewModel::setKind,
@@ -274,6 +294,9 @@ internal fun MediaContent(
     tell: (String) -> Unit = {},
     lists: AudioListActions = AudioListActions(),
     watch: Map<String, com.abhinavxt.debforge.data.playback.PlaybackEntity>? = null,
+    continueItems: List<com.abhinavxt.debforge.data.history.HistoryEntity> = emptyList(),
+    onContinue: (com.abhinavxt.debforge.data.history.HistoryEntity) -> Unit = {},
+    onHideContinue: (com.abhinavxt.debforge.data.history.HistoryEntity) -> Unit = {},
     internalPlayer: Boolean = true
 ) {
     val cs = MaterialTheme.colorScheme
@@ -348,6 +371,8 @@ internal fun MediaContent(
                 modifier = Modifier.clip(MaterialTheme.shapes.large).combinedClickableSimple(onOpenDownloads)
             )
         }
+
+        if (!selecting && continueItems.isNotEmpty()) ContinueRow(continueItems, onContinue, onHideContinue)
 
         if (!state.loaded) {
             // First load pending: show nothing rather than a wrong "Nothing downloaded yet".
@@ -721,6 +746,50 @@ private fun Art(e: DownloadEntity, modifier: Modifier, tag: String) {
     val art = file
     if (art != null) AsyncImage(ImageRequest.Builder(context).data(art.file).memoryCacheKey(art.key).build(), null, modifier, contentScale = ContentScale.Crop)
     else GeneratedArt(e.displayTitle(), tag, modifier, showTitle = false)
+}
+
+@Composable
+private fun ContinueRow(
+    items: List<com.abhinavxt.debforge.data.history.HistoryEntity>,
+    onOpen: (com.abhinavxt.debforge.data.history.HistoryEntity) -> Unit,
+    onHide: (com.abhinavxt.debforge.data.history.HistoryEntity) -> Unit
+) {
+    val cs = MaterialTheme.colorScheme
+    val shape = RoundedCornerShape(16.dp)
+    Text(
+        stringResource(R.string.continue_watching), style = MaterialTheme.typography.titleMedium,
+        modifier = Modifier.padding(start = 16.dp, top = 4.dp, bottom = 4.dp)
+    )
+    androidx.compose.foundation.lazy.LazyRow(
+        contentPadding = PaddingValues(horizontal = 12.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        items(items, key = { it.itemId }) { e ->
+            var menu by remember { mutableStateOf(false) }
+            val progress = com.abhinavxt.debforge.ui.history.historyProgress(e.positionMs, e.durationMs) ?: 0f
+            Box {
+                Column(Modifier.width(160.dp).mediaClickable(shape, false, { onOpen(e) }, { menu = true }).padding(4.dp)) {
+                    Box {
+                        com.abhinavxt.debforge.ui.history.Artwork(e, Modifier.fillMaxWidth().aspectRatio(16f / 9f).clip(shape))
+                        androidx.compose.material3.LinearProgressIndicator(
+                            progress = { progress },
+                            modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth().height(3.dp).clip(RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp)).clearAndSetSemantics {},
+                            trackColor = cs.surface.copy(alpha = 0.6f),
+                            gapSize = 0.dp,
+                            drawStopIndicator = {}
+                        )
+                    }
+                    Text(
+                        com.abhinavxt.debforge.data.youtube.decodeEntities(e.title), style = MaterialTheme.typography.titleSmall,
+                        maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(horizontal = 4.dp, vertical = 6.dp)
+                    )
+                }
+                DropdownMenu(menu, { menu = false }) {
+                    DropdownMenuItem(text = { Text(stringResource(R.string.continue_remove)) }, onClick = { menu = false; onHide(e) })
+                }
+            }
+        }
+    }
 }
 
 @Composable

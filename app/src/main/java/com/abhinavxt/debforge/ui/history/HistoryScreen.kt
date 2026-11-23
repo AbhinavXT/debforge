@@ -251,7 +251,7 @@ private fun HistoryRow(e: HistoryEntity, onClick: () -> Unit, onRemove: () -> Un
 
 /** Local art (a download's thumbnail) or a web thumbnail; never another scheme. Else an icon for the kind. */
 @Composable
-private fun Artwork(e: HistoryEntity, modifier: Modifier) {
+internal fun Artwork(e: HistoryEntity, modifier: Modifier) {
     val context = LocalContext.current
     val cs = MaterialTheme.colorScheme
     val file by produceState(ArtworkProbe.cachedFile(e.itemId), e.itemId) { value = ArtworkProbe.existing(context, e.itemId) }
