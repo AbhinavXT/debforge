@@ -228,6 +228,11 @@ object DownloadFiles {
      */
     fun deleteFinal(finalPath: String?) = delete(finalPath)
 
+    /** Removes the file or folder (with everything in it) at [path]. Safe if absent. */
+    fun deleteTree(path: String) {
+        if (SafPaths.isSaf(path)) delete(path) else File(path).deleteRecursively()
+    }
+
     private fun delete(path: String?) {
         if (path == null) return
         runCatching {

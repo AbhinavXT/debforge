@@ -1195,4 +1195,13 @@
     <string name="player_autosubs_undo">Urungkan</string>
     <string name="set_even_out_volume">Ratakan volume</string>
     <string name="set_even_out_volume_detail">Menyamakan volume lagu yang keras dan pelan.</string>
+    <string name="media_extract">Ekstrak</string>
+    <string name="extract_title">Mengekstrak %1$s</string>
+    <string name="extract_progress">File yang sudah diekstrak: %1$d</string>
+    <plurals name="extract_done">
+        <item quantity="other">%1$d file diekstrak</item>
+    </plurals>
+    <string name="extract_skipped">%1$d dilewati</string>
+    <string name="extract_no_space">Ruang kosong tidak cukup untuk mengekstrak file ini. Tidak ada yang disimpan.</string>
+    <string name="extract_failed">Tidak dapat mengekstrak file ini. Mungkin rusak. Tidak ada yang disimpan.</string>
 </resources>

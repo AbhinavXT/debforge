@@ -1253,4 +1253,14 @@
     <string name="player_autosubs_undo">पूर्ववत करा</string>
     <string name="set_even_out_volume">आवाज समान करा</string>
     <string name="set_even_out_volume_detail">मोठ्या आणि हळू गाण्यांचा आवाज सारखा ठेवतो.</string>
+    <string name="media_extract">एक्सट्रॅक्ट करा</string>
+    <string name="extract_title">%1$s एक्सट्रॅक्ट होत आहे</string>
+    <string name="extract_progress">आतापर्यंत एक्सट्रॅक्ट झालेल्या फाइल: %1$d</string>
+    <plurals name="extract_done">
+        <item quantity="one">%1$d फाइल एक्सट्रॅक्ट झाली</item>
+        <item quantity="other">%1$d फाइल्स एक्सट्रॅक्ट झाल्या</item>
+    </plurals>
+    <string name="extract_skipped">%1$d वगळल्या</string>
+    <string name="extract_no_space">ही फाइल एक्सट्रॅक्ट करण्यासाठी पुरेशी मोकळी जागा नाही. काहीही ठेवले नाही.</string>
+    <string name="extract_failed">ही फाइल एक्सट्रॅक्ट करता आली नाही. ती खराब असू शकते. काहीही ठेवले नाही.</string>
 </resources>

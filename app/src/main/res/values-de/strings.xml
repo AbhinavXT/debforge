@@ -1253,4 +1253,14 @@
     <string name="player_autosubs_undo">Rückgängig</string>
     <string name="set_even_out_volume">Lautstärke angleichen</string>
     <string name="set_even_out_volume_detail">Gleicht laute und leise Titel aneinander an.</string>
+    <string name="media_extract">Entpacken</string>
+    <string name="extract_title">%1$s wird entpackt</string>
+    <string name="extract_progress">Bisher entpackte Dateien: %1$d</string>
+    <plurals name="extract_done">
+        <item quantity="one">%1$d Datei entpackt</item>
+        <item quantity="other">%1$d Dateien entpackt</item>
+    </plurals>
+    <string name="extract_skipped">%1$d übersprungen</string>
+    <string name="extract_no_space">Nicht genug freier Speicher zum Entpacken. Es wurde nichts behalten.</string>
+    <string name="extract_failed">Die Datei konnte nicht entpackt werden. Sie ist möglicherweise beschädigt. Es wurde nichts behalten.</string>
 </resources>

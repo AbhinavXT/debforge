@@ -1195,4 +1195,13 @@
     <string name="player_autosubs_undo">撤销</string>
     <string name="set_even_out_volume">均衡音量</string>
     <string name="set_even_out_volume_detail">让音量大和音量小的曲目听起来响度接近。</string>
+    <string name="media_extract">解压</string>
+    <string name="extract_title">正在解压 %1$s</string>
+    <string name="extract_progress">已解压文件数：%1$d</string>
+    <plurals name="extract_done">
+        <item quantity="other">已解压 %1$d 个文件</item>
+    </plurals>
+    <string name="extract_skipped">已跳过 %1$d 个</string>
+    <string name="extract_no_space">可用空间不足，无法解压此文件。未保留任何内容。</string>
+    <string name="extract_failed">无法解压此文件，它可能已损坏。未保留任何内容。</string>
 </resources>

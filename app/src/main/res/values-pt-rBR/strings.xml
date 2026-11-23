@@ -1311,4 +1311,15 @@
     <string name="player_autosubs_undo">Desfazer</string>
     <string name="set_even_out_volume">Equilibrar volume</string>
     <string name="set_even_out_volume_detail">Aproxima o volume de faixas altas e baixas.</string>
+    <string name="media_extract">Extrair</string>
+    <string name="extract_title">Extraindo %1$s</string>
+    <string name="extract_progress">Arquivos extraídos até agora: %1$d</string>
+    <plurals name="extract_done">
+        <item quantity="one">%1$d arquivo extraído</item>
+        <item quantity="many">%1$d arquivos extraídos</item>
+        <item quantity="other">%1$d arquivos extraídos</item>
+    </plurals>
+    <string name="extract_skipped">%1$d ignorados</string>
+    <string name="extract_no_space">Não há espaço livre suficiente para extrair este arquivo. Nada foi mantido.</string>
+    <string name="extract_failed">Não foi possível extrair este arquivo. Ele pode estar danificado. Nada foi mantido.</string>
 </resources>

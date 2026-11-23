@@ -1369,4 +1369,16 @@
     <string name="player_autosubs_undo">Отменить</string>
     <string name="set_even_out_volume">Выравнивать громкость</string>
     <string name="set_even_out_volume_detail">Сближает громкость тихих и громких треков.</string>
+    <string name="media_extract">Извлечь</string>
+    <string name="extract_title">Извлечение: %1$s</string>
+    <string name="extract_progress">Извлечено файлов: %1$d</string>
+    <plurals name="extract_done">
+        <item quantity="one">Извлечён %1$d файл</item>
+        <item quantity="few">Извлечено %1$d файла</item>
+        <item quantity="many">Извлечено %1$d файлов</item>
+        <item quantity="other">Извлечено %1$d файла</item>
+    </plurals>
+    <string name="extract_skipped">Пропущено: %1$d</string>
+    <string name="extract_no_space">Недостаточно свободного места для извлечения. Ничего не сохранено.</string>
+    <string name="extract_failed">Не удалось извлечь файлы. Архив может быть повреждён. Ничего не сохранено.</string>
 </resources>

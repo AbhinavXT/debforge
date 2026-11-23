@@ -1253,4 +1253,14 @@
     <string name="player_autosubs_undo">Geri al</string>
     <string name="set_even_out_volume">Sesi dengele</string>
     <string name="set_even_out_volume_detail">Yüksek ve alçak sesli parçaları birbirine yaklaştırır.</string>
+    <string name="media_extract">Çıkar</string>
+    <string name="extract_title">%1$s çıkarılıyor</string>
+    <string name="extract_progress">Şimdiye kadar çıkarılan dosya: %1$d</string>
+    <plurals name="extract_done">
+        <item quantity="one">%1$d dosya çıkarıldı</item>
+        <item quantity="other">%1$d dosya çıkarıldı</item>
+    </plurals>
+    <string name="extract_skipped">%1$d atlandı</string>
+    <string name="extract_no_space">Bu dosyayı çıkarmak için yeterli boş alan yok. Hiçbir şey saklanmadı.</string>
+    <string name="extract_failed">Bu dosya çıkarılamadı. Bozuk olabilir. Hiçbir şey saklanmadı.</string>
 </resources>

@@ -1253,4 +1253,14 @@
     <string name="player_autosubs_undo">రద్దు చేయి</string>
     <string name="set_even_out_volume">వాల్యూమ్ సమం చేయి</string>
     <string name="set_even_out_volume_detail">పెద్ద మరియు నెమ్మది పాటల వాల్యూమ్‌ను సమానం చేస్తుంది.</string>
+    <string name="media_extract">ఎక్స్‌ట్రాక్ట్ చేయి</string>
+    <string name="extract_title">%1$s ఎక్స్‌ట్రాక్ట్ అవుతోంది</string>
+    <string name="extract_progress">ఇప్పటివరకు ఎక్స్‌ట్రాక్ట్ అయిన ఫైళ్లు: %1$d</string>
+    <plurals name="extract_done">
+        <item quantity="one">%1$d ఫైల్ ఎక్స్‌ట్రాక్ట్ అయింది</item>
+        <item quantity="other">%1$d ఫైళ్లు ఎక్స్‌ట్రాక్ట్ అయ్యాయి</item>
+    </plurals>
+    <string name="extract_skipped">%1$d దాటవేయబడ్డాయి</string>
+    <string name="extract_no_space">ఈ ఫైల్‌ను ఎక్స్‌ట్రాక్ట్ చేయడానికి తగినంత ఖాళీ స్థలం లేదు. ఏదీ ఉంచబడలేదు.</string>
+    <string name="extract_failed">ఈ ఫైల్‌ను ఎక్స్‌ట్రాక్ట్ చేయలేకపోయాం. ఇది పాడై ఉండవచ్చు. ఏదీ ఉంచబడలేదు.</string>
 </resources>

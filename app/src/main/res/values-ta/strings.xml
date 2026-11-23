@@ -1253,4 +1253,14 @@
     <string name="player_autosubs_undo">செயல்தவிர்</string>
     <string name="set_even_out_volume">ஒலியளவை சமப்படுத்து</string>
     <string name="set_even_out_volume_detail">சத்தமான மற்றும் மெதுவான பாடல்களின் ஒலியளவை சமமாக்குகிறது.</string>
+    <string name="media_extract">பிரித்தெடு</string>
+    <string name="extract_title">%1$s பிரித்தெடுக்கப்படுகிறது</string>
+    <string name="extract_progress">இதுவரை பிரித்தெடுத்த கோப்புகள்: %1$d</string>
+    <plurals name="extract_done">
+        <item quantity="one">%1$d கோப்பு பிரித்தெடுக்கப்பட்டது</item>
+        <item quantity="other">%1$d கோப்புகள் பிரித்தெடுக்கப்பட்டன</item>
+    </plurals>
+    <string name="extract_skipped">%1$d தவிர்க்கப்பட்டன</string>
+    <string name="extract_no_space">இந்தக் கோப்பைப் பிரித்தெடுக்கப் போதுமான இடம் இல்லை. எதுவும் வைத்திருக்கப்படவில்லை.</string>
+    <string name="extract_failed">இந்தக் கோப்பைப் பிரித்தெடுக்க முடியவில்லை. அது சேதமடைந்திருக்கலாம். எதுவும் வைத்திருக்கப்படவில்லை.</string>
 </resources>

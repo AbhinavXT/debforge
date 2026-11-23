@@ -15,6 +15,7 @@ import kotlinx.coroutines.withContext
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.first
 import com.abhinavxt.debforge.data.local.DownloadEntity
 import com.abhinavxt.debforge.domain.DownloadState
@@ -402,6 +403,37 @@ class MediaViewModel @Inject constructor(
         viewModelScope.launch {
             val request = localPlayback.requestFor(entity)
             if (request != null) _playRequests.send(request) else _messages.send(MediaMessage.FILE_MISSING)
+        }
+    }
+
+    /** The .zip being extracted (file name, files written so far), or null when none is. */
+    private val _extracting = MutableStateFlow<Pair<String, Int>?>(null)
+    val extracting: StateFlow<Pair<String, Int>?> = _extracting
+    private var extractJob: Job? = null
+
+    fun cancelExtract() { extractJob?.cancel() }
+
+    /** Extracts [e] beside itself. Exactly one of [onDone] / [onFailed](noSpace) is called, unless cancelled. */
+    fun extract(e: DownloadEntity, onDone: (com.abhinavxt.debforge.download.ZipExtractor.Result) -> Unit, onFailed: (Boolean) -> Unit) {
+        val path = e.finalFilePath ?: return
+        if (extractJob?.isActive == true) return
+        _extracting.value = e.filename to 0
+        extractJob = viewModelScope.launch {
+            try {
+                val result = withContext(Dispatchers.IO) {
+                    val job = coroutineContext[Job]!!
+                    com.abhinavxt.debforge.download.ZipExtractor.extractArchive(path, { job.ensureActive() }) { n ->
+                        _extracting.value = e.filename to n
+                    }
+                }
+                onDone(result)
+            } catch (c: CancellationException) {
+                throw c
+            } catch (t: Throwable) {
+                onFailed(t is com.abhinavxt.debforge.download.ZipExtractor.NoSpaceException)
+            } finally {
+                _extracting.value = null
+            }
         }
     }
 

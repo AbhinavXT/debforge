@@ -157,6 +157,7 @@ fun MediaScreen(
     val watch by viewModel.watch.collectAsStateWithLifecycle()
     val refreshing by viewModel.refreshing.collectAsStateWithLifecycle()
     val internalPlayer by viewModel.useInternalPlayer.collectAsStateWithLifecycle()
+    val extracting by viewModel.extracting.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val snackbar = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -227,6 +228,16 @@ fun MediaScreen(
         onPlayVideoAsAudio = viewModel::playAsAudio,
         onOpenFile = openFile,
         onPlayAudio = onPlayAudio,
+        onExtract = { e ->
+            viewModel.extract(
+                e,
+                onDone = { r ->
+                    val done = context.resources.getQuantityString(R.plurals.extract_done, r.files, r.files)
+                    tell(if (r.skipped > 0) done + " · " + context.getString(R.string.extract_skipped, r.skipped) else done)
+                },
+                onFailed = { noSpace -> tell(context.getString(if (noSpace) R.string.extract_no_space else R.string.extract_failed)) }
+            )
+        },
         onDelete = { ids ->
             viewModel.delete(ids) { n ->
                 Toast.makeText(context, context.resources.getQuantityString(R.plurals.msg_delete_failed_n, n, n), Toast.LENGTH_LONG).show()
@@ -264,6 +275,14 @@ fun MediaScreen(
         )
     )
     SnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter).padding(bottom = 16.dp))
+    extracting?.let { (name, files) ->
+        AlertDialog(
+            onDismissRequest = {},
+            title = { Text(stringResource(R.string.extract_title, name), maxLines = 2, overflow = TextOverflow.Ellipsis) },
+            text = { Text(stringResource(R.string.extract_progress, files)) },
+            confirmButton = { TextButton(onClick = viewModel::cancelExtract) { Text(stringResource(R.string.action_cancel)) } }
+        )
+    }
     }
 }
 
@@ -297,7 +316,8 @@ internal fun MediaContent(
     continueItems: List<com.abhinavxt.debforge.data.history.HistoryEntity> = emptyList(),
     onContinue: (com.abhinavxt.debforge.data.history.HistoryEntity) -> Unit = {},
     onHideContinue: (com.abhinavxt.debforge.data.history.HistoryEntity) -> Unit = {},
-    internalPlayer: Boolean = true
+    internalPlayer: Boolean = true,
+    onExtract: (DownloadEntity) -> Unit = {}
 ) {
     val cs = MaterialTheme.colorScheme
     val selecting = state.selected.isNotEmpty()
@@ -598,7 +618,8 @@ internal fun MediaContent(
                                 onClick = { if (selecting) onToggle(e.id) else onOpenFile(e) },
                                 onLong = { onToggle(e.id) },
                                 onPlay = null,
-                                onDelete = { confirm = listOf(e) }
+                                onDelete = { confirm = listOf(e) },
+                                onExtract = if (e.filename.endsWith(".zip", ignoreCase = true) && e.finalFilePath != null) ({ onExtract(e) }) else null
                             )
                         }
                     }
@@ -867,7 +888,8 @@ private fun MediaRow(
     favourite: Boolean = false,
     onFavourite: (() -> Unit)? = null,
     onAddToPlaylist: (() -> Unit)? = null,
-    removeFrom: Pair<String, () -> Unit>? = null
+    removeFrom: Pair<String, () -> Unit>? = null,
+    onExtract: (() -> Unit)? = null
 ) {
     val cs = MaterialTheme.colorScheme
     val shape = RoundedCornerShape(16.dp)
@@ -944,6 +966,11 @@ private fun MediaRow(
                     text = { Text(stringResource(R.string.action_remove_from, removeFrom.first)) },
                     leadingIcon = { Icon(Icons.Rounded.Close, null) },
                     onClick = { menu = false; removeFrom.second() }
+                )
+                if (onExtract != null) DropdownMenuItem(
+                    text = { Text(stringResource(R.string.media_extract)) },
+                    leadingIcon = { Icon(Icons.Rounded.Folder, null) },
+                    onClick = { menu = false; onExtract() }
                 )
                 DropdownMenuItem(
                     text = { Text(stringResource(R.string.media_delete), color = cs.error) },

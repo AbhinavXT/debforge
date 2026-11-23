@@ -1253,4 +1253,14 @@
     <string name="player_autosubs_undo">পূর্বাবস্থায়</string>
     <string name="set_even_out_volume">ভলিউম সমান করুন</string>
     <string name="set_even_out_volume_detail">জোরে ও আস্তে গানের মধ্যে ভলিউমের পার্থক্য কমায়।</string>
+    <string name="media_extract">এক্সট্র্যাক্ট করুন</string>
+    <string name="extract_title">%1$s এক্সট্র্যাক্ট হচ্ছে</string>
+    <string name="extract_progress">এ পর্যন্ত এক্সট্র্যাক্ট হওয়া ফাইল: %1$d</string>
+    <plurals name="extract_done">
+        <item quantity="one">%1$dটি ফাইল এক্সট্র্যাক্ট হয়েছে</item>
+        <item quantity="other">%1$dটি ফাইল এক্সট্র্যাক্ট হয়েছে</item>
+    </plurals>
+    <string name="extract_skipped">%1$dটি বাদ দেওয়া হয়েছে</string>
+    <string name="extract_no_space">এই ফাইল এক্সট্র্যাক্ট করার মতো যথেষ্ট খালি জায়গা নেই। কিছুই রাখা হয়নি।</string>
+    <string name="extract_failed">এই ফাইল এক্সট্র্যাক্ট করা যায়নি। এটি নষ্ট হতে পারে। কিছুই রাখা হয়নি।</string>
 </resources>
