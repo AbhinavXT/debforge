@@ -15,6 +15,8 @@ import com.abhinavxt.debforge.domain.FormatChoice
 import com.abhinavxt.debforge.domain.YouTubeFormats
 import com.abhinavxt.debforge.domain.pickDefaultChoice
 import com.abhinavxt.debforge.domain.YouTubeLinks
+import com.abhinavxt.debforge.domain.ResultKind
+import com.abhinavxt.debforge.domain.YouTubeFilters
 import com.abhinavxt.debforge.domain.YouTubeSearchResult
 import com.abhinavxt.debforge.domain.YouTubeSubtitle
 import com.abhinavxt.debforge.domain.YouTubeVideo
@@ -68,6 +70,8 @@ sealed interface YouTubeUi {
     data class Results(val query: String, val items: List<YouTubeSearchResult>, val loadingMore: Boolean = false, val channelUrl: String? = null,
         /** The last page load failed: the list stops asking until the user scrolls again. */
         val moreFailed: Boolean = false,
+        /** The filters this search ran with; a channel's videos have none. */
+        val filters: YouTubeFilters = YouTubeFilters(),
     ) : YouTubeUi
     /** [progress] is (current, total) while the selected videos are being added one by one. */
     data class Playlist(
@@ -295,8 +299,8 @@ class YouTubeViewModel @Inject constructor(
         batchJob?.cancel()
         pending = null // a download waiting on the folder prompt belongs to the screen being left
         when {
-            YouTubeLinks.isPlaylistOnly(text) && YouTubeLinks.playlistUrl(text) != null -> loadPlaylist(text)
-            looksLikeYouTube(text) -> resolve(text)
+            YouTubeLinks.isPlaylistOnly(text) && YouTubeLinks.playlistUrl(text) != null -> { filters = YouTubeFilters(); loadPlaylist(text) }
+            looksLikeYouTube(text) -> { filters = YouTubeFilters(); resolve(text) }
             YouTubeLinks.isSearchQuery(text) -> {
                 if (record) YouTubeLinks.historyQuery(text)?.let { q -> viewModelScope.launch { history.add(q) } }
                 search(text.trim())
@@ -309,14 +313,42 @@ class YouTubeViewModel @Inject constructor(
     var resultsList = LazyListState()
         private set
 
+    /** The search filters; they outlive Back from a preview and reset with the search (or a pasted link). */
+    private var filters = YouTubeFilters()
+
+    /** Re-runs the shown search from the first page with [f], keeping the results screen (and the field) in place. */
+    fun setFilters(f: YouTubeFilters) {
+        val r = _ui.value as? YouTubeUi.Results ?: return
+        if (r.channelUrl != null || f == r.filters) return
+        filters = f
+        job?.cancel()
+        moreJob?.cancel()
+        nextPage = null
+        resultsList = LazyListState()
+        _ui.value = YouTubeUi.Results(r.query, emptyList(), loadingMore = true, filters = f)
+        job = viewModelScope.launch {
+            _ui.value = try {
+                val page = resolver.search(r.query, f)
+                nextPage = page.next
+                YouTubeUi.Results(r.query, page.items, filters = f)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                ensureActive()
+                YouTubeUi.Error(errorKind(e), search = true)
+            }
+        }
+    }
+
     private fun search(query: String) {
         resultsList = LazyListState()
         _ui.value = YouTubeUi.Resolving
+        val f = filters
         job = viewModelScope.launch {
             _ui.value = try {
-                val page = resolver.search(query)
+                val page = resolver.search(query, f)
                 nextPage = page.next
-                YouTubeUi.Results(query, page.items)
+                YouTubeUi.Results(query, page.items, filters = f)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
@@ -335,7 +367,7 @@ class YouTubeViewModel @Inject constructor(
         _ui.value = r.copy(loadingMore = true, moreFailed = false)
         moreJob = viewModelScope.launch {
             try {
-                val more = if (channelUrl != null) resolver.channelMore(channelUrl, page) else resolver.searchMore(r.query, page)
+                val more = if (channelUrl != null) resolver.channelMore(channelUrl, page) else resolver.searchMore(r.query, page, r.filters)
                 nextPage = more.next
                 _ui.update { cur ->
                     if (cur !is YouTubeUi.Results || cur.query != r.query || cur.channelUrl != channelUrl) cur
@@ -434,6 +466,11 @@ class YouTubeViewModel @Inject constructor(
     fun pick(result: YouTubeSearchResult) {
         val results = _ui.value as? YouTubeUi.Results
         if (results == null && _ui.value !is YouTubeUi.Empty) return
+        when (result.kind) { // a channel or a playlist opens its own page
+            ResultKind.CHANNEL -> { openChannel(result.title, result.url); return }
+            ResultKind.PLAYLIST -> { submit(result.url); return }
+            ResultKind.VIDEO -> {}
+        }
         startResult(result, viaPlayIcon = false)
     }
 
@@ -597,6 +634,7 @@ class YouTubeViewModel @Inject constructor(
         }
         saved.remove<String>(LINK_KEY)
         _input.value = ""
+        filters = YouTubeFilters()
         _ui.value = YouTubeUi.Empty
     }
 

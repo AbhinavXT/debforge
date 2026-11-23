@@ -37,7 +37,10 @@ import org.schabi.newpipe.extractor.exceptions.SignInConfirmNotBotException
 import org.schabi.newpipe.extractor.localization.Localization
 import org.schabi.newpipe.extractor.playlist.PlaylistInfo
 import org.schabi.newpipe.extractor.search.SearchInfo
-import org.schabi.newpipe.extractor.services.youtube.linkHandler.YoutubeSearchQueryHandlerFactory
+import org.schabi.newpipe.extractor.channel.ChannelInfoItem
+import org.schabi.newpipe.extractor.playlist.PlaylistInfoItem
+import com.abhinavxt.debforge.domain.ResultKind
+import com.abhinavxt.debforge.domain.YouTubeFilters
 import org.schabi.newpipe.extractor.stream.AudioStream
 import org.schabi.newpipe.extractor.stream.Description
 import org.schabi.newpipe.extractor.stream.AudioTrackType
@@ -133,28 +136,53 @@ class YouTubeResolver @Inject constructor(@ApiHttpClient private val client: OkH
     /** One page of search results and the extractor's cursor for the next, null at the end. */
     class SearchPage(val items: List<YouTubeSearchResult>, val next: Page?)
 
-    suspend fun search(query: String): SearchPage = withContext(Dispatchers.IO) {
+    suspend fun search(query: String, filters: YouTubeFilters = YouTubeFilters()): SearchPage = withContext(Dispatchers.IO) {
         try {
             init
-            val info = SearchInfo.getInfo(ServiceList.YouTube, searchHandler(query))
-            SearchPage(searchResults(info.relatedItems), info.nextPage)
+            val handler = searchHandler(query, filters)
+            val info = SearchInfo.getInfo(ServiceList.YouTube, handler)
+            filled(filters, searchItems(info.relatedItems, filters), info.nextPage) { SearchInfo.getMoreItems(ServiceList.YouTube, handler, it).let { m -> searchItems(m.items, filters) to m.nextPage } }
         } catch (e: Exception) {
             throw map(e)
         }
     }
 
-    suspend fun searchMore(query: String, page: Page): SearchPage = withContext(Dispatchers.IO) {
+    suspend fun searchMore(query: String, page: Page, filters: YouTubeFilters = YouTubeFilters()): SearchPage = withContext(Dispatchers.IO) {
         try {
             init
-            val more = SearchInfo.getMoreItems(ServiceList.YouTube, searchHandler(query), page)
-            SearchPage(searchResults(more.items), more.nextPage)
+            val handler = searchHandler(query, filters)
+            val more = SearchInfo.getMoreItems(ServiceList.YouTube, handler, page)
+            filled(filters, searchItems(more.items, filters), more.nextPage) { SearchInfo.getMoreItems(ServiceList.YouTube, handler, it).let { m -> searchItems(m.items, filters) to m.nextPage } }
         } catch (e: Exception) {
             throw map(e)
         }
     }
 
-    private fun searchHandler(query: String) =
-        ServiceList.YouTube.searchQHFactory.fromQuery(query, listOf(YoutubeSearchQueryHandlerFactory.VIDEOS), "")
+    /** A client-side filter can empty a page: keep reading pages (at most [MAX_FILTER_PAGES] more) until some results are left. */
+    private inline fun filled(filters: YouTubeFilters, first: List<YouTubeSearchResult>, next: Page?, more: (Page) -> Pair<List<YouTubeSearchResult>, Page?>): SearchPage {
+        var items = first
+        var cursor = next
+        var reads = 0
+        while (filters.clientSide && items.size < MIN_FILTERED && cursor != null && reads++ < MAX_FILTER_PAGES) {
+            val (got, nxt) = more(cursor)
+            items = items + got
+            cursor = nxt
+        }
+        return SearchPage(items, cursor)
+    }
+
+    private fun searchHandler(query: String, filters: YouTubeFilters) =
+        ServiceList.YouTube.searchQHFactory.fromQuery(query, listOf(filters.contentFilter), "")
+
+    private fun searchItems(items: List<InfoItem>, filters: YouTubeFilters) = items.mapNotNull {
+        when (it) {
+            is StreamInfoItem -> YouTubeSearchResult(it.url, it.name.decoded(), it.uploaderName, it.duration, it.thumbnails.maxByOrNull { t -> t.height }?.url, it.uploaderUrl, it.uploaderAvatars.maxByOrNull { a -> a.height }?.url, it.viewCount,
+                uploadedAt = it.uploadDate?.instant)
+            is ChannelInfoItem -> YouTubeSearchResult(it.url, it.name.decoded(), null, 0, it.thumbnails.maxByOrNull { t -> t.height }?.url, kind = ResultKind.CHANNEL)
+            is PlaylistInfoItem -> YouTubeSearchResult(it.url, it.name.decoded(), it.uploaderName, 0, it.thumbnails.maxByOrNull { t -> t.height }?.url, kind = ResultKind.PLAYLIST)
+            else -> null
+        }
+    }.filter { filters.keeps(it) }
 
     private fun related(selfId: String, info: StreamInfo): List<YouTubeSearchResult> = try {
         relatedVideos(selfId, info.relatedItems.map {
@@ -316,3 +344,7 @@ class YouTubeResolver @Inject constructor(@ApiHttpClient private val client: OkH
         )
     }
 }
+
+/** A filtered search page is topped up to this many results, reading at most [MAX_FILTER_PAGES] more pages. */
+private const val MIN_FILTERED = 10
+private const val MAX_FILTER_PAGES = 4

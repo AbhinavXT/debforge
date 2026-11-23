@@ -1,6 +1,14 @@
 package com.abhinavxt.debforge.ui.youtube
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.material3.FilterChip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import com.abhinavxt.debforge.domain.YouTubeFilters
+import com.abhinavxt.debforge.domain.YtDate
+import com.abhinavxt.debforge.domain.YtDuration
+import com.abhinavxt.debforge.domain.YtType
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -284,3 +292,52 @@ internal fun PlayQualitySheet(
     choices = choices, selected = selected, subtitles = emptyList(), subtitle = null,
     onMode = onMode, onSelect = onSelect, onSubtitle = {}, onConfirm = onPlay, onDismiss = onDismiss,
 )
+
+/** Type, length and upload-date filters over a text search: one chip each opening a menu, and Clear while any is set. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+internal fun SearchFilterRow(filters: YouTubeFilters, onChange: (YouTubeFilters) -> Unit, firstChip: FocusRequester, modifier: Modifier = Modifier) {
+    Row(modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+        FilterMenuChip(R.string.yt_filter_type, filters.type, YtType.ALL, YtType.entries, { typeLabel(it) }, { onChange(filters.copy(type = it)) }, Modifier.focusRequester(firstChip))
+        FilterMenuChip(R.string.yt_filter_length, filters.duration, YtDuration.ANY, YtDuration.entries, { lengthLabel(it) }, { onChange(filters.copy(duration = it)) })
+        FilterMenuChip(R.string.yt_filter_date, filters.date, YtDate.ANY, YtDate.entries, { dateLabel(it) }, { onChange(filters.copy(date = it)) })
+        if (filters.active) TextButton(onClick = { onChange(YouTubeFilters()) }, modifier = Modifier.heightIn(min = 48.dp)) { Text(stringResource(R.string.yt_filter_clear)) }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun <T> FilterMenuChip(title: Int, value: T, default: T, options: List<T>, label: @Composable (T) -> Int, onPick: (T) -> Unit, modifier: Modifier = Modifier) {
+    var open by remember { mutableStateOf(false) }
+    Box {
+        FilterChip(
+            selected = value != default,
+            onClick = { open = true },
+            label = { Text(stringResource(if (value != default) label(value) else title)) },
+            modifier = modifier.heightIn(min = 48.dp),
+        )
+        DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
+            options.forEach { o -> DropdownMenuItem(text = { Text(stringResource(label(o))) }, onClick = { open = false; onPick(o) }) }
+        }
+    }
+}
+
+private fun typeLabel(t: YtType) = when (t) {
+    YtType.ALL -> R.string.yt_type_all
+    YtType.VIDEOS -> R.string.yt_type_videos
+    YtType.CHANNELS -> R.string.yt_type_channels
+    YtType.PLAYLISTS -> R.string.yt_type_playlists
+}
+private fun lengthLabel(d: YtDuration) = when (d) {
+    YtDuration.ANY -> R.string.yt_len_any
+    YtDuration.SHORT -> R.string.yt_len_short
+    YtDuration.MEDIUM -> R.string.yt_len_medium
+    YtDuration.LONG -> R.string.yt_len_long
+}
+private fun dateLabel(d: YtDate) = when (d) {
+    YtDate.ANY -> R.string.yt_date_any
+    YtDate.TODAY -> R.string.yt_date_today
+    YtDate.WEEK -> R.string.yt_date_week
+    YtDate.MONTH -> R.string.yt_date_month
+    YtDate.YEAR -> R.string.yt_date_year
+}

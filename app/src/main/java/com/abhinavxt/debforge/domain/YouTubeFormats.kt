@@ -106,6 +106,9 @@ data class YouTubeSearchResult(
     val channelAvatarUrl: String? = null,
     /** Views; negative when unknown. */
     val viewCount: Long = -1,
+    val kind: ResultKind = ResultKind.VIDEO,
+    /** When it was uploaded (approximate, from "3 weeks ago"); null when unknown. Only read by the upload-date filter. */
+    val uploadedAt: java.time.Instant? = null,
 )
 
 /** A playlist's videos (first 200); each [YouTubeSearchResult.url] goes through the normal link path. */
