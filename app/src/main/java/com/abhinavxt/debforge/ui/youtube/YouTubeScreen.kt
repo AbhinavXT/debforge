@@ -157,11 +157,13 @@ fun YouTubeScreen(
     onOpenSettings: () -> Unit,
     activeDownloads: Int,
     modifier: Modifier = Modifier,
+    playingId: String? = null,
     viewModel: YouTubeViewModel = hiltViewModel()
 ) {
     val ui by viewModel.ui.collectAsStateWithLifecycle()
+    var podcasts by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(false) }
     // Back steps out of a preview (to its search results, if any) or a search before it leaves the tab.
-    androidx.activity.compose.BackHandler(ui !is YouTubeUi.Empty, viewModel::reset)
+    androidx.activity.compose.BackHandler(!podcasts && ui !is YouTubeUi.Empty, viewModel::reset)
     val input by viewModel.input.collectAsStateWithLifecycle()
     val trending by viewModel.trending.collectAsStateWithLifecycle()
     val recent by viewModel.recent.collectAsStateWithLifecycle()
@@ -268,8 +270,19 @@ fun YouTubeScreen(
             ScreenHeader(stringResource(R.string.yt_title), subtitle = stringResource(R.string.yt_subtitle)) {
                 HeaderNavActions(onOpenSettings, onOpenDownloads = onOpenDownloads, activeCount = activeDownloads)
             }
-            Spacer(Modifier.height(8.dp)) // scrolled content is clipped here, clear of the subtitle
-            Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
+            SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)) {
+                listOf("YouTube", stringResource(R.string.podcasts_chip)).forEachIndexed { i, label ->
+                    SegmentedButton(
+                        selected = podcasts == (i == 1),
+                        onClick = { podcasts = i == 1 },
+                        shape = SegmentedButtonDefaults.itemShape(i, 2),
+                        modifier = Modifier.heightIn(min = 48.dp)
+                    ) { Text(label, maxLines = 1) }
+                }
+            }
+            if (podcasts) Box(Modifier.weight(1f).fillMaxWidth()) {
+                com.abhinavxt.debforge.ui.media.PodcastsPane(playingId, tell = { m -> scope.launch { snackbar.currentSnackbarData?.dismiss(); snackbar.showSnackbar(m) } })
+            } else Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
                 YouTubeContent(
                     ui = ui,
                     input = input,

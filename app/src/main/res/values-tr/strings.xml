@@ -885,8 +885,8 @@
     </plurals>
 
     <!-- YouTube -->
-    <string name="yt_title">YouTube</string>
-    <string name="yt_subtitle">Videoyu veya sesini kaydet</string>
+    <string name="yt_title">Keşfet</string>
+    <string name="yt_subtitle">YouTube ve podcast\'ler</string>
     <string name="yt_field_hint">Bağlantı yapıştırın veya YouTube\'da arayın</string>
     <string name="yt_paste">Yapıştır</string>
     <string name="yt_paste_chip">%1$s bağlantısını yapıştır</string>
@@ -1070,7 +1070,7 @@
     </plurals>
 
     <!-- Navigation -->
-    <string name="tab_youtube">YouTube</string>
+    <string name="tab_youtube">Keşfet</string>
     <string name="tab_media">Medya</string>
     <string name="shell_cd_downloads">İndirilenler</string>
     <string name="shell_cd_settings">Ayarlar</string>

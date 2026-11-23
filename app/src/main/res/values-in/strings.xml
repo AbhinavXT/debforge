@@ -845,8 +845,8 @@
     </plurals>
 
     <!-- YouTube -->
-    <string name="yt_title">YouTube</string>
-    <string name="yt_subtitle">Simpan video atau audionya</string>
+    <string name="yt_title">Jelajahi</string>
+    <string name="yt_subtitle">YouTube dan podcast</string>
     <string name="yt_field_hint">Tempel tautan atau cari di YouTube</string>
     <string name="yt_paste">Tempel</string>
     <string name="yt_paste_chip">Tempel tautan %1$s</string>
@@ -1020,7 +1020,7 @@
     </plurals>
 
     <!-- Navigation -->
-    <string name="tab_youtube">YouTube</string>
+    <string name="tab_youtube">Jelajahi</string>
     <string name="tab_media">Media</string>
     <string name="shell_cd_downloads">Unduhan</string>
     <string name="shell_cd_settings">Setelan</string>

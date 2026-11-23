@@ -885,8 +885,8 @@
     </plurals>
 
     <!-- YouTube -->
-    <string name="yt_title">YouTube</string>
-    <string name="yt_subtitle">Video oder Audio speichern</string>
+    <string name="yt_title">Entdecken</string>
+    <string name="yt_subtitle">YouTube und Podcasts</string>
     <string name="yt_field_hint">Link einfügen oder YouTube durchsuchen</string>
     <string name="yt_paste">Einfügen</string>
     <string name="yt_paste_chip">%1$s-Link einfügen</string>
@@ -1070,7 +1070,7 @@
     </plurals>
 
     <!-- Navigation -->
-    <string name="tab_youtube">YouTube</string>
+    <string name="tab_youtube">Entdecken</string>
     <string name="tab_media">Medien</string>
     <string name="shell_cd_downloads">Downloads</string>
     <string name="shell_cd_settings">Einstellungen</string>

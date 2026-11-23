@@ -84,7 +84,7 @@ import com.abhinavxt.debforge.ui.player.focusRing
 import java.text.DateFormat
 import java.util.Date
 
-/** Media -> Audio -> Podcasts: the followed feeds, and inside one the episodes. Back from a feed returns to the list. */
+/** Discover -> Podcasts: the followed feeds, and inside one the episodes. Back from a feed returns to the list. */
 @Composable
 internal fun PodcastsPane(
     playingId: String?,

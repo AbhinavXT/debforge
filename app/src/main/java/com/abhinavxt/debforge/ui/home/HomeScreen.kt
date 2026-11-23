@@ -370,6 +370,7 @@ fun HomeScreen(signedIn: Boolean) {
                         onOpenDownloads = { push(HomeTab.Active) },
                         onOpenSettings = { push(HomeTab.Settings) },
                         activeDownloads = activeCount,
+                        playingId = currentAudio.track?.id,
                         viewModel = youtubeViewModel)
                 }
                 composable(HomeTab.Media.route) {

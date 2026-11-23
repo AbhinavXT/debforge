@@ -26,7 +26,6 @@ class BrowseViewTest {
         assertEquals(BrowseMode.ALBUMS, browseModeOf("albums"))
         assertNull(browseModeOf(null))
         assertNull(browseModeOf("fav"))
-        assertNull(browseModeOf(PODCASTS_LIST))
         assertNull(browseModeOf("some-playlist-id"))
     }
 

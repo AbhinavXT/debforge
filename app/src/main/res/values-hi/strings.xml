@@ -885,8 +885,8 @@
     </plurals>
 
     <!-- YouTube -->
-    <string name="yt_title">YouTube</string>
-    <string name="yt_subtitle">वीडियो या उसका ऑडियो सेव करें</string>
+    <string name="yt_title">डिस्कवर</string>
+    <string name="yt_subtitle">YouTube और पॉडकास्ट</string>
     <string name="yt_field_hint">लिंक पेस्ट करें या YouTube पर खोजें</string>
     <string name="yt_paste">पेस्ट करें</string>
     <string name="yt_paste_chip">%1$s लिंक पेस्ट करें</string>
@@ -1070,7 +1070,7 @@
     </plurals>
 
     <!-- Navigation -->
-    <string name="tab_youtube">YouTube</string>
+    <string name="tab_youtube">डिस्कवर</string>
     <string name="tab_media">मीडिया</string>
     <string name="shell_cd_downloads">डाउनलोड</string>
     <string name="shell_cd_settings">सेटिंग्स</string>

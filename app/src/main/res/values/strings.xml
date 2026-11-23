@@ -887,8 +887,8 @@
     </plurals>
 
     <!-- YouTube -->
-    <string name="yt_title">YouTube</string>
-    <string name="yt_subtitle">Save a video or its audio</string>
+    <string name="yt_title">Discover</string>
+    <string name="yt_subtitle">YouTube and podcasts</string>
     <string name="yt_field_hint">Paste a link or search YouTube</string>
     <string name="yt_paste">Paste</string>
     <string name="yt_paste_chip">Paste %1$s link</string>
@@ -1072,7 +1072,7 @@
     </plurals>
 
     <!-- Navigation -->
-    <string name="tab_youtube">YouTube</string>
+    <string name="tab_youtube">Discover</string>
     <string name="tab_media">Media</string>
     <string name="shell_cd_downloads">Downloads</string>
     <string name="shell_cd_settings">Settings</string>

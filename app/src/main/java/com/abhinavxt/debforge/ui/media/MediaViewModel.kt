@@ -100,7 +100,7 @@ internal const val BROWSE_FOLDERS = "folders"
 internal const val BROWSE_ARTISTS = "artists"
 internal const val BROWSE_ALBUMS = "albums"
 
-/** The browse mode a reserved audioList id stands for; null for All, Favourites, Podcasts and playlist ids. */
+/** The browse mode a reserved audioList id stands for; null for All, Favourites and playlist ids. */
 internal fun browseModeOf(pick: String?): BrowseMode? = when (pick) {
     BROWSE_FOLDERS -> BrowseMode.FOLDERS
     BROWSE_ARTISTS -> BrowseMode.ARTISTS

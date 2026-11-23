@@ -247,9 +247,6 @@ fun MediaScreen(
     }
 }
 
-/** The Audio list pick that shows the followed podcasts instead of downloaded tracks; not a playlist id. */
-internal const val PODCASTS_LIST = "podcasts"
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun MediaContent(
@@ -355,7 +352,7 @@ internal fun MediaContent(
         if (!state.loaded) {
             // First load pending: show nothing rather than a wrong "Nothing downloaded yet".
             Spacer(Modifier.fillMaxSize())
-        } else if (state.totalCount == 0 && !hasYouTubeItems && !(state.kind == FileKind.Audio && state.audioList == PODCASTS_LIST)) {
+        } else if (state.totalCount == 0 && !hasYouTubeItems) {
             MessageState(
                 icon = Icons.Rounded.Download,
                 title = stringResource(R.string.media_empty_title),
@@ -363,9 +360,6 @@ internal fun MediaContent(
                 action = {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Button(onClick = onOpenYouTube) { Text(stringResource(R.string.media_open_youtube)) }
-                        TextButton(onClick = { onKind(FileKind.Audio); lists.onPick(PODCASTS_LIST) }, modifier = Modifier.heightIn(min = 48.dp)) {
-                            Text(stringResource(R.string.podcasts_chip))
-                        }
                     }
                 }
             )
@@ -385,8 +379,7 @@ internal fun MediaContent(
                     ) { Text(stringResource(label, state.count(kind)), maxLines = 1) }
                 }
             }
-            val podcastsOpen = state.kind == FileKind.Audio && state.audioList == PODCASTS_LIST
-            if (!podcastsOpen) Row(Modifier.padding(start = 16.dp, end = 8.dp, bottom = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+            Row(Modifier.padding(start = 16.dp, end = 8.dp, bottom = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                 SearchPill(
                     query = state.query,
                     onQuery = onQuery,
@@ -410,7 +403,6 @@ internal fun MediaContent(
                     FilterChip(state.audioList == BROWSE_ARTISTS, { lists.onPick(BROWSE_ARTISTS) }, { Text(stringResource(R.string.media_browse_artists)) })
                     FilterChip(state.audioList == BROWSE_ALBUMS, { lists.onPick(BROWSE_ALBUMS) }, { Text(stringResource(R.string.media_browse_albums)) })
                     FilterChip(state.audioList == "fav", { lists.onPick("fav") }, { Text(stringResource(R.string.media_list_favourites)) })
-                    FilterChip(state.audioList == PODCASTS_LIST, { lists.onPick(PODCASTS_LIST) }, { Text(stringResource(R.string.podcasts_chip)) })
                     state.lists.playlists.forEach { p ->
                         FilterChip(state.audioList == p.id, { lists.onPick(p.id) }, { Text(p.name, maxLines = 1, overflow = TextOverflow.Ellipsis) })
                     }
@@ -467,9 +459,7 @@ internal fun MediaContent(
                 onPlayAll = { if (items.isNotEmpty()) onPlayAudio(items, 0) },
                 onShuffle = { if (items.isNotEmpty()) onPlayAudio(items.shuffled(), 0) }
             )
-            if (podcastsOpen) {
-                PodcastsPane(playingId, tell)
-            } else if (shownCount == 0 && state.kind == FileKind.Audio && state.audioList != null && state.query.isBlank()) {
+            if (shownCount == 0 && state.kind == FileKind.Audio && state.audioList != null && state.query.isBlank()) {
                 val browsing = browseModeOf(state.audioList) != null
                 PullableMessage(refreshing, onRefresh) { mod -> MessageState(
                     icon = Icons.Rounded.MusicNote,
