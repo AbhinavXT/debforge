@@ -123,6 +123,11 @@ class SettingsViewModel @Inject constructor(
         viewModelScope, SharingStarted.WhileSubscribed(5_000), 0
     )
 
+    val expiryReminderDays: StateFlow<Int> = settingsStore.expiryReminderDaysFlow.stateIn(
+        viewModelScope, SharingStarted.WhileSubscribed(5_000), com.abhinavxt.debforge.domain.ExpiryReminder.DEFAULT_DAYS
+    )
+    fun setExpiryReminderDays(days: Int) = viewModelScope.launch { settingsStore.setExpiryReminderDays(days) }
+
     val youTubeQuality: StateFlow<com.abhinavxt.debforge.domain.DefaultQuality> = settingsStore.youTubeQualityFlow.stateIn(
         viewModelScope, SharingStarted.WhileSubscribed(5_000), com.abhinavxt.debforge.domain.DefaultQuality.ASK
     )

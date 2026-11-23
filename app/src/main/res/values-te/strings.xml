@@ -1263,4 +1263,12 @@
     <string name="extract_skipped">%1$d దాటవేయబడ్డాయి</string>
     <string name="extract_no_space">ఈ ఫైల్‌ను ఎక్స్‌ట్రాక్ట్ చేయడానికి తగినంత ఖాళీ స్థలం లేదు. ఏదీ ఉంచబడలేదు.</string>
     <string name="extract_failed">ఈ ఫైల్‌ను ఎక్స్‌ట్రాక్ట్ చేయలేకపోయాం. ఇది పాడై ఉండవచ్చు. ఏదీ ఉంచబడలేదు.</string>
+    <string name="set_expiry_reminder">గడువు రిమైండర్</string>
+    <string name="set_expiry_off">ఆఫ్</string>
+    <string name="notif_channel_account">ఖాతా</string>
+    <string name="expiry_notif_title">%1$s ప్రీమియం త్వరలో ముగుస్తుంది</string>
+    <plurals name="set_expiry_days_before">
+        <item quantity="one">%d రోజు ముందు</item>
+        <item quantity="other">%d రోజుల ముందు</item>
+    </plurals>
 </resources>

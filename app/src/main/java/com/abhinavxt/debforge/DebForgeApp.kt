@@ -36,6 +36,7 @@ class DebForgeApp : Application() {
         widgetSync.start(appScope)
         // Player widget: restores the saved queue for it and follows the player.
         playerWidgetSync.start(appScope)
+        com.abhinavxt.debforge.download.ExpiryJobService.schedule(this)
         // Follows restored from a backup (or after "clear data" of the job
         // store): make sure the episode check is scheduled exactly when needed.
         appScope.launch {

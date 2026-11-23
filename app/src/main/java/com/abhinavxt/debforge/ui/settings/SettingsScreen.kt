@@ -101,6 +101,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.abhinavxt.debforge.R
+import com.abhinavxt.debforge.domain.ExpiryReminder
 import com.abhinavxt.debforge.ui.posters.PosterSetupSheet
 import com.abhinavxt.debforge.data.provider.AccountInfo
 import com.abhinavxt.debforge.domain.SortOrder
@@ -140,6 +141,7 @@ fun SettingsScreen(onConnect: () -> Unit, onBack: (() -> Unit)? = null, viewMode
     val clipboardOffer by viewModel.clipboardOffer.collectAsStateWithLifecycle()
     val storageInfo by viewModel.storageInfo.collectAsStateWithLifecycle()
     val autoDeleteDays by viewModel.autoDeleteDays.collectAsStateWithLifecycle()
+    val expiryReminderDays by viewModel.expiryReminderDays.collectAsStateWithLifecycle()
     val youTubeQuality by viewModel.youTubeQuality.collectAsStateWithLifecycle()
     val autoDeleteConfirm by viewModel.autoDeleteConfirm.collectAsStateWithLifecycle()
     val follows by viewModel.follows.collectAsStateWithLifecycle()
@@ -354,6 +356,8 @@ fun SettingsScreen(onConnect: () -> Unit, onBack: (() -> Unit)? = null, viewMode
                     }
                     RowDivider()
                     AutoDeleteRow(current = autoDeleteDays, onPick = viewModel::pickAutoDeleteDays)
+                    RowDivider()
+                    ExpiryReminderRow(current = expiryReminderDays, onPick = viewModel::setExpiryReminderDays)
                     RowDivider()
                     YouTubeQualityRow(current = youTubeQuality, onPick = viewModel::setYouTubeQuality)
                 }
@@ -1038,6 +1042,32 @@ private fun AutoDeleteRow(current: Int, onPick: (Int) -> Unit) {
         )
         DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
             Housekeeping.AUTO_DELETE_CHOICES.forEach { days ->
+                DropdownMenuItem(
+                    text = { Text(label(days)) },
+                    leadingIcon = { if (days == current) Icon(Icons.Rounded.Check, contentDescription = null) },
+                    onClick = { onPick(days); open = false }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ExpiryReminderRow(current: Int, onPick: (Int) -> Unit) {
+    var open by remember { mutableStateOf(false) }
+    @Composable
+    fun label(days: Int): String =
+        if (days <= 0) stringResource(R.string.set_expiry_off)
+        else pluralRes(R.plurals.set_expiry_days_before, days, days)
+    Box {
+        SettingRow(
+            icon = Icons.Rounded.WorkspacePremium,
+            title = stringResource(R.string.set_expiry_reminder),
+            subtitle = label(current),
+            onClick = { open = true }
+        )
+        DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
+            ExpiryReminder.CHOICES.forEach { days ->
                 DropdownMenuItem(
                     text = { Text(label(days)) },
                     leadingIcon = { if (days == current) Icon(Icons.Rounded.Check, contentDescription = null) },

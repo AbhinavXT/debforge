@@ -1263,4 +1263,12 @@
     <string name="extract_skipped">%1$d वगळल्या</string>
     <string name="extract_no_space">ही फाइल एक्सट्रॅक्ट करण्यासाठी पुरेशी मोकळी जागा नाही. काहीही ठेवले नाही.</string>
     <string name="extract_failed">ही फाइल एक्सट्रॅक्ट करता आली नाही. ती खराब असू शकते. काहीही ठेवले नाही.</string>
+    <string name="set_expiry_reminder">मुदत संपण्याची आठवण</string>
+    <string name="set_expiry_off">बंद</string>
+    <string name="notif_channel_account">खाते</string>
+    <string name="expiry_notif_title">%1$s प्रीमियम लवकरच संपत आहे</string>
+    <plurals name="set_expiry_days_before">
+        <item quantity="one">%d दिवस आधी</item>
+        <item quantity="other">%d दिवस आधी</item>
+    </plurals>
 </resources>

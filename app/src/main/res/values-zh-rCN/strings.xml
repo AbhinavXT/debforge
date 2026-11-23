@@ -1204,4 +1204,12 @@
     <string name="extract_skipped">已跳过 %1$d 个</string>
     <string name="extract_no_space">可用空间不足，无法解压此文件。未保留任何内容。</string>
     <string name="extract_failed">无法解压此文件，它可能已损坏。未保留任何内容。</string>
+    <string name="set_expiry_reminder">到期提醒</string>
+    <string name="set_expiry_off">关闭</string>
+    <string name="notif_channel_account">账户</string>
+    <string name="expiry_notif_title">%1$s 高级版即将到期</string>
+    <plurals name="set_expiry_days_before">
+        <item quantity="one">提前 %d 天</item>
+        <item quantity="other">提前 %d 天</item>
+    </plurals>
 </resources>

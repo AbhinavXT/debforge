@@ -201,15 +201,19 @@ data class AccountInfo(
     val plan: String? = null
 ) {
     /** Whole days of premium left (0 = expires today), or null if unknown. */
-    val daysLeft: Long?
-        get() {
-            val until = premiumUntil ?: return null
+    val daysLeft: Long? get() = daysUntil(premiumUntil, System.currentTimeMillis())
+
+    companion object {
+        /** Whole days from [nowMs] to the ISO-8601 [until] (-1 once past), or null if absent or unparseable. */
+        fun daysUntil(until: String?, nowMs: Long): Long? {
+            until ?: return null
             val instant = runCatching { java.time.Instant.parse(until) }.getOrNull()
                 ?: runCatching { java.time.OffsetDateTime.parse(until).toInstant() }.getOrNull()
                 ?: return null
-            val ms = instant.toEpochMilli() - System.currentTimeMillis()
+            val ms = instant.toEpochMilli() - nowMs
             return if (ms < 0) -1 else ms / (24L * 60 * 60 * 1000)
         }
+    }
 }
 
 /**

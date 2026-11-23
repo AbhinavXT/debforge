@@ -238,7 +238,7 @@ object DownloadNotifications {
             }
     }
 
-    private fun openAppIntent(context: Context): PendingIntent =
+    internal fun openAppIntent(context: Context): PendingIntent =
         PendingIntent.getActivity(
             context,
             0,

@@ -160,6 +160,12 @@
             android:exported="false"
             android:permission="android.permission.BIND_JOB_SERVICE" />
 
+        <!-- Background check for premium about to expire. -->
+        <service
+            android:name=".download.ExpiryJobService"
+            android:exported="false"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
+
         <!-- Home-screen widget: queue status, Pause/Resume all, Add. -->
         <receiver
             android:name=".widget.DownloadsWidget"

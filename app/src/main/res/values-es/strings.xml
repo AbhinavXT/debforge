@@ -1322,4 +1322,13 @@
     <string name="extract_skipped">%1$d omitidos</string>
     <string name="extract_no_space">No hay espacio libre suficiente para extraer este archivo. No se conservó nada.</string>
     <string name="extract_failed">No se pudo extraer este archivo. Puede estar dañado. No se conservó nada.</string>
+    <string name="set_expiry_reminder">Aviso de caducidad</string>
+    <string name="set_expiry_off">Desactivado</string>
+    <string name="notif_channel_account">Cuenta</string>
+    <string name="expiry_notif_title">El premium de %1$s está por terminar</string>
+    <plurals name="set_expiry_days_before">
+        <item quantity="one">%d día antes</item>
+        <item quantity="many">%d días antes</item>
+        <item quantity="other">%d días antes</item>
+    </plurals>
 </resources>

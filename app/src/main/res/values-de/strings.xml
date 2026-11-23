@@ -1263,4 +1263,12 @@
     <string name="extract_skipped">%1$d übersprungen</string>
     <string name="extract_no_space">Nicht genug freier Speicher zum Entpacken. Es wurde nichts behalten.</string>
     <string name="extract_failed">Die Datei konnte nicht entpackt werden. Sie ist möglicherweise beschädigt. Es wurde nichts behalten.</string>
+    <string name="set_expiry_reminder">Ablauf-Erinnerung</string>
+    <string name="set_expiry_off">Aus</string>
+    <string name="notif_channel_account">Konto</string>
+    <string name="expiry_notif_title">%1$s Premium läuft bald ab</string>
+    <plurals name="set_expiry_days_before">
+        <item quantity="one">%d Tag vorher</item>
+        <item quantity="other">%d Tage vorher</item>
+    </plurals>
 </resources>

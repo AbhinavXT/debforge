@@ -1263,4 +1263,12 @@
     <string name="extract_skipped">%1$dটি বাদ দেওয়া হয়েছে</string>
     <string name="extract_no_space">এই ফাইল এক্সট্র্যাক্ট করার মতো যথেষ্ট খালি জায়গা নেই। কিছুই রাখা হয়নি।</string>
     <string name="extract_failed">এই ফাইল এক্সট্র্যাক্ট করা যায়নি। এটি নষ্ট হতে পারে। কিছুই রাখা হয়নি।</string>
+    <string name="set_expiry_reminder">মেয়াদ শেষের রিমাইন্ডার</string>
+    <string name="set_expiry_off">বন্ধ</string>
+    <string name="notif_channel_account">অ্যাকাউন্ট</string>
+    <string name="expiry_notif_title">%1$s প্রিমিয়াম শেষ হতে চলেছে</string>
+    <plurals name="set_expiry_days_before">
+        <item quantity="one">%d দিন আগে</item>
+        <item quantity="other">%d দিন আগে</item>
+    </plurals>
 </resources>

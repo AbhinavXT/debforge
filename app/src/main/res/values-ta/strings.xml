@@ -1263,4 +1263,12 @@
     <string name="extract_skipped">%1$d தவிர்க்கப்பட்டன</string>
     <string name="extract_no_space">இந்தக் கோப்பைப் பிரித்தெடுக்கப் போதுமான இடம் இல்லை. எதுவும் வைத்திருக்கப்படவில்லை.</string>
     <string name="extract_failed">இந்தக் கோப்பைப் பிரித்தெடுக்க முடியவில்லை. அது சேதமடைந்திருக்கலாம். எதுவும் வைத்திருக்கப்படவில்லை.</string>
+    <string name="set_expiry_reminder">காலாவதி நினைவூட்டல்</string>
+    <string name="set_expiry_off">முடக்கம்</string>
+    <string name="notif_channel_account">கணக்கு</string>
+    <string name="expiry_notif_title">%1$s பிரீமியம் விரைவில் முடிகிறது</string>
+    <plurals name="set_expiry_days_before">
+        <item quantity="one">%d நாள் முன்</item>
+        <item quantity="other">%d நாட்கள் முன்</item>
+    </plurals>
 </resources>

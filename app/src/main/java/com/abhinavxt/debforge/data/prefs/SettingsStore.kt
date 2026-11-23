@@ -53,6 +53,7 @@ class SettingsStore @Inject constructor(
     private val keyPureBlack = booleanPreferencesKey("pure_black")
     private val keyShowExtras = booleanPreferencesKey("show_extra_files")
     private val keyAutoDeleteDays = intPreferencesKey("auto_delete_days")
+    private val keyExpiryReminder = intPreferencesKey("expiry_reminder_days")
     private val keyInternalPlayer = booleanPreferencesKey("internal_player")
     private val keyAutoplayNext = booleanPreferencesKey("autoplay_next")
     private val keyPip = booleanPreferencesKey("picture_in_picture")
@@ -173,6 +174,15 @@ class SettingsStore @Inject constructor(
      * Delete files DebForge downloaded this many days after they finished;
      * 0 = never (default). Only files still listed under Downloads.
      */
+    val expiryReminderDaysFlow: Flow<Int> = context.settingsDataStore.data.map { it[keyExpiryReminder] ?: com.abhinavxt.debforge.domain.ExpiryReminder.DEFAULT_DAYS }
+    suspend fun setExpiryReminderDays(days: Int) = context.settingsDataStore.edit { it[keyExpiryReminder] = days.coerceAtLeast(0) }
+    /** The premium expiry already announced for [id]; not backed up (a new phone may warn once more). */
+    suspend fun expiryNotified(id: com.abhinavxt.debforge.domain.ProviderId): String? =
+        context.settingsDataStore.data.first()[stringPreferencesKey("expiry_notified_${id.name}")]
+    suspend fun setExpiryNotified(id: com.abhinavxt.debforge.domain.ProviderId, until: String) {
+        context.settingsDataStore.edit { it[stringPreferencesKey("expiry_notified_${id.name}")] = until }
+    }
+
     val autoDeleteDaysFlow: Flow<Int> = context.settingsDataStore.data.map { it[keyAutoDeleteDays] ?: 0 }
     suspend fun setAutoDeleteDays(days: Int) = context.settingsDataStore.edit { it[keyAutoDeleteDays] = days.coerceAtLeast(0) }
 
@@ -377,7 +387,7 @@ class SettingsStore @Inject constructor(
     private val backupStrings get() = listOf(keyReleaseAvoid, keyReleasePrefer, keyAdBlockOffSites, keyYouTubeQuality,
         keyAudioLanguage, keySubtitleLanguage, keySubtitleStyle, keySponsorCategories, keyOnlineSubsWhenNone)
     private val backupInts get() = listOf(keySortOrder, keyThemeMode, keyScheduleStart, keyScheduleEnd, keySpeedLimit, keyAutoDeleteDays,
-        keyAudioSkipSeconds, keyStorageLimitGb)
+        keyExpiryReminder, keyAudioSkipSeconds, keyStorageLimitGb)
 
     /** Only values the user actually set; defaults stay defaults on the new phone. */
     suspend fun backupValues(): Map<String, Any> {

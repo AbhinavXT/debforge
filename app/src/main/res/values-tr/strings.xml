@@ -1263,4 +1263,12 @@
     <string name="extract_skipped">%1$d atlandı</string>
     <string name="extract_no_space">Bu dosyayı çıkarmak için yeterli boş alan yok. Hiçbir şey saklanmadı.</string>
     <string name="extract_failed">Bu dosya çıkarılamadı. Bozuk olabilir. Hiçbir şey saklanmadı.</string>
+    <string name="set_expiry_reminder">Bitiş hatırlatıcısı</string>
+    <string name="set_expiry_off">Kapalı</string>
+    <string name="notif_channel_account">Hesap</string>
+    <string name="expiry_notif_title">%1$s premium süresi dolmak üzere</string>
+    <plurals name="set_expiry_days_before">
+        <item quantity="one">%d gün önce</item>
+        <item quantity="other">%d gün önce</item>
+    </plurals>
 </resources>

@@ -1265,4 +1265,12 @@
     <string name="extract_skipped">%1$d skipped</string>
     <string name="extract_no_space">Not enough free space to extract this file. Nothing was kept.</string>
     <string name="extract_failed">Couldn\'t extract this file. It may be damaged. Nothing was kept.</string>
+    <string name="set_expiry_reminder">Expiry reminder</string>
+    <string name="set_expiry_off">Off</string>
+    <string name="notif_channel_account">Account</string>
+    <string name="expiry_notif_title">%1$s premium is ending</string>
+    <plurals name="set_expiry_days_before">
+        <item quantity="one">%d day before</item>
+        <item quantity="other">%d days before</item>
+    </plurals>
 </resources>

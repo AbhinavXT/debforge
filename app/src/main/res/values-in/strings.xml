@@ -1204,4 +1204,12 @@
     <string name="extract_skipped">%1$d dilewati</string>
     <string name="extract_no_space">Ruang kosong tidak cukup untuk mengekstrak file ini. Tidak ada yang disimpan.</string>
     <string name="extract_failed">Tidak dapat mengekstrak file ini. Mungkin rusak. Tidak ada yang disimpan.</string>
+    <string name="set_expiry_reminder">Pengingat kedaluwarsa</string>
+    <string name="set_expiry_off">Mati</string>
+    <string name="notif_channel_account">Akun</string>
+    <string name="expiry_notif_title">Premium %1$s segera berakhir</string>
+    <plurals name="set_expiry_days_before">
+        <item quantity="one">%d hari sebelumnya</item>
+        <item quantity="other">%d hari sebelumnya</item>
+    </plurals>
 </resources>

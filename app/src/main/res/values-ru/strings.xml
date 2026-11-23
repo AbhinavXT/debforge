@@ -1381,4 +1381,14 @@
     <string name="extract_skipped">Пропущено: %1$d</string>
     <string name="extract_no_space">Недостаточно свободного места для извлечения. Ничего не сохранено.</string>
     <string name="extract_failed">Не удалось извлечь файлы. Архив может быть повреждён. Ничего не сохранено.</string>
+    <string name="set_expiry_reminder">Напоминание об окончании</string>
+    <string name="set_expiry_off">Выкл.</string>
+    <string name="notif_channel_account">Аккаунт</string>
+    <string name="expiry_notif_title">Скоро закончится премиум %1$s</string>
+    <plurals name="set_expiry_days_before">
+        <item quantity="one">За %d день</item>
+        <item quantity="few">За %d дня</item>
+        <item quantity="many">За %d дней</item>
+        <item quantity="other">За %d дня</item>
+    </plurals>
 </resources>
