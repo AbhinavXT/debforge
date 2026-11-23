@@ -106,7 +106,13 @@ class BackgroundPlaybackService : MediaSessionService() {
             stopSelf()
             return START_NOT_STICKY
         }
+        // Headset/Bluetooth buttons arrive through Media3's PendingIntent.getForegroundService, and Media3 may drop the
+        // key without going foreground, which kills the app (androidx/media#2768). Answer it first, then let Media3
+        // redraw its own notification: the media one while playing, or out of the foreground when not.
+        val mediaButton = intent?.action == Intent.ACTION_MEDIA_BUTTON
+        if (mediaButton) runCatching { startForegroundPlaceholder() }
         super.onStartCommand(intent, flags, startId)
+        if (mediaButton) session?.let { onUpdateNotification(it, false) }
         if (foregroundRequired) {
             scope.launch { // playback that never began leaves no media notification to take its place
                 delay(PLACEHOLDER_GRACE_MS)
