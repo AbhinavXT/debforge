@@ -1010,6 +1010,13 @@
     <string name="audio_previous">మునుపటి</string>
     <string name="audio_back_n">%d సెకన్లు వెనుకకు</string>
     <string name="audio_forward_n">%d సెకన్లు ముందుకు</string>
+    <string name="lyrics_show">సాహిత్యం చూపు</string>
+    <string name="lyrics_hide">సాహిత్యం దాచు</string>
+    <string name="lyrics_loading">సాహిత్యం లోడ్ అవుతోంది…</string>
+    <string name="lyrics_none">సాహిత్యం కనబడలేదు</string>
+    <string name="lyrics_instrumental">ఇన్‌స్ట్రుమెంటల్</string>
+    <string name="lyrics_failed">సాహిత్యాన్ని లోడ్ చేయలేకపోయాం</string>
+    <string name="lyrics_retry">మళ్లీ ప్రయత్నించు</string>
     <string name="audio_shuffle_on">షఫుల్ ఆన్</string>
     <string name="audio_shuffle_off">షఫుల్ ఆఫ్</string>
     <string name="audio_repeat_off">రిపీట్ ఆఫ్</string>

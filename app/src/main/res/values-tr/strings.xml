@@ -1010,6 +1010,13 @@
     <string name="audio_previous">Önceki</string>
     <string name="audio_back_n">%d saniye geri</string>
     <string name="audio_forward_n">%d saniye ileri</string>
+    <string name="lyrics_show">Şarkı sözlerini göster</string>
+    <string name="lyrics_hide">Şarkı sözlerini gizle</string>
+    <string name="lyrics_loading">Şarkı sözleri yükleniyor…</string>
+    <string name="lyrics_none">Şarkı sözü bulunamadı</string>
+    <string name="lyrics_instrumental">Enstrümantal</string>
+    <string name="lyrics_failed">Şarkı sözleri yüklenemedi</string>
+    <string name="lyrics_retry">Yeniden dene</string>
     <string name="audio_shuffle_on">Karıştır açık</string>
     <string name="audio_shuffle_off">Karıştır kapalı</string>
     <string name="audio_repeat_off">Tekrar kapalı</string>

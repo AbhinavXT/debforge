@@ -1,5 +1,7 @@
 package com.abhinavxt.debforge.di
 
+import com.abhinavxt.debforge.BuildConfig
+import com.abhinavxt.debforge.data.lyrics.LrcLibApi
 import com.abhinavxt.debforge.data.metadata.TmdbApi
 import com.abhinavxt.debforge.data.metadata.TmdbAuthInterceptor
 import com.abhinavxt.debforge.data.prefs.SettingsStore
@@ -34,5 +36,19 @@ object MetadataModule {
             .addConverterFactory(MoshiConverterFactory.create(moshi))
             .build()
             .create(TmdbApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideLrcLibApi(@ApiHttpClient base: OkHttpClient, moshi: Moshi): LrcLibApi {
+        val client = base.newBuilder()
+            .addInterceptor { it.proceed(it.request().newBuilder().header("User-Agent", "DebForge/${BuildConfig.VERSION_NAME}").build()) }
+            .build()
+        return Retrofit.Builder()
+            .baseUrl(LrcLibApi.BASE_URL)
+            .client(client)
+            .addConverterFactory(MoshiConverterFactory.create(moshi))
+            .build()
+            .create(LrcLibApi::class.java)
     }
 }

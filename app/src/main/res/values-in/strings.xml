@@ -963,6 +963,13 @@
     <string name="audio_previous">Sebelumnya</string>
     <string name="audio_back_n">Mundur %d detik</string>
     <string name="audio_forward_n">Maju %d detik</string>
+    <string name="lyrics_show">Tampilkan lirik</string>
+    <string name="lyrics_hide">Sembunyikan lirik</string>
+    <string name="lyrics_loading">Memuat lirik…</string>
+    <string name="lyrics_none">Lirik tidak ditemukan</string>
+    <string name="lyrics_instrumental">Instrumental</string>
+    <string name="lyrics_failed">Gagal memuat lirik</string>
+    <string name="lyrics_retry">Coba lagi</string>
     <string name="audio_shuffle_on">Acak aktif</string>
     <string name="audio_shuffle_off">Acak nonaktif</string>
     <string name="audio_repeat_off">Ulangi nonaktif</string>

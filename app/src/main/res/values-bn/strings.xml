@@ -1010,6 +1010,13 @@
     <string name="audio_previous">আগেরটি</string>
     <string name="audio_back_n">%d সেকেন্ড পেছনে</string>
     <string name="audio_forward_n">%d সেকেন্ড সামনে</string>
+    <string name="lyrics_show">লিরিক্স দেখান</string>
+    <string name="lyrics_hide">লিরিক্স লুকান</string>
+    <string name="lyrics_loading">লিরিক্স লোড হচ্ছে…</string>
+    <string name="lyrics_none">কোনো লিরিক্স পাওয়া যায়নি</string>
+    <string name="lyrics_instrumental">ইন্সট্রুমেন্টাল</string>
+    <string name="lyrics_failed">লিরিক্স লোড করা যায়নি</string>
+    <string name="lyrics_retry">আবার চেষ্টা করুন</string>
     <string name="audio_shuffle_on">শাফল চালু</string>
     <string name="audio_shuffle_off">শাফল বন্ধ</string>
     <string name="audio_repeat_off">রিপিট বন্ধ</string>

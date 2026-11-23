@@ -1104,6 +1104,13 @@
     <string name="audio_previous">Назад</string>
     <string name="audio_back_n">Назад на %d с</string>
     <string name="audio_forward_n">Вперёд на %d с</string>
+    <string name="lyrics_show">Показать текст</string>
+    <string name="lyrics_hide">Скрыть текст</string>
+    <string name="lyrics_loading">Загрузка текста…</string>
+    <string name="lyrics_none">Текст не найден</string>
+    <string name="lyrics_instrumental">Инструментал</string>
+    <string name="lyrics_failed">Не удалось загрузить текст</string>
+    <string name="lyrics_retry">Повторить</string>
     <string name="audio_shuffle_on">Перемешивание включено</string>
     <string name="audio_shuffle_off">Перемешивание выключено</string>
     <string name="audio_repeat_off">Повтор выключен</string>

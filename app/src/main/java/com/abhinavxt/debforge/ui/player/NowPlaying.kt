@@ -42,6 +42,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Bedtime
+import androidx.compose.material.icons.rounded.Lyrics
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Forward10
 import androidx.compose.material.icons.rounded.Forward30
@@ -170,10 +171,15 @@ fun NowPlaying(
     /** Continues this item as video; the button shows only when the track can be watched. */
     onWatch: (() -> Unit)? = null,
     watchBusy: Boolean = false,
+    /** Looks up lyrics (title, artist, duration); no lyrics button when null. */
+    lyrics: (suspend (String, String?, Long) -> com.abhinavxt.debforge.data.lyrics.LyricsResult)? = null,
     /** False while the sheet is fading out; true again when it is reopened in that window. */
     open: Boolean = true
 ) {
     val track = state.track ?: return
+    var lyricsOn by androidx.compose.runtime.saveable.rememberSaveable { androidx.compose.runtime.mutableStateOf(false) }
+    val showLyrics = lyricsOn && lyrics != null
+    val onLyrics = if (lyrics != null) ({ lyricsOn = !lyricsOn }) else null
     val surface = MaterialTheme.colorScheme.surface
     val art = rememberArtColor(track, artColor)
     val top by animateColorAsState(
@@ -203,10 +209,11 @@ fun NowPlaying(
                 if (wide) {
                     Row(Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(32.dp)) {
                         Column(Modifier.weight(1f).fillMaxHeight(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-                            Artwork(state, share, onNext, onPrevious, Modifier.fillMaxWidth(0.7f).widthIn(max = 360.dp))
+                            if (showLyrics) LyricsPanel(track, state.positionMs, state.durationMs, lyrics!!, onSeek, Modifier.fillMaxSize())
+                            else Artwork(state, share, onNext, onPrevious, Modifier.fillMaxWidth(0.7f).widthIn(max = 360.dp))
                         }
                         Column(Modifier.weight(1f).fillMaxHeight(), verticalArrangement = Arrangement.Center) {
-                            Controls(state, onToggle, onNext, onPrevious, onSeek, onSkip, onShuffle, onRepeat, onSpeed, onSleep, playFocus = playFocus, onChannel = onChannel, skipSeconds = skipSeconds)
+                            Controls(state, onToggle, onNext, onPrevious, onSeek, onSkip, onShuffle, onRepeat, onSpeed, onSleep, playFocus = playFocus, onChannel = onChannel, skipSeconds = skipSeconds, lyricsOn = showLyrics, onLyrics = onLyrics)
                             Queue(state, onSkipTo, onAutoplay, Modifier.weight(1f, fill = false).heightIn(max = 220.dp))
                         }
                     }
@@ -222,8 +229,10 @@ fun NowPlaying(
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
                                 // Capped by the screen height so tall tablets keep the controls and Up next on screen.
-                                Artwork(state, share, onNext, onPrevious, Modifier.widthIn(max = this@BoxWithConstraints.maxHeight * 0.4f / 0.85f).fillMaxWidth(0.85f))
-                                Controls(state, onToggle, onNext, onPrevious, onSeek, onSkip, onShuffle, onRepeat, onSpeed, onSleep, Modifier.padding(top = 24.dp), playFocus, onChannel, skipSeconds)
+                                val artMod = Modifier.widthIn(max = this@BoxWithConstraints.maxHeight * 0.4f / 0.85f).fillMaxWidth(0.85f)
+                                if (showLyrics) LyricsPanel(track, state.positionMs, state.durationMs, lyrics!!, onSeek, artMod.aspectRatio(1f))
+                                else Artwork(state, share, onNext, onPrevious, artMod)
+                                Controls(state, onToggle, onNext, onPrevious, onSeek, onSkip, onShuffle, onRepeat, onSpeed, onSleep, Modifier.padding(top = 24.dp), playFocus, onChannel, skipSeconds, showLyrics, onLyrics)
                             }
                         }
                     )
@@ -372,7 +381,9 @@ private fun Controls(
     modifier: Modifier = Modifier,
     playFocus: FocusRequester? = null,
     onChannel: (String, String) -> Unit = { _, _ -> },
-    skipSeconds: Int = DEFAULT_SKIP_SECONDS
+    skipSeconds: Int = DEFAULT_SKIP_SECONDS,
+    lyricsOn: Boolean = false,
+    onLyrics: (() -> Unit)? = null
 ) {
     val track = state.track ?: return
     Column(modifier.fillMaxWidth()) {
@@ -429,6 +440,7 @@ private fun Controls(
                 Icons.Rounded.Shuffle, state.shuffle,
                 stringResource(if (state.shuffle) R.string.audio_shuffle_on else R.string.audio_shuffle_off)
             ) { onShuffle(!state.shuffle) }
+            if (onLyrics != null) ToggleButton(Icons.Rounded.Lyrics, lyricsOn, stringResource(if (lyricsOn) R.string.lyrics_hide else R.string.lyrics_show), onLyrics)
             SpeedButton(state.speed, onSpeed)
             SleepButton(state, onSleep)
             ToggleButton(

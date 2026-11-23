@@ -1010,6 +1010,13 @@
     <string name="audio_previous">मागील</string>
     <string name="audio_back_n">%d सेकंद मागे</string>
     <string name="audio_forward_n">%d सेकंद पुढे</string>
+    <string name="lyrics_show">गीताचे बोल दाखवा</string>
+    <string name="lyrics_hide">गीताचे बोल लपवा</string>
+    <string name="lyrics_loading">गीताचे बोल लोड होत आहेत…</string>
+    <string name="lyrics_none">गीताचे बोल सापडले नाहीत</string>
+    <string name="lyrics_instrumental">इन्स्ट्रुमेंटल</string>
+    <string name="lyrics_failed">गीताचे बोल लोड करता आले नाहीत</string>
+    <string name="lyrics_retry">पुन्हा प्रयत्न करा</string>
     <string name="audio_shuffle_on">शफल चालू</string>
     <string name="audio_shuffle_off">शफल बंद</string>
     <string name="audio_repeat_off">रिपीट बंद</string>

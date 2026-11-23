@@ -629,6 +629,7 @@ fun HomeScreen(signedIn: Boolean) {
                     onStop = { nowPlaying = false; shell.audio.clear() },
                     onWatch = { shell.watchVideo() },
                     watchBusy = watchBusy,
+                    lyrics = shell::lyrics,
                     onChannel = openChannel,
                     playFocus = playFocus,
                     share = if (sharedMotion && sharedScope != null) ArtworkShare(sharedScope, this@AnimatedVisibility) else null

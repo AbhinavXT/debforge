@@ -1057,6 +1057,13 @@
     <string name="audio_previous">Anterior</string>
     <string name="audio_back_n">Retroceder %d segundos</string>
     <string name="audio_forward_n">Avanzar %d segundos</string>
+    <string name="lyrics_show">Mostrar letra</string>
+    <string name="lyrics_hide">Ocultar letra</string>
+    <string name="lyrics_loading">Cargando letra…</string>
+    <string name="lyrics_none">No se encontró la letra</string>
+    <string name="lyrics_instrumental">Instrumental</string>
+    <string name="lyrics_failed">No se pudo cargar la letra</string>
+    <string name="lyrics_retry">Reintentar</string>
     <string name="audio_shuffle_on">Aleatorio activado</string>
     <string name="audio_shuffle_off">Aleatorio desactivado</string>
     <string name="audio_repeat_off">Repetición desactivada</string>

@@ -1010,6 +1010,13 @@
     <string name="audio_previous">Zurück</string>
     <string name="audio_back_n">%d Sekunden zurück</string>
     <string name="audio_forward_n">%d Sekunden vor</string>
+    <string name="lyrics_show">Songtext anzeigen</string>
+    <string name="lyrics_hide">Songtext ausblenden</string>
+    <string name="lyrics_loading">Songtext wird geladen …</string>
+    <string name="lyrics_none">Kein Songtext gefunden</string>
+    <string name="lyrics_instrumental">Instrumental</string>
+    <string name="lyrics_failed">Songtext konnte nicht geladen werden</string>
+    <string name="lyrics_retry">Erneut versuchen</string>
     <string name="audio_shuffle_on">Zufallswiedergabe an</string>
     <string name="audio_shuffle_off">Zufallswiedergabe aus</string>
     <string name="audio_repeat_off">Wiederholen aus</string>

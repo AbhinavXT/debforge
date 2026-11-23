@@ -42,9 +42,12 @@ class ShellViewModel @Inject constructor(
     val audio: AudioPlayer,
     val pending: PendingAddStore,
     private val videoHandoff: VideoHandoff,
+    private val lyricsRepo: com.abhinavxt.debforge.data.lyrics.LyricsRepository,
     dao: DownloadDao,
     settings: SettingsStore
 ) : ViewModel() {
+    suspend fun lyrics(title: String, artist: String?, durationMs: Long) = lyricsRepo.load(title, artist, durationMs)
+
     val playerArtColor: StateFlow<Boolean> = settings.playerArtColorFlow
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), true)
     val audioSkipSeconds: StateFlow<Int> = settings.audioSkipSecondsFlow

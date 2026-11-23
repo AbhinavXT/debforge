@@ -1010,6 +1010,13 @@
     <string name="audio_previous">पिछला</string>
     <string name="audio_back_n">%d सेकंड पीछे</string>
     <string name="audio_forward_n">%d सेकंड आगे</string>
+    <string name="lyrics_show">बोल दिखाएं</string>
+    <string name="lyrics_hide">बोल छिपाएं</string>
+    <string name="lyrics_loading">बोल लोड हो रहे हैं…</string>
+    <string name="lyrics_none">कोई बोल नहीं मिले</string>
+    <string name="lyrics_instrumental">इंस्ट्रुमेंटल</string>
+    <string name="lyrics_failed">बोल लोड नहीं हो सके</string>
+    <string name="lyrics_retry">फिर कोशिश करें</string>
     <string name="audio_shuffle_on">शफ़ल चालू</string>
     <string name="audio_shuffle_off">शफ़ल बंद</string>
     <string name="audio_repeat_off">रिपीट बंद</string>

@@ -1012,6 +1012,13 @@
     <string name="audio_previous">Previous</string>
     <string name="audio_back_n">Back %d seconds</string>
     <string name="audio_forward_n">Forward %d seconds</string>
+    <string name="lyrics_show">Show lyrics</string>
+    <string name="lyrics_hide">Hide lyrics</string>
+    <string name="lyrics_loading">Loading lyrics…</string>
+    <string name="lyrics_none">No lyrics found</string>
+    <string name="lyrics_instrumental">Instrumental</string>
+    <string name="lyrics_failed">Couldn\'t load lyrics</string>
+    <string name="lyrics_retry">Retry</string>
     <string name="audio_shuffle_on">Shuffle on</string>
     <string name="audio_shuffle_off">Shuffle off</string>
     <string name="audio_repeat_off">Repeat off</string>

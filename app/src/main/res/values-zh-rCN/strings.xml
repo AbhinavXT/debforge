@@ -963,6 +963,13 @@
     <string name="audio_previous">上一首</string>
     <string name="audio_back_n">后退 %d 秒</string>
     <string name="audio_forward_n">快进 %d 秒</string>
+    <string name="lyrics_show">显示歌词</string>
+    <string name="lyrics_hide">隐藏歌词</string>
+    <string name="lyrics_loading">正在加载歌词…</string>
+    <string name="lyrics_none">未找到歌词</string>
+    <string name="lyrics_instrumental">纯音乐</string>
+    <string name="lyrics_failed">无法加载歌词</string>
+    <string name="lyrics_retry">重试</string>
     <string name="audio_shuffle_on">随机播放已开启</string>
     <string name="audio_shuffle_off">随机播放已关闭</string>
     <string name="audio_repeat_off">循环已关闭</string>

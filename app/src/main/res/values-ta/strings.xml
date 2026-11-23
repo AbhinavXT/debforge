@@ -1010,6 +1010,13 @@
     <string name="audio_previous">முந்தையது</string>
     <string name="audio_back_n">%d விநாடிகள் பின்னால்</string>
     <string name="audio_forward_n">%d விநாடிகள் முன்னால்</string>
+    <string name="lyrics_show">வரிகளைக் காட்டு</string>
+    <string name="lyrics_hide">வரிகளை மறை</string>
+    <string name="lyrics_loading">வரிகள் ஏற்றப்படுகின்றன…</string>
+    <string name="lyrics_none">வரிகள் கிடைக்கவில்லை</string>
+    <string name="lyrics_instrumental">இசைக்கருவி மட்டும்</string>
+    <string name="lyrics_failed">வரிகளை ஏற்ற முடியவில்லை</string>
+    <string name="lyrics_retry">மீண்டும் முயற்சி</string>
     <string name="audio_shuffle_on">ஷஃபிள் இயக்கத்தில்</string>
     <string name="audio_shuffle_off">ஷஃபிள் முடக்கம்</string>
     <string name="audio_repeat_off">மீண்டும் இயக்கம் முடக்கம்</string>
