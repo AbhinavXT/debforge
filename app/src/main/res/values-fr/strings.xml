@@ -1118,7 +1118,6 @@
     <string name="media_watched_percent">%1$d%% regardée</string>
     <string name="yt_play_quality">Lire en %1$s</string>
     <string name="yt_listen">Écouter</string>
-    <string name="yt_play_cd">Lire</string>
     <string name="yt_streaming">Diffusion…</string>
     <string name="yt_stream_failed">YouTube a interrompu cette diffusion. La télécharger à la place ?</string>
     <string name="yt_stream_download">Télécharger</string>

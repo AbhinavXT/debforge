@@ -673,7 +673,32 @@ class YouTubeViewModel @Inject constructor(
     }
 
     /** A results row's Play icon: as a tap on the row, except that a TV plays at the default quality instead of opening the preview. */
-    fun playResult(result: YouTubeSearchResult) = startResult(result, viaPlayIcon = true)
+    /** The download icon on a result: queues it at the default quality, or opens the preview to pick one ("ask every time"). */
+    fun downloadResult(result: YouTubeSearchResult) {
+        viewModelScope.launch {
+            if (settings.youTubeQualityFlow.first() == DefaultQuality.ASK) { openPreview(result); return@launch }
+            val go: suspend () -> Unit = {
+                val event = try {
+                    tryEnqueueResult(result.url)
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    YouTubeEvent.StreamFailed(errorKind(e)) // resolve failed: unavailable, private, offline…
+                }
+                _events.send(event)
+            }
+            if (!StorageAccess.canWrite(context, settings.downloadDirFlow.first())) {
+                pending = go
+                _folderPrompt.value = true
+            } else go()
+        }
+    }
+
+    private suspend fun tryEnqueueResult(url: String): YouTubeEvent = when (enqueuer.enqueue(url, EnqueueMode.DEFAULT)) {
+        EnqueueResult.QUEUED -> YouTubeEvent.QUEUED
+        EnqueueResult.ALREADY_QUEUED -> YouTubeEvent.ALREADY_QUEUED
+        EnqueueResult.FAILED, EnqueueResult.NO_FORMAT -> YouTubeEvent.QUEUE_FAILED
+    }
 
     fun download() {
         val p = _ui.value as? YouTubeUi.Preview ?: return

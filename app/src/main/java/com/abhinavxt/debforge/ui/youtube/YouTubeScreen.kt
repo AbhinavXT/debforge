@@ -290,7 +290,7 @@ fun YouTubeScreen(
                     onSelect = viewModel::select,
                     onDownload = viewModel::download,
                     onPlay = viewModel::play,
-                    onPlayResult = viewModel::playResult,
+                    onDownloadResult = viewModel::downloadResult,
                     streamingUrl = streamingUrl,
                     onSubtitle = viewModel::selectSubtitle,
                     onToggle = viewModel::togglePlaylistItem,
@@ -356,7 +356,7 @@ internal fun YouTubeContent(
     onChannel: (name: String, url: String) -> Unit = { _, _ -> },
     onLoadTrending: () -> Unit = {},
     onPlay: () -> Unit = {},
-    onPlayResult: (YouTubeSearchResult) -> Unit = {},
+    onDownloadResult: (YouTubeSearchResult) -> Unit = {},
     streamingUrl: String? = null,
     newItems: List<NewFeedItem> = emptyList(),
     onNew: (NewFeedItem) -> Unit = {},
@@ -383,9 +383,9 @@ internal fun YouTubeContent(
         }),
     ) { state ->
         when (state) {
-            YouTubeUi.Empty -> EmptyState(input, clipLink, onInput, onSubmit, onPaste, trending, recent, onRemoveRecent, onClearRecent, onPick, onChannel, onLoadTrending, onPlayResult, streamingUrl, newItems, onNew, onMarkAllSeen)
+            YouTubeUi.Empty -> EmptyState(input, clipLink, onInput, onSubmit, onPaste, trending, recent, onRemoveRecent, onClearRecent, onPick, onChannel, onLoadTrending, onDownloadResult, streamingUrl, newItems, onNew, onMarkAllSeen)
             YouTubeUi.Resolving -> Skeleton()
-            is YouTubeUi.Results -> ResultsState(state, input, onInput, onSubmit, onPaste, onPick, onChannel, onLoadMore, resultsList, onPlayResult, streamingUrl, followedUrls, followBusy, canonicalByPage, onToggleFollow)
+            is YouTubeUi.Results -> ResultsState(state, input, onInput, onSubmit, onPaste, onPick, onChannel, onLoadMore, resultsList, onDownloadResult, streamingUrl, followedUrls, followBusy, canonicalByPage, onToggleFollow)
             is YouTubeUi.Preview -> PreviewState(state, onReset, onMode, onSelect, onSubtitle, onDownload, onPlay, onChannel, onOpenRelated, onAddToQueue, onClosePreview)
             is YouTubeUi.Playlist -> PlaylistState(state, onReset, onToggle, onSelectAll, onQuality, onDownloadPlaylist, onCancelBatch, onChannel)
             is YouTubeUi.Error -> MessageState(
@@ -477,7 +477,7 @@ private fun ResultsState(
     onChannel: (String, String) -> Unit,
     onLoadMore: () -> Unit,
     listState: LazyListState,
-    onPlay: (YouTubeSearchResult) -> Unit,
+    onDownload: (YouTubeSearchResult) -> Unit,
     streamingUrl: String?,
     followedUrls: Set<String>,
     followBusy: String?,
@@ -559,7 +559,7 @@ private fun ResultsState(
         }
         // Rows of `cols` results: one column on a phone, more on a tablet. Plain rows keep the list state, paging and focus order as they were.
         items(r.items.chunked(cols), key = { it.first().url }) { chunk ->
-            ResultCells(chunk, cols) { it, last -> ResultRow(it, onClick = { onPick(it) }, onChannel = if (r.channelUrl == null) onChannel else null, onPlay = { x -> onPlay(x) }, streaming = streamingUrl == it.url, lastColumn = last, rowFocus = firstRow.takeIf { _ -> it === r.items.first() }) }
+            ResultCells(chunk, cols) { it, last -> ResultRow(it, onClick = { onPick(it) }, onChannel = if (r.channelUrl == null) onChannel else null, onDownload = onDownload, streaming = streamingUrl == it.url, lastColumn = last, rowFocus = firstRow.takeIf { _ -> it === r.items.first() }) }
         }
         if (r.loadingMore) item { LinearProgressIndicator(Modifier.fillMaxWidth().padding(vertical = 8.dp)) }
     }
@@ -584,33 +584,32 @@ private fun ResultRow(
     r: YouTubeSearchResult,
     onClick: () -> Unit,
     onChannel: ((String, String) -> Unit)? = null,
-    onPlay: (YouTubeSearchResult) -> Unit,
+    onDownload: (YouTubeSearchResult) -> Unit,
     streaming: Boolean = false,
     lastColumn: Boolean = false,
     rowFocus: FocusRequester? = null,
 ) {
     val source = remember { MutableInteractionSource() }
     val channelUrl = r.channelUrl?.takeIf { onChannel != null && !r.channel.isNullOrBlank() }
-    // Arrows do not find a small target lying inside the row's bounds, so the row, channel and play button are linked by hand.
+    // Arrows do not find a small target lying inside the row's bounds, so the row, channel and download button are linked by hand.
     // RIGHT from the last column has nowhere to go; without this it jumps up to a header button.
     val edge = if (lastColumn) FocusRequester.Cancel else FocusRequester.Default
     val rowFocus = rowFocus ?: remember { FocusRequester() }
     val channelFocus = remember { FocusRequester() }
-    val playFocus = remember { FocusRequester() }
+    val downloadFocus = remember { FocusRequester() }
     val addFocus = remember { FocusRequester() }
     val addToPlaylist = LocalAddToPlaylist.current
     val addRequest = remember(r) { r.toAddRequest() }
     val canAdd = addToPlaylist != null && addRequest != null
     val addSource = remember { MutableInteractionSource() }
     val channelSource = remember { MutableInteractionSource() }
-    val playSource = remember { MutableInteractionSource() }
+    val downloadSource = remember { MutableInteractionSource() }
     // The row and the channel name are siblings, not nested clickables, so TalkBack and TV focus see both.
     Box(Modifier.fillMaxWidth().heightIn(min = 56.dp).clip(RowShape).focusRing(source, RowShape)) {
         Spacer(
             Modifier.matchParentSize().semantics { contentDescription = r.title }
                 .focusRequester(rowFocus)
-                // Play is disabled while streaming and cannot take focus; leave RIGHT to the default search then.
-                .focusProperties { right = if (channelUrl != null) channelFocus else if (!streaming) playFocus else edge }
+                .focusProperties { right = if (channelUrl != null) channelFocus else downloadFocus }
                 .clickable(interactionSource = source, indication = androidx.compose.foundation.LocalIndication.current, role = Role.Button, onClick = onClick),
         )
         Row(
@@ -630,7 +629,7 @@ private fun ResultRow(
                             r.channel, style = style, color = color, maxLines = 1, overflow = TextOverflow.Ellipsis,
                             modifier = Modifier.clip(RoundedCornerShape(8.dp))
                                 .focusRequester(channelFocus)
-                                .focusProperties { left = rowFocus; right = if (!streaming) playFocus else edge }
+                                .focusProperties { left = rowFocus; right = downloadFocus }
                                 .focusRing(channelSource, RoundedCornerShape(8.dp))
                                 .clickable(interactionSource = channelSource, indication = androidx.compose.foundation.LocalIndication.current, role = Role.Button) { onChannel?.invoke(r.channel, channelUrl) }
                                 .semantics { contentDescription = label }.padding(vertical = 6.dp),
@@ -643,16 +642,16 @@ private fun ResultRow(
                 }
             }
             IconButton(
-                onClick = { onPlay(r) }, enabled = !streaming,
-                modifier = Modifier.focusRequester(playFocus).focusProperties { left = if (channelUrl != null) channelFocus else rowFocus; right = if (canAdd) addFocus else edge }
-                    .focusRing(playSource, CircleShape),
-                interactionSource = playSource
+                onClick = { onDownload(r) },
+                modifier = Modifier.focusRequester(downloadFocus).focusProperties { left = if (channelUrl != null) channelFocus else rowFocus; right = if (canAdd) addFocus else edge }
+                    .focusRing(downloadSource, CircleShape),
+                interactionSource = downloadSource
             ) {
-                Icon(Icons.Rounded.PlayCircle, contentDescription = stringResource(R.string.yt_play_cd))
+                Icon(Icons.Rounded.Download, contentDescription = stringResource(R.string.sheet_download_cd, r.title))
             }
             if (canAdd) IconButton(
                 onClick = { addToPlaylist?.invoke(addRequest!!) },
-                modifier = Modifier.focusRequester(addFocus).focusProperties { left = playFocus; right = edge }.focusRing(addSource, CircleShape),
+                modifier = Modifier.focusRequester(addFocus).focusProperties { left = downloadFocus; right = edge }.focusRing(addSource, CircleShape),
                 interactionSource = addSource
             ) {
                 Icon(Icons.Rounded.PlaylistAdd, contentDescription = stringResource(R.string.media_add_to_playlist))
@@ -808,7 +807,7 @@ private fun EmptyState(
     onPick: (YouTubeSearchResult) -> Unit,
     onChannel: (String, String) -> Unit,
     onLoadTrending: () -> Unit,
-    onPlayResult: (YouTubeSearchResult) -> Unit,
+    onDownloadResult: (YouTubeSearchResult) -> Unit,
     streamingUrl: String?,
     newItems: List<NewFeedItem>,
     onNew: (NewFeedItem) -> Unit,
@@ -861,7 +860,7 @@ private fun EmptyState(
                 val cols = resultColumns(maxWidth)
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     trending.chunked(cols).forEach { chunk ->
-                        ResultCells(chunk, cols) { it, last -> ResultRow(it, onClick = { onPick(it) }, onChannel = onChannel, onPlay = { x -> onPlayResult(x) }, streaming = streamingUrl == it.url, lastColumn = last) }
+                        ResultCells(chunk, cols) { it, last -> ResultRow(it, onClick = { onPick(it) }, onChannel = onChannel, onDownload = onDownloadResult, streaming = streamingUrl == it.url, lastColumn = last) }
                     }
                 }
             }

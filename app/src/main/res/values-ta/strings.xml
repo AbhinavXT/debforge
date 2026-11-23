@@ -1068,7 +1068,6 @@
     <string name="media_watched_percent">%1$d%% பார்த்தது</string>
     <string name="yt_play_quality">%1$s இயக்கு</string>
     <string name="yt_listen">கேளுங்கள்</string>
-    <string name="yt_play_cd">இயக்கு</string>
     <string name="yt_streaming">ஸ்ட்ரீம் ஆகிறது…</string>
     <string name="yt_stream_failed">YouTube இந்த ஸ்ட்ரீமை நிறுத்திவிட்டது. அதற்குப் பதிலாக பதிவிறக்கவா?</string>
     <string name="yt_stream_download">பதிவிறக்கு</string>

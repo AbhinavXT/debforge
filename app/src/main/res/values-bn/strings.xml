@@ -1068,7 +1068,6 @@
     <string name="media_watched_percent">%1$d%% দেখা হয়েছে</string>
     <string name="yt_play_quality">চালান %1$s</string>
     <string name="yt_listen">শুনুন</string>
-    <string name="yt_play_cd">চালান</string>
     <string name="yt_streaming">স্ট্রিম হচ্ছে…</string>
     <string name="yt_stream_failed">YouTube এই স্ট্রিমটি বন্ধ করেছে। এর বদলে ডাউনলোড করবেন?</string>
     <string name="yt_stream_download">ডাউনলোড</string>
