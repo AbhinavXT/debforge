@@ -1,0 +1,10 @@
+• Extract .zip downloads in the app
+• Reminder before your debrid account expires
+• Continue watching row in Media
+• YouTube chapters on the seek bar, tappable timestamps
+• Even out volume setting for music
+• Synced lyrics in the audio player
+• Import .m3u playlists
+• YouTube search filters; change quality while streaming
+• Podcasts moved into the Discover tab
+• Fixed a crash from headset buttons and downloaded YouTube audio missing from playlists
