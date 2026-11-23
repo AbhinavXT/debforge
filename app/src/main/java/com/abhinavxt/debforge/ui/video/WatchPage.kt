@@ -22,6 +22,12 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.semantics.contentDescription
 import coil.compose.AsyncImage
+import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLinkStyles
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.TextDecoration
+import com.abhinavxt.debforge.domain.findTimestamps
 import com.abhinavxt.debforge.ui.youtube.durationText
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -206,7 +212,7 @@ private fun WatchHeader(state: VideoUiState, details: WatchDetails, actions: Wat
             }
         }
         val description = details.video?.description.orEmpty()
-        if (state.kind == VideoKind.YOUTUBE && description.isNotBlank()) DescriptionBox(description)
+        if (state.kind == VideoKind.YOUTUBE && description.isNotBlank()) DescriptionBox(description, details.video?.durationSec ?: 0, actions.onSeek)
         if (state.kind != VideoKind.YOUTUBE && info.isNotEmpty() && state.fileName != null) {
             Surface(color = MaterialTheme.colorScheme.surfaceContainerLow, shape = CardShape, modifier = Modifier.padding(horizontal = 8.dp).fillMaxWidth()) {
                 Text(state.fileName, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(16.dp))
@@ -217,7 +223,7 @@ private fun WatchHeader(state: VideoUiState, details: WatchDetails, actions: Wat
 
 /** The video's description: three lines, tap to open it all (and again to fold it). */
 @Composable
-private fun DescriptionBox(text: String) {
+private fun DescriptionBox(text: String, durationSec: Long, onSeek: (Long) -> Unit) {
     var open by rememberSaveable(text) { mutableStateOf(false) }
     val overflows = descriptionOverflows(text)
     val label = stringResource(R.string.yt_description)
@@ -227,8 +233,17 @@ private fun DescriptionBox(text: String) {
     ) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(label, style = MaterialTheme.typography.titleSmall, modifier = Modifier.semantics { heading() })
+            val linkStyle = TextLinkStyles(SpanStyle(color = MaterialTheme.colorScheme.primary, textDecoration = TextDecoration.Underline))
+            val styled = remember(text, durationSec, linkStyle) {
+                buildAnnotatedString {
+                    append(text)
+                    findTimestamps(text, durationSec).forEach { t ->
+                        addLink(LinkAnnotation.Clickable("ts", linkStyle) { onSeek(t.seconds * 1000) }, t.start, t.end)
+                    }
+                }
+            }
             Text(
-                text, style = MaterialTheme.typography.bodyMedium,
+                styled, style = MaterialTheme.typography.bodyMedium,
                 maxLines = if (open) Int.MAX_VALUE else 3, overflow = TextOverflow.Ellipsis,
             )
         }

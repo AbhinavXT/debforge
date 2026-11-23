@@ -425,10 +425,13 @@ private fun ActiveVideoHost(
         )
     }
     val detailsNow by rememberUpdatedState(pageDetails)
+    // YouTube chapters go on the seek bar once both the details and the file are there (a new file clears them).
+    LaunchedEffect(details.video, revision) { details.video?.let { session.setYouTubeChapters(it.id, it.chapters) } }
     val stateNow by rememberUpdatedState(state)
     val watchActions = remember {
         WatchActions(
             onChannel = { name, url -> launcher.dispatch(VideoModeEvent.Minimise); onChannel(name, url) },
+            onSeek = { ms -> session.player?.seekTo(ms) },
             onToggleFollow = { watchVm.toggleFollow { Toast.makeText(context, R.string.yt_follow_failed, Toast.LENGTH_LONG).show() } },
             // The page keeps the playing video's details under the loading state, so a failure can go back to them.
             onOpenRelated = { r -> vm.playRelated(r, loading = { watchVm.setLoading(true) }, failed = { watchVm.setLoading(false) }) },

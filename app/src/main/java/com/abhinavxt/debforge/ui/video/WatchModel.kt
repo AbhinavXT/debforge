@@ -71,6 +71,8 @@ data class WatchDetails(
 class WatchActions(
     val onChannel: (name: String, url: String) -> Unit = { _, _ -> },
     val onToggleFollow: () -> Unit = {},
+    /** A time in the description tapped: seek the playing video there. */
+    val onSeek: (ms: Long) -> Unit = {},
     /** Related video tapped: play it in place. */
     val onOpenRelated: (YouTubeSearchResult) -> Unit = {},
     /** The "+" on a related row: queue it for audio. */

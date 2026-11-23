@@ -699,7 +699,8 @@ class VideoSession @Inject constructor(
         controls.chapters = emptyList()
         if (isTv) view?.setExtraAdGroupMarkers(null, null)
         scope.launch {
-            val found = if (youtube != null) emptyList() else runCatching { chapterReader.chapters(source, file) }.getOrDefault(emptyList())
+            if (youtube != null) return@launch // its chapters come with the video's details (setYouTubeChapters)
+            val found = runCatching { chapterReader.chapters(source, file) }.getOrDefault(emptyList())
             if (generation != fileGeneration) return@launch // another file by now
             skips.chapters = found
             controls.chapters = found
@@ -746,6 +747,13 @@ class VideoSession @Inject constructor(
         refreshAudioHandoff()
         offeredFallback = false
         refresher.resetBudget()
+    }
+
+    /** A streamed YouTube video's chapters, once its details are known; the file's own (Matroska) read never has any. */
+    fun setYouTubeChapters(videoId: String, found: List<com.abhinavxt.debforge.domain.MkvChapters.Chapter>) {
+        if (youtube?.videoId != videoId) return
+        controls.chapters = found
+        if (isTv) applyChapterMarks(found)
     }
 
     /** TV: Media3's seek bar marks the chapters (its ad markers). */

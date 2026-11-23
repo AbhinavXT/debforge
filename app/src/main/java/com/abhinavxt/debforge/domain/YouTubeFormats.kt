@@ -36,6 +36,8 @@ data class YouTubeVideo(
     val viewCount: Long = -1,
     /** Upload date as the extractor wrote it (an ISO date for a video's own page); null when unknown. */
     val uploadDate: String? = null,
+    /** The uploader's chapters (from the extractor, else the description's time list); empty when none. */
+    val chapters: List<MkvChapters.Chapter> = emptyList(),
 )
 
 /** One related item as the extractor reported it, before filtering; [isStream] is false for playlists and channels. */
