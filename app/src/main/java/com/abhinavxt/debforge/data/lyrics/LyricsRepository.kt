@@ -35,20 +35,22 @@ class LyricsRepository @Inject constructor(
         val by = cleanArtist(artist)
         val sec = durationMs / 1000
         val file = File(dir, sha1("$track|${by.orEmpty()}|$sec"))
-        readCache(file)?.let { return@withContext it }
+        // Without a known length the pick is a guess: neither read nor write the cache.
+        if (sec > 0) readCache(file)?.let { return@withContext it }
         try {
             var items = api.search(track = track, artist = by)
             // "Artist - Song" titles from a channel that is not the artist: search the whole title instead.
             if (items.none { it.hasLyrics } && " - " in track) items = api.search(q = track)
             val item = pickLyrics(items, sec)
+            val synced = item?.syncedLyrics?.takeIf { it.isNotBlank() }?.let { parseLrc(it) }.orEmpty()
             val result = when {
                 item == null -> LyricsResult.NotFound
-                !item.syncedLyrics.isNullOrBlank() && parseLrc(item.syncedLyrics).isNotEmpty() -> LyricsResult.Synced(parseLrc(item.syncedLyrics))
+                synced.isNotEmpty() -> LyricsResult.Synced(synced)
                 !item.plainLyrics.isNullOrBlank() -> LyricsResult.Plain(item.plainLyrics)
                 item.instrumental == true -> LyricsResult.Instrumental
                 else -> LyricsResult.NotFound
             }
-            writeCache(file, result, item)
+            if (sec > 0) writeCache(file, result, item)
             result
         } catch (e: IOException) {
             LyricsResult.Failed
@@ -72,7 +74,10 @@ class LyricsRepository @Inject constructor(
     }
 
     private fun readCache(file: File): LyricsResult? {
-        val text = runCatching { file.readText() }.getOrNull() ?: return null
+        return runCatching { decodeCache(file.readText()) }.getOrNull()
+    }
+
+    private fun decodeCache(text: String): LyricsResult? {
         val body = text.substringAfter('\n', "")
         return when (text.firstOrNull()) {
             'S' -> parseLrc(body).takeIf { it.isNotEmpty() }?.let { LyricsResult.Synced(it) }

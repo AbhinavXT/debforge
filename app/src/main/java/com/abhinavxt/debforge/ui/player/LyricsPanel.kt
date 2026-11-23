@@ -32,7 +32,11 @@ import com.abhinavxt.debforge.R
 import com.abhinavxt.debforge.data.lyrics.LyricsResult
 import com.abhinavxt.debforge.data.lyrics.lineAt
 import com.abhinavxt.debforge.player.AudioTrack
-import kotlinx.coroutines.delay
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.snapshotFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withTimeoutOrNull
 
 /** Lyrics of [track], loaded on demand while shown: synced lines follow [positionMs] and a tap seeks there. */
 @Composable
@@ -46,19 +50,31 @@ internal fun LyricsPanel(
 ) {
     var retry by remember { mutableIntStateOf(0) }
     var result by remember(track.id) { mutableStateOf<LyricsResult?>(null) }
-    LaunchedEffect(track.id, retry, durationMs > 0) {
+    val latestDuration by rememberUpdatedState(durationMs)
+    // The duration shown at a track change still belongs to the previous track; it is trusted only on the first open or a retry.
+    val seen = remember { arrayOf<String?>(null) }
+    LaunchedEffect(track.id, retry) {
         result = null
-        if (durationMs <= 0) delay(1500) // the length helps pick the right record; give the player a moment to know it
-        result = load(track.title, track.artist, durationMs)
+        val stale = if (seen[0] != null && seen[0] != track.id) latestDuration else -1L
+        seen[0] = track.id
+        // The length picks the right record; wait briefly for the player to report this track's, else search without it.
+        val len = withTimeoutOrNull(3000) { snapshotFlow { latestDuration }.first { it > 0 && it != stale } } ?: 0L
+        result = load(track.title, track.artist, len)
     }
     Box(modifier, contentAlignment = Alignment.Center) {
         when (val r = result) {
             null -> Message(stringResource(R.string.lyrics_loading))
             is LyricsResult.Synced -> {
-                val active = lineAt(r.lines, positionMs)
+                val pos by rememberUpdatedState(positionMs)
+                val activeState = remember(r) { derivedStateOf { lineAt(r.lines, pos) } }
+                val active by activeState
                 val list = rememberLazyListState()
+                val first = remember(r) { booleanArrayOf(true) }
                 LaunchedEffect(active) {
-                    if (active >= 0) list.animateScrollToItem(active, -(list.layoutInfo.viewportSize.height / 2 - 40))
+                    if (active < 0) return@LaunchedEffect
+                    val off = -(list.layoutInfo.viewportSize.height / 2 - 40)
+                    if (first[0]) list.scrollToItem(active, off) else list.animateScrollToItem(active, off)
+                    first[0] = false
                 }
                 LazyColumn(Modifier.fillMaxWidth(), list, contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = 120.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     itemsIndexed(r.lines) { i, line ->

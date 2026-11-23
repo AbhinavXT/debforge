@@ -1133,6 +1133,7 @@
     <string name="media_fav_add">Añadir a favoritos</string>
     <string name="media_fav_remove">Quitar de favoritos</string>
     <string name="media_add_to_playlist">Añadir a una lista</string>
+    <string name="media_import_unreadable">No se pudo leer el archivo (puede superar los 2 MB)</string>
     <string name="media_import_playlist">Importar lista (.m3u)</string>
     <string name="media_import_done">Importada «%1$s»: %2$d añadidas, %3$d no encontradas</string>
     <string name="media_import_none">Ninguna pista coincide con la lista (%1$d no encontradas)</string>

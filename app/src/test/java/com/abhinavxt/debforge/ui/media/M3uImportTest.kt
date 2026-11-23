@@ -26,4 +26,16 @@ class M3uImportTest {
         assertEquals(listOf("1"), ids)
         assertEquals(2, missing)
     }
+
+    @Test fun nameFallbackSkippedWhenAmbiguous() {
+        val dup = tracks + ("4" to "/storage/emulated/0/Music/X/Song A.mp3")
+        val (ids, missing) = matchM3u(listOf("Other/Song A.mp3", "Rock/Song A.mp3"), dup)
+        assertEquals(listOf("1"), ids)
+        assertEquals(1, missing)
+    }
+
+    @Test fun decodesPercentEscapesButKeepsPlus() {
+        assertEquals(listOf("Rock/Song A+B.mp3", "/a/\u00e9.mp3", "100%.mp3", "http://x/a%20b.mp3"),
+            parseM3u("Rock/Song%20A+B.mp3\nfile:///a/%C3%A9.mp3\n100%.mp3\nhttp://x/a%20b.mp3"))
+    }
 }

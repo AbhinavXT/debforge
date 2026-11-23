@@ -1085,6 +1085,7 @@
     <string name="media_fav_add">Add to favourites</string>
     <string name="media_fav_remove">Remove from favourites</string>
     <string name="media_add_to_playlist">Add to playlist</string>
+    <string name="media_import_unreadable">Couldn\'t read that file (it may be over 2 MB)</string>
     <string name="media_import_playlist">Import playlist (.m3u)</string>
     <string name="media_import_done">Imported “%1$s”: %2$d added, %3$d not found</string>
     <string name="media_import_none">No tracks matched the playlist (%1$d not found)</string>

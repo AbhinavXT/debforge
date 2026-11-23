@@ -236,7 +236,8 @@ fun MediaScreen(
             downloadAllRunning = bulkRunning,
             onImport = { uri ->
                 viewModel.importM3u(uri) { name, added, missing ->
-                    tell(if (name == null) context.getString(R.string.media_import_none, missing)
+                    tell(if (missing < 0) context.getString(R.string.media_import_unreadable)
+                    else if (name == null) context.getString(R.string.media_import_none, missing)
                     else context.getString(R.string.media_import_done, name, added, missing))
                 }
             }

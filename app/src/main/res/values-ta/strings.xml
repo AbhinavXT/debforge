@@ -1083,6 +1083,7 @@
     <string name="media_fav_add">பிடித்தவையில் சேர்</string>
     <string name="media_fav_remove">பிடித்தவையிலிருந்து நீக்கு</string>
     <string name="media_add_to_playlist">பிளேலிஸ்ட்டில் சேர்</string>
+    <string name="media_import_unreadable">அந்தக் கோப்பைப் படிக்க முடியவில்லை (இது 2 MB-க்கு மேல் இருக்கலாம்)</string>
     <string name="media_import_playlist">பிளேலிஸ்ட் இறக்குமதி (.m3u)</string>
     <string name="media_import_done">“%1$s” இறக்குமதி செய்யப்பட்டது: %2$d சேர்க்கப்பட்டன, %3$d கிடைக்கவில்லை</string>
     <string name="media_import_none">பிளேலிஸ்டின் எந்த டிராக்கும் பொருந்தவில்லை (%1$d கிடைக்கவில்லை)</string>

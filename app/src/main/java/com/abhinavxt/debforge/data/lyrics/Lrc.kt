@@ -16,8 +16,8 @@ data class LrcLibItem(
     val hasLyrics: Boolean get() = instrumental == true || !plainLyrics.isNullOrBlank() || !syncedLyrics.isNullOrBlank()
 }
 
-private val TIME = Regex("""\[(\d+):(\d{1,2})(?:[.:](\d{1,3}))?]""")
-private val OFFSET = Regex("""^\s*\[offset:\s*([+-]?\d+)\s*]""", RegexOption.IGNORE_CASE)
+private val TIME = Regex("""\[(\d{1,5}):(\d{1,2})(?:[.:](\d{1,3}))?]""")
+private val OFFSET = Regex("""^\s*\[offset:\s*([+-]?\d{1,9})\s*]""", RegexOption.IGNORE_CASE)
 
 /** Parses LRC text: several timestamps per line allowed, metadata tags ignored, `[offset:ms]` applied. Sorted by time. */
 fun parseLrc(text: String): List<LrcLine> {
@@ -25,15 +25,15 @@ fun parseLrc(text: String): List<LrcLine> {
     val out = ArrayList<LrcLine>()
     for (raw in text.lineSequence()) {
         val off = OFFSET.find(raw)
-        if (off != null) { offset = off.groupValues[1].toLong(); continue }
+        if (off != null) { offset = off.groupValues[1].toLongOrNull() ?: 0L; continue }
         var rest = raw.trimStart()
         val times = ArrayList<Long>()
         while (true) {
             val m = TIME.find(rest)?.takeIf { it.range.first == 0 } ?: break
             val frac = m.groupValues[3]
-            val ms = m.groupValues[1].toLong() * 60_000 + m.groupValues[2].toLong() * 1000 +
-                if (frac.isEmpty()) 0 else (("0.$frac").toDouble() * 1000).toLong()
-            times += ms
+            val min = m.groupValues[1].toLongOrNull()
+            val sec = m.groupValues[2].toLongOrNull()
+            if (min != null && sec != null) times += min * 60_000 + sec * 1000 + if (frac.isEmpty()) 0 else (("0.$frac").toDoubleOrNull() ?: 0.0).let { (it * 1000).toLong() }
             rest = rest.substring(m.range.last + 1).trimStart()
         }
         times.forEach { out += LrcLine((it - offset).coerceAtLeast(0), rest.trim()) }
@@ -70,12 +70,14 @@ fun cleanArtist(artist: String?): String? =
     artist?.replace(Regex("""\s*-\s*Topic$""", RegexOption.IGNORE_CASE), "")
         ?.replace(Regex("""VEVO$""", RegexOption.IGNORE_CASE), "")?.trim()?.takeIf { it.isNotEmpty() }
 
-/** The record whose length is within 3 s of [durationSec] (closest first), else the first with lyrics. */
+/**
+ * The record whose length is within 3 s of [durationSec] (closest first). With a known length and none close,
+ * only plain text of another record is offered (its synced lines would drift); with no length, the first with lyrics.
+ */
 fun pickLyrics(items: List<LrcLibItem>, durationSec: Long): LrcLibItem? {
     val usable = items.filter { it.hasLyrics }
-    if (durationSec > 0) {
-        usable.filter { it.duration != null && abs(it.duration - durationSec) <= 3 }
-            .minByOrNull { abs(it.duration!! - durationSec) }?.let { return it }
-    }
-    return usable.firstOrNull()
+    if (durationSec <= 0) return usable.firstOrNull()
+    usable.filter { it.duration != null && abs(it.duration - durationSec) <= 3 }
+        .minByOrNull { abs(it.duration!! - durationSec) }?.let { return it }
+    return usable.firstOrNull { !it.plainLyrics.isNullOrBlank() }?.copy(syncedLyrics = null, instrumental = null)
 }

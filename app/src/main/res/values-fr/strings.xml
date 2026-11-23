@@ -1133,6 +1133,7 @@
     <string name="media_fav_add">Ajouter aux favoris</string>
     <string name="media_fav_remove">Retirer des favoris</string>
     <string name="media_add_to_playlist">Ajouter à une playlist</string>
+    <string name="media_import_unreadable">Impossible de lire ce fichier (il dépasse peut-être 2 Mo)</string>
     <string name="media_import_playlist">Importer une playlist (.m3u)</string>
     <string name="media_import_done">« %1$s » importée : %2$d ajoutés, %3$d introuvables</string>
     <string name="media_import_none">Aucun titre de la playlist n\'a été trouvé (%1$d introuvables)</string>

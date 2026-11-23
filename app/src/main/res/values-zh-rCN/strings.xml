@@ -1033,6 +1033,7 @@
     <string name="media_fav_add">添加到收藏</string>
     <string name="media_fav_remove">从收藏中移除</string>
     <string name="media_add_to_playlist">添加到播放列表</string>
+    <string name="media_import_unreadable">无法读取该文件（可能超过 2 MB）</string>
     <string name="media_import_playlist">导入播放列表 (.m3u)</string>
     <string name="media_import_done">已导入“%1$s”：添加 %2$d 首，未找到 %3$d 首</string>
     <string name="media_import_none">没有匹配的曲目（未找到 %1$d 首）</string>

@@ -1083,6 +1083,7 @@
     <string name="media_fav_add">पसंदीदा में जोड़ें</string>
     <string name="media_fav_remove">पसंदीदा से हटाएँ</string>
     <string name="media_add_to_playlist">प्लेलिस्ट में जोड़ें</string>
+    <string name="media_import_unreadable">वह फ़ाइल पढ़ी नहीं जा सकी (शायद 2 MB से बड़ी है)</string>
     <string name="media_import_playlist">प्लेलिस्ट इम्पोर्ट करें (.m3u)</string>
     <string name="media_import_done">“%1$s” इम्पोर्ट हुई: %2$d जोड़े गए, %3$d नहीं मिले</string>
     <string name="media_import_none">प्लेलिस्ट का कोई ट्रैक नहीं मिला (%1$d नहीं मिले)</string>

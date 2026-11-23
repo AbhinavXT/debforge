@@ -53,8 +53,15 @@ class LrcTest {
         val b = LrcLibItem(plainLyrics = "b", duration = 180.5)
         val c = LrcLibItem(plainLyrics = "c", duration = 179.0)
         assertEquals(b, pickLyrics(listOf(a, c, b), 180))
-        assertEquals(a, pickLyrics(listOf(a, LrcLibItem(duration = 180.0)), 150))
+        val synced = LrcLibItem(plainLyrics = "p", syncedLyrics = "[00:01.00]x", duration = 300.0)
+        assertEquals(LrcLibItem(plainLyrics = "p", duration = 300.0), pickLyrics(listOf(synced), 150))
+        assertNull(pickLyrics(listOf(LrcLibItem(syncedLyrics = "[00:01.00]x", duration = 300.0)), 150))
         assertEquals(a, pickLyrics(listOf(a), 0))
         assertNull(pickLyrics(listOf(LrcLibItem(plainLyrics = " ")), 100))
+    }
+
+    @Test fun malformedInputNeverThrows() {
+        val t = "[99999999999999999999:00.00]a\n[offset:99999999999999999999]\n[00:01.]b\n[:]c\n[00:02.5]ok\n[00:03.9999999999999999999]z"
+        assertEquals(listOf("ok"),parseLrc(t).map { it.text }.filter { it == "ok" || it == "z" })
     }
 }

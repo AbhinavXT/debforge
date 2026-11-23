@@ -1183,6 +1183,7 @@
     <string name="media_fav_add">Добавить в избранное</string>
     <string name="media_fav_remove">Убрать из избранного</string>
     <string name="media_add_to_playlist">Добавить в плейлист</string>
+    <string name="media_import_unreadable">Не удалось прочитать файл (возможно, он больше 2 МБ)</string>
     <string name="media_import_playlist">Импорт плейлиста (.m3u)</string>
     <string name="media_import_done">«%1$s» импортирован: добавлено %2$d, не найдено %3$d</string>
     <string name="media_import_none">Ни один трек плейлиста не найден (не найдено %1$d)</string>

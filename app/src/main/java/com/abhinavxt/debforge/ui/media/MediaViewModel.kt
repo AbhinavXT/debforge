@@ -267,14 +267,20 @@ class MediaViewModel @Inject constructor(
         }
     }
 
-    /** Reads the .m3u at [uri] off the main thread and makes a playlist of the downloaded audio it lists; [done] gets (name, added, notFound), name null when none matched. */
+    private val M3U_MAX_BYTES = 2 * 1024 * 1024
+
+    /** Reads the .m3u at [uri] off the main thread and makes a playlist of the downloaded audio it lists; [done] gets (name, added, notFound), name null when none matched, notFound -1 when the file could not be read (or is over 2 MB). */
     fun importM3u(uri: android.net.Uri, done: (String?, Int, Int) -> Unit) {
         viewModelScope.launch {
             val (name, ids, missing) = withContext(Dispatchers.IO) {
                 val cr = context.contentResolver
                 val file = cr.query(uri, arrayOf(android.provider.OpenableColumns.DISPLAY_NAME), null, null, null)
-                    ?.use { c -> if (c.moveToFirst()) c.getString(0) else null } ?: uri.lastPathSegment.orEmpty()
-                val text = runCatching { cr.openInputStream(uri)?.use { it.readBytes().toString(Charsets.UTF_8) } }.getOrNull().orEmpty()
+                    ?.use { c -> if (c.moveToFirst()) c.getString(0) else null }
+                    ?: uri.lastPathSegment.orEmpty().substringAfterLast('/').substringAfterLast(':')
+                val bytes = runCatching {
+                    cr.openInputStream(uri)?.use { ins -> readCapped(ins, M3U_MAX_BYTES) }
+                }.getOrNull() ?: return@withContext Triple(file, emptyList<String>(), -1)
+                val text = bytes.toString(Charsets.UTF_8)
                 val tracks = dao.completed().filter { kindOf(it.filename) == FileKind.Audio && it.finalFilePath != null }
                     .map { it.id to it.finalFilePath!! }
                 val (found, miss) = matchM3u(parseM3u(text), tracks)
@@ -284,6 +290,17 @@ class MediaViewModel @Inject constructor(
             val id = audioLists.create(name)
             audioLists.add(id, ids)
             done(audioLists.snapshot().playlists.firstOrNull { it.id == id }?.name ?: name, ids.size, missing)
+        }
+    }
+    /** All of [ins], or null when it is longer than [max] bytes. */
+    private fun readCapped(ins: java.io.InputStream, max: Int): ByteArray? {
+        val out = java.io.ByteArrayOutputStream()
+        val buf = ByteArray(8192)
+        while (true) {
+            val n = ins.read(buf)
+            if (n < 0) return out.toByteArray()
+            if (out.size() + n > max) return null
+            out.write(buf, 0, n)
         }
     }
     fun renamePlaylist(listId: String, name: String) { viewModelScope.launch { audioLists.rename(listId, name) } }
