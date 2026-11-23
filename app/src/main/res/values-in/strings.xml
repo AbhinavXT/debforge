@@ -1005,6 +1005,9 @@
     <string name="media_fav_add">Tambahkan ke favorit</string>
     <string name="media_fav_remove">Hapus dari favorit</string>
     <string name="media_add_to_playlist">Tambahkan ke playlist</string>
+    <string name="media_import_playlist">Impor playlist (.m3u)</string>
+    <string name="media_import_done">“%1$s” diimpor: %2$d ditambahkan, %3$d tidak ditemukan</string>
+    <string name="media_import_none">Tidak ada lagu yang cocok dengan playlist (%1$d tidak ditemukan)</string>
     <string name="media_add_to_playlist_menu">Tambahkan ke playlist…</string>
     <string name="media_playlist_name">Nama playlist</string>
     <string name="media_playlist_rename">Ganti nama playlist</string>

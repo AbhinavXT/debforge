@@ -266,6 +266,26 @@ class MediaViewModel @Inject constructor(
             if (id.isNotEmpty() && addIds.isNotEmpty()) audioLists.add(id, addIds)
         }
     }
+
+    /** Reads the .m3u at [uri] off the main thread and makes a playlist of the downloaded audio it lists; [done] gets (name, added, notFound), name null when none matched. */
+    fun importM3u(uri: android.net.Uri, done: (String?, Int, Int) -> Unit) {
+        viewModelScope.launch {
+            val (name, ids, missing) = withContext(Dispatchers.IO) {
+                val cr = context.contentResolver
+                val file = cr.query(uri, arrayOf(android.provider.OpenableColumns.DISPLAY_NAME), null, null, null)
+                    ?.use { c -> if (c.moveToFirst()) c.getString(0) else null } ?: uri.lastPathSegment.orEmpty()
+                val text = runCatching { cr.openInputStream(uri)?.use { it.readBytes().toString(Charsets.UTF_8) } }.getOrNull().orEmpty()
+                val tracks = dao.completed().filter { kindOf(it.filename) == FileKind.Audio && it.finalFilePath != null }
+                    .map { it.id to it.finalFilePath!! }
+                val (found, miss) = matchM3u(parseM3u(text), tracks)
+                Triple(file.substringBeforeLast('.').ifBlank { file }, found, miss)
+            }
+            if (ids.isEmpty()) return@launch done(null, 0, missing)
+            val id = audioLists.create(name)
+            audioLists.add(id, ids)
+            done(audioLists.snapshot().playlists.firstOrNull { it.id == id }?.name ?: name, ids.size, missing)
+        }
+    }
     fun renamePlaylist(listId: String, name: String) { viewModelScope.launch { audioLists.rename(listId, name) } }
     fun deletePlaylist(listId: String) {
         viewModelScope.launch { audioLists.delete(listId) }

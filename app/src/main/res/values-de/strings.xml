@@ -1055,6 +1055,9 @@
     <string name="media_fav_add">Zu Favoriten hinzufügen</string>
     <string name="media_fav_remove">Aus Favoriten entfernen</string>
     <string name="media_add_to_playlist">Zur Playlist hinzufügen</string>
+    <string name="media_import_playlist">Playlist importieren (.m3u)</string>
+    <string name="media_import_done">„%1$s“ importiert: %2$d hinzugefügt, %3$d nicht gefunden</string>
+    <string name="media_import_none">Kein Titel der Playlist gefunden (%1$d nicht gefunden)</string>
     <string name="media_add_to_playlist_menu">Zur Playlist hinzufügen…</string>
     <string name="media_playlist_name">Name der Playlist</string>
     <string name="media_playlist_rename">Playlist umbenennen</string>

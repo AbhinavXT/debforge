@@ -1105,6 +1105,9 @@
     <string name="media_fav_add">Adicionar aos favoritos</string>
     <string name="media_fav_remove">Remover dos favoritos</string>
     <string name="media_add_to_playlist">Adicionar à playlist</string>
+    <string name="media_import_playlist">Importar playlist (.m3u)</string>
+    <string name="media_import_done">“%1$s” importada: %2$d adicionadas, %3$d não encontradas</string>
+    <string name="media_import_none">Nenhuma faixa da playlist foi encontrada (%1$d não encontradas)</string>
     <string name="media_add_to_playlist_menu">Adicionar à playlist…</string>
     <string name="media_playlist_name">Nome da playlist</string>
     <string name="media_playlist_rename">Renomear playlist</string>

@@ -1055,6 +1055,9 @@
     <string name="media_fav_add">आवडत्यांमध्ये जोडा</string>
     <string name="media_fav_remove">आवडत्यांमधून काढा</string>
     <string name="media_add_to_playlist">प्लेलिस्टमध्ये जोडा</string>
+    <string name="media_import_playlist">प्लेलिस्ट इम्पोर्ट करा (.m3u)</string>
+    <string name="media_import_done">“%1$s” इम्पोर्ट केली: %2$d जोडले, %3$d सापडले नाहीत</string>
+    <string name="media_import_none">प्लेलिस्टमधील कोणताही ट्रॅक जुळला नाही (%1$d सापडले नाहीत)</string>
     <string name="media_add_to_playlist_menu">प्लेलिस्टमध्ये जोडा…</string>
     <string name="media_playlist_name">प्लेलिस्टचे नाव</string>
     <string name="media_playlist_rename">प्लेलिस्टचे नाव बदला</string>

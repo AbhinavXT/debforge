@@ -1055,6 +1055,9 @@
     <string name="media_fav_add">Favorilere ekle</string>
     <string name="media_fav_remove">Favorilerden kaldır</string>
     <string name="media_add_to_playlist">Çalma listesine ekle</string>
+    <string name="media_import_playlist">Oynatma listesi al (.m3u)</string>
+    <string name="media_import_done">“%1$s” içe aktarıldı: %2$d eklendi, %3$d bulunamadı</string>
+    <string name="media_import_none">Listedeki hiçbir parça eşleşmedi (%1$d bulunamadı)</string>
     <string name="media_add_to_playlist_menu">Çalma listesine ekle…</string>
     <string name="media_playlist_name">Çalma listesi adı</string>
     <string name="media_playlist_rename">Çalma listesini yeniden adlandır</string>

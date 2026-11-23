@@ -37,7 +37,8 @@ class AudioListActions(
     val onPlayRows: (List<PlaylistRow>, Int) -> Unit = { _, _ -> },
     val onOpenVideo: (PlaylistRow.YouTube) -> Unit = {},
     val onDownloadAll: (List<com.abhinavxt.debforge.data.playback.PlaylistEntry.YouTube>) -> Unit = {},
-    val downloadAllRunning: Boolean = false
+    val downloadAllRunning: Boolean = false,
+    val onImport: (android.net.Uri) -> Unit = {}
 )
 
 /** Single text field for creating or renaming a playlist. Save is off while the name is blank. */

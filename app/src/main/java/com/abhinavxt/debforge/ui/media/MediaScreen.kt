@@ -233,7 +233,13 @@ fun MediaScreen(
             onPlayRows = viewModel::playPlaylist,
             onOpenVideo = viewModel::openVideo,
             onDownloadAll = viewModel::downloadAll,
-            downloadAllRunning = bulkRunning
+            downloadAllRunning = bulkRunning,
+            onImport = { uri ->
+                viewModel.importM3u(uri) { name, added, missing ->
+                    tell(if (name == null) context.getString(R.string.media_import_none, missing)
+                    else context.getString(R.string.media_import_done, name, added, missing))
+                }
+            }
         )
     )
     SnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter).padding(bottom = 16.dp))
@@ -409,6 +415,15 @@ internal fun MediaContent(
                     }
                     FilterChip(
                         false, { nameFor = null to emptyList() }, { Text(stringResource(R.string.media_new_playlist)) },
+                        leadingIcon = { Icon(Icons.Rounded.Add, null) }
+                    )
+                    val importM3u = androidx.activity.compose.rememberLauncherForActivityResult(
+                        androidx.activity.result.contract.ActivityResultContracts.OpenDocument()
+                    ) { uri -> if (uri != null) lists.onImport(uri) }
+                    FilterChip(
+                        false,
+                        { importM3u.launch(arrayOf("audio/x-mpegurl", "audio/mpegurl", "application/vnd.apple.mpegurl", "application/x-mpegurl", "*/*")) },
+                        { Text(stringResource(R.string.media_import_playlist)) },
                         leadingIcon = { Icon(Icons.Rounded.Add, null) }
                     )
                 }

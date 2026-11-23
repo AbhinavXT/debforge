@@ -1055,6 +1055,9 @@
     <string name="media_fav_add">ఇష్టమైనవాటికి జోడించండి</string>
     <string name="media_fav_remove">ఇష్టమైనవాటి నుండి తీసివేయండి</string>
     <string name="media_add_to_playlist">ప్లేలిస్ట్‌కు జోడించండి</string>
+    <string name="media_import_playlist">ప్లేలిస్ట్ దిగుమతి (.m3u)</string>
+    <string name="media_import_done">“%1$s” దిగుమతి అయింది: %2$d జోడించబడ్డాయి, %3$d కనిపించలేదు</string>
+    <string name="media_import_none">ప్లేలిస్ట్‌లోని ఏ ట్రాక్ సరిపోలలేదు (%1$d కనిపించలేదు)</string>
     <string name="media_add_to_playlist_menu">ప్లేలిస్ట్‌కు జోడించండి…</string>
     <string name="media_playlist_name">ప్లేలిస్ట్ పేరు</string>
     <string name="media_playlist_rename">ప్లేలిస్ట్ పేరు మార్చండి</string>
