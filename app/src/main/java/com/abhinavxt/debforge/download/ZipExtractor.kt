@@ -15,8 +15,8 @@ import java.util.zip.ZipInputStream
  * for plain paths and folder-picker ("saf:") paths alike. Entries that would land outside the target folder
  * are skipped, never written. Anything that goes wrong or is cancelled removes what was written.
  *
- * shortcut: no limit on total unpacked size (a zip bomb fills the disk until ENOSPC, then is cleaned up);
- * empty folders in the archive are not recreated.
+ * Stops with [NoSpaceException] once what was written would eat into free space less [SAFETY_MARGIN] (a zip bomb).
+ * shortcut: empty folders in the archive are not recreated.
  */
 object ZipExtractor {
     class NoSpaceException(cause: Throwable) : IOException("Not enough free space", cause)
@@ -27,6 +27,8 @@ object ZipExtractor {
         /** Removes everything written so far. */
         fun discard()
     }
+
+    const val SAFETY_MARGIN = 50L * 1024 * 1024
 
     data class Result(val files: Int, val skipped: Int)
 
@@ -53,11 +55,19 @@ object ZipExtractor {
         }
     }
 
-    /** Streams [input] into [sink]. [check] runs per buffer and may throw to cancel; [onProgress] gets the files written so far. */
-    fun extract(input: InputStream, sink: Sink, check: () -> Unit = {}, onProgress: (Int) -> Unit = {}): Result {
-        var files = 0
+    /**
+     * Streams [input] into [sink]. [check] runs per buffer and may throw to cancel; [onProgress] gets the files written
+     * so far. [freeBytes] is the free space at the target (null = unknown, no limit). A repeated name counts once (the later entry wins).
+     */
+    fun extract(
+        input: InputStream, sink: Sink, check: () -> Unit = {}, onProgress: (Int) -> Unit = {}, freeBytes: () -> Long? = { null },
+    ): Result {
+        val names = HashSet<String>()
         var skipped = 0
         try {
+            val budget = freeBytes()?.minus(SAFETY_MARGIN)
+            if (budget != null && budget <= 0) throw NoSpaceException(IOException("less than the safety margin free"))
+            var written = 0L
             val zip = ZipInputStream(input)
             val buf = ByteArray(64 * 1024)
             while (true) {
@@ -71,16 +81,19 @@ object ZipExtractor {
                         check()
                         val n = zip.read(buf)
                         if (n < 0) break
+                        written += n
+                        if (budget != null && written > budget) throw NoSpaceException(IOException("out of free space"))
                         out.write(buf, 0, n)
                     }
                 }
-                onProgress(++files)
+                names.add(rel)
+                onProgress(names.size)
             }
         } catch (t: Throwable) {
             runCatching { sink.discard() }
-            throw if (t is IOException && t.isNoSpace()) NoSpaceException(t) else t
+            throw if (t is IOException && t !is NoSpaceException && t.isNoSpace()) NoSpaceException(t) else t
         }
-        return Result(files, skipped)
+        return Result(names.size, skipped)
     }
 
     private fun Throwable.isNoSpace(): Boolean =
@@ -102,6 +115,8 @@ object ZipExtractor {
             val path = SafPaths.parse(rootPath)?.let { SafPaths.join(it.treeUri, it.relativePath + "/" + rel) }
                 ?: File(rootPath, rel).path
             val pfd = DownloadFiles.openFd(path)
+            // A repeated name in the archive must not leave the earlier entry's tail behind.
+            try { DownloadFiles.ioErrno { android.system.Os.ftruncate(pfd.fileDescriptor, 0) } } catch (e: IOException) { pfd.close(); throw e }
             return object : FilterOutputStream(FileOutputStream(pfd.fileDescriptor)) {
                 override fun write(b: ByteArray, off: Int, len: Int) = out.write(b, off, len)
                 override fun close() { try { super.close() } finally { pfd.close() } }
@@ -116,6 +131,6 @@ object ZipExtractor {
         val target = targetFolder(archivePath, DownloadFiles::exists)
         val input = if (SafPaths.isSaf(archivePath)) android.os.ParcelFileDescriptor.AutoCloseInputStream(DownloadFiles.openFd(archivePath))
         else FileInputStream(archivePath)
-        return input.use { extract(it, DownloadSink(target), check, onProgress) }
+        return input.use { extract(it, DownloadSink(target), check, onProgress) { DownloadFiles.availableBytes(target) } }
     }
 }

@@ -99,4 +99,25 @@ class ZipExtractorTest {
             assertTrue(sink.discarded)
         }
     }
+
+    @Test fun repeatedNameKeepsLaterEntryOnlyAndCountsOnce() {
+        val root = File(tmp.root, "out")
+        val r = ZipExtractor.extract(ByteArrayInputStream(zip("a.txt" to "x".repeat(100), "./a.txt" to "y".repeat(10))), ZipExtractor.FileSink(root))
+        assertEquals(ZipExtractor.Result(1, 0), r)
+        assertEquals("y".repeat(10), File(root, "a.txt").readText())
+    }
+
+    @Test fun stopsAndCleansUpWhenOutputWouldExceedFreeSpaceLessMargin() {
+        val root = File(tmp.root, "out")
+        val data = zip("a.txt" to "x".repeat(100))
+        try {
+            ZipExtractor.extract(ByteArrayInputStream(data), ZipExtractor.FileSink(root), freeBytes = { ZipExtractor.SAFETY_MARGIN + 50 })
+            fail()
+        } catch (e: ZipExtractor.NoSpaceException) {
+            assertFalse(root.exists())
+        }
+        // Fits, or free space unknown: unchanged behaviour.
+        ZipExtractor.extract(ByteArrayInputStream(data), ZipExtractor.FileSink(root), freeBytes = { ZipExtractor.SAFETY_MARGIN + 100 })
+        ZipExtractor.extract(ByteArrayInputStream(data), ZipExtractor.FileSink(root), freeBytes = { null })
+    }
 }
