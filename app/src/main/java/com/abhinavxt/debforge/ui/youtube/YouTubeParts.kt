@@ -298,9 +298,12 @@ internal fun PlayQualitySheet(
 @Composable
 internal fun SearchFilterRow(filters: YouTubeFilters, onChange: (YouTubeFilters) -> Unit, firstChip: FocusRequester, modifier: Modifier = Modifier) {
     Row(modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-        FilterMenuChip(R.string.yt_filter_type, filters.type, YtType.ALL, YtType.entries, { typeLabel(it) }, { onChange(filters.copy(type = it)) }, Modifier.focusRequester(firstChip))
-        FilterMenuChip(R.string.yt_filter_length, filters.duration, YtDuration.ANY, YtDuration.entries, { lengthLabel(it) }, { onChange(filters.copy(duration = it)) })
-        FilterMenuChip(R.string.yt_filter_date, filters.date, YtDate.ANY, YtDate.entries, { dateLabel(it) }, { onChange(filters.copy(date = it)) })
+        FilterMenuChip(R.string.yt_filter_type, filters.type, YouTubeFilters().type, YtType.entries, { typeLabel(it) }, { onChange(filters.copy(type = it).let { f -> if (f.videoLike) f else f.copy(duration = YtDuration.ANY, date = YtDate.ANY) }) }, Modifier.focusRequester(firstChip))
+        // Length and date only apply to videos.
+        if (filters.videoLike) {
+            FilterMenuChip(R.string.yt_filter_length, filters.duration, YtDuration.ANY, YtDuration.entries, { lengthLabel(it) }, { onChange(filters.copy(duration = it)) })
+            FilterMenuChip(R.string.yt_filter_date, filters.date, YtDate.ANY, YtDate.entries, { dateLabel(it) }, { onChange(filters.copy(date = it)) })
+        }
         if (filters.active) TextButton(onClick = { onChange(YouTubeFilters()) }, modifier = Modifier.heightIn(min = 48.dp)) { Text(stringResource(R.string.yt_filter_clear)) }
     }
 }

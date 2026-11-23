@@ -57,6 +57,13 @@ class YouTubeFiltersTest {
         assertFalse(keeps(f, YouTubeSearchResult("p", "n", null, 0, null, kind = ResultKind.PLAYLIST)))
     }
 
+    @Test fun `length and date are ignored for channels and playlists`() {
+        val ch = YouTubeFilters(type = YtType.CHANNELS, duration = YtDuration.LONG, date = YtDate.WEEK)
+        assertFalse(ch.clientSide)
+        assertTrue(keeps(ch, YouTubeSearchResult("c", "n", null, 0, null, kind = ResultKind.CHANNEL)))
+        assertTrue(YouTubeFilters(type = YtType.ALL, duration = YtDuration.LONG).clientSide)
+    }
+
     @Test fun `filters combine`() {
         val f = YouTubeFilters(duration = YtDuration.SHORT, date = YtDate.WEEK)
         assertTrue(keeps(f, video(100, 2)))

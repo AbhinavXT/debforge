@@ -114,9 +114,15 @@ class VideoActions internal constructor(private val s: VideoSession) : ControlsA
 
     override fun qualityHeight() = s.youtube?.height ?: 0
 
+    private var qualityJob: kotlinx.coroutines.Job? = null
+
     override fun loadQuality() {
-        s.scope.launch {
+        val id = s.identity
+        qualityJob?.cancel()
+        qualityJob = s.scope.launch {
             val options = s.refresher.qualityOptions()
+            // The video changed or the panel was closed meanwhile: nothing of this belongs to what is on screen now.
+            if (id != s.identity || controls.panel != com.abhinavxt.debforge.player.controls.Panel.QUALITY) return@launch
             if (options == null) {
                 controls.panel = null
                 qualityFailed()

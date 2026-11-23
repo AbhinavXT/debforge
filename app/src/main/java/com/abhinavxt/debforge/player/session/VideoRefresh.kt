@@ -16,6 +16,8 @@ import kotlinx.coroutines.launch
 internal class VideoRefresh(private val s: VideoSession) {
 
     /** Quiet link refreshes after network errors (expired debrid links). */
+    private companion object { const val QUALITY_CACHE_MS = 5 * 60_000L }
+
     private var refreshState = LinkRefresh.State()
     private var refreshing = false
     private var triedMp4Fallback = false // a YouTube stream that the device could not decode is switched to MP4 once
@@ -52,7 +54,7 @@ internal class VideoRefresh(private val s: VideoSession) {
         s.scope.launch {
             try {
                 if (s.youtube != null) {
-                    val result = refreshYouTube(position)
+                    val result = refreshYouTube()
                     if (id == s.identity) when {
                         result == YtRefresh.OK -> Unit
                         result == YtRefresh.GONE && refused -> s.showStreamFailed()
@@ -80,16 +82,30 @@ internal class VideoRefresh(private val s: VideoSession) {
      */
     private enum class YtRefresh { OK, GONE, OFFLINE }
 
+    private var resolved: Triple<String, Long, com.abhinavxt.debforge.domain.YouTubeVideo>? = null // videoId, when, video; memory only
+
+    /** The video's resolve, reused when it is younger than [maxAgeMs]. */
+    private suspend fun resolveVideo(videoId: String, maxAgeMs: Long): com.abhinavxt.debforge.domain.YouTubeVideo {
+        val now = android.os.SystemClock.elapsedRealtime()
+        resolved?.let { (id, at, v) -> if (id == videoId && now - at < maxAgeMs) return v }
+        val video = s.youTubeResolver.resolve("https://www.youtube.com/watch?v=$videoId")
+        resolved = Triple(videoId, android.os.SystemClock.elapsedRealtime(), video)
+        return video
+    }
+
     private suspend fun refreshYouTube(
-        position: Long,
+        maxAgeMs: Long = 0,
         pick: (com.abhinavxt.debforge.domain.YouTubeLinks.Ref, Int, List<com.abhinavxt.debforge.domain.FormatChoice>) -> com.abhinavxt.debforge.domain.FormatChoice? =
             com.abhinavxt.debforge.player.youtube.YouTubeStreaming::reselect,
         play: Boolean = true
     ): YtRefresh {
         val yt = s.youtube ?: return YtRefresh.GONE
         val ref = com.abhinavxt.debforge.domain.YouTubeLinks.parseSourceRef(yt.ref) ?: return YtRefresh.GONE
+        val id = s.identity
         val request = try {
-            val video = s.youTubeResolver.resolve("https://www.youtube.com/watch?v=${yt.videoId}")
+            val video = resolveVideo(yt.videoId, maxAgeMs)
+            // Up next may have moved on to another video while this looked it up.
+            if (id != s.identity) return YtRefresh.OK
             val choices = com.abhinavxt.debforge.domain.YouTubeFormats.choices(video.streams, android.os.Build.VERSION.SDK_INT, video.durationSec)
             val choice = pick(ref, yt.height, choices) ?: return YtRefresh.GONE
             // Exactly the subtitles that were attached (new links), not every track of the video.
@@ -105,6 +121,7 @@ internal class VideoRefresh(private val s: VideoSession) {
             return YtRefresh.GONE
         }
         val fresh = request.youtube ?: return YtRefresh.GONE
+        val position = s.player?.currentPosition ?: s.resumePosition // after the lookup, which took seconds
         s.uri = request.uri
         s.youtube = fresh
         // The same subtitles as before (new links), plus those added from OpenSubtitles.
@@ -118,7 +135,7 @@ internal class VideoRefresh(private val s: VideoSession) {
         val yt = s.youtube ?: return null
         val ref = com.abhinavxt.debforge.domain.YouTubeLinks.parseSourceRef(yt.ref) ?: return null
         return try {
-            val video = s.youTubeResolver.resolve("https://www.youtube.com/watch?v=${yt.videoId}")
+            val video = resolveVideo(yt.videoId, QUALITY_CACHE_MS)
             com.abhinavxt.debforge.player.youtube.YouTubeStreaming.qualityOptions(
                 ref, com.abhinavxt.debforge.domain.YouTubeFormats.choices(video.streams, android.os.Build.VERSION.SDK_INT, video.durationSec)
             )
@@ -139,13 +156,11 @@ internal class VideoRefresh(private val s: VideoSession) {
         val ref = com.abhinavxt.debforge.domain.YouTubeLinks.parseSourceRef(yt.ref) ?: return
         if (refreshing || com.abhinavxt.debforge.player.youtube.YouTubeStreaming.sameChoice(ref, target)) return
         val id = s.identity
-        val p = s.player
-        val position = p?.currentPosition ?: s.resumePosition
-        val play = p?.playWhenReady ?: true
+        val play = s.player?.playWhenReady ?: true
         refreshing = true
         s.scope.launch {
             try {
-                val result = refreshYouTube(position, { _, _, choices ->
+                val result = refreshYouTube(QUALITY_CACHE_MS, { _, _, choices ->
                     choices.firstOrNull { it.videoItag == target.videoItag && it.audioItag == target.audioItag }
                 }, play)
                 if (result != YtRefresh.OK && id == s.identity) failed()
@@ -176,10 +191,9 @@ internal class VideoRefresh(private val s: VideoSession) {
         triedMp4Fallback = true
         refreshing = true
         val id = s.identity
-        val position = s.player?.currentPosition ?: s.resumePosition
         s.scope.launch {
             try {
-                val result = refreshYouTube(position, com.abhinavxt.debforge.player.youtube.YouTubeStreaming::mp4Fallback)
+                val result = refreshYouTube(0, com.abhinavxt.debforge.player.youtube.YouTubeStreaming::mp4Fallback)
                 if (id != s.identity) return@launch
                 when (result) {
                     YtRefresh.OK -> Unit

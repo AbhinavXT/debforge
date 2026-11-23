@@ -17,7 +17,8 @@ enum class ResultKind { VIDEO, CHANNEL, PLAYLIST }
 data class YouTubeFilters(val type: YtType = YtType.VIDEOS, val duration: YtDuration = YtDuration.ANY, val date: YtDate = YtDate.ANY) {
     val active get() = this != YouTubeFilters()
     /** Duration and date only mean something for videos. */
-    val clientSide get() = duration != YtDuration.ANY || date != YtDate.ANY
+    val videoLike get() = type == YtType.VIDEOS || type == YtType.ALL
+    val clientSide get() = videoLike && (duration != YtDuration.ANY || date != YtDate.ANY)
 
     /** The extractor's content filter ("all", "videos", "channels", "playlists"). */
     val contentFilter get() = when (type) {

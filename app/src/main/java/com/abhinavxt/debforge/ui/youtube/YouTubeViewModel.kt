@@ -17,6 +17,9 @@ import com.abhinavxt.debforge.domain.pickDefaultChoice
 import com.abhinavxt.debforge.domain.YouTubeLinks
 import com.abhinavxt.debforge.domain.ResultKind
 import com.abhinavxt.debforge.domain.YouTubeFilters
+import com.abhinavxt.debforge.domain.YtDate
+import com.abhinavxt.debforge.domain.YtDuration
+import com.abhinavxt.debforge.domain.YtType
 import com.abhinavxt.debforge.domain.YouTubeSearchResult
 import com.abhinavxt.debforge.domain.YouTubeSubtitle
 import com.abhinavxt.debforge.domain.YouTubeVideo
@@ -299,8 +302,8 @@ class YouTubeViewModel @Inject constructor(
         batchJob?.cancel()
         pending = null // a download waiting on the folder prompt belongs to the screen being left
         when {
-            YouTubeLinks.isPlaylistOnly(text) && YouTubeLinks.playlistUrl(text) != null -> { filters = YouTubeFilters(); loadPlaylist(text) }
-            looksLikeYouTube(text) -> { filters = YouTubeFilters(); resolve(text) }
+            YouTubeLinks.isPlaylistOnly(text) && YouTubeLinks.playlistUrl(text) != null -> { curFilters = YouTubeFilters(); loadPlaylist(text) }
+            looksLikeYouTube(text) -> { curFilters = YouTubeFilters(); resolve(text) }
             YouTubeLinks.isSearchQuery(text) -> {
                 if (record) YouTubeLinks.historyQuery(text)?.let { q -> viewModelScope.launch { history.add(q) } }
                 search(text.trim())
@@ -314,13 +317,18 @@ class YouTubeViewModel @Inject constructor(
         private set
 
     /** The search filters; they outlive Back from a preview and reset with the search (or a pasted link). */
-    private var filters = YouTubeFilters()
+    private var curFilters: YouTubeFilters
+        get() = runCatching {
+            val (a, b, c) = saved.get<String>(FILTERS_KEY)!!.split(',')
+            YouTubeFilters(YtType.valueOf(a), YtDuration.valueOf(b), YtDate.valueOf(c))
+        }.getOrDefault(YouTubeFilters()) // kept with the query, so process death restores the same search
+        set(f) { saved[FILTERS_KEY] = "${f.type},${f.duration},${f.date}" }
 
     /** Re-runs the shown search from the first page with [f], keeping the results screen (and the field) in place. */
     fun setFilters(f: YouTubeFilters) {
         val r = _ui.value as? YouTubeUi.Results ?: return
         if (r.channelUrl != null || f == r.filters) return
-        filters = f
+        curFilters = f
         job?.cancel()
         moreJob?.cancel()
         nextPage = null
@@ -343,7 +351,7 @@ class YouTubeViewModel @Inject constructor(
     private fun search(query: String) {
         resultsList = LazyListState()
         _ui.value = YouTubeUi.Resolving
-        val f = filters
+        val f = curFilters
         job = viewModelScope.launch {
             _ui.value = try {
                 val page = resolver.search(query, f)
@@ -370,7 +378,7 @@ class YouTubeViewModel @Inject constructor(
                 val more = if (channelUrl != null) resolver.channelMore(channelUrl, page) else resolver.searchMore(r.query, page, r.filters)
                 nextPage = more.next
                 _ui.update { cur ->
-                    if (cur !is YouTubeUi.Results || cur.query != r.query || cur.channelUrl != channelUrl) cur
+                    if (cur !is YouTubeUi.Results || cur.query != r.query || cur.channelUrl != channelUrl || cur.filters != r.filters) cur
                     else { val seen = cur.items.mapTo(HashSet()) { it.url }; cur.copy(items = cur.items + more.items.filter { it.url !in seen }, loadingMore = false) }
                 }
             } catch (e: CancellationException) {
@@ -468,7 +476,7 @@ class YouTubeViewModel @Inject constructor(
         if (results == null && _ui.value !is YouTubeUi.Empty) return
         when (result.kind) { // a channel or a playlist opens its own page
             ResultKind.CHANNEL -> { openChannel(result.title, result.url); return }
-            ResultKind.PLAYLIST -> { submit(result.url); return }
+            ResultKind.PLAYLIST -> { openPlaylist(result.url, results); return }
             ResultKind.VIDEO -> {}
         }
         startResult(result, viaPlayIcon = false)
@@ -557,6 +565,17 @@ class YouTubeViewModel @Inject constructor(
         fromResults = results?.copy(loadingMore = false) // a cancelled page load must not leave the spinner on
     }
 
+    /** A tapped playlist result: like a preview, Back returns to the results with their filters and scroll. */
+    private fun openPlaylist(url: String, results: YouTubeUi.Results?) {
+        job?.cancel()
+        moreJob?.cancel()
+        _input.value = url
+        saved[LINK_KEY] = url
+        previewBack.clear()
+        fromResults = results?.copy(loadingMore = false)
+        loadPlaylist(url)
+    }
+
     /** A tapped "Up next" video: opens its preview, and Back returns to the preview it was tapped on. */
     fun openRelated(result: YouTubeSearchResult) {
         val cur = _ui.value as? YouTubeUi.Preview ?: return
@@ -587,7 +606,8 @@ class YouTubeViewModel @Inject constructor(
     // A failed tapped result retries in place: submit() would drop fromResults and lose Back-to-results.
     fun retry() {
         val nav = channel
-        if (fromResults != null || previewBack.isNotEmpty()) { job?.cancel(); resolve(_input.value) }
+        if (YouTubeLinks.isPlaylistOnly(_input.value)) { job?.cancel(); loadPlaylist(_input.value) }
+        else if (fromResults != null || previewBack.isNotEmpty()) { job?.cancel(); resolve(_input.value) }
         else if (nav != null) { job?.cancel(); loadChannel(nav) }
         else submit(_input.value)
     }
@@ -634,7 +654,7 @@ class YouTubeViewModel @Inject constructor(
         }
         saved.remove<String>(LINK_KEY)
         _input.value = ""
-        filters = YouTubeFilters()
+        curFilters = YouTubeFilters()
         _ui.value = YouTubeUi.Empty
     }
 
@@ -836,5 +856,6 @@ class YouTubeViewModel @Inject constructor(
 
     private companion object {
         const val LINK_KEY = "link"
+        const val FILTERS_KEY = "filters"
     }
 }
