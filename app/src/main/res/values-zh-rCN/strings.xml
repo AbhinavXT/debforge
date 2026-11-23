@@ -868,6 +868,8 @@
     <string name="yt_mode_audio">音频</string>
     <string name="yt_best">最佳</string>
     <string name="yt_up_next">接下来</string>
+    <string name="player_quality">画质</string>
+    <string name="player_quality_failed">无法更改画质，继续以原画质播放。</string>
     <string name="yt_add_to_queue_cd">添加到队列</string>
     <string name="yt_pl_added">已添加到%1$s</string>
     <string name="yt_pl_already">已在%1$s中</string>

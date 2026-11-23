@@ -37,6 +37,18 @@ class YouTubeStreamingTest {
         c(null, 140, 0, "m4a", default = true), c(null, 251, 0, "weba"),
     )
 
+    @Test fun qualityOptionsListVideoChoicesOnlyAndMarkCurrent() {
+        val ref = YouTubeLinks.Ref("x", 137, 140)
+        val o = YouTubeStreaming.qualityOptions(ref, choices)
+        assertEquals(listOf(2160, 1080, 480), o.map { it.choice.height })
+        assertEquals(listOf(false, true, false), o.map { it.current })
+    }
+
+    @Test fun sameChoiceNeedsBothItags() {
+        assertEquals(true, YouTubeStreaming.sameChoice(YouTubeLinks.Ref("x", 137, 140), choices[1]))
+        assertEquals(false, YouTubeStreaming.sameChoice(YouTubeLinks.Ref("x", 137, 251), choices[1]))
+    }
+
     @Test fun reselectKeepsSameItags() =
         assertEquals(137, YouTubeStreaming.reselect(YouTubeLinks.Ref("x", 137, 140), 1080, choices)?.videoItag)
 

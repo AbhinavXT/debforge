@@ -83,7 +83,8 @@ internal class VideoRefresh(private val s: VideoSession) {
     private suspend fun refreshYouTube(
         position: Long,
         pick: (com.abhinavxt.debforge.domain.YouTubeLinks.Ref, Int, List<com.abhinavxt.debforge.domain.FormatChoice>) -> com.abhinavxt.debforge.domain.FormatChoice? =
-            com.abhinavxt.debforge.player.youtube.YouTubeStreaming::reselect
+            com.abhinavxt.debforge.player.youtube.YouTubeStreaming::reselect,
+        play: Boolean = true
     ): YtRefresh {
         val yt = s.youtube ?: return YtRefresh.GONE
         val ref = com.abhinavxt.debforge.domain.YouTubeLinks.parseSourceRef(yt.ref) ?: return YtRefresh.GONE
@@ -108,8 +109,50 @@ internal class VideoRefresh(private val s: VideoSession) {
         s.youtube = fresh
         // The same subtitles as before (new links), plus those added from OpenSubtitles.
         s.subtitles = s.subtitles.filter { it.url.startsWith("file:") } + request.subtitles
-        s.reloadMediaItem(position, play = true)
+        s.reloadMediaItem(position, play)
         return YtRefresh.OK
+    }
+
+    /** Quality entry: the video choices of the playing YouTube video, current one marked; null when they can't be looked up. */
+    suspend fun qualityOptions(): List<com.abhinavxt.debforge.player.youtube.QualityOption>? {
+        val yt = s.youtube ?: return null
+        val ref = com.abhinavxt.debforge.domain.YouTubeLinks.parseSourceRef(yt.ref) ?: return null
+        return try {
+            val video = s.youTubeResolver.resolve("https://www.youtube.com/watch?v=${yt.videoId}")
+            com.abhinavxt.debforge.player.youtube.YouTubeStreaming.qualityOptions(
+                ref, com.abhinavxt.debforge.domain.YouTubeFormats.choices(video.streams, android.os.Build.VERSION.SDK_INT, video.durationSec)
+            )
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    /**
+     * Quality entry: carry on in [target] at the same second, keeping play or pause. Only this video: the new itags
+     * live in the stream's ref, so the next video starts at the default quality. On failure the old quality plays on;
+     * [failed] is told. The same choice does nothing.
+     */
+    fun changeQuality(target: com.abhinavxt.debforge.domain.FormatChoice, failed: () -> Unit) {
+        val yt = s.youtube ?: return
+        val ref = com.abhinavxt.debforge.domain.YouTubeLinks.parseSourceRef(yt.ref) ?: return
+        if (refreshing || com.abhinavxt.debforge.player.youtube.YouTubeStreaming.sameChoice(ref, target)) return
+        val id = s.identity
+        val p = s.player
+        val position = p?.currentPosition ?: s.resumePosition
+        val play = p?.playWhenReady ?: true
+        refreshing = true
+        s.scope.launch {
+            try {
+                val result = refreshYouTube(position, { _, _, choices ->
+                    choices.firstOrNull { it.videoItag == target.videoItag && it.audioItag == target.audioItag }
+                }, play)
+                if (result != YtRefresh.OK && id == s.identity) failed()
+            } finally {
+                refreshing = false
+            }
+        }
     }
 
     /** A YouTube stream broke: refused link, lost connection, undecodable format or something else. */

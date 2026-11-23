@@ -908,6 +908,8 @@
     <string name="yt_mode_audio">ఆడియో</string>
     <string name="yt_best">ఉత్తమం</string>
     <string name="yt_up_next">తర్వాత</string>
+    <string name="player_quality">నాణ్యత</string>
+    <string name="player_quality_failed">నాణ్యతను మార్చలేకపోయాం. ముందులాగే ప్లే అవుతోంది.</string>
     <string name="yt_add_to_queue_cd">క్యూకు జోడించు</string>
     <string name="yt_pl_added">%1$sకి జోడించబడింది</string>
     <string name="yt_pl_already">ఇప్పటికే %1$sలో ఉంది</string>

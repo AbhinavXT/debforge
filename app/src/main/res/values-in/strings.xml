@@ -868,6 +868,8 @@
     <string name="yt_mode_audio">Audio</string>
     <string name="yt_best">Terbaik</string>
     <string name="yt_up_next">Berikutnya</string>
+    <string name="player_quality">Kualitas</string>
+    <string name="player_quality_failed">Tidak bisa mengubah kualitas. Pemutaran dilanjutkan seperti sebelumnya.</string>
     <string name="yt_add_to_queue_cd">Tambahkan ke antrean</string>
     <string name="yt_pl_added">Ditambahkan ke %1$s</string>
     <string name="yt_pl_already">Sudah ada di %1$s</string>

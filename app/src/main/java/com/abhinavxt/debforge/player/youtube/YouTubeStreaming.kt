@@ -39,6 +39,9 @@ data class RangeWindow(val start: Long, val endExclusive: Long) {
     val length: Long get() = endExclusive - start
 }
 
+/** A row of the Quality list: [current] when it is what is playing. */
+data class QualityOption(val choice: FormatChoice, val current: Boolean)
+
 object YouTubeStreaming {
     /** Same size as the downloader's pieces: whole-file requests get throttled, ranged ones do not. */
     const val CHUNK = 4_000_000L
@@ -69,6 +72,12 @@ object YouTubeStreaming {
         }
         return choices.filter { it.videoItag != null && it.height <= oldHeight }.maxByOrNull { it.height }
     }
+
+    /** The video choices offered by the player's Quality entry, [ref]'s own one marked current. */
+    fun qualityOptions(ref: YouTubeLinks.Ref, choices: List<FormatChoice>): List<QualityOption> =
+        choices.filter { it.videoItag != null }.map { QualityOption(it, sameChoice(ref, it)) }
+
+    fun sameChoice(ref: YouTubeLinks.Ref, c: FormatChoice) = c.videoItag == ref.videoItag && c.audioItag == ref.audioItag
 
     /**
      * After the device failed to decode the chosen video (usually VP9 or AV1): the tallest MP4 choice at or below

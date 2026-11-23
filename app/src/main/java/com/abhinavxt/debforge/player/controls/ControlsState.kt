@@ -14,7 +14,7 @@ import androidx.media3.common.TrackGroup
 enum class Fill { FIT, CROP, STRETCH }
 
 /** A side panel over the video. */
-enum class Panel { AUDIO, SUBTITLES, ONLINE_SUBTITLES, SYNC, SPEED, MORE, CHAPTERS }
+enum class Panel { AUDIO, SUBTITLES, ONLINE_SUBTITLES, SYNC, SPEED, MORE, CHAPTERS, QUALITY }
 
 /** Searching OpenSubtitles from the Subtitles panel. */
 sealed interface OnlineSubs {
@@ -73,6 +73,8 @@ class ControlsState {
     /** Full screen inside the app's video host: the rotate button is "exit full screen" (back to the watch page). */
     var exitFullScreen by mutableStateOf(false)
     /** The item has an audio track to hand over to the background player ("Play as audio"). */
+    /** The Quality list of a streamed YouTube video; null while it is being looked up. */
+    var qualityOptions by mutableStateOf<List<com.abhinavxt.debforge.player.youtube.QualityOption>?>(null)
     var audioHandoffReady by mutableStateOf(false)
     /** Playing on a TV (DLNA). */
     var casting by mutableStateOf(false)

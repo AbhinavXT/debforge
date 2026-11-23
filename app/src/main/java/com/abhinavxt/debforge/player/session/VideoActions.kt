@@ -112,6 +112,23 @@ class VideoActions internal constructor(private val s: VideoSession) : ControlsA
     override fun setSoftwareDecoding(on: Boolean) = s.setSoftwareDecoding(on, save = true)
     override fun playAsAudio() = s.handOffToAudio()
 
+    override fun qualityHeight() = s.youtube?.height ?: 0
+
+    override fun loadQuality() {
+        s.scope.launch {
+            val options = s.refresher.qualityOptions()
+            if (options == null) {
+                controls.panel = null
+                qualityFailed()
+            } else controls.qualityOptions = options
+        }
+    }
+
+    override fun selectQuality(choice: com.abhinavxt.debforge.domain.FormatChoice) = s.refresher.changeQuality(choice, ::qualityFailed)
+
+    private fun qualityFailed() =
+        android.widget.Toast.makeText(s.context, s.string(com.abhinavxt.debforge.R.string.player_quality_failed), android.widget.Toast.LENGTH_SHORT).show()
+
     // The host's: they need the screen.
     override fun back() = Unit
     override fun openExternal() = Unit

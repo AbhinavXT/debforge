@@ -908,6 +908,8 @@
     <string name="yt_mode_audio">ऑडियो</string>
     <string name="yt_best">सर्वश्रेष्ठ</string>
     <string name="yt_up_next">आगे</string>
+    <string name="player_quality">गुणवत्ता</string>
+    <string name="player_quality_failed">गुणवत्ता बदली नहीं जा सकी। पहले की तरह चल रहा है।</string>
     <string name="yt_add_to_queue_cd">कतार में जोड़ें</string>
     <string name="yt_pl_added">%1$s में जोड़ा गया</string>
     <string name="yt_pl_already">पहले से %1$s में है</string>

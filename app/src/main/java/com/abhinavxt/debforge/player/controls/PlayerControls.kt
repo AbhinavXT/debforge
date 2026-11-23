@@ -49,6 +49,7 @@ import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.AspectRatio
 import androidx.compose.material.icons.rounded.Bedtime
 import androidx.compose.material.icons.rounded.Headphones
+import androidx.compose.material.icons.rounded.HighQuality
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.PhotoCamera
 import androidx.compose.material.icons.rounded.Repeat
@@ -165,6 +166,12 @@ interface ControlsActions {
     fun playAsAudio()
     /** Play on a TV on the same network (DLNA). */
     fun cast()
+    /** Height of the streamed YouTube video's picture, for the More → Quality entry; 0 = no such entry (local files, downloads). */
+    fun qualityHeight(): Int = 0
+    /** Looks up the choices into [ControlsState.qualityOptions]. */
+    fun loadQuality() {}
+    /** Plays [choice] from the same second; the same one does nothing. */
+    fun selectQuality(choice: com.abhinavxt.debforge.domain.FormatChoice) {}
     fun rotate()
     /** More → Rotate: turns the screen the other way and stays in full screen (where [rotate] is "exit full screen"). */
     fun rotateScreen() {}
@@ -868,6 +875,7 @@ private fun SidePanel(panel: Panel, state: ControlsState, actions: ControlsActio
                     Panel.CHAPTERS -> R.string.player_chapters
                     Panel.SPEED -> R.string.player_speed
                     Panel.MORE -> R.string.player_more
+                    Panel.QUALITY -> R.string.player_quality
                 }
             ),
             color = Color.White,
@@ -929,6 +937,19 @@ private fun SidePanel(panel: Panel, state: ControlsState, actions: ControlsActio
                 }
             }
             Panel.MORE -> MorePanel(state, actions)
+            Panel.QUALITY -> {
+                val options = state.qualityOptions
+                if (options == null) {
+                    androidx.compose.material3.CircularProgressIndicator(Modifier.padding(20.dp).size(24.dp), strokeWidth = 2.dp)
+                } else LazyColumn {
+                    items(options) { o ->
+                        ChoiceRow(com.abhinavxt.debforge.ui.youtube.choiceLabel(o.choice), o.current) {
+                            state.panel = null
+                            actions.selectQuality(o.choice)
+                        }
+                    }
+                }
+            }
             Panel.ONLINE_SUBTITLES -> OnlineSubtitlesPanel(state.onlineSubs, actions)
             Panel.SYNC -> SyncPanel(state, actions)
             Panel.CHAPTERS -> {
@@ -1163,6 +1184,16 @@ private fun MorePanel(state: ControlsState, actions: ControlsActions) {
         if (state.chapters.size >= 2) {
             item {
                 MoreRow(Icons.AutoMirrored.Rounded.List, stringResource(R.string.player_chapters)) { state.panel = Panel.CHAPTERS }
+            }
+        }
+        val qualityHeight = actions.qualityHeight()
+        if (qualityHeight > 0) {
+            item {
+                MoreRow(Icons.Rounded.HighQuality, stringResource(R.string.player_quality), "${qualityHeight}p") {
+                    state.qualityOptions = null
+                    state.panel = Panel.QUALITY
+                    actions.loadQuality()
+                }
             }
         }
         item {

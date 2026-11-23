@@ -908,6 +908,8 @@
     <string name="yt_mode_audio">অডিও</string>
     <string name="yt_best">সেরা</string>
     <string name="yt_up_next">পরবর্তী</string>
+    <string name="player_quality">মান</string>
+    <string name="player_quality_failed">মান পরিবর্তন করা যায়নি। আগের মানেই চলছে।</string>
     <string name="yt_add_to_queue_cd">সারিতে যোগ করুন</string>
     <string name="yt_pl_added">%1$s-এ যোগ করা হয়েছে</string>
     <string name="yt_pl_already">ইতিমধ্যে %1$s-এ আছে</string>

@@ -908,6 +908,8 @@
     <string name="yt_mode_audio">ஆடியோ</string>
     <string name="yt_best">சிறந்தது</string>
     <string name="yt_up_next">அடுத்து</string>
+    <string name="player_quality">தரம்</string>
+    <string name="player_quality_failed">தரத்தை மாற்ற முடியவில்லை. முன்பு போலவே இயங்குகிறது.</string>
     <string name="yt_add_to_queue_cd">வரிசையில் சேர்</string>
     <string name="yt_pl_added">%1$s இல் சேர்க்கப்பட்டது</string>
     <string name="yt_pl_already">ஏற்கனவே %1$s இல் உள்ளது</string>

@@ -908,6 +908,8 @@
     <string name="yt_mode_audio">Audio</string>
     <string name="yt_best">Beste</string>
     <string name="yt_up_next">Als Nächstes</string>
+    <string name="player_quality">Qualität</string>
+    <string name="player_quality_failed">Qualität konnte nicht geändert werden. Die Wiedergabe läuft wie bisher weiter.</string>
     <string name="yt_add_to_queue_cd">Zur Warteschlange hinzufügen</string>
     <string name="yt_pl_added">Zu %1$s hinzugefügt</string>
     <string name="yt_pl_already">Bereits in %1$s</string>
