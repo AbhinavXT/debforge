@@ -19,8 +19,8 @@ sealed interface PlaylistEntry {
         /** Anything that is not a well-formed YouTube token is a download id; blank gives null. */
         fun parse(token: String): PlaylistEntry? {
             if (token.isBlank()) return null
-            if (!token.startsWith(YT_PREFIX)) return Download(token)
-            return parseYouTube(token)
+            // Downloaded YouTube files also have ids starting "yt:" (e.g. "yt:<id>:-:140"): those are downloads.
+            return parseYouTube(token) ?: Download(token)
         }
 
         /** Only well-formed `yt:` tokens; null for download ids and malformed tokens. */
@@ -37,7 +37,7 @@ sealed interface PlaylistEntry {
             is YouTube -> "$YT_PREFIX${e.mode.code}:${e.videoId}"
         }
 
-        fun isYouTubeToken(token: String) = token.startsWith(YT_PREFIX)
+        fun isYouTubeToken(token: String) = parseYouTube(token) != null
 
         /** Thumbnails are not stored; derived from the video id. */
         fun thumbnailUrl(videoId: String) = "https://i.ytimg.com/vi/$videoId/hqdefault.jpg"

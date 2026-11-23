@@ -1,6 +1,7 @@
 package com.abhinavxt.debforge.data.playback
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -28,6 +29,13 @@ class YouTubePlaylistTest {
             assertNull(it, PlaylistEntry.parse(it)?.takeIf { e -> e is PlaylistEntry.YouTube })
         }
         assertNull(PlaylistEntry.parse(" "))
+    }
+
+    @Test fun downloadedYouTubeFilesStayDownloads() {
+        val id = "yt:Sh4pJYJOT7M:-:140" // a downloaded YouTube audio file's row id
+        assertEquals(PlaylistEntry.Download(id), PlaylistEntry.parse(id))
+        assertFalse(PlaylistEntry.isYouTubeToken(id))
+        assertTrue(base.toggleFavourite(id).favourites.contains(id))
     }
 
     @Test fun oldJsonDecodesUnchanged() {
