@@ -1251,4 +1251,6 @@
     <string name="player_autosubs_adding">%1$s సబ్‌టైటిల్స్ జోడిస్తోంది…</string>
     <string name="player_autosubs_added">%1$s సబ్‌టైటిల్స్ జోడించబడ్డాయి</string>
     <string name="player_autosubs_undo">రద్దు చేయి</string>
+    <string name="set_even_out_volume">వాల్యూమ్ సమం చేయి</string>
+    <string name="set_even_out_volume_detail">పెద్ద మరియు నెమ్మది పాటల వాల్యూమ్‌ను సమానం చేస్తుంది.</string>
 </resources>

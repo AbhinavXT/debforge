@@ -1251,4 +1251,6 @@
     <string name="player_autosubs_adding">%1$s सबटायटल जोडत आहे…</string>
     <string name="player_autosubs_added">%1$s सबटायटल जोडले</string>
     <string name="player_autosubs_undo">पूर्ववत करा</string>
+    <string name="set_even_out_volume">आवाज समान करा</string>
+    <string name="set_even_out_volume_detail">मोठ्या आणि हळू गाण्यांचा आवाज सारखा ठेवतो.</string>
 </resources>

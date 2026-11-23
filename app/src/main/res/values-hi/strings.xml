@@ -1251,4 +1251,6 @@
     <string name="player_autosubs_adding">%1$s सबटाइटल जोड़े जा रहे हैं…</string>
     <string name="player_autosubs_added">%1$s सबटाइटल जोड़े गए</string>
     <string name="player_autosubs_undo">पूर्ववत करें</string>
+    <string name="set_even_out_volume">वॉल्यूम बराबर करें</string>
+    <string name="set_even_out_volume_detail">तेज़ और धीमे गानों की आवाज़ को एक जैसा रखता है।</string>
 </resources>

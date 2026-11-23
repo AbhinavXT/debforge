@@ -149,6 +149,7 @@ fun SettingsScreen(onConnect: () -> Unit, onBack: (() -> Unit)? = null, viewMode
     val sponsorCategories by viewModel.sponsorCategories.collectAsStateWithLifecycle()
     val youTubeAutoplay by viewModel.youTubeAutoplay.collectAsStateWithLifecycle()
     val internalPlayer by viewModel.internalPlayer.collectAsStateWithLifecycle()
+    val evenOutVolume by viewModel.evenOutVolume.collectAsStateWithLifecycle()
     val autoplayNext by viewModel.autoplayNext.collectAsStateWithLifecycle()
     val pip by viewModel.pip.collectAsStateWithLifecycle()
     val videoFullScreen by viewModel.videoFullScreen.collectAsStateWithLifecycle()
@@ -480,6 +481,14 @@ fun SettingsScreen(onConnect: () -> Unit, onBack: (() -> Unit)? = null, viewMode
                             subtitle = stringResource(R.string.set_yt_autoplay_detail),
                             checked = youTubeAutoplay,
                             onChange = viewModel::setYouTubeAutoplay
+                        )
+                        RowDivider()
+                        SwitchSettingRow(
+                            icon = Icons.Rounded.FastForward,
+                            title = stringResource(R.string.set_even_out_volume),
+                            subtitle = stringResource(R.string.set_even_out_volume_detail),
+                            checked = evenOutVolume,
+                            onChange = viewModel::setEvenOutVolume
                         )
                         RowDivider()
                         SwitchSettingRow(

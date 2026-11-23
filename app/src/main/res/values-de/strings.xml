@@ -1251,4 +1251,6 @@
     <string name="player_autosubs_adding">%1$s-Untertitel werden hinzugefügt…</string>
     <string name="player_autosubs_added">%1$s-Untertitel hinzugefügt</string>
     <string name="player_autosubs_undo">Rückgängig</string>
+    <string name="set_even_out_volume">Lautstärke angleichen</string>
+    <string name="set_even_out_volume_detail">Gleicht laute und leise Titel aneinander an.</string>
 </resources>

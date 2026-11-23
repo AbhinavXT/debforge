@@ -325,7 +325,20 @@ class AudioPlayer @Inject constructor(
     private var sponsorFailedAt: Long? = null
     private var sponsorRetried = false
 
+    /** "Even out volume": compression on the player's audio session, re-attached when the session changes. */
+    private var evenOut = false
+    private var evenOutEffect: NightMode? = null
+
+    private fun applyEvenOut() {
+        evenOutEffect?.release()
+        evenOutEffect = null
+        val id = player?.audioSessionId ?: return
+        if (evenOut && id != C.AUDIO_SESSION_ID_UNSET) evenOutEffect = NightMode.attach(id)
+    }
+
     private val listener = object : Player.Listener {
+        override fun onAudioSessionIdChanged(audioSessionId: Int) = applyEvenOut()
+
         override fun onEvents(player: Player, events: Player.Events) {
             publish()
             playing.value = player.isPlaying // position only moves while playing
@@ -645,6 +658,7 @@ class AudioPlayer @Inject constructor(
     }
 
     init {
+        scope.launch { settings.evenOutVolumeFlow.collect { evenOut = it; applyEvenOut() } }
         scope.launch { settings.youTubeAutoplayFlow.collect { autoplayEnabled = it; publish(); if (it) maybeAutoplay() } }
         // Save the position now and then while playing, so a killed process loses little.
         scope.launch { playing.collectLatest { if (it) while (true) { delay(15_000); saveSpot(); savePositionNow() } } }
@@ -719,7 +733,7 @@ class AudioPlayer @Inject constructor(
         .also {
             // A downloaded video file plays here as sound only: no frames are decoded.
             it.trackSelectionParameters = it.trackSelectionParameters.buildUpon().setTrackTypeDisabled(C.TRACK_TYPE_VIDEO, true).build()
-            it.addListener(listener); player = it
+            it.addListener(listener); player = it; applyEvenOut()
         }
 
     private var playJob: Job? = null
@@ -1460,6 +1474,7 @@ class AudioPlayer @Inject constructor(
             BackgroundPlayback.player = null
             BackgroundPlayback.stop(context)
         }
+        evenOutEffect?.release(); evenOutEffect = null
         p.removeListener(listener)
         p.release()
         tracks = emptyList()

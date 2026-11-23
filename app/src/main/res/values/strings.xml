@@ -1253,4 +1253,6 @@
     <string name="player_autosubs_adding">Adding %1$s subtitles…</string>
     <string name="player_autosubs_added">Added %1$s subtitles</string>
     <string name="player_autosubs_undo">Undo</string>
+    <string name="set_even_out_volume">Even out volume</string>
+    <string name="set_even_out_volume_detail">Brings loud and quiet tracks closer in loudness.</string>
 </resources>

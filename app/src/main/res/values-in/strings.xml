@@ -1193,4 +1193,6 @@
     <string name="player_autosubs_adding">Menambahkan subtitle %1$s…</string>
     <string name="player_autosubs_added">Subtitle %1$s ditambahkan</string>
     <string name="player_autosubs_undo">Urungkan</string>
+    <string name="set_even_out_volume">Ratakan volume</string>
+    <string name="set_even_out_volume_detail">Menyamakan volume lagu yang keras dan pelan.</string>
 </resources>

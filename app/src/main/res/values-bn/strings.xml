@@ -1251,4 +1251,6 @@
     <string name="player_autosubs_adding">%1$s সাবটাইটেল যোগ হচ্ছে…</string>
     <string name="player_autosubs_added">%1$s সাবটাইটেল যোগ হয়েছে</string>
     <string name="player_autosubs_undo">পূর্বাবস্থায়</string>
+    <string name="set_even_out_volume">ভলিউম সমান করুন</string>
+    <string name="set_even_out_volume_detail">জোরে ও আস্তে গানের মধ্যে ভলিউমের পার্থক্য কমায়।</string>
 </resources>

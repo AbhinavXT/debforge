@@ -1251,4 +1251,6 @@
     <string name="player_autosubs_adding">%1$s altyazı ekleniyor…</string>
     <string name="player_autosubs_added">%1$s altyazı eklendi</string>
     <string name="player_autosubs_undo">Geri al</string>
+    <string name="set_even_out_volume">Sesi dengele</string>
+    <string name="set_even_out_volume_detail">Yüksek ve alçak sesli parçaları birbirine yaklaştırır.</string>
 </resources>

@@ -1193,4 +1193,6 @@
     <string name="player_autosubs_adding">正在添加%1$s字幕…</string>
     <string name="player_autosubs_added">已添加%1$s字幕</string>
     <string name="player_autosubs_undo">撤销</string>
+    <string name="set_even_out_volume">均衡音量</string>
+    <string name="set_even_out_volume_detail">让音量大和音量小的曲目听起来响度接近。</string>
 </resources>

@@ -1367,4 +1367,6 @@
     <string name="player_autosubs_adding">Добавляем субтитры: %1$s…</string>
     <string name="player_autosubs_added">Добавлены субтитры: %1$s</string>
     <string name="player_autosubs_undo">Отменить</string>
+    <string name="set_even_out_volume">Выравнивать громкость</string>
+    <string name="set_even_out_volume_detail">Сближает громкость тихих и громких треков.</string>
 </resources>

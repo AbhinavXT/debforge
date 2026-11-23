@@ -1309,4 +1309,6 @@
     <string name="player_autosubs_adding">Ajout des sous-titres %1$s…</string>
     <string name="player_autosubs_added">Sous-titres %1$s ajoutés</string>
     <string name="player_autosubs_undo">Annuler</string>
+    <string name="set_even_out_volume">Égaliser le volume</string>
+    <string name="set_even_out_volume_detail">Rapproche le volume des morceaux forts et faibles.</string>
 </resources>

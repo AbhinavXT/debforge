@@ -1309,4 +1309,6 @@
     <string name="player_autosubs_adding">Añadiendo subtítulos en %1$s…</string>
     <string name="player_autosubs_added">Subtítulos en %1$s añadidos</string>
     <string name="player_autosubs_undo">Deshacer</string>
+    <string name="set_even_out_volume">Igualar volumen</string>
+    <string name="set_even_out_volume_detail">Equilibra las pistas fuertes y las suaves.</string>
 </resources>

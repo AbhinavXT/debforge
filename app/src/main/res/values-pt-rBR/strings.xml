@@ -1309,4 +1309,6 @@
     <string name="player_autosubs_adding">Adicionando legendas em %1$s…</string>
     <string name="player_autosubs_added">Legendas em %1$s adicionadas</string>
     <string name="player_autosubs_undo">Desfazer</string>
+    <string name="set_even_out_volume">Equilibrar volume</string>
+    <string name="set_even_out_volume_detail">Aproxima o volume de faixas altas e baixas.</string>
 </resources>

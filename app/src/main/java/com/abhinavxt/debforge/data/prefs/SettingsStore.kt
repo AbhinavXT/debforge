@@ -60,6 +60,7 @@ class SettingsStore @Inject constructor(
     private val keyYouTubeAutoplay = booleanPreferencesKey("youtube_autoplay")
     private val keySponsorBlock = booleanPreferencesKey("sponsorblock_enabled")
     private val keySponsorCategories = stringPreferencesKey("sponsorblock_categories")
+    private val keyEvenOutVolume = booleanPreferencesKey("audio_even_out_volume")
     private val keyNightMode = booleanPreferencesKey("player_night_mode")
     private val keyStreamPreviews = booleanPreferencesKey("player_stream_previews")
     private val keyPlayerArtColor = booleanPreferencesKey("player_art_color")
@@ -211,6 +212,10 @@ class SettingsStore @Inject constructor(
     val streamPreviewsFlow: Flow<Boolean> = context.settingsDataStore.data.map { it[keyStreamPreviews] ?: false }
     suspend fun setStreamPreviews(v: Boolean) = context.settingsDataStore.edit { it[keyStreamPreviews] = v }
 
+    /** Music: even out loud and quiet tracks (dynamic range compression on the audio player). Off by default. */
+    val evenOutVolumeFlow: Flow<Boolean> = context.settingsDataStore.data.map { it[keyEvenOutVolume] ?: false }
+    suspend fun setEvenOutVolume(v: Boolean) = context.settingsDataStore.edit { it[keyEvenOutVolume] = v }
+
     /** Player → More: night mode (dynamic range compression). Off by default. */
     val nightModeFlow: Flow<Boolean> = context.settingsDataStore.data.map { it[keyNightMode] ?: false }
     suspend fun setNightMode(v: Boolean) = context.settingsDataStore.edit { it[keyNightMode] = v }
@@ -357,7 +362,7 @@ class SettingsStore @Inject constructor(
     private val backupBooleans get() = listOf(
         keyDynamicColor, keyPosterView, keyOrganize, keyWifiOnly, keyChargingOnly,
         keyScheduleOn, keyAutoUpdate, keyRemoveAfter, keyPureBlack, keyShowExtras, keyClipboardOffer, keyAdBlock,
-        keyInternalPlayer, keyAutoplayNext, keyPip, keyAutoSkipIntro, keySponsorBlock, keyYouTubeAutoplay, keyNightMode, keyStreamPreviews,
+        keyInternalPlayer, keyAutoplayNext, keyPip, keyAutoSkipIntro, keySponsorBlock, keyYouTubeAutoplay, keyNightMode, keyEvenOutVolume, keyStreamPreviews,
         keyPlayerArtColor, keyPlayerGestures, keyPlayerShowRemaining, keyPlayerBackground, keyHistoryPaused, keyVideoFullScreen,
         keyFetchSubsOnDownload
     )

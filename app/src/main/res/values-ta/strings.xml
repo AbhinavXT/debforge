@@ -1251,4 +1251,6 @@
     <string name="player_autosubs_adding">%1$s வசனங்களைச் சேர்க்கிறது…</string>
     <string name="player_autosubs_added">%1$s வசனங்கள் சேர்க்கப்பட்டன</string>
     <string name="player_autosubs_undo">செயல்தவிர்</string>
+    <string name="set_even_out_volume">ஒலியளவை சமப்படுத்து</string>
+    <string name="set_even_out_volume_detail">சத்தமான மற்றும் மெதுவான பாடல்களின் ஒலியளவை சமமாக்குகிறது.</string>
 </resources>
