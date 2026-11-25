@@ -1,0 +1,3 @@
+• Bookmarks: save moments in music, podcasts and videos, and jump back to them
+• Headset, Bluetooth or lock-screen Play resumes your last audio after the app was closed
+• Fade between tracks (off by default)
