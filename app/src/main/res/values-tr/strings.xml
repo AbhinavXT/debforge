@@ -1194,6 +1194,7 @@
     <string name="wait_storage">Depolama sınırına ulaşıldı</string>
     <string name="notif_storage_title">İndirmeler bekliyor</string>
     <string name="notif_storage_text">Depolama sınırına ulaşıldı. İndirmeleri silin veya sınırı Ayarlar\'dan artırın.</string>
+    <string name="notif_act_free_space">Yer aç</string>
     <string name="yt_follow">Takip et</string>
     <string name="yt_following">Takip ediliyor</string>
     <string name="yt_follow_failed">Bu kanal takip edilemedi. Bağlantını kontrol edip tekrar dene.</string>

@@ -1194,6 +1194,7 @@
     <string name="wait_storage">నిల్వ పరిమితి చేరుకుంది</string>
     <string name="notif_storage_title">డౌన్‌లోడ్‌లు వేచి ఉన్నాయి</string>
     <string name="notif_storage_text">నిల్వ పరిమితి చేరుకుంది. డౌన్‌లోడ్‌లను తొలగించండి లేదా సెట్టింగ్‌లలో పరిమితిని పెంచండి.</string>
+    <string name="notif_act_free_space">ఖాళీ చేయండి</string>
     <string name="yt_follow">ఫాలో</string>
     <string name="yt_following">ఫాలో అవుతున్నారు</string>
     <string name="yt_follow_failed">ఈ ఛానల్‌ను ఫాలో చేయలేకపోయాం. కనెక్షన్ చూసి మళ్లీ ప్రయత్నించండి.</string>

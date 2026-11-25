@@ -327,6 +327,15 @@ private fun HomeShell(signedIn: Boolean, prefs: NavPrefs) {
             NowPlayingRequest.openSearch.value = false
         }
     }
+    val settingsRequested by NowPlayingRequest.openSettings.collectAsStateWithLifecycle()
+    LaunchedEffect(settingsRequested) {
+        if (settingsRequested) {
+            nowPlaying = false
+            if (videoExpanded) videoLauncher.dispatch(VideoModeEvent.Minimise)
+            push(HomeTab.Settings)
+            NowPlayingRequest.openSettings.value = false
+        }
+    }
 
     // A YouTube link shared into the app (cold start or already open).
     val pendingYouTube by shell.pending.youtube.collectAsStateWithLifecycle()

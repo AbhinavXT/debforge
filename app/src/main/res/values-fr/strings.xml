@@ -1245,6 +1245,7 @@
     <string name="wait_storage">Limite de stockage atteinte</string>
     <string name="notif_storage_title">Téléchargements en attente</string>
     <string name="notif_storage_text">Limite de stockage atteinte. Supprimez des téléchargements ou augmentez la limite dans les paramètres.</string>
+    <string name="notif_act_free_space">Libérer de l’espace</string>
     <string name="yt_follow">Suivre</string>
     <string name="yt_following">Suivi</string>
     <string name="yt_follow_failed">Impossible de suivre cette chaîne. Vérifiez votre connexion et réessayez.</string>

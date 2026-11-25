@@ -1194,6 +1194,7 @@
     <string name="wait_storage">Speicherlimit erreicht</string>
     <string name="notif_storage_title">Downloads warten</string>
     <string name="notif_storage_text">Speicherlimit erreicht. Lösche Downloads oder erhöhe das Limit in den Einstellungen.</string>
+    <string name="notif_act_free_space">Speicher freigeben</string>
     <string name="yt_follow">Folgen</string>
     <string name="yt_following">Gefolgt</string>
     <string name="yt_follow_failed">Dieser Kanal konnte nicht abonniert werden. Prüfe deine Verbindung und versuche es erneut.</string>

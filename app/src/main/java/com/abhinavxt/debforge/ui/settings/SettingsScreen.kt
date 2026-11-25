@@ -193,7 +193,7 @@ fun SettingsScreen(onConnect: () -> Unit, onBack: (() -> Unit)? = null, viewMode
         if (category != null) {
             selectedKey = category.key
             query = ""
-            pendingScroll = category to SEARCH_SOURCES_ITEM
+            if (target == SettingsTarget.SEARCH_SOURCES) pendingScroll = category to SEARCH_SOURCES_ITEM
         }
         // Always consumed, so a stale target cannot fire again.
         if (target != null) SettingsTarget.section.value = null

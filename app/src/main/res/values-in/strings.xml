@@ -1143,6 +1143,7 @@
     <string name="wait_storage">Batas penyimpanan tercapai</string>
     <string name="notif_storage_title">Unduhan menunggu</string>
     <string name="notif_storage_text">Batas penyimpanan tercapai. Hapus unduhan atau naikkan batas di Setelan.</string>
+    <string name="notif_act_free_space">Kosongkan ruang</string>
     <string name="yt_follow">Ikuti</string>
     <string name="yt_following">Diikuti</string>
     <string name="yt_follow_failed">Tidak dapat mengikuti kanal ini. Periksa koneksi lalu coba lagi.</string>

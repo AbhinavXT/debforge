@@ -1245,6 +1245,7 @@
     <string name="wait_storage">Límite de almacenamiento alcanzado</string>
     <string name="notif_storage_title">Descargas en espera</string>
     <string name="notif_storage_text">Límite de almacenamiento alcanzado. Borra descargas o súbelo en Ajustes.</string>
+    <string name="notif_act_free_space">Liberar espacio</string>
     <string name="yt_follow">Seguir</string>
     <string name="yt_following">Siguiendo</string>
     <string name="yt_follow_failed">No se pudo seguir este canal. Revisa tu conexión e inténtalo de nuevo.</string>

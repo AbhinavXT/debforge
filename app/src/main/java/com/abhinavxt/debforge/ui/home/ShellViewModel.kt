@@ -31,6 +31,9 @@ object NowPlayingRequest {
 
     /** The "Search" launcher shortcut: HomeScreen switches to the Search tab and clears it. */
     val openSearch = MutableStateFlow(false)
+
+    /** Open Settings (at [com.abhinavxt.debforge.ui.settings.SettingsTarget]). */
+    val openSettings = MutableStateFlow(false)
 }
 
 /** The outcome of "Watch video" in the audio player. */

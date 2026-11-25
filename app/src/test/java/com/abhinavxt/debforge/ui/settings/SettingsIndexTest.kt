@@ -50,6 +50,7 @@ class SettingsIndexTest {
 
     @Test fun targetMapsToItsCategory() {
         assertEquals(SettingsCategory.CONNECTIONS, SettingsCategory.forTarget(SettingsTarget.SEARCH_SOURCES))
+        assertEquals(SettingsCategory.DOWNLOADS, SettingsCategory.forTarget(SettingsTarget.DOWNLOADS))
         assertNull(SettingsCategory.forTarget(null))
         assertNull(SettingsCategory.forTarget("nope"))
     }

@@ -221,6 +221,7 @@ object DownloadNotifications {
             .setOnlyAlertOnce(true)
             .setAutoCancel(true)
             .setContentIntent(openAppIntent(context))
+            .addAction(0, context.getString(R.string.notif_act_free_space), AppActions.pending(context, AppActions.FREE_SPACE))
             .build()
         runCatching { context.getSystemService(NotificationManager::class.java).notify(STORAGE_ID, n) }
     }

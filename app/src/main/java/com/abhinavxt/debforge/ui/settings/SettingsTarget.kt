@@ -9,5 +9,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
  */
 object SettingsTarget {
     const val SEARCH_SOURCES = "search_sources"
+    const val DOWNLOADS = "downloads"
     val section = MutableStateFlow<String?>(null)
 }

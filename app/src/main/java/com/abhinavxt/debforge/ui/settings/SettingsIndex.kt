@@ -23,6 +23,7 @@ enum class SettingsCategory(val key: String, @StringRes val title: Int) {
         /** The category a [SettingsTarget] section lives in; null for an unknown target. */
         fun forTarget(target: String?) = when (target) {
             SettingsTarget.SEARCH_SOURCES -> CONNECTIONS
+            SettingsTarget.DOWNLOADS -> DOWNLOADS
             else -> null
         }
     }

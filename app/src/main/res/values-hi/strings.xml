@@ -1194,6 +1194,7 @@
     <string name="wait_storage">स्टोरेज सीमा पूरी हो गई</string>
     <string name="notif_storage_title">डाउनलोड इंतज़ार में हैं</string>
     <string name="notif_storage_text">स्टोरेज सीमा पूरी हो गई। डाउनलोड हटाएँ या सेटिंग्स में सीमा बढ़ाएँ।</string>
+    <string name="notif_act_free_space">जगह खाली करें</string>
     <string name="yt_follow">फ़ॉलो करें</string>
     <string name="yt_following">फ़ॉलो किया</string>
     <string name="yt_follow_failed">इस चैनल को फ़ॉलो नहीं कर सके। कनेक्शन जाँचकर फिर कोशिश करें।</string>

@@ -21,6 +21,8 @@ object AppActions {
     const val EXTRA_IDS = "com.abhinavxt.debforge.extra.IDS"
     const val CONTINUE_LISTENING = "com.abhinavxt.debforge.action.CONTINUE_LISTENING"
     const val SEARCH = "com.abhinavxt.debforge.action.SEARCH"
+    /** The storage-limit notification: Settings > Downloads, where the limit and auto-delete are. */
+    const val FREE_SPACE = "com.abhinavxt.debforge.action.FREE_SPACE"
 
     fun intent(context: Context, action: String? = null): Intent =
         Intent(context, MainActivity::class.java)
@@ -31,7 +33,7 @@ object AppActions {
     fun pending(context: Context, action: String?): PendingIntent =
         PendingIntent.getActivity(
             context,
-            when (action) { ADD -> 1; RESUME_ALL -> 2; RESUME_IDS -> 3; CONTINUE_LISTENING -> 4; SEARCH -> 5; else -> 0 },
+            when (action) { ADD -> 1; RESUME_ALL -> 2; RESUME_IDS -> 3; CONTINUE_LISTENING -> 4; SEARCH -> 5; FREE_SPACE -> 6; else -> 0 },
             intent(context, action),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )

@@ -1296,6 +1296,7 @@
     <string name="wait_storage">Достигнут лимит хранилища</string>
     <string name="notif_storage_title">Загрузки ожидают</string>
     <string name="notif_storage_text">Достигнут лимит хранилища. Удалите загрузки или увеличьте лимит в настройках.</string>
+    <string name="notif_act_free_space">Освободить место</string>
     <string name="yt_follow">Подписаться</string>
     <string name="yt_following">Вы подписаны</string>
     <string name="yt_follow_failed">Не удалось подписаться на канал. Проверьте подключение и повторите попытку.</string>

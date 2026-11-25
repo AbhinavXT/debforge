@@ -1194,6 +1194,7 @@
     <string name="wait_storage">சேமிப்பக வரம்பு எட்டப்பட்டது</string>
     <string name="notif_storage_title">பதிவிறக்கங்கள் காத்திருக்கின்றன</string>
     <string name="notif_storage_text">சேமிப்பக வரம்பு எட்டப்பட்டது. பதிவிறக்கங்களை நீக்கவும் அல்லது அமைப்புகளில் வரம்பை உயர்த்தவும்.</string>
+    <string name="notif_act_free_space">இடத்தை காலியாக்கு</string>
     <string name="yt_follow">பின்தொடர்</string>
     <string name="yt_following">பின்தொடர்கிறீர்கள்</string>
     <string name="yt_follow_failed">இந்தச் சேனலைப் பின்தொடர முடியவில்லை. இணைப்பைச் சரிபார்த்து மீண்டும் முயலவும்.</string>

@@ -1194,6 +1194,7 @@
     <string name="wait_storage">स्टोरेज मर्यादा गाठली</string>
     <string name="notif_storage_title">डाउनलोड प्रतीक्षेत</string>
     <string name="notif_storage_text">स्टोरेज मर्यादा गाठली. डाउनलोड हटवा किंवा सेटिंग्जमध्ये मर्यादा वाढवा.</string>
+    <string name="notif_act_free_space">जागा मोकळी करा</string>
     <string name="yt_follow">फॉलो करा</string>
     <string name="yt_following">फॉलो केले</string>
     <string name="yt_follow_failed">हे चॅनल फॉलो करता आले नाही. कनेक्शन तपासा आणि पुन्हा प्रयत्न करा.</string>

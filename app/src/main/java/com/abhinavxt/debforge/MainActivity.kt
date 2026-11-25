@@ -195,6 +195,10 @@ class MainActivity : ComponentActivity() {
                 val ids = intent.getStringArrayExtra(AppActions.EXTRA_IDS)?.toList().orEmpty()
                 lifecycleScope.launch { downloadController.resumeIds(ids) }
             }
+            AppActions.FREE_SPACE -> if (intent.flags and Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY == 0) {
+                com.abhinavxt.debforge.ui.settings.SettingsTarget.section.value = com.abhinavxt.debforge.ui.settings.SettingsTarget.DOWNLOADS
+                com.abhinavxt.debforge.ui.home.NowPlayingRequest.openSettings.value = true
+            }
             AppActions.SEARCH -> if (intent.flags and Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY == 0) com.abhinavxt.debforge.ui.home.NowPlayingRequest.openSearch.value = true
             // A launcher tap, so the app is in front and may start playback: resume the saved queue and show it.
             AppActions.CONTINUE_LISTENING -> if (intent.flags and Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY == 0) lifecycleScope.launch {

@@ -1194,6 +1194,7 @@
     <string name="wait_storage">স্টোরেজ সীমা পূর্ণ</string>
     <string name="notif_storage_title">ডাউনলোড অপেক্ষায়</string>
     <string name="notif_storage_text">স্টোরেজ সীমা পূর্ণ। ডাউনলোড মুছুন বা সেটিংসে সীমা বাড়ান।</string>
+    <string name="notif_act_free_space">জায়গা খালি করুন</string>
     <string name="yt_follow">ফলো করুন</string>
     <string name="yt_following">ফলো করা হয়েছে</string>
     <string name="yt_follow_failed">এই চ্যানেল ফলো করা যায়নি। সংযোগ দেখে আবার চেষ্টা করুন।</string>
