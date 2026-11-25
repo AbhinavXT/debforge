@@ -141,6 +141,7 @@ object DownloadNotifications {
             .setContentText(context.getString(R.string.notif_paused_body))
             .setAutoCancel(true)
             .setContentIntent(openAppIntent(context))
+            .addAction(0, context.getString(R.string.notif_act_retry), AppActions.pending(context, AppActions.RESUME_ALL))
             .build()
         runCatching { context.getSystemService(NotificationManager::class.java).notify(INFO_ID, n) }
     }
@@ -159,6 +160,7 @@ object DownloadNotifications {
             .setOnlyAlertOnce(true)
             .setAutoCancel(true)
             .setContentIntent(openAppIntent(context))
+            .addAction(0, context.getString(R.string.notif_act_retry), AppActions.pending(context, AppActions.RESUME_ALL))
             .build()
         runCatching { context.getSystemService(NotificationManager::class.java).notify(STOPPED_ID, n) }
     }
