@@ -195,6 +195,15 @@ class MainActivity : ComponentActivity() {
                 val ids = intent.getStringArrayExtra(AppActions.EXTRA_IDS)?.toList().orEmpty()
                 lifecycleScope.launch { downloadController.resumeIds(ids) }
             }
+            AppActions.SEARCH -> if (intent.flags and Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY == 0) com.abhinavxt.debforge.ui.home.NowPlayingRequest.openSearch.value = true
+            // A launcher tap, so the app is in front and may start playback: resume the saved queue and show it.
+            AppActions.CONTINUE_LISTENING -> if (intent.flags and Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY == 0) lifecycleScope.launch {
+                audioPlayer.restore()
+                if (audioPlayer.isActive) {
+                    if (!audioPlayer.state.value.isPlaying) audioPlayer.toggle()
+                    com.abhinavxt.debforge.ui.home.NowPlayingRequest.expand.value = true
+                }
+            }
         }
     }
 

@@ -19,6 +19,8 @@ object AppActions {
     /** Resume only the downloads listed in [EXTRA_IDS] (the notification's Resume after Pause). */
     const val RESUME_IDS = "com.abhinavxt.debforge.action.RESUME_IDS"
     const val EXTRA_IDS = "com.abhinavxt.debforge.extra.IDS"
+    const val CONTINUE_LISTENING = "com.abhinavxt.debforge.action.CONTINUE_LISTENING"
+    const val SEARCH = "com.abhinavxt.debforge.action.SEARCH"
 
     fun intent(context: Context, action: String? = null): Intent =
         Intent(context, MainActivity::class.java)
@@ -29,7 +31,7 @@ object AppActions {
     fun pending(context: Context, action: String?): PendingIntent =
         PendingIntent.getActivity(
             context,
-            when (action) { ADD -> 1; RESUME_ALL -> 2; RESUME_IDS -> 3; else -> 0 },
+            when (action) { ADD -> 1; RESUME_ALL -> 2; RESUME_IDS -> 3; CONTINUE_LISTENING -> 4; SEARCH -> 5; else -> 0 },
             intent(context, action),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )

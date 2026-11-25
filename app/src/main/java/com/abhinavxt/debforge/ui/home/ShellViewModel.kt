@@ -28,6 +28,9 @@ import javax.inject.Inject
 /** Set by MainActivity (notification tap); HomeScreen opens Now playing and clears it. */
 object NowPlayingRequest {
     val expand = MutableStateFlow(false)
+
+    /** The "Search" launcher shortcut: HomeScreen switches to the Search tab and clears it. */
+    val openSearch = MutableStateFlow(false)
 }
 
 /** The outcome of "Watch video" in the audio player. */

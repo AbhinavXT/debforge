@@ -318,6 +318,11 @@ private fun HomeShell(signedIn: Boolean, prefs: NavPrefs) {
         youtubeViewModel.returnTo.collect { route -> HomeTab.entries.firstOrNull { it.route == route }?.let { go(it) } }
     }
 
+    val searchRequested by NowPlayingRequest.openSearch.collectAsStateWithLifecycle()
+    LaunchedEffect(searchRequested) {
+        if (searchRequested) { go(HomeTab.Search); NowPlayingRequest.openSearch.value = false }
+    }
+
     // A YouTube link shared into the app (cold start or already open).
     val pendingYouTube by shell.pending.youtube.collectAsStateWithLifecycle()
     LaunchedEffect(pendingYouTube) {

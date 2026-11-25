@@ -21,4 +21,24 @@
             android:targetClass="com.abhinavxt.debforge.MainActivity"
             android:targetPackage="com.abhinavxt.debforge" />
     </shortcut>
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/shortcut_continue"
+        android:shortcutId="continue_listening"
+        android:shortcutShortLabel="@string/shortcut_continue_listening">
+        <intent
+            android:action="com.abhinavxt.debforge.action.CONTINUE_LISTENING"
+            android:targetClass="com.abhinavxt.debforge.MainActivity"
+            android:targetPackage="com.abhinavxt.debforge" />
+    </shortcut>
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/shortcut_search"
+        android:shortcutId="search"
+        android:shortcutShortLabel="@string/shortcut_search">
+        <intent
+            android:action="com.abhinavxt.debforge.action.SEARCH"
+            android:targetClass="com.abhinavxt.debforge.MainActivity"
+            android:targetPackage="com.abhinavxt.debforge" />
+    </shortcut>
 </shortcuts>
