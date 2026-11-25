@@ -1315,6 +1315,8 @@
     <string name="set_keep_playing_swiped_detail">DebForge को हाल के ऐप्स से हटाने पर भी संगीत नोटिफ़िकेशन के साथ चलता रहता है। वीडियो फिर भी रुक जाता है।</string>
     <string name="set_skip_silence">चुप्पी छोड़ें</string>
     <string name="set_skip_silence_detail">ऑडियो में शांत हिस्सों को छोड़ देता है।</string>
+    <string name="set_fade_between">ट्रैक के बीच फ़ेड</string>
+    <string name="set_fade_between_detail">ट्रैक के बीच आवाज़ धीमी होकर फिर बढ़ती है। गाने आपस में नहीं मिलते।</string>
     <string name="media_extract">एक्सट्रैक्ट करें</string>
     <string name="extract_title">%1$s एक्सट्रैक्ट हो रही है</string>
     <string name="extract_progress">अब तक एक्सट्रैक्ट हुईं फ़ाइलें: %1$d</string>

@@ -1315,6 +1315,8 @@
     <string name="set_keep_playing_swiped_detail">अलीकडील अॅप्समधून DebForge काढल्यावरही संगीत सूचनेसह सुरू राहते. व्हिडिओ मात्र थांबतो.</string>
     <string name="set_skip_silence">शांतता वगळा</string>
     <string name="set_skip_silence_detail">ऑडिओमधील शांत भाग वगळतो.</string>
+    <string name="set_fade_between">ट्रॅकमध्ये फेड</string>
+    <string name="set_fade_between_detail">ट्रॅकमध्ये आवाज कमी होऊन पुन्हा वाढतो. गाणी एकमेकांवर येत नाहीत.</string>
     <string name="media_extract">एक्सट्रॅक्ट करा</string>
     <string name="extract_title">%1$s एक्सट्रॅक्ट होत आहे</string>
     <string name="extract_progress">आतापर्यंत एक्सट्रॅक्ट झालेल्या फाइल: %1$d</string>

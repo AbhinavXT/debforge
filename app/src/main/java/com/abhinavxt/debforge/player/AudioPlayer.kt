@@ -90,7 +90,10 @@ data class AudioTrack(
     /** The artist's channel page, for a streamed YouTube track; not stored anywhere, so a downloaded file has none. */
     val artistUrl: String? = null,
     /** A downloaded video file: the same item can be watched (see [canWatch]). Set by [audioTrackFor], so a restore keeps it. */
-    val isVideoFile: Boolean = false
+    val isVideoFile: Boolean = false,
+    /** Album tag (lower-cased, with the album artist) and track number of a download, for [fadeEligible]. */
+    val albumKey: String? = null,
+    val trackNo: Int? = null
 ) {
     /** The video of this item can be opened: a downloaded video file or a streamed YouTube video; never a podcast or audio file. */
     val canWatch: Boolean get() = isVideoFile || youtube != null
@@ -342,6 +345,31 @@ class AudioPlayer @Inject constructor(
     /** "Skip silence": ExoPlayer's own audio processor, so it is independent of the effect above and keeps gapless playback. */
     private var skipSilence = false
 
+    /** "Fade between tracks": one player, so the volume dips at the end of a track and rises at the start of the next. */
+    private var fadeMs = 0L
+    private var fadeInPending = false
+    /** The last tick found the current track's end fading out; an auto transition then fades the next one in. */
+    private var fadeOutArmed = false
+
+    private fun resetFade() {
+        fadeInPending = false; fadeOutArmed = false
+        player?.volume = 1f
+    }
+
+    private fun fadeTick() {
+        val p = player ?: return
+        if (restoredPending || p.playbackState != Player.STATE_READY) return
+        val cur = tracks.getOrNull(p.currentMediaItemIndex) ?: return
+        val dur = p.duration
+        val next = p.nextMediaItemIndex.takeIf { it != C.INDEX_UNSET }?.let { tracks.getOrNull(it) }
+        val sleepEnd = sleepAtEnd && sleepItemId == cur.id
+        fadeOutArmed = fadeEligible(cur.fadeInfo(), next?.fadeInfo(), if (dur == C.TIME_UNSET) 0 else dur, p.repeatMode == Player.REPEAT_MODE_ONE, sleepEnd)
+        val speed = p.playbackParameters.speed
+        val pos = p.currentPosition // read live: skip silence moves it faster than the clock
+        if (fadeInPending && pos / speed >= fadeMs) fadeInPending = false
+        p.volume = fadeVolume(pos, dur, speed, fadeMs, fadeInPending, fadeOutArmed)
+    }
+
     private fun applyEvenOut() {
         evenOutEffect?.release()
         evenOutEffect = null
@@ -373,6 +401,7 @@ class AudioPlayer @Inject constructor(
 
         override fun onPositionDiscontinuity(old: Player.PositionInfo, new: Player.PositionInfo, reason: Int) {
             val p = player ?: return
+            if (reason == Player.DISCONTINUITY_REASON_SEEK || reason == Player.DISCONTINUITY_REASON_REMOVE) resetFade()
             val id = tracks.getOrNull(old.mediaItemIndex)?.resumeId ?: return
             when {
                 reason == Player.DISCONTINUITY_REASON_AUTO_TRANSITION -> {
@@ -391,6 +420,9 @@ class AudioPlayer @Inject constructor(
             val sameItem = reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED && mediaItem?.mediaId == lastTransitionId
             lastTransitionId = mediaItem?.mediaId
             if (replacing || sameItem) return
+            if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_AUTO && fadeOutArmed && fadeMs > 0) {
+                fadeInPending = true; fadeOutArmed = false; fadeTick()
+            } else resetFade()
             savePositionNow()
             sponsorDone.clear() // a new item or a repeat-one restart skips afresh
             // Repeat-one keeps the same item, so the timer still applies; any other change of item drops it.
@@ -407,6 +439,7 @@ class AudioPlayer @Inject constructor(
         override fun onPlayerError(error: PlaybackException) {
             // A file deleted while queued or playing: drop it and carry on with the next one.
             val p = player ?: return
+            resetFade()
             val bad = p.currentMediaItemIndex
             val yt = tracks.getOrNull(bad)
             // No connection: the stream did not fail, the network did. Keep it (and what follows) for later.
@@ -673,6 +706,12 @@ class AudioPlayer @Inject constructor(
     init {
         scope.launch { settings.evenOutVolumeFlow.collect { evenOut = it; applyEvenOut() } }
         scope.launch { settings.skipSilenceFlow.collect { skipSilence = it; player?.skipSilenceEnabled = it } }
+        scope.launch {
+            combine(settings.fadeBetweenTracksFlow, playing) { sec, on -> if (on) sec * 1000L else 0L }.distinctUntilChanged().collectLatest { ms ->
+                fadeMs = ms
+                if (ms == 0L) resetFade() else while (true) { fadeTick(); delay(100) }
+            }
+        }
         scope.launch { settings.youTubeAutoplayFlow.collect { autoplayEnabled = it; publish(); if (it) maybeAutoplay() } }
         // Save the position now and then while playing, so a killed process loses little.
         scope.launch { playing.collectLatest { if (it) while (true) { delay(15_000); saveSpot(); savePositionNow() } } }

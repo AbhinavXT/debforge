@@ -1317,6 +1317,8 @@
     <string name="set_keep_playing_swiped_detail">Music carries on, with its notification, after you swipe DebForge away from recent apps. Video still stops.</string>
     <string name="set_skip_silence">Skip silence</string>
     <string name="set_skip_silence_detail">Jumps over silent stretches in audio.</string>
+    <string name="set_fade_between">Fade between tracks</string>
+    <string name="set_fade_between_detail">Fade out and in between tracks. Songs do not overlap.</string>
     <string name="media_extract">Extract</string>
     <string name="extract_title">Extracting %1$s</string>
     <string name="extract_progress">Files extracted so far: %1$d</string>

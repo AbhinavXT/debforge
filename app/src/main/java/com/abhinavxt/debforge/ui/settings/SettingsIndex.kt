@@ -62,6 +62,7 @@ val SETTINGS_INDEX: List<SettingEntry> = run {
         e(AUDIO, R.string.set_skip_length, R.string.set_skip_length_detail),
         e(AUDIO, R.string.set_notification_buttons, R.string.set_notification_buttons_detail),
         e(AUDIO, R.string.set_keep_playing_swiped, R.string.set_keep_playing_swiped_detail),
+        e(AUDIO, R.string.set_fade_between, R.string.set_fade_between_detail),
         e(AUDIO, R.string.set_skip_silence, R.string.set_skip_silence_detail),
         e(AUDIO, R.string.set_even_out_volume, R.string.set_even_out_volume_detail),
         e(AUDIO, R.string.set_player_art_color, R.string.set_player_art_color_detail),

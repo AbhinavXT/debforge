@@ -279,6 +279,11 @@ class SettingsViewModel @Inject constructor(
     )
     fun setKeepPlayingSwiped(v: Boolean) = viewModelScope.launch { settingsStore.setKeepPlayingSwiped(v) }
 
+    val fadeBetweenTracks: StateFlow<Int> = settingsStore.fadeBetweenTracksFlow.stateIn(
+        viewModelScope, SharingStarted.WhileSubscribed(5_000), 0
+    )
+    fun setFadeBetweenTracks(v: Int) = viewModelScope.launch { settingsStore.setFadeBetweenTracks(v) }
+
     val skipSilence: StateFlow<Boolean> = settingsStore.skipSilenceFlow.stateIn(
         viewModelScope, SharingStarted.WhileSubscribed(5_000), false
     )

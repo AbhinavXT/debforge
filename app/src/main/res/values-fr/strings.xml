@@ -1374,6 +1374,8 @@
     <string name="set_keep_playing_swiped_detail">La musique continue avec sa notification quand vous retirez DebForge des applis récentes. La vidéo s\'arrête toujours.</string>
     <string name="set_skip_silence">Ignorer les silences</string>
     <string name="set_skip_silence_detail">Saute les passages silencieux de l\'audio.</string>
+    <string name="set_fade_between">Fondu entre les pistes</string>
+    <string name="set_fade_between_detail">Fondu sortant puis entrant entre les pistes. Les titres ne se chevauchent pas.</string>
     <string name="media_extract">Extraire</string>
     <string name="extract_title">Extraction de %1$s</string>
     <string name="extract_progress">Fichiers extraits jusqu\'ici : %1$d</string>

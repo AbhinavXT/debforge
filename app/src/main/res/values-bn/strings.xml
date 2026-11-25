@@ -1315,6 +1315,8 @@
     <string name="set_keep_playing_swiped_detail">সাম্প্রতিক অ্যাপ থেকে DebForge সরালেও গান নোটিফিকেশনসহ চলতে থাকে। ভিডিও তবুও থেমে যায়।</string>
     <string name="set_skip_silence">নীরবতা এড়িয়ে যান</string>
     <string name="set_skip_silence_detail">অডিওর নীরব অংশ এড়িয়ে যায়।</string>
+    <string name="set_fade_between">ট্র্যাকের মাঝে ফেড</string>
+    <string name="set_fade_between_detail">ট্র্যাকের মাঝে আওয়াজ কমে আবার বাড়ে। গান একে অপরের উপর চলে না।</string>
     <string name="media_extract">এক্সট্র্যাক্ট করুন</string>
     <string name="extract_title">%1$s এক্সট্র্যাক্ট হচ্ছে</string>
     <string name="extract_progress">এ পর্যন্ত এক্সট্র্যাক্ট হওয়া ফাইল: %1$d</string>

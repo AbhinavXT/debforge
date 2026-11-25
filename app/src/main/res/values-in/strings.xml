@@ -1256,6 +1256,8 @@
     <string name="set_keep_playing_swiped_detail">Musik tetap diputar dengan notifikasinya setelah DebForge digeser dari aplikasi terbaru. Video tetap berhenti.</string>
     <string name="set_skip_silence">Lewati keheningan</string>
     <string name="set_skip_silence_detail">Melompati bagian senyap pada audio.</string>
+    <string name="set_fade_between">Pudar antar lagu</string>
+    <string name="set_fade_between_detail">Memudar keluar dan masuk di antara lagu. Lagu tidak saling tumpang tindih.</string>
     <string name="media_extract">Ekstrak</string>
     <string name="extract_title">Mengekstrak %1$s</string>
     <string name="extract_progress">File yang sudah diekstrak: %1$d</string>

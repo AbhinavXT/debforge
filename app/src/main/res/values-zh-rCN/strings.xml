@@ -1256,6 +1256,8 @@
     <string name="set_keep_playing_swiped_detail">从最近任务中滑掉 DebForge 后，音乐会带着通知继续播放。视频仍会停止。</string>
     <string name="set_skip_silence">跳过静音</string>
     <string name="set_skip_silence_detail">跳过音频中的静音片段。</string>
+    <string name="set_fade_between">曲目之间淡入淡出</string>
+    <string name="set_fade_between_detail">曲目之间淡出再淡入。歌曲不会重叠。</string>
     <string name="media_extract">解压</string>
     <string name="extract_title">正在解压 %1$s</string>
     <string name="extract_progress">已解压文件数：%1$d</string>

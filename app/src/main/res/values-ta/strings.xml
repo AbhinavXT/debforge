@@ -1315,6 +1315,8 @@
     <string name="set_keep_playing_swiped_detail">சமீபத்திய பயன்பாடுகளிலிருந்து DebForge ஐ நீக்கினாலும் இசை அறிவிப்புடன் தொடரும். வீடியோ இன்னும் நிற்கும்.</string>
     <string name="set_skip_silence">அமைதியைத் தவிர்</string>
     <string name="set_skip_silence_detail">ஆடியோவில் அமைதியான பகுதிகளைத் தாண்டும்.</string>
+    <string name="set_fade_between">பாடல்களுக்கிடையே ஃபேட்</string>
+    <string name="set_fade_between_detail">பாடல்களுக்கிடையே ஒலி குறைந்து மீண்டும் உயரும். பாடல்கள் ஒன்றின் மேல் ஒன்று ஒலிக்காது.</string>
     <string name="media_extract">பிரித்தெடு</string>
     <string name="extract_title">%1$s பிரித்தெடுக்கப்படுகிறது</string>
     <string name="extract_progress">இதுவரை பிரித்தெடுத்த கோப்புகள்: %1$d</string>

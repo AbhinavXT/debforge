@@ -26,7 +26,9 @@ fun audioTracksFor(context: Context, entities: List<DownloadEntity>): List<Audio
 
 private fun trackOf(context: Context, e: DownloadEntity, uri: Uri) =
     AudioTrack(e.id, uri, e.displayTitle(), e.artist, artworkFile(context, e.id).takeIf { it.exists() },
-        isVideoFile = kindOf(e.filename) == FileKind.Video)
+        isVideoFile = kindOf(e.filename) == FileKind.Video,
+        albumKey = e.album?.trim()?.lowercase()?.takeIf { it.isNotEmpty() }?.let { it + "\u0000" + (e.albumArtist ?: e.artist).orEmpty().trim().lowercase() },
+        trackNo = e.trackNo)
 
 /** Where the tapped item ([tappedId]) is in [tracks] after unplayable files were skipped; the first one if it is gone. */
 internal fun startIndexOf(tracks: List<AudioTrack>, tappedId: String?): Int =

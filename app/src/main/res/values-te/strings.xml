@@ -1315,6 +1315,8 @@
     <string name="set_keep_playing_swiped_detail">ఇటీవలి యాప్‌ల నుండి DebForge ను తీసివేసినా సంగీతం నోటిఫికేషన్‌తో కొనసాగుతుంది. వీడియో మాత్రం ఆగుతుంది.</string>
     <string name="set_skip_silence">నిశ్శబ్దాన్ని దాటవేయి</string>
     <string name="set_skip_silence_detail">ఆడియోలోని నిశ్శబ్ద భాగాలను దాటవేస్తుంది.</string>
+    <string name="set_fade_between">ట్రాక్‌ల మధ్య ఫేడ్</string>
+    <string name="set_fade_between_detail">ట్రాక్‌ల మధ్య శబ్దం తగ్గి మళ్లీ పెరుగుతుంది. పాటలు ఒకదానిపై ఒకటి వినిపించవు.</string>
     <string name="media_extract">ఎక్స్‌ట్రాక్ట్ చేయి</string>
     <string name="extract_title">%1$s ఎక్స్‌ట్రాక్ట్ అవుతోంది</string>
     <string name="extract_progress">ఇప్పటివరకు ఎక్స్‌ట్రాక్ట్ అయిన ఫైళ్లు: %1$d</string>

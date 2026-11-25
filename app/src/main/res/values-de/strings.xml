@@ -1315,6 +1315,8 @@
     <string name="set_keep_playing_swiped_detail">Musik läuft mit ihrer Benachrichtigung weiter, wenn du DebForge aus den letzten Apps wegwischst. Videos stoppen weiterhin.</string>
     <string name="set_skip_silence">Stille überspringen</string>
     <string name="set_skip_silence_detail">Überspringt stille Stellen im Audio.</string>
+    <string name="set_fade_between">Zwischen Titeln überblenden</string>
+    <string name="set_fade_between_detail">Blendet zwischen Titeln aus und ein. Die Songs überlappen nicht.</string>
     <string name="media_extract">Entpacken</string>
     <string name="extract_title">%1$s wird entpackt</string>
     <string name="extract_progress">Bisher entpackte Dateien: %1$d</string>

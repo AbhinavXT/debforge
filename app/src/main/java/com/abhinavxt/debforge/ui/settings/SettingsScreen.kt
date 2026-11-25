@@ -1070,6 +1070,30 @@ internal fun SkipLengthRow(current: Int, onPick: (Int) -> Unit) {
 }
 
 @Composable
+internal fun FadeBetweenTracksRow(current: Int, onPick: (Int) -> Unit) {
+    var open by remember { mutableStateOf(false) }
+    @Composable fun label(n: Int) = if (n == 0) stringResource(R.string.player_sleep_off) else stringResource(R.string.skip_seconds, n)
+    Box {
+        SettingRow(
+            icon = Icons.Rounded.Forward10,
+            title = stringResource(R.string.set_fade_between),
+            subtitle = stringResource(R.string.set_fade_between_detail),
+            onClick = { open = true },
+            trailing = { Text(label(current), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary) }
+        )
+        DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
+            com.abhinavxt.debforge.player.FADE_SECONDS.forEach { n ->
+                DropdownMenuItem(
+                    text = { Text(label(n)) },
+                    leadingIcon = { if (n == current) Icon(Icons.Rounded.Check, contentDescription = null) },
+                    onClick = { onPick(n); open = false }
+                )
+            }
+        }
+    }
+}
+
+@Composable
 internal fun NotificationButtonsRow(current: com.abhinavxt.debforge.player.NotificationButtons, onPick: (com.abhinavxt.debforge.player.NotificationButtons) -> Unit) {
     var open by remember { mutableStateOf(false) }
     @Composable

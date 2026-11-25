@@ -1315,6 +1315,8 @@
     <string name="set_keep_playing_swiped_detail">DebForge son uygulamalardan kaydırılsa da müzik bildirimiyle birlikte çalmaya devam eder. Video yine durur.</string>
     <string name="set_skip_silence">Sessizliği atla</string>
     <string name="set_skip_silence_detail">Seste sessiz bölümleri atlar.</string>
+    <string name="set_fade_between">Parçalar arasında geçiş</string>
+    <string name="set_fade_between_detail">Parçalar arasında ses azalır ve artar. Şarkılar üst üste binmez.</string>
     <string name="media_extract">Çıkar</string>
     <string name="extract_title">%1$s çıkarılıyor</string>
     <string name="extract_progress">Şimdiye kadar çıkarılan dosya: %1$d</string>

@@ -73,6 +73,7 @@ class SettingsStore @Inject constructor(
     private val keyAudioSkipSeconds = intPreferencesKey("audio_skip_seconds")
     private val keyNotificationButtons = stringPreferencesKey("audio_notification_buttons")
     private val keyKeepPlayingSwiped = booleanPreferencesKey("audio_keep_playing_swiped")
+    private val keyFadeSeconds = intPreferencesKey("audio_fade_seconds")
     private val keySkipSilence = booleanPreferencesKey("audio_skip_silence")
     private val keyPlayerGestures = booleanPreferencesKey("player_gestures")
     private val keyPlayerShowRemaining = booleanPreferencesKey("player_show_remaining")
@@ -278,6 +279,10 @@ class SettingsStore @Inject constructor(
     val keepPlayingSwipedFlow: Flow<Boolean> = context.settingsDataStore.data.map { it[keyKeepPlayingSwiped] ?: false }
     suspend fun setKeepPlayingSwiped(v: Boolean) = context.settingsDataStore.edit { it[keyKeepPlayingSwiped] = v }
 
+    /** Audio: seconds of fade out and in between tracks; 0 = off (default). */
+    val fadeBetweenTracksFlow: Flow<Int> = context.settingsDataStore.data.map { (it[keyFadeSeconds] ?: 0).takeIf { s -> s in com.abhinavxt.debforge.player.FADE_SECONDS } ?: 0 }
+    suspend fun setFadeBetweenTracks(v: Int) = context.settingsDataStore.edit { it[keyFadeSeconds] = v }
+
     /** Audio: skip silent stretches. Off by default. */
     val skipSilenceFlow: Flow<Boolean> = context.settingsDataStore.data.map { it[keySkipSilence] ?: false }
     suspend fun setSkipSilence(v: Boolean) = context.settingsDataStore.edit { it[keySkipSilence] = v }
@@ -425,7 +430,7 @@ class SettingsStore @Inject constructor(
     private val backupStrings get() = listOf(keyReleaseAvoid, keyReleasePrefer, keyAdBlockOffSites, keyYouTubeQuality,
         keyAudioLanguage, keySubtitleLanguage, keySubtitleStyle, keyNotificationButtons, keySponsorCategories, keyOnlineSubsWhenNone, keyGridSize, keyHomeRowsHidden, keyTabs, keyStartTab)
     private val backupInts get() = listOf(keySortOrder, keyThemeMode, keyScheduleStart, keyScheduleEnd, keySpeedLimit, keyAutoDeleteDays,
-        keyExpiryReminder, keyAudioSkipSeconds, keyStorageLimitGb)
+        keyExpiryReminder, keyAudioSkipSeconds, keyStorageLimitGb, keyFadeSeconds)
 
     /** Only values the user actually set; defaults stay defaults on the new phone. */
     suspend fun backupValues(): Map<String, Any> {

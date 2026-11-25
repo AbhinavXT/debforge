@@ -1433,6 +1433,8 @@
     <string name="set_keep_playing_swiped_detail">Музыка продолжает играть с уведомлением, если смахнуть DebForge из недавних. Видео всё равно останавливается.</string>
     <string name="set_skip_silence">Пропуск тишины</string>
     <string name="set_skip_silence_detail">Пропускает тихие участки в аудио.</string>
+    <string name="set_fade_between">Плавный переход между треками</string>
+    <string name="set_fade_between_detail">Затухание и нарастание звука между треками. Песни не накладываются.</string>
     <string name="media_extract">Извлечь</string>
     <string name="extract_title">Извлечение: %1$s</string>
     <string name="extract_progress">Извлечено файлов: %1$d</string>
