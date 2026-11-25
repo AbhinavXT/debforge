@@ -64,7 +64,11 @@ class TorBoxQueuedTest {
         }
     } as TorBoxApi
 
-    private val provider = TorBoxProvider(api, TokenStore(RuntimeEnvironment.getApplication()))
+    private val deviceApi = Proxy.newProxyInstance(javaClass.classLoader, arrayOf(TorBoxDeviceApi::class.java)) { _, m, _ ->
+        error(m.name)
+    } as TorBoxDeviceApi
+
+    private val provider = TorBoxProvider(api, deviceApi, TokenStore(RuntimeEnvironment.getApplication()))
 
     private fun q(id: Long, hash: String = "abcdef") = TbQueuedDto(id = id, hash = hash, name = "q$id")
     private fun file() = listOf(TbFileDto(1, "a.mkv", "a.mkv", 1, null))
