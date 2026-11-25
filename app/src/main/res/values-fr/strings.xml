@@ -1357,4 +1357,10 @@
     <string name="home_empty_body">Ajoutez un lien magnet, un lien ou un fichier torrent. Ce que vous regardez, écoutez et téléchargez apparaîtra ici.</string>
     <string name="home_empty_add">Ajouter quelque chose</string>
     <string name="set_home_rows">Rangées de l’accueil</string>
+    <string name="set_tabs">Onglets</string>
+    <string name="set_tabs_detail">Choisissez 2 à 5 onglets pour la barre du bas et leur ordre.</string>
+    <string name="set_tab_up">Monter %1$s</string>
+    <string name="set_tab_down">Descendre %1$s</string>
+    <string name="set_start_tab">Onglet de démarrage</string>
+    <string name="set_start_tab_auto">Automatique</string>
 </resources>

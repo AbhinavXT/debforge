@@ -1299,4 +1299,10 @@
     <string name="home_empty_body">Add a magnet, link or torrent file. What you watch, listen to and download will show up here.</string>
     <string name="home_empty_add">Add something</string>
     <string name="set_home_rows">Home rows</string>
+    <string name="set_tabs">Tabs</string>
+    <string name="set_tabs_detail">Pick 2 to 5 tabs for the bottom bar and set their order.</string>
+    <string name="set_tab_up">Move %1$s up</string>
+    <string name="set_tab_down">Move %1$s down</string>
+    <string name="set_start_tab">Start tab</string>
+    <string name="set_start_tab_auto">Automatic</string>
 </resources>

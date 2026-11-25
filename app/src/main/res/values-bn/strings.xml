@@ -1297,4 +1297,10 @@
     <string name="home_empty_body">একটি ম্যাগনেট, লিংক বা টরেন্ট ফাইল যোগ করুন। আপনি যা দেখেন, শোনেন ও ডাউনলোড করেন তা এখানে দেখা যাবে।</string>
     <string name="home_empty_add">কিছু যোগ করুন</string>
     <string name="set_home_rows">হোমের সারি</string>
+    <string name="set_tabs">ট্যাব</string>
+    <string name="set_tabs_detail">নিচের বারের জন্য ২ থেকে ৫টি ট্যাব বাছুন এবং ক্রম ঠিক করুন।</string>
+    <string name="set_tab_up">%1$s উপরে সরান</string>
+    <string name="set_tab_down">%1$s নিচে সরান</string>
+    <string name="set_start_tab">শুরুর ট্যাব</string>
+    <string name="set_start_tab_auto">স্বয়ংক্রিয়</string>
 </resources>

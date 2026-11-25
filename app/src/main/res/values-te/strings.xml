@@ -1297,4 +1297,10 @@
     <string name="home_empty_body">ఒక మ్యాగ్నెట్, లింక్ లేదా టొరెంట్ ఫైల్‌ను జోడించండి. మీరు చూసేవి, వినేవి, డౌన్‌లోడ్ చేసేవి ఇక్కడ కనిపిస్తాయి.</string>
     <string name="home_empty_add">ఏదైనా జోడించండి</string>
     <string name="set_home_rows">హోమ్ వరుసలు</string>
+    <string name="set_tabs">ట్యాబ్‌లు</string>
+    <string name="set_tabs_detail">దిగువ బార్ కోసం 2 నుండి 5 ట్యాబ్‌లను ఎంచుకుని వాటి క్రమాన్ని సెట్ చేయండి.</string>
+    <string name="set_tab_up">%1$s ను పైకి జరపండి</string>
+    <string name="set_tab_down">%1$s ను క్రిందికి జరపండి</string>
+    <string name="set_start_tab">ప్రారంభ ట్యాబ్</string>
+    <string name="set_start_tab_auto">స్వయంచాలకం</string>
 </resources>

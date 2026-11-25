@@ -1357,4 +1357,10 @@
     <string name="home_empty_body">Añade un enlace magnet, un enlace o un archivo torrent. Lo que veas, escuches y descargues aparecerá aquí.</string>
     <string name="home_empty_add">Añadir algo</string>
     <string name="set_home_rows">Filas de Inicio</string>
+    <string name="set_tabs">Pestañas</string>
+    <string name="set_tabs_detail">Elige de 2 a 5 pestañas para la barra inferior y su orden.</string>
+    <string name="set_tab_up">Subir %1$s</string>
+    <string name="set_tab_down">Bajar %1$s</string>
+    <string name="set_start_tab">Pestaña de inicio</string>
+    <string name="set_start_tab_auto">Automática</string>
 </resources>

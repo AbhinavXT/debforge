@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import com.abhinavxt.debforge.data.provider.ProviderInfo
 import com.abhinavxt.debforge.data.repository.AuthRepository
 import com.abhinavxt.debforge.domain.GridSize
+import com.abhinavxt.debforge.ui.home.TabConfig
 import com.abhinavxt.debforge.ui.homepage.HomeRow
 import com.abhinavxt.debforge.domain.ProviderId
 import com.abhinavxt.debforge.domain.SortOrder
@@ -53,6 +54,7 @@ class SettingsViewModel @Inject constructor(
     private val housekeeper: com.abhinavxt.debforge.download.Housekeeper,
     private val followStore: com.abhinavxt.debforge.data.follow.FollowStore,
     private val subscriptionRepo: com.abhinavxt.debforge.data.subscriptions.SubscriptionRepository,
+    private val searchSourceStore: com.abhinavxt.debforge.data.search.SearchSourceStore,
     @dagger.hilt.android.qualifiers.ApplicationContext private val appContext: android.content.Context
 ) : ViewModel() {
 
@@ -298,6 +300,16 @@ class SettingsViewModel @Inject constructor(
         val hidden = settingsStore.homeRowsHiddenFlow.first().let(HomeRow::parseHidden)
         settingsStore.setHomeRowsHidden(HomeRow.encodeHidden(if (shown) hidden - row else hidden + row))
     }
+
+    /** The bar as stored; null = never customised. */
+    val tabsStored: StateFlow<String?> = settingsStore.tabsFlow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+    val startTab: StateFlow<String> = settingsStore.startTabFlow.map { it ?: TabConfig.AUTO }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), TabConfig.AUTO)
+    /** Whether a search source exists: the untouched bar depends on it. */
+    val hasSearchSource: StateFlow<Boolean> = searchSourceStore.sources.map { it.isNotEmpty() }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
+    fun setTabs(bar: List<String>) = viewModelScope.launch { settingsStore.setTabs(TabConfig.encode(bar)) }
+    fun setStartTab(v: String) = viewModelScope.launch { settingsStore.setStartTab(v) }
 
     val clipboardOffer: StateFlow<Boolean> = settingsStore.clipboardOfferFlow.stateIn(
         viewModelScope, SharingStarted.WhileSubscribed(5_000), true

@@ -88,6 +88,8 @@ class SettingsStore @Inject constructor(
     private val keyAdBlockOffSites = stringPreferencesKey("browser_adblock_off_sites")
     private val keyGridSize = stringPreferencesKey("grid_size")
     private val keyHomeRowsHidden = stringPreferencesKey("home_rows_hidden")
+    private val keyTabs = stringPreferencesKey("bottom_tabs")
+    private val keyStartTab = stringPreferencesKey("start_tab")
 
     private val keyImportLocal = booleanPreferencesKey("import_local_files")
 
@@ -142,6 +144,14 @@ class SettingsStore @Inject constructor(
     /** Home tab rows the user turned off ([com.abhinavxt.debforge.ui.homepage.HomeRow.key]s, comma separated). All shown by default. */
     val homeRowsHiddenFlow: Flow<String> = context.settingsDataStore.data.map { it[keyHomeRowsHidden].orEmpty() }
     suspend fun setHomeRowsHidden(v: String) = context.settingsDataStore.edit { it[keyHomeRowsHidden] = v }
+
+    /** The bottom bar's tab keys, comma separated; null until the user customises it (see ui.home.TabConfig). */
+    val tabsFlow: Flow<String?> = context.settingsDataStore.data.map { it[keyTabs] }
+    suspend fun setTabs(v: String) = context.settingsDataStore.edit { it[keyTabs] = v }
+
+    /** The tab the app opens on ([com.abhinavxt.debforge.ui.home.TabConfig.AUTO] or a tab key); null = automatic. */
+    val startTabFlow: Flow<String?> = context.settingsDataStore.data.map { it[keyStartTab] }
+    suspend fun setStartTab(v: String) = context.settingsDataStore.edit { it[keyStartTab] = v }
 
     /** Offer a magnet / .torrent link found on the clipboard when the app opens. On by default. */
     val clipboardOfferFlow: Flow<Boolean> = context.settingsDataStore.data.map { it[keyClipboardOffer] ?: true }
@@ -396,7 +406,7 @@ class SettingsStore @Inject constructor(
     )
     /** May be blank on purpose (nothing avoided, no site left unblocked). */
     private val backupStrings get() = listOf(keyReleaseAvoid, keyReleasePrefer, keyAdBlockOffSites, keyYouTubeQuality,
-        keyAudioLanguage, keySubtitleLanguage, keySubtitleStyle, keySponsorCategories, keyOnlineSubsWhenNone, keyGridSize, keyHomeRowsHidden)
+        keyAudioLanguage, keySubtitleLanguage, keySubtitleStyle, keySponsorCategories, keyOnlineSubsWhenNone, keyGridSize, keyHomeRowsHidden, keyTabs, keyStartTab)
     private val backupInts get() = listOf(keySortOrder, keyThemeMode, keyScheduleStart, keyScheduleEnd, keySpeedLimit, keyAutoDeleteDays,
         keyExpiryReminder, keyAudioSkipSeconds, keyStorageLimitGb)
 

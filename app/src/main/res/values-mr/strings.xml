@@ -1297,4 +1297,10 @@
     <string name="home_empty_body">मॅग्नेट, लिंक किंवा टोरेंट फाइल जोडा. तुम्ही जे पाहता, ऐकता आणि डाउनलोड करता ते येथे दिसेल.</string>
     <string name="home_empty_add">काहीतरी जोडा</string>
     <string name="set_home_rows">मुख्यपृष्ठावरील ओळी</string>
+    <string name="set_tabs">टॅब</string>
+    <string name="set_tabs_detail">खालच्या बारसाठी 2 ते 5 टॅब निवडा आणि त्यांचा क्रम ठरवा.</string>
+    <string name="set_tab_up">%1$s वर हलवा</string>
+    <string name="set_tab_down">%1$s खाली हलवा</string>
+    <string name="set_start_tab">सुरुवातीचा टॅब</string>
+    <string name="set_start_tab_auto">स्वयंचलित</string>
 </resources>

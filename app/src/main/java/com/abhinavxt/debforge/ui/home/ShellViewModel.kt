@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
@@ -44,8 +45,15 @@ class ShellViewModel @Inject constructor(
     private val videoHandoff: VideoHandoff,
     private val lyricsRepo: com.abhinavxt.debforge.data.lyrics.LyricsRepository,
     dao: DownloadDao,
-    settings: SettingsStore
+    settings: SettingsStore,
+    searchSources: com.abhinavxt.debforge.data.search.SearchSourceStore
 ) : ViewModel() {
+    /** Null until the first read of the tab settings. */
+    val navPrefs: StateFlow<NavPrefs?> = combine(
+        settings.tabsFlow, settings.startTabFlow, searchSources.sources.map { it.isNotEmpty() }
+    ) { bar, start, hasSource -> NavPrefs(bar, start, hasSource) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
     suspend fun lyrics(title: String, artist: String?, durationMs: Long) = lyricsRepo.load(title, artist, durationMs)
 
     val playerArtColor: StateFlow<Boolean> = settings.playerArtColorFlow

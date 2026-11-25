@@ -1357,4 +1357,10 @@
     <string name="home_empty_body">Adicione um magnet, link ou arquivo torrent. O que você assistir, ouvir e baixar aparecerá aqui.</string>
     <string name="home_empty_add">Adicionar algo</string>
     <string name="set_home_rows">Linhas do Início</string>
+    <string name="set_tabs">Abas</string>
+    <string name="set_tabs_detail">Escolha de 2 a 5 abas para a barra inferior e defina a ordem.</string>
+    <string name="set_tab_up">Mover %1$s para cima</string>
+    <string name="set_tab_down">Mover %1$s para baixo</string>
+    <string name="set_start_tab">Aba inicial</string>
+    <string name="set_start_tab_auto">Automática</string>
 </resources>

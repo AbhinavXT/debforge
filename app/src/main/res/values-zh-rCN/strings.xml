@@ -1238,4 +1238,10 @@
     <string name="home_empty_body">添加磁力链接、链接或种子文件。你观看、收听和下载的内容会显示在这里。</string>
     <string name="home_empty_add">添加内容</string>
     <string name="set_home_rows">主页内容行</string>
+    <string name="set_tabs">标签页</string>
+    <string name="set_tabs_detail">为底部栏选择 2 到 5 个标签页并设置顺序。</string>
+    <string name="set_tab_up">上移%1$s</string>
+    <string name="set_tab_down">下移%1$s</string>
+    <string name="set_start_tab">启动标签页</string>
+    <string name="set_start_tab_auto">自动</string>
 </resources>

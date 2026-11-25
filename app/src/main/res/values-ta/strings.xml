@@ -1297,4 +1297,10 @@
     <string name="home_empty_body">ஒரு மேக்னெட், இணைப்பு அல்லது டோரண்ட் கோப்பைச் சேர்க்கவும். நீங்கள் பார்ப்பவை, கேட்பவை, பதிவிறக்குபவை இங்கே தோன்றும்.</string>
     <string name="home_empty_add">ஏதாவது சேர்க்கவும்</string>
     <string name="set_home_rows">முகப்பின் வரிசைகள்</string>
+    <string name="set_tabs">தாவல்கள்</string>
+    <string name="set_tabs_detail">கீழ் பட்டிக்கு 2 முதல் 5 தாவல்களைத் தேர்ந்தெடுத்து வரிசையை அமைக்கவும்.</string>
+    <string name="set_tab_up">%1$s ஐ மேலே நகர்த்து</string>
+    <string name="set_tab_down">%1$s ஐ கீழே நகர்த்து</string>
+    <string name="set_start_tab">தொடக்கத் தாவல்</string>
+    <string name="set_start_tab_auto">தானியங்கி</string>
 </resources>

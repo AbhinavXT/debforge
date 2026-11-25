@@ -1297,4 +1297,10 @@
     <string name="home_empty_body">Füge einen Magnet-Link, einen Link oder eine Torrent-Datei hinzu. Was du schaust, hörst und herunterlädst, erscheint hier.</string>
     <string name="home_empty_add">Etwas hinzufügen</string>
     <string name="set_home_rows">Zeilen auf Start</string>
+    <string name="set_tabs">Tabs</string>
+    <string name="set_tabs_detail">Wähle 2 bis 5 Tabs für die untere Leiste und lege ihre Reihenfolge fest.</string>
+    <string name="set_tab_up">%1$s nach oben</string>
+    <string name="set_tab_down">%1$s nach unten</string>
+    <string name="set_start_tab">Start-Tab</string>
+    <string name="set_start_tab_auto">Automatisch</string>
 </resources>

@@ -1417,4 +1417,10 @@
     <string name="home_empty_body">Добавьте magnet-ссылку, ссылку или торрент-файл. Здесь появится то, что вы смотрите, слушаете и скачиваете.</string>
     <string name="home_empty_add">Добавить</string>
     <string name="set_home_rows">Блоки на главной</string>
+    <string name="set_tabs">Вкладки</string>
+    <string name="set_tabs_detail">Выберите от 2 до 5 вкладок для нижней панели и их порядок.</string>
+    <string name="set_tab_up">Переместить «%1$s» выше</string>
+    <string name="set_tab_down">Переместить «%1$s» ниже</string>
+    <string name="set_start_tab">Начальная вкладка</string>
+    <string name="set_start_tab_auto">Автоматически</string>
 </resources>

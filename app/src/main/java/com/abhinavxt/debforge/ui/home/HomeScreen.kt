@@ -130,22 +130,26 @@ import com.abhinavxt.debforge.ui.video.VideoModeEvent
 import com.abhinavxt.debforge.ui.video.WatchViewModel
 import com.abhinavxt.debforge.ui.video.rememberVideoPulse
 
-private enum class HomeTab(
+internal enum class HomeTab(
+    /** Also the tab's stable key in [TabConfig] and in settings. */
     val route: String,
     @StringRes val labelRes: Int,
     val icon: ImageVector,
-    val selectedIcon: ImageVector,
-    /** In the phone's bottom bar; the rest are reached from header icons (the rail lists all). */
-    val inBar: Boolean = true
+    val selectedIcon: ImageVector
 ) {
     Home("home", R.string.tab_home, Icons.Outlined.Home, Icons.Filled.Home),
     Browse("browse", R.string.tab_library, Icons.Outlined.VideoLibrary, Icons.Filled.VideoLibrary),
     Search("search", R.string.tab_search, Icons.Outlined.Search, Icons.Filled.Search),
     YouTube("youtube", R.string.tab_youtube, Icons.Outlined.PlayCircle, Icons.Filled.PlayCircle),
-    Browser("browser", R.string.tab_browser, Icons.Outlined.Public, Icons.Filled.Public, inBar = false),
+    Browser("browser", R.string.tab_browser, Icons.Outlined.Public, Icons.Filled.Public),
     Media("media", R.string.tab_media, Icons.Outlined.PermMedia, Icons.Filled.PermMedia),
-    Active("active", R.string.tab_downloads, Icons.Outlined.Download, Icons.Filled.Download, inBar = false),
-    Settings("settings", R.string.tab_settings, Icons.Outlined.Settings, Icons.Filled.Settings, inBar = false)
+    Active("active", R.string.tab_downloads, Icons.Outlined.Download, Icons.Filled.Download),
+    Settings("settings", R.string.tab_settings, Icons.Outlined.Settings, Icons.Filled.Settings);
+
+    companion object {
+        /** The tab with this [TabConfig] key; null for an unknown one. */
+        fun of(key: String) = entries.firstOrNull { it.route == key }
+    }
 }
 
 /** Play history: pushed from the Media tab header, so it is a route but not a tab. */
@@ -167,9 +171,17 @@ private fun isPushedRoute(route: String?) =
  * means the foreground download notification won't be visible — the engine
  * still runs.
  */
-@OptIn(ExperimentalLayoutApi::class, ExperimentalSharedTransitionApi::class)
 @Composable
 fun HomeScreen(signedIn: Boolean) {
+    val shell: ShellViewModel = hiltViewModel()
+    // The start tab is decided once from what is stored, so the shell waits for the (fast) settings read.
+    val prefs by shell.navPrefs.collectAsStateWithLifecycle()
+    HomeShell(signedIn, prefs ?: return)
+}
+
+@OptIn(ExperimentalLayoutApi::class, ExperimentalSharedTransitionApi::class)
+@Composable
+private fun HomeShell(signedIn: Boolean, prefs: NavPrefs) {
     NotificationPermissionRequest()
 
     // Scoped to Home so it outlives tab switches; it also receives magnets /
@@ -330,7 +342,11 @@ fun HomeScreen(signedIn: Boolean) {
     LaunchedEffect(waitingForService) { if (waitingForService != null) connect() }
 
     // Decided once: signing in later shouldn't yank the user off the tab they're on.
-    val startTab = remember { if (signedIn) HomeTab.Browse else HomeTab.Browser }
+    val startTab = remember { HomeTab.of(TabConfig.startTab(prefs.storedStart, signedIn)) ?: HomeTab.Browse }
+    // Tabs left out of the bar stay reachable through go(): the bar then just highlights nothing.
+    val barTabs = prefs.bar.mapNotNull(HomeTab::of)
+    // Read inside the movable content below, which is built once.
+    val currentPrefs by rememberUpdatedState(prefs)
     // The Library's view-model is shared with Home (its newest titles, Continue watching and Coming up are
     // the Library's own data), so the list is read once. Held by the activity: both tabs get the same one.
     val activity = LocalContext.current as androidx.activity.ComponentActivity
@@ -356,7 +372,7 @@ fun HomeScreen(signedIn: Boolean) {
                 composable(HomeTab.Home.route) {
                     HomePageScreen(
                         browse = libraryViewModel(),
-                        shortcuts = HomeTab.entries.filter { !it.inBar && it != HomeTab.Active && it != HomeTab.Settings }
+                        shortcuts = TabConfig.hidden(currentPrefs.bar).filter { it != TabConfig.HOME }.mapNotNull(HomeTab::of)
                             .map { tab -> HomeShortcut(tab.labelRes, tab.icon) { go(tab) } },
                         onAdd = { addViewModel.open() },
                         onOpenDownloads = { push(HomeTab.Active) },
@@ -556,7 +572,7 @@ fun HomeScreen(signedIn: Boolean) {
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                    HomeTab.entries.sortedBy { it == HomeTab.Settings }.forEach { tab ->
+                    (TabConfig.rail(prefs.bar).mapNotNull(HomeTab::of) + HomeTab.Active + HomeTab.Settings).forEach { tab ->
                         val selected = current?.hierarchy?.any { it.route == tab.route } == true ||
                             (tab == HomeTab.Media && current?.route == HISTORY_ROUTE)
                         val railSource = remember { MutableInteractionSource() }
@@ -584,7 +600,7 @@ fun HomeScreen(signedIn: Boolean) {
                         videoMini()
                         miniPlayer()
                         NavigationBar(containerColor = MaterialTheme.colorScheme.surfaceContainer) {
-                            HomeTab.entries.filter { it.inBar }.forEach { tab ->
+                            barTabs.forEach { tab ->
                                 val selected = barRoute == tab.route
                                 val barSource = remember { MutableInteractionSource() }
                                 NavigationBarItem(

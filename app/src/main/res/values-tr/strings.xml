@@ -1297,4 +1297,10 @@
     <string name="home_empty_body">Bir magnet, bağlantı veya torrent dosyası ekleyin. İzlediğiniz, dinlediğiniz ve indirdiğiniz her şey burada görünecek.</string>
     <string name="home_empty_add">Bir şey ekle</string>
     <string name="set_home_rows">Ana sayfa satırları</string>
+    <string name="set_tabs">Sekmeler</string>
+    <string name="set_tabs_detail">Alt çubuk için 2 ile 5 arasında sekme seçin ve sırasını belirleyin.</string>
+    <string name="set_tab_up">%1$s öğesini yukarı taşı</string>
+    <string name="set_tab_down">%1$s öğesini aşağı taşı</string>
+    <string name="set_start_tab">Başlangıç sekmesi</string>
+    <string name="set_start_tab_auto">Otomatik</string>
 </resources>

@@ -1238,4 +1238,10 @@
     <string name="home_empty_body">Tambahkan tautan magnet, tautan, atau file torrent. Yang Anda tonton, dengarkan, dan unduh akan muncul di sini.</string>
     <string name="home_empty_add">Tambahkan sesuatu</string>
     <string name="set_home_rows">Baris di Beranda</string>
+    <string name="set_tabs">Tab</string>
+    <string name="set_tabs_detail">Pilih 2 hingga 5 tab untuk bilah bawah dan atur urutannya.</string>
+    <string name="set_tab_up">Naikkan %1$s</string>
+    <string name="set_tab_down">Turunkan %1$s</string>
+    <string name="set_start_tab">Tab awal</string>
+    <string name="set_start_tab_auto">Otomatis</string>
 </resources>

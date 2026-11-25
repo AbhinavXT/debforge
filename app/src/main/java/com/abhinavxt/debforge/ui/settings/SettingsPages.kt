@@ -52,6 +52,7 @@ import com.abhinavxt.debforge.download.ScheduleAlarm
 import com.abhinavxt.debforge.download.StorageAccess
 import com.abhinavxt.debforge.ui.browse.formatSize
 import com.abhinavxt.debforge.domain.GridSize
+import com.abhinavxt.debforge.ui.home.TabConfig
 import com.abhinavxt.debforge.ui.homepage.HomeRow
 import com.abhinavxt.debforge.ui.homepage.icon
 import com.abhinavxt.debforge.ui.homepage.labelRes
@@ -75,7 +76,7 @@ internal fun LazyListScope.settingsPage(category: SettingsCategory, viewModel: S
     when (category) {
         SettingsCategory.ACCOUNT -> accountItems(viewModel, actions)
         SettingsCategory.APPEARANCE -> appearanceItems(viewModel)
-        SettingsCategory.HOME -> { homeItems(viewModel, actions); homeRowsItem(viewModel) }
+        SettingsCategory.HOME -> { homeItems(viewModel, actions); tabsItem(viewModel); homeRowsItem(viewModel) }
         SettingsCategory.DOWNLOADS -> downloadsItems(viewModel, actions)
         SettingsCategory.VIDEO -> videoItems(viewModel)
         SettingsCategory.AUDIO -> audioItems(viewModel)
@@ -221,6 +222,21 @@ private fun LazyListScope.homeItems(viewModel: SettingsViewModel, actions: Setti
                 onChange = viewModel::setClipboardOffer
             )
         }
+    }
+}
+
+private fun LazyListScope.tabsItem(viewModel: SettingsViewModel) {
+    item(key = "tabs") {
+        val stored by viewModel.tabsStored.collectAsStateWithLifecycle()
+        val hasSource by viewModel.hasSearchSource.collectAsStateWithLifecycle()
+        val start by viewModel.startTab.collectAsStateWithLifecycle()
+        TabsCard(
+            bar = TabConfig.bar(stored, hasSource),
+            start = start,
+            onBar = viewModel::setTabs,
+            onStart = viewModel::setStartTab,
+            modifier = Modifier.padding(top = 20.dp)
+        )
     }
 }
 
