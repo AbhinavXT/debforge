@@ -153,6 +153,14 @@ class TorBoxQueuedTest {
         assertTrue(queuedPageLimits.all { it in 1..100 })
     }
 
+    @Test fun largeQueueIsReadCompletelyWhateverThePageSize() = runBlocking {
+        repeat(250) { queued += q(1000L + it, "h$it") }
+        repeat(3) {
+            assertEquals(250, provider.listProcessing().count { it.status == "queued" })
+            later(31)
+        }
+    }
+
     @Test fun unknownEtaIsHidden() = runBlocking {
         torrents += TbItemDto(1, "a", 1, null, false, false, null, eta = 8_640_000.0, downloadState = "checking")
         torrents += TbItemDto(2, "b", 1, null, false, false, null, eta = 90.0, downloadState = "downloading")

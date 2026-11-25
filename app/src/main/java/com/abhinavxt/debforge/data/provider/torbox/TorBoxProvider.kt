@@ -229,7 +229,7 @@ class TorBoxProvider @Inject constructor(
         val out = ArrayList<TbQueuedDto>()
         // TorBox ignores bypass_cache here and caches each exact query for minutes (measured 2026-11-26): a
         // page size it has not seen lately is always answered fresh.
-        val limit = FRESH_LIMIT - queuedReads.getAndIncrement() % QUEUED_LIMITS
+        val limit = FRESH_LIMIT - Math.floorMod(queuedReads.getAndIncrement(), QUEUED_LIMITS)
         var offset = 0
         while (offset < MAX_QUEUED) {
             val env = api.queued(type, offset, limit, true)
@@ -745,9 +745,9 @@ class TorBoxProvider @Inject constructor(
         const val QUEUED_PREFIX = "queued:"
         val QUEUED_TYPES = listOf("torrent", "usenet", "webdl")
         /** The queue is read at most this often (three requests), unless we just changed it. */
+        const val QUEUED_REUSE_MS = 30_000L
         /** qBittorrent's "unknown" ETA (100 days), which TorBox passes on. */
         const val UNKNOWN_ETA_S = 8_640_000L
-        const val QUEUED_REUSE_MS = 30_000L
         /** Page sizes cycled through, see fetchQueued: far more reads than fit in the cache time. */
         const val QUEUED_LIMITS = 90
         const val QUEUED_TIMEOUT_MS = 10_000L
