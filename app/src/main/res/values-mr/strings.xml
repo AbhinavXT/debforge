@@ -426,8 +426,13 @@
     <string name="widget_progress">%2$s पैकी %1$s · %3$d%%</string>
     <string name="tile_label">डाउनलोड</string>
     <string name="tile_idle">काहीही डाउनलोड होत नाही</string>
+    <string name="tile_audio_label">DebForge ऑडिओ</string>
+    <string name="tile_audio_playing">सुरू आहे</string>
+    <string name="tile_audio_paused">थांबवले</string>
     <string name="shortcut_add">जोडा</string>
     <string name="shortcut_resume_all">सर्व पुन्हा सुरू करा</string>
+    <string name="shortcut_continue_listening">ऐकणे सुरू ठेवा</string>
+    <string name="shortcut_search">शोधा</string>
     <string name="clipboard_offer">कॉपी केलेली लिंक सापडली. ती तुमच्या सेवेत जोडायची?</string>
     <string name="set_clipboard_offer">कॉपी केलेल्या लिंक सुचवा</string>
     <string name="set_clipboard_offer_detail">मॅग्नेट किंवा .torrent लिंक कॉपी करून DebForge उघडल्यावर ती जोडण्याचे सुचवा. इतर मजकूर दुर्लक्षित केला जातो.</string>
@@ -615,6 +620,12 @@
     <string name="set_player_art_color_detail">ऑडिओ प्लेयरला ट्रॅकच्या आर्टवर्कचा रंग द्या.</string>
     <string name="set_skip_length">स्किपचा कालावधी</string>
     <string name="set_skip_length_detail">ऑडिओ प्लेयरची मागे आणि पुढे जाणारी बटणे किती सेकंद सरकतात.</string>
+    <string name="set_notification_buttons">सूचना बटणे</string>
+    <string name="set_notification_buttons_detail">संगीताच्या सूचनेत कोणती दोन अतिरिक्त बटणे दिसावीत.</string>
+    <string name="set_notif_skip">मागे आणि पुढे जा</string>
+    <string name="set_notif_fav_sleep">आवडते आणि स्लीप टायमर</string>
+    <string name="set_notif_fav_speed">आवडते आणि गती</string>
+    <string name="set_notif_sleep_speed">स्लीप टायमर आणि गती</string>
     <string name="skip_seconds">%d से.</string>
     <plurals name="player_gesture_seek_n">
         <item quantity="one">%d सेकंद</item>
@@ -1299,6 +1310,10 @@
     <string name="player_autosubs_undo">पूर्ववत करा</string>
     <string name="set_even_out_volume">आवाज समान करा</string>
     <string name="set_even_out_volume_detail">मोठ्या आणि हळू गाण्यांचा आवाज सारखा ठेवतो.</string>
+    <string name="set_keep_playing_swiped">स्वाइप केल्यावरही सुरू ठेवा</string>
+    <string name="set_keep_playing_swiped_detail">अलीकडील अॅप्समधून DebForge काढल्यावरही संगीत सूचनेसह सुरू राहते. व्हिडिओ मात्र थांबतो.</string>
+    <string name="set_skip_silence">शांतता वगळा</string>
+    <string name="set_skip_silence_detail">ऑडिओमधील शांत भाग वगळतो.</string>
     <string name="media_extract">एक्सट्रॅक्ट करा</string>
     <string name="extract_title">%1$s एक्सट्रॅक्ट होत आहे</string>
     <string name="extract_progress">आतापर्यंत एक्सट्रॅक्ट झालेल्या फाइल: %1$d</string>

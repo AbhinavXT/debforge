@@ -426,8 +426,13 @@
     <string name="widget_progress">%2$s-இல் %1$s · %3$d%%</string>
     <string name="tile_label">பதிவிறக்கங்கள்</string>
     <string name="tile_idle">எதுவும் பதிவிறக்கமாகவில்லை</string>
+    <string name="tile_audio_label">DebForge ஆடியோ</string>
+    <string name="tile_audio_playing">இயங்குகிறது</string>
+    <string name="tile_audio_paused">இடைநிறுத்தம்</string>
     <string name="shortcut_add">சேர்</string>
     <string name="shortcut_resume_all">அனைத்தையும் தொடர்</string>
+    <string name="shortcut_continue_listening">கேட்பதைத் தொடர்க</string>
+    <string name="shortcut_search">தேடு</string>
     <string name="clipboard_offer">நகலெடுத்த இணைப்பு கிடைத்தது. உங்கள் சேவையில் சேர்க்கவா?</string>
     <string name="set_clipboard_offer">நகலெடுத்த இணைப்புகளைப் பரிந்துரை</string>
     <string name="set_clipboard_offer_detail">மேக்னெட் அல்லது .torrent இணைப்பை நகலெடுத்து DebForge-ஐத் திறக்கும்போது அதைச் சேர்க்கப் பரிந்துரைக்கும். மற்ற உரை புறக்கணிக்கப்படும்.</string>
@@ -615,6 +620,12 @@
     <string name="set_player_art_color_detail">ஆடியோ பிளேயரை டிராக்கின் ஆர்ட்வொர்க் நிறத்தில் வண்ணமாக்கவும்.</string>
     <string name="set_skip_length">தவிர்க்கும் நீளம்</string>
     <string name="set_skip_length_detail">ஆடியோ பிளேயரின் பின்/முன் பொத்தான்கள் எத்தனை விநாடிகள் தாவும்.</string>
+    <string name="set_notification_buttons">அறிவிப்புப் பொத்தான்கள்</string>
+    <string name="set_notification_buttons_detail">இசை அறிவிப்பில் எந்த இரண்டு கூடுதல் பொத்தான்கள் காட்டப்பட வேண்டும்.</string>
+    <string name="set_notif_skip">பின்னும் முன்னும் செல்</string>
+    <string name="set_notif_fav_sleep">பிடித்தது மற்றும் தூக்க நேரங்காட்டி</string>
+    <string name="set_notif_fav_speed">பிடித்தது மற்றும் வேகம்</string>
+    <string name="set_notif_sleep_speed">தூக்க நேரங்காட்டி மற்றும் வேகம்</string>
     <string name="skip_seconds">%d வி</string>
     <plurals name="player_gesture_seek_n">
         <item quantity="one">%d விநாடி</item>
@@ -1299,6 +1310,10 @@
     <string name="player_autosubs_undo">செயல்தவிர்</string>
     <string name="set_even_out_volume">ஒலியளவை சமப்படுத்து</string>
     <string name="set_even_out_volume_detail">சத்தமான மற்றும் மெதுவான பாடல்களின் ஒலியளவை சமமாக்குகிறது.</string>
+    <string name="set_keep_playing_swiped">ஸ்வைப் செய்தாலும் தொடர்க</string>
+    <string name="set_keep_playing_swiped_detail">சமீபத்திய பயன்பாடுகளிலிருந்து DebForge ஐ நீக்கினாலும் இசை அறிவிப்புடன் தொடரும். வீடியோ இன்னும் நிற்கும்.</string>
+    <string name="set_skip_silence">அமைதியைத் தவிர்</string>
+    <string name="set_skip_silence_detail">ஆடியோவில் அமைதியான பகுதிகளைத் தாண்டும்.</string>
     <string name="media_extract">பிரித்தெடு</string>
     <string name="extract_title">%1$s பிரித்தெடுக்கப்படுகிறது</string>
     <string name="extract_progress">இதுவரை பிரித்தெடுத்த கோப்புகள்: %1$d</string>

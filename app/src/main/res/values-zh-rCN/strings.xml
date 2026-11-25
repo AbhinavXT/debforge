@@ -411,8 +411,13 @@
     <string name="widget_progress">%1$s / %2$s · %3$d%%</string>
     <string name="tile_label">下载</string>
     <string name="tile_idle">没有正在下载的内容</string>
+    <string name="tile_audio_label">DebForge 音频</string>
+    <string name="tile_audio_playing">播放中</string>
+    <string name="tile_audio_paused">已暂停</string>
     <string name="shortcut_add">添加</string>
     <string name="shortcut_resume_all">全部继续</string>
+    <string name="shortcut_continue_listening">继续收听</string>
+    <string name="shortcut_search">搜索</string>
     <string name="clipboard_offer">发现已复制的链接。添加到你的服务？</string>
     <string name="set_clipboard_offer">提示已复制的链接</string>
     <string name="set_clipboard_offer_detail">打开 DebForge 时如果复制了磁力链接或 .torrent 链接，会提示添加。其他文本会被忽略。</string>
@@ -585,6 +590,12 @@
     <string name="set_player_art_color_detail">用曲目封面的颜色为音频播放器着色。</string>
     <string name="set_skip_length">跳过时长</string>
     <string name="set_skip_length_detail">音频播放器的快退和快进按钮每次跳过的秒数。</string>
+    <string name="set_notification_buttons">通知按钮</string>
+    <string name="set_notification_buttons_detail">音乐通知中显示的两个额外按钮。</string>
+    <string name="set_notif_skip">快退和快进</string>
+    <string name="set_notif_fav_sleep">收藏和睡眠定时</string>
+    <string name="set_notif_fav_speed">收藏和速度</string>
+    <string name="set_notif_sleep_speed">睡眠定时和速度</string>
     <string name="skip_seconds">%d 秒</string>
     <plurals name="player_gesture_seek_n">
         <item quantity="other">%d 秒</item>
@@ -1240,6 +1251,10 @@
     <string name="player_autosubs_undo">撤销</string>
     <string name="set_even_out_volume">均衡音量</string>
     <string name="set_even_out_volume_detail">让音量大和音量小的曲目听起来响度接近。</string>
+    <string name="set_keep_playing_swiped">滑掉后继续播放</string>
+    <string name="set_keep_playing_swiped_detail">从最近任务中滑掉 DebForge 后，音乐会带着通知继续播放。视频仍会停止。</string>
+    <string name="set_skip_silence">跳过静音</string>
+    <string name="set_skip_silence_detail">跳过音频中的静音片段。</string>
     <string name="media_extract">解压</string>
     <string name="extract_title">正在解压 %1$s</string>
     <string name="extract_progress">已解压文件数：%1$d</string>

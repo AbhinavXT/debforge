@@ -411,8 +411,13 @@
     <string name="widget_progress">%1$s dari %2$s · %3$d%%</string>
     <string name="tile_label">Unduhan</string>
     <string name="tile_idle">Tidak ada unduhan</string>
+    <string name="tile_audio_label">Audio DebForge</string>
+    <string name="tile_audio_playing">Memutar</string>
+    <string name="tile_audio_paused">Dijeda</string>
     <string name="shortcut_add">Tambah</string>
     <string name="shortcut_resume_all">Lanjutkan semua</string>
+    <string name="shortcut_continue_listening">Lanjutkan mendengarkan</string>
+    <string name="shortcut_search">Cari</string>
     <string name="clipboard_offer">Tautan yang disalin ditemukan. Tambahkan ke layanan Anda?</string>
     <string name="set_clipboard_offer">Tawarkan tautan yang disalin</string>
     <string name="set_clipboard_offer_detail">Saat membuka DebForge dengan magnet atau tautan .torrent tersalin, tawarkan untuk menambahkannya. Teks lain diabaikan.</string>
@@ -585,6 +590,12 @@
     <string name="set_player_art_color_detail">Warnai pemutar audio dengan warna sampul lagu.</string>
     <string name="set_skip_length">Durasi lompatan</string>
     <string name="set_skip_length_detail">Seberapa jauh tombol mundur dan maju pada pemutar audio melompat.</string>
+    <string name="set_notification_buttons">Tombol notifikasi</string>
+    <string name="set_notification_buttons_detail">Dua tombol tambahan yang ditampilkan notifikasi musik.</string>
+    <string name="set_notif_skip">Mundur dan maju</string>
+    <string name="set_notif_fav_sleep">Favorit dan timer tidur</string>
+    <string name="set_notif_fav_speed">Favorit dan kecepatan</string>
+    <string name="set_notif_sleep_speed">Timer tidur dan kecepatan</string>
     <string name="skip_seconds">%d dtk</string>
     <plurals name="player_gesture_seek_n">
         <item quantity="other">%d detik</item>
@@ -1240,6 +1251,10 @@
     <string name="player_autosubs_undo">Urungkan</string>
     <string name="set_even_out_volume">Ratakan volume</string>
     <string name="set_even_out_volume_detail">Menyamakan volume lagu yang keras dan pelan.</string>
+    <string name="set_keep_playing_swiped">Tetap putar saat digeser</string>
+    <string name="set_keep_playing_swiped_detail">Musik tetap diputar dengan notifikasinya setelah DebForge digeser dari aplikasi terbaru. Video tetap berhenti.</string>
+    <string name="set_skip_silence">Lewati keheningan</string>
+    <string name="set_skip_silence_detail">Melompati bagian senyap pada audio.</string>
     <string name="media_extract">Ekstrak</string>
     <string name="extract_title">Mengekstrak %1$s</string>
     <string name="extract_progress">File yang sudah diekstrak: %1$d</string>

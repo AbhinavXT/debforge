@@ -456,8 +456,13 @@
     <string name="widget_progress">%1$s из %2$s · %3$d%%</string>
     <string name="tile_label">Загрузки</string>
     <string name="tile_idle">Ничего не загружается</string>
+    <string name="tile_audio_label">Аудио DebForge</string>
+    <string name="tile_audio_playing">Играет</string>
+    <string name="tile_audio_paused">Пауза</string>
     <string name="shortcut_add">Добавить</string>
     <string name="shortcut_resume_all">Возобновить все</string>
+    <string name="shortcut_continue_listening">Продолжить слушать</string>
+    <string name="shortcut_search">Поиск</string>
     <string name="clipboard_offer">Найдена скопированная ссылка. Добавить в сервис?</string>
     <string name="set_clipboard_offer">Предлагать скопированные ссылки</string>
     <string name="set_clipboard_offer_detail">Если открыть DebForge со скопированной магнет- или .torrent-ссылкой, приложение предложит её добавить. Остальной текст игнорируется.</string>
@@ -675,6 +680,12 @@
     <string name="set_player_art_color_detail">Окрашивать аудиоплеер в цвета обложки трека.</string>
     <string name="set_skip_length">Длина перемотки</string>
     <string name="set_skip_length_detail">На сколько секунд перематывают кнопки назад и вперёд в аудиоплеере.</string>
+    <string name="set_notification_buttons">Кнопки уведомления</string>
+    <string name="set_notification_buttons_detail">Какие две дополнительные кнопки показывает уведомление музыки.</string>
+    <string name="set_notif_skip">Назад и вперёд</string>
+    <string name="set_notif_fav_sleep">Избранное и таймер сна</string>
+    <string name="set_notif_fav_speed">Избранное и скорость</string>
+    <string name="set_notif_sleep_speed">Таймер сна и скорость</string>
     <string name="skip_seconds">%d с</string>
     <plurals name="player_gesture_seek_n">
         <item quantity="one">%d секунда</item>
@@ -1417,6 +1428,10 @@
     <string name="player_autosubs_undo">Отменить</string>
     <string name="set_even_out_volume">Выравнивать громкость</string>
     <string name="set_even_out_volume_detail">Сближает громкость тихих и громких треков.</string>
+    <string name="set_keep_playing_swiped">Играть после смахивания</string>
+    <string name="set_keep_playing_swiped_detail">Музыка продолжает играть с уведомлением, если смахнуть DebForge из недавних. Видео всё равно останавливается.</string>
+    <string name="set_skip_silence">Пропуск тишины</string>
+    <string name="set_skip_silence_detail">Пропускает тихие участки в аудио.</string>
     <string name="media_extract">Извлечь</string>
     <string name="extract_title">Извлечение: %1$s</string>
     <string name="extract_progress">Извлечено файлов: %1$d</string>

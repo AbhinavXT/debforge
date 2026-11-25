@@ -71,6 +71,9 @@ class SettingsStore @Inject constructor(
     private val keyHistoryPaused =booleanPreferencesKey("history_paused")
     private val keyStorageLimitGb = intPreferencesKey("storage_limit_gb")
     private val keyAudioSkipSeconds = intPreferencesKey("audio_skip_seconds")
+    private val keyNotificationButtons = stringPreferencesKey("audio_notification_buttons")
+    private val keyKeepPlayingSwiped = booleanPreferencesKey("audio_keep_playing_swiped")
+    private val keySkipSilence = booleanPreferencesKey("audio_skip_silence")
     private val keyPlayerGestures = booleanPreferencesKey("player_gestures")
     private val keyPlayerShowRemaining = booleanPreferencesKey("player_show_remaining")
     private val keyAudioLanguage = stringPreferencesKey("player_audio_language")
@@ -265,6 +268,20 @@ class SettingsStore @Inject constructor(
     val audioSkipSecondsFlow: Flow<Int> = context.settingsDataStore.data.map { com.abhinavxt.debforge.player.validSkipSeconds(it[keyAudioSkipSeconds]) }
     suspend fun setAudioSkipSeconds(v: Int) = context.settingsDataStore.edit { it[keyAudioSkipSeconds] = com.abhinavxt.debforge.player.validSkipSeconds(v) }
 
+    /** Audio media notification: which two extra buttons it shows. */
+    val notificationButtonsFlow: Flow<com.abhinavxt.debforge.player.NotificationButtons> =
+        context.settingsDataStore.data.map { com.abhinavxt.debforge.player.notificationButtonsOf(it[keyNotificationButtons]) }
+    suspend fun setNotificationButtons(v: com.abhinavxt.debforge.player.NotificationButtons) =
+        context.settingsDataStore.edit { it[keyNotificationButtons] = v.name }
+
+    /** Audio: keep playing (with its notification) when the app is swiped from recents. Off by default. */
+    val keepPlayingSwipedFlow: Flow<Boolean> = context.settingsDataStore.data.map { it[keyKeepPlayingSwiped] ?: false }
+    suspend fun setKeepPlayingSwiped(v: Boolean) = context.settingsDataStore.edit { it[keyKeepPlayingSwiped] = v }
+
+    /** Audio: skip silent stretches. Off by default. */
+    val skipSilenceFlow: Flow<Boolean> = context.settingsDataStore.data.map { it[keySkipSilence] ?: false }
+    suspend fun setSkipSilence(v: Boolean) = context.settingsDataStore.edit { it[keySkipSilence] = v }
+
     /** Player: the right-hand time shows what's left instead of the length (tap it to switch). */
     val playerShowRemainingFlow: Flow<Boolean> = context.settingsDataStore.data.map { it[keyPlayerShowRemaining] ?: false }
     suspend fun setPlayerShowRemaining(v: Boolean) = context.settingsDataStore.edit { it[keyPlayerShowRemaining] = v }
@@ -401,12 +418,12 @@ class SettingsStore @Inject constructor(
         keyDynamicColor, keyPosterView, keyOrganize, keyWifiOnly, keyChargingOnly,
         keyScheduleOn, keyAutoUpdate, keyRemoveAfter, keyPureBlack, keyShowExtras, keyClipboardOffer, keyAdBlock,
         keyInternalPlayer, keyAutoplayNext, keyPip, keyAutoSkipIntro, keySponsorBlock, keyYouTubeAutoplay, keyNightMode, keyEvenOutVolume, keyStreamPreviews,
-        keyPlayerArtColor, keyPlayerGestures, keyPlayerShowRemaining, keyPlayerBackground, keyHistoryPaused, keyVideoFullScreen,
+        keyPlayerArtColor, keyPlayerGestures, keyPlayerShowRemaining, keyPlayerBackground, keyKeepPlayingSwiped, keySkipSilence, keyHistoryPaused, keyVideoFullScreen,
         keyFetchSubsOnDownload
     )
     /** May be blank on purpose (nothing avoided, no site left unblocked). */
     private val backupStrings get() = listOf(keyReleaseAvoid, keyReleasePrefer, keyAdBlockOffSites, keyYouTubeQuality,
-        keyAudioLanguage, keySubtitleLanguage, keySubtitleStyle, keySponsorCategories, keyOnlineSubsWhenNone, keyGridSize, keyHomeRowsHidden, keyTabs, keyStartTab)
+        keyAudioLanguage, keySubtitleLanguage, keySubtitleStyle, keyNotificationButtons, keySponsorCategories, keyOnlineSubsWhenNone, keyGridSize, keyHomeRowsHidden, keyTabs, keyStartTab)
     private val backupInts get() = listOf(keySortOrder, keyThemeMode, keyScheduleStart, keyScheduleEnd, keySpeedLimit, keyAutoDeleteDays,
         keyExpiryReminder, keyAudioSkipSeconds, keyStorageLimitGb)
 

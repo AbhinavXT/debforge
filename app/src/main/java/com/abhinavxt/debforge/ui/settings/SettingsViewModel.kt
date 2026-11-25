@@ -269,6 +269,21 @@ class SettingsViewModel @Inject constructor(
     )
     fun setAudioSkipSeconds(v: Int) = viewModelScope.launch { settingsStore.setAudioSkipSeconds(v) }
 
+    val notificationButtons: StateFlow<com.abhinavxt.debforge.player.NotificationButtons> = settingsStore.notificationButtonsFlow.stateIn(
+        viewModelScope, SharingStarted.WhileSubscribed(5_000), com.abhinavxt.debforge.player.NotificationButtons.SKIP
+    )
+    fun setNotificationButtons(v: com.abhinavxt.debforge.player.NotificationButtons) = viewModelScope.launch { settingsStore.setNotificationButtons(v) }
+
+    val keepPlayingSwiped: StateFlow<Boolean> = settingsStore.keepPlayingSwipedFlow.stateIn(
+        viewModelScope, SharingStarted.WhileSubscribed(5_000), false
+    )
+    fun setKeepPlayingSwiped(v: Boolean) = viewModelScope.launch { settingsStore.setKeepPlayingSwiped(v) }
+
+    val skipSilence: StateFlow<Boolean> = settingsStore.skipSilenceFlow.stateIn(
+        viewModelScope, SharingStarted.WhileSubscribed(5_000), false
+    )
+    fun setSkipSilence(v: Boolean) = viewModelScope.launch { settingsStore.setSkipSilence(v) }
+
     val playerGestures: StateFlow<Boolean> = settingsStore.playerGesturesFlow.stateIn(
         viewModelScope, SharingStarted.WhileSubscribed(5_000), true
     )

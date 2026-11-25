@@ -441,8 +441,13 @@
     <string name="widget_progress">%1$s de %2$s · %3$d%%</string>
     <string name="tile_label">Descargas</string>
     <string name="tile_idle">No se descarga nada</string>
+    <string name="tile_audio_label">Audio de DebForge</string>
+    <string name="tile_audio_playing">Reproduciendo</string>
+    <string name="tile_audio_paused">En pausa</string>
     <string name="shortcut_add">Añadir</string>
     <string name="shortcut_resume_all">Reanudar todo</string>
+    <string name="shortcut_continue_listening">Seguir escuchando</string>
+    <string name="shortcut_search">Buscar</string>
     <string name="clipboard_offer">Enlace copiado. ¿Añadirlo a tu servicio?</string>
     <string name="set_clipboard_offer">Ofrecer enlaces copiados</string>
     <string name="set_clipboard_offer_detail">Al abrir DebForge con un magnet o enlace .torrent copiado, ofrece añadirlo. El resto del texto se ignora.</string>
@@ -645,6 +650,12 @@
     <string name="set_player_art_color_detail">Teñir el reproductor de audio con los colores de la carátula.</string>
     <string name="set_skip_length">Duración del salto</string>
     <string name="set_skip_length_detail">Cuánto saltan los botones de retroceso y avance del reproductor de audio.</string>
+    <string name="set_notification_buttons">Botones de la notificación</string>
+    <string name="set_notification_buttons_detail">Qué dos botones extra muestra la notificación de música.</string>
+    <string name="set_notif_skip">Retroceder y avanzar</string>
+    <string name="set_notif_fav_sleep">Favorito y temporizador</string>
+    <string name="set_notif_fav_speed">Favorito y velocidad</string>
+    <string name="set_notif_sleep_speed">Temporizador y velocidad</string>
     <string name="skip_seconds">%d s</string>
     <plurals name="player_gesture_seek_n">
         <item quantity="one">%d segundo</item>
@@ -1358,6 +1369,10 @@
     <string name="player_autosubs_undo">Deshacer</string>
     <string name="set_even_out_volume">Igualar volumen</string>
     <string name="set_even_out_volume_detail">Equilibra las pistas fuertes y las suaves.</string>
+    <string name="set_keep_playing_swiped">Seguir sonando al deslizar la app</string>
+    <string name="set_keep_playing_swiped_detail">La música sigue con su notificación al quitar DebForge de las apps recientes. El vídeo se detiene igualmente.</string>
+    <string name="set_skip_silence">Omitir silencios</string>
+    <string name="set_skip_silence_detail">Salta los tramos de silencio del audio.</string>
     <string name="media_extract">Extraer</string>
     <string name="extract_title">Extrayendo %1$s</string>
     <string name="extract_progress">Archivos extraídos hasta ahora: %1$d</string>

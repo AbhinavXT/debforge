@@ -479,9 +479,30 @@ private fun LazyListScope.audioItems(viewModel: SettingsViewModel) {
     item(key = "audio") {
         val audioSkipSeconds by viewModel.audioSkipSeconds.collectAsStateWithLifecycle()
         val evenOutVolume by viewModel.evenOutVolume.collectAsStateWithLifecycle()
+        val notificationButtons by viewModel.notificationButtons.collectAsStateWithLifecycle()
+        val keepPlayingSwiped by viewModel.keepPlayingSwiped.collectAsStateWithLifecycle()
+        val skipSilence by viewModel.skipSilence.collectAsStateWithLifecycle()
         val playerArtColor by viewModel.playerArtColor.collectAsStateWithLifecycle()
         SectionCard(modifier = Modifier.padding(top = 8.dp)) {
             SkipLengthRow(current = audioSkipSeconds, onPick = viewModel::setAudioSkipSeconds)
+            RowDivider()
+            NotificationButtonsRow(current = notificationButtons, onPick = viewModel::setNotificationButtons)
+            RowDivider()
+            SwitchSettingRow(
+                icon = Icons.Rounded.FastForward,
+                title = stringResource(R.string.set_keep_playing_swiped),
+                subtitle = stringResource(R.string.set_keep_playing_swiped_detail),
+                checked = keepPlayingSwiped,
+                onChange = viewModel::setKeepPlayingSwiped
+            )
+            RowDivider()
+            SwitchSettingRow(
+                icon = Icons.Rounded.FastForward,
+                title = stringResource(R.string.set_skip_silence),
+                subtitle = stringResource(R.string.set_skip_silence_detail),
+                checked = skipSilence,
+                onChange = viewModel::setSkipSilence
+            )
             RowDivider()
             SwitchSettingRow(
                 icon = Icons.Rounded.FastForward,

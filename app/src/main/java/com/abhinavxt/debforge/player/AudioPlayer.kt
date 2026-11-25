@@ -339,6 +339,9 @@ class AudioPlayer @Inject constructor(
     private var evenOut = false
     private var evenOutEffect: NightMode? = null
 
+    /** "Skip silence": ExoPlayer's own audio processor, so it is independent of the effect above and keeps gapless playback. */
+    private var skipSilence = false
+
     private fun applyEvenOut() {
         evenOutEffect?.release()
         evenOutEffect = null
@@ -669,6 +672,7 @@ class AudioPlayer @Inject constructor(
 
     init {
         scope.launch { settings.evenOutVolumeFlow.collect { evenOut = it; applyEvenOut() } }
+        scope.launch { settings.skipSilenceFlow.collect { skipSilence = it; player?.skipSilenceEnabled = it } }
         scope.launch { settings.youTubeAutoplayFlow.collect { autoplayEnabled = it; publish(); if (it) maybeAutoplay() } }
         // Save the position now and then while playing, so a killed process loses little.
         scope.launch { playing.collectLatest { if (it) while (true) { delay(15_000); saveSpot(); savePositionNow() } } }
@@ -743,7 +747,7 @@ class AudioPlayer @Inject constructor(
         .also {
             // A downloaded video file plays here as sound only: no frames are decoded.
             it.trackSelectionParameters = it.trackSelectionParameters.buildUpon().setTrackTypeDisabled(C.TRACK_TYPE_VIDEO, true).build()
-            it.addListener(listener); player = it; applyEvenOut()
+            it.addListener(listener); player = it; applyEvenOut(); it.skipSilenceEnabled = skipSilence
         }
 
     private var playJob: Job? = null
@@ -1206,10 +1210,19 @@ class AudioPlayer @Inject constructor(
 
     fun setSpeed(speed: Float) { player?.setPlaybackSpeed(speed); queueChanged.value++ }
 
+    /** Notification button: 1x -> 1.25x -> 1.5x -> 2x. */
+    fun cycleSpeed() { player?.let { setSpeed(nextSpeed(it.playbackParameters.speed)) } }
+
+    /** Notification button: sleep timer off -> 15 -> 30 -> 60 min -> off. */
+    fun cycleSleepTimer() = setSleepTimer(nextSleepStep(sleepJob != null || sleepAtEnd, sleepStep))
+
+    private var sleepStep = 0
+
     /** [minutes] 0 = off, [SLEEP_END_OF_TRACK], or a countdown; pauses (keeps the queue) when it fires. */
     fun setSleepTimer(minutes: Int) {
         val p = player ?: return
         cancelSleep()
+        sleepStep = minutes
         if (minutes == SLEEP_END_OF_TRACK) { sleepAtEnd = true; sleepItemId = p.currentMediaItem?.mediaId; p.pauseAtEndOfMediaItems = true }
         else if (minutes > 0) {
             val ms = minutes * 60_000L

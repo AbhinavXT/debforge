@@ -426,8 +426,13 @@
     <string name="widget_progress">%2$s में से %1$s · %3$d%%</string>
     <string name="tile_label">डाउनलोड</string>
     <string name="tile_idle">कुछ डाउनलोड नहीं हो रहा</string>
+    <string name="tile_audio_label">DebForge ऑडियो</string>
+    <string name="tile_audio_playing">चल रहा है</string>
+    <string name="tile_audio_paused">रुका हुआ</string>
     <string name="shortcut_add">जोड़ें</string>
     <string name="shortcut_resume_all">सभी फिर शुरू करें</string>
+    <string name="shortcut_continue_listening">सुनना जारी रखें</string>
+    <string name="shortcut_search">खोजें</string>
     <string name="clipboard_offer">कॉपी किया गया लिंक मिला। इसे अपनी सेवा में जोड़ें?</string>
     <string name="set_clipboard_offer">कॉपी किए गए लिंक सुझाएँ</string>
     <string name="set_clipboard_offer_detail">मैग्नेट या .torrent लिंक कॉपी करके DebForge खोलने पर उसे जोड़ने का सुझाव दें। बाकी टेक्स्ट को अनदेखा किया जाता है।</string>
@@ -615,6 +620,12 @@
     <string name="set_player_art_color_detail">ऑडियो प्लेयर को ट्रैक के आर्टवर्क के रंग में रंगें।</string>
     <string name="set_skip_length">स्किप की अवधि</string>
     <string name="set_skip_length_detail">ऑडियो प्लेयर के पीछे और आगे वाले बटन कितने सेकंड छोड़ते हैं।</string>
+    <string name="set_notification_buttons">नोटिफ़िकेशन बटन</string>
+    <string name="set_notification_buttons_detail">संगीत नोटिफ़िकेशन में कौन-से दो अतिरिक्त बटन दिखें।</string>
+    <string name="set_notif_skip">पीछे और आगे जाएँ</string>
+    <string name="set_notif_fav_sleep">पसंदीदा और स्लीप टाइमर</string>
+    <string name="set_notif_fav_speed">पसंदीदा और गति</string>
+    <string name="set_notif_sleep_speed">स्लीप टाइमर और गति</string>
     <string name="skip_seconds">%d से.</string>
     <plurals name="player_gesture_seek_n">
         <item quantity="one">%d सेकंड</item>
@@ -1299,6 +1310,10 @@
     <string name="player_autosubs_undo">पूर्ववत करें</string>
     <string name="set_even_out_volume">वॉल्यूम बराबर करें</string>
     <string name="set_even_out_volume_detail">तेज़ और धीमे गानों की आवाज़ को एक जैसा रखता है।</string>
+    <string name="set_keep_playing_swiped">स्वाइप करने पर भी चलता रहे</string>
+    <string name="set_keep_playing_swiped_detail">DebForge को हाल के ऐप्स से हटाने पर भी संगीत नोटिफ़िकेशन के साथ चलता रहता है। वीडियो फिर भी रुक जाता है।</string>
+    <string name="set_skip_silence">चुप्पी छोड़ें</string>
+    <string name="set_skip_silence_detail">ऑडियो में शांत हिस्सों को छोड़ देता है।</string>
     <string name="media_extract">एक्सट्रैक्ट करें</string>
     <string name="extract_title">%1$s एक्सट्रैक्ट हो रही है</string>
     <string name="extract_progress">अब तक एक्सट्रैक्ट हुईं फ़ाइलें: %1$d</string>

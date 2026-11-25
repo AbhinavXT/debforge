@@ -1069,6 +1069,38 @@ internal fun SkipLengthRow(current: Int, onPick: (Int) -> Unit) {
     }
 }
 
+@Composable
+internal fun NotificationButtonsRow(current: com.abhinavxt.debforge.player.NotificationButtons, onPick: (com.abhinavxt.debforge.player.NotificationButtons) -> Unit) {
+    var open by remember { mutableStateOf(false) }
+    @Composable
+    fun label(b: com.abhinavxt.debforge.player.NotificationButtons) = stringResource(
+        when (b) {
+            com.abhinavxt.debforge.player.NotificationButtons.SKIP -> R.string.set_notif_skip
+            com.abhinavxt.debforge.player.NotificationButtons.FAVOURITE_SLEEP -> R.string.set_notif_fav_sleep
+            com.abhinavxt.debforge.player.NotificationButtons.FAVOURITE_SPEED -> R.string.set_notif_fav_speed
+            com.abhinavxt.debforge.player.NotificationButtons.SLEEP_SPEED -> R.string.set_notif_sleep_speed
+        }
+    )
+    Box {
+        SettingRow(
+            icon = Icons.Rounded.Forward10,
+            title = stringResource(R.string.set_notification_buttons),
+            subtitle = stringResource(R.string.set_notification_buttons_detail),
+            onClick = { open = true },
+            trailing = { Text(label(current), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary) }
+        )
+        DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
+            com.abhinavxt.debforge.player.NotificationButtons.entries.forEach { b ->
+                DropdownMenuItem(
+                    text = { Text(label(b)) },
+                    leadingIcon = { if (b == current) Icon(Icons.Rounded.Check, contentDescription = null) },
+                    onClick = { onPick(b); open = false }
+                )
+            }
+        }
+    }
+}
+
 private val SPEED_OPTIONS = listOf(0, 1024, 2 * 1024, 5 * 1024, 10 * 1024, 25 * 1024, 50 * 1024)
 
 @Composable

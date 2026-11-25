@@ -426,8 +426,13 @@
     <string name="widget_progress">%1$s / %2$s · %%%3$d</string>
     <string name="tile_label">İndirmeler</string>
     <string name="tile_idle">İndirilen bir şey yok</string>
+    <string name="tile_audio_label">DebForge ses</string>
+    <string name="tile_audio_playing">Çalıyor</string>
+    <string name="tile_audio_paused">Duraklatıldı</string>
     <string name="shortcut_add">Ekle</string>
     <string name="shortcut_resume_all">Tümünü sürdür</string>
+    <string name="shortcut_continue_listening">Dinlemeye devam et</string>
+    <string name="shortcut_search">Ara</string>
     <string name="clipboard_offer">Kopyalanan bağlantı bulundu. Hizmetinize eklensin mi?</string>
     <string name="set_clipboard_offer">Kopyalanan bağlantıları öner</string>
     <string name="set_clipboard_offer_detail">DebForge\'u kopyalanmış bir magnet veya .torrent bağlantısıyla açtığınızda eklemeyi önerir. Diğer metinler yok sayılır.</string>
@@ -615,6 +620,12 @@
     <string name="set_player_art_color_detail">Ses oynatıcıyı parçanın kapak görselinin rengiyle renklendir.</string>
     <string name="set_skip_length">Atlama süresi</string>
     <string name="set_skip_length_detail">Ses oynatıcısındaki geri ve ileri düğmelerinin kaç saniye atlayacağı.</string>
+    <string name="set_notification_buttons">Bildirim düğmeleri</string>
+    <string name="set_notification_buttons_detail">Müzik bildiriminde gösterilecek iki ek düğme.</string>
+    <string name="set_notif_skip">Geri ve ileri sar</string>
+    <string name="set_notif_fav_sleep">Favori ve uyku zamanlayıcı</string>
+    <string name="set_notif_fav_speed">Favori ve hız</string>
+    <string name="set_notif_sleep_speed">Uyku zamanlayıcı ve hız</string>
     <string name="skip_seconds">%d sn</string>
     <plurals name="player_gesture_seek_n">
         <item quantity="one">%d saniye</item>
@@ -1299,6 +1310,10 @@
     <string name="player_autosubs_undo">Geri al</string>
     <string name="set_even_out_volume">Sesi dengele</string>
     <string name="set_even_out_volume_detail">Yüksek ve alçak sesli parçaları birbirine yaklaştırır.</string>
+    <string name="set_keep_playing_swiped">Kaydırınca çalmaya devam et</string>
+    <string name="set_keep_playing_swiped_detail">DebForge son uygulamalardan kaydırılsa da müzik bildirimiyle birlikte çalmaya devam eder. Video yine durur.</string>
+    <string name="set_skip_silence">Sessizliği atla</string>
+    <string name="set_skip_silence_detail">Seste sessiz bölümleri atlar.</string>
     <string name="media_extract">Çıkar</string>
     <string name="extract_title">%1$s çıkarılıyor</string>
     <string name="extract_progress">Şimdiye kadar çıkarılan dosya: %1$d</string>

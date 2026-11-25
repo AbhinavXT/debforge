@@ -427,8 +427,13 @@
     <string name="widget_progress">%1$s of %2$s · %3$d%%</string>
     <string name="tile_label">Downloads</string>
     <string name="tile_idle">Nothing downloading</string>
+    <string name="tile_audio_label">DebForge audio</string>
+    <string name="tile_audio_playing">Playing</string>
+    <string name="tile_audio_paused">Paused</string>
     <string name="shortcut_add">Add</string>
     <string name="shortcut_resume_all">Resume all</string>
+    <string name="shortcut_continue_listening">Continue listening</string>
+    <string name="shortcut_search">Search</string>
     <string name="clipboard_offer">Copied link found. Add it to your service?</string>
     <string name="set_clipboard_offer">Offer copied links</string>
     <string name="set_clipboard_offer_detail">When you open DebForge with a magnet or .torrent link copied, offer to add it. Other text is ignored.</string>
@@ -617,6 +622,12 @@
     <string name="set_player_art_color_detail">Tint the audio player with the track\'s artwork.</string>
     <string name="set_skip_length">Skip length</string>
     <string name="set_skip_length_detail">How far the audio player\'s back and forward buttons jump.</string>
+    <string name="set_notification_buttons">Notification buttons</string>
+    <string name="set_notification_buttons_detail">Which two extra buttons the music notification shows.</string>
+    <string name="set_notif_skip">Skip back and forward</string>
+    <string name="set_notif_fav_sleep">Favourite and sleep timer</string>
+    <string name="set_notif_fav_speed">Favourite and speed</string>
+    <string name="set_notif_sleep_speed">Sleep timer and speed</string>
     <string name="skip_seconds">%d s</string>
     <plurals name="player_gesture_seek_n">
         <item quantity="one">%d second</item>
@@ -1301,6 +1312,10 @@
     <string name="player_autosubs_undo">Undo</string>
     <string name="set_even_out_volume">Even out volume</string>
     <string name="set_even_out_volume_detail">Brings loud and quiet tracks closer in loudness.</string>
+    <string name="set_keep_playing_swiped">Keep playing when swiped away</string>
+    <string name="set_keep_playing_swiped_detail">Music carries on, with its notification, after you swipe DebForge away from recent apps. Video still stops.</string>
+    <string name="set_skip_silence">Skip silence</string>
+    <string name="set_skip_silence_detail">Jumps over silent stretches in audio.</string>
     <string name="media_extract">Extract</string>
     <string name="extract_title">Extracting %1$s</string>
     <string name="extract_progress">Files extracted so far: %1$d</string>
