@@ -284,7 +284,6 @@ private fun LazyListScope.downloadsItems(viewModel: SettingsViewModel, actions: 
         val context = LocalContext.current
         val rules by viewModel.rules.collectAsStateWithLifecycle()
         SectionCard(title = stringResource(R.string.set_when)) {
-        SectionCard(title = stringResource(R.string.set_when)) {
             SwitchSettingRow(
                 icon = Icons.Rounded.Wifi,
                 title = stringResource(R.string.set_wifi_only),
@@ -338,7 +337,6 @@ private fun LazyListScope.downloadsItems(viewModel: SettingsViewModel, actions: 
             val storageUsed by viewModel.storageUsedBytes.collectAsStateWithLifecycle()
             StorageLimitRow(current = rules.storageLimitGb, usedBytes = storageUsed, onPick = viewModel::setStorageLimit)
         }
-        }
     }
 }
 
@@ -357,6 +355,7 @@ private fun LazyListScope.videoItems(viewModel: SettingsViewModel) {
             PlayerRow(internal = internalPlayer, onPick = viewModel::setInternalPlayer)
             // Only DebForge's player plays the next episode, picks tracks or shows previews.
             if (internalPlayer) {
+                RowDivider()
                 SwitchSettingRow(
                     icon = Icons.Rounded.SkipNext,
                     title = stringResource(R.string.set_autoplay_next),
@@ -397,8 +396,8 @@ private fun LazyListScope.videoItems(viewModel: SettingsViewModel) {
                         checked = pip,
                         onChange = viewModel::setPip
                     )
+                    RowDivider()
                 }
-                RowDivider()
                 LanguageRow(
                     icon = Icons.Rounded.Audiotrack,
                     title = stringResource(R.string.set_audio_language),

@@ -70,7 +70,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -97,6 +96,8 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -114,6 +115,7 @@ import com.abhinavxt.debforge.download.SafPaths
 import com.abhinavxt.debforge.download.StorageAccess
 import com.abhinavxt.debforge.ui.browse.formatSize
 import com.abhinavxt.debforge.ui.components.RowDivider
+import com.abhinavxt.debforge.ui.components.SearchPill
 import com.abhinavxt.debforge.ui.components.SectionCard
 import com.abhinavxt.debforge.ui.components.SettingRow
 import com.abhinavxt.debforge.ui.components.StatusPill
@@ -197,7 +199,7 @@ fun SettingsScreen(onConnect: () -> Unit, onBack: (() -> Unit)? = null, viewMode
         if (target != null) SettingsTarget.section.value = null
     }
 
-    val wide = cfg.screenWidthDp >= 840
+    val wide = cfg.screenWidthDp >= 840 && cfg.screenHeightDp >= 480 // not a phone on its side
     val searching = query.isNotBlank()
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -426,19 +428,11 @@ private fun CategoryList(
     val results = remember(query) { searchSettings(query) { context.getString(it) } }
     LazyColumn(state = state, modifier = modifier, contentPadding = PaddingValues(bottom = 32.dp)) {
         item(key = "search") {
-            OutlinedTextField(
-                value = query,
-                onValueChange = onQuery,
-                singleLine = true,
-                placeholder = { Text(stringResource(R.string.settings_search_hint)) },
-                leadingIcon = { Icon(Icons.Rounded.Search, contentDescription = null) },
-                trailingIcon = {
-                    if (query.isNotEmpty()) {
-                        IconButton(onClick = { onQuery("") }) {
-                            Icon(Icons.Rounded.Close, stringResource(R.string.search_clear_recent))
-                        }
-                    }
-                },
+            SearchPill(
+                query = query,
+                onQuery = onQuery,
+                placeholder = stringResource(R.string.settings_search_hint),
+                clearDescription = stringResource(R.string.media_search_clear),
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)
             )
         }
@@ -451,6 +445,7 @@ private fun CategoryList(
                             Modifier
                                 .focusRequester(rowFocus.getValue(category))
                                 .focusGroup()
+                                .semantics { if (selected != null) this.selected = category == selected }
                                 .background(
                                     if (category == selected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent
                                 )
@@ -552,7 +547,7 @@ private fun categorySummary(category: SettingsCategory, viewModel: SettingsViewM
     }
     SettingsCategory.AUDIO -> {
         val seconds by viewModel.audioSkipSeconds.collectAsStateWithLifecycle()
-        stringResource(R.string.skip_seconds, seconds)
+        stringResource(R.string.set_skip_length) + " · " + stringResource(R.string.skip_seconds, seconds)
     }
     SettingsCategory.YOUTUBE -> {
         val q by viewModel.youTubeQuality.collectAsStateWithLifecycle()

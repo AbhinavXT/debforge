@@ -45,7 +45,6 @@ val SETTINGS_INDEX: List<SettingEntry> = run {
         e(DOWNLOADS, R.string.set_download_folder), e(DOWNLOADS, R.string.set_import_local, R.string.set_import_local_detail),
         e(DOWNLOADS, R.string.set_organise, R.string.set_organise_detail),
         e(DOWNLOADS, R.string.set_remove_after, R.string.set_remove_after_detail),
-        e(DOWNLOADS, R.string.set_storage_free_unknown),
         e(DOWNLOADS, R.string.set_auto_delete, R.string.set_auto_delete_detail),
         e(DOWNLOADS, R.string.set_wifi_only, R.string.set_wifi_only_detail), e(DOWNLOADS, R.string.set_charging_only),
         e(DOWNLOADS, R.string.set_schedule, R.string.set_schedule_detail),
@@ -76,14 +75,19 @@ val SETTINGS_INDEX: List<SettingEntry> = run {
 }
 
 /**
- * Entries whose title or detail contains every word of [query] (case-insensitive), in index order.
+ * Entries whose title, detail or category name contains every word of [query], in index order.
+ * Case and punctuation are ignored, so "wifi" finds "Wi-Fi".
  * [text] resolves a string resource, so this stays testable without Android.
  */
 fun searchSettings(query: String, index: List<SettingEntry> = SETTINGS_INDEX, text: (Int) -> String): List<SettingEntry> {
-    val words = query.trim().lowercase().split(Regex("\\s+")).filter { it.isNotEmpty() }
+    fun plain(s: String) = s.lowercase().filter { it.isLetterOrDigit() || Character.getType(it) in MARKS || it.isWhitespace() }
+    val words = plain(query).split(Regex("\\s+")).filter { it.isNotEmpty() }
     if (words.isEmpty()) return emptyList()
     return index.filter { entry ->
-        val hay = (text(entry.title) + " " + (entry.detail?.let(text) ?: "")).lowercase()
+        val hay = plain(listOfNotNull(entry.title, entry.detail, entry.category.title).joinToString(" ") { text(it) })
         words.all { it in hay }
     }
 }
+
+/** Vowel signs (Hindi, Tamil, ...) are combining marks, not letters, but part of the word. */
+private val MARKS = setOf(Character.NON_SPACING_MARK.toInt(), Character.COMBINING_SPACING_MARK.toInt())

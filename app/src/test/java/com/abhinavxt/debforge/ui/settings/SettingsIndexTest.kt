@@ -13,6 +13,9 @@ class SettingsIndexTest {
         R.string.set_pip to "Picture in picture",
         R.string.set_pip_detail to "Keep playing in a small window",
         R.string.sources_title to "Search sources",
+        R.string.settings_cat_downloads to "Downloads",
+        R.string.settings_cat_video to "Video player",
+        R.string.settings_cat_connections to "\u0915\u0928\u0947\u0915\u094d\u0936\u0928",
     )
     private val index = listOf(
         SettingEntry(R.string.set_wifi_only, R.string.set_wifi_only_detail, SettingsCategory.DOWNLOADS),
@@ -34,6 +37,16 @@ class SettingsIndexTest {
         assertEquals(listOf(SettingsCategory.CONNECTIONS), search("sources search"))
         assertTrue(search("wi-fi window").isEmpty())
     }
+
+    @Test fun ignoresPunctuation() {
+        assertEquals(listOf(SettingsCategory.DOWNLOADS), search("wifi"))
+        assertTrue(search("-").isEmpty())
+    }
+
+    @Test fun matchesCategoryName() = assertEquals(listOf(SettingsCategory.VIDEO), search("video player"))
+
+    @Test fun matchesWordsWithCombiningMarks() =
+        assertEquals(listOf(SettingsCategory.CONNECTIONS), search("\u0915\u0928\u0947\u0915\u094d\u0936\u0928"))
 
     @Test fun targetMapsToItsCategory() {
         assertEquals(SettingsCategory.CONNECTIONS, SettingsCategory.forTarget(SettingsTarget.SEARCH_SOURCES))
