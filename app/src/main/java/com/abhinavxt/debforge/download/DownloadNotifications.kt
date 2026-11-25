@@ -38,6 +38,10 @@ object DownloadNotifications {
     private const val CANCEL_ASK_ID = 1008
     private const val CANCEL_ASK_TIMEOUT_MS = 30_000L
 
+    // Built once: ongoing() runs on every progress update.
+    @Volatile private var pauseIntent: PendingIntent? = null
+    @Volatile private var cancelAskIntent: PendingIntent? = null
+
     fun ensureChannel(context: Context) {
         val nm = context.getSystemService(NotificationManager::class.java)
         if (nm.getNotificationChannel(CHANNEL_ID) != null) return
@@ -59,8 +63,8 @@ object DownloadNotifications {
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setContentIntent(openAppIntent(context))
             .setContentTitle(filename ?: "DebForge")
-            .addAction(0, context.getString(R.string.notif_act_pause), actionIntent(context, DownloadActionReceiver.ACTION_PAUSE, 10))
-            .addAction(0, context.getString(R.string.notif_act_cancel), actionIntent(context, DownloadActionReceiver.ACTION_CANCEL_ASK, 11))
+            .addAction(0, context.getString(R.string.notif_act_pause), pauseIntent ?: actionIntent(context, DownloadActionReceiver.ACTION_PAUSE, 10).also { pauseIntent = it })
+            .addAction(0, context.getString(R.string.notif_act_cancel), cancelAskIntent ?: actionIntent(context, DownloadActionReceiver.ACTION_CANCEL_ASK, 11).also { cancelAskIntent = it })
 
         var percent: Int? = null
         when {
@@ -84,7 +88,9 @@ object DownloadNotifications {
             }
         }
         val n = builder.build()
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) liveUpdate(context, n, percent) else n
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.BAKLAVA) return n
+        // Never let a missing or changed API on some 16.x build take the download down: fall back to the plain one.
+        return try { liveUpdate(context, n, percent) } catch (_: Throwable) { n }
     }
 
     /**
@@ -98,15 +104,16 @@ object DownloadNotifications {
     private fun liveUpdate(context: Context, n: Notification, percent: Int?): Notification {
         val style = Notification.ProgressStyle()
         if (percent == null) style.setProgressIndeterminate(true) else style.setProgress(percent)
-        return Notification.Builder.recoverBuilder(context, n)
+        // ProgressStyle and setShortCriticalText are API 36.0; setRequestPromotedOngoing is 36.1.
+        val b = Notification.Builder.recoverBuilder(context, n)
             .setStyle(style)
-            .setRequestPromotedOngoing(true)
             .setShortCriticalText(percent?.let { "$it%" })
-            .build()
+        if (Build.VERSION.SDK_INT_FULL >= Build.VERSION_CODES_FULL.BAKLAVA_1) b.setRequestPromotedOngoing(true)
+        return b.build()
     }
 
     /** Everything was paused from the notification: a dismissible one with Resume (opens the app, the only place downloads may restart). */
-    fun notifyPausedByUser(context: Context) {
+    fun notifyPausedByUser(context: Context, pausedIds: List<String>) {
         ensureChannel(context)
         val n = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification_download)
@@ -114,7 +121,7 @@ object DownloadNotifications {
             .setContentText(context.getString(R.string.notif_paused_all_body))
             .setAutoCancel(true)
             .setContentIntent(openAppIntent(context))
-            .addAction(0, context.getString(R.string.notif_act_resume), AppActions.pending(context, AppActions.RESUME_ALL))
+            .addAction(0, context.getString(R.string.notif_act_resume), resumeIdsIntent(context, pausedIds))
             .build()
         runCatching { context.getSystemService(NotificationManager::class.java).notify(PAUSED_ID, n) }
     }
@@ -122,6 +129,15 @@ object DownloadNotifications {
     fun cancelPausedByUser(context: Context) {
         runCatching { context.getSystemService(NotificationManager::class.java).cancel(PAUSED_ID) }
     }
+
+    /** Resume restarts only the rows this Pause paused; the ids ride in the PendingIntent, so they survive process death. */
+    private fun resumeIdsIntent(context: Context, ids: List<String>): PendingIntent =
+        PendingIntent.getActivity(
+            context,
+            14,
+            AppActions.intent(context, AppActions.RESUME_IDS).putExtra(AppActions.EXTRA_IDS, ids.toTypedArray()),
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
 
     /** Second step of Cancel: nothing is discarded unless the user taps Yes. Times out on its own. */
     fun notifyCancelAsk(context: Context, running: List<Pair<String, String>>) {
@@ -307,17 +323,30 @@ object DownloadNotifications {
         tracker: DownloadProgressTracker
     ): Job = scope.launch {
         val nm = context.getSystemService(NotificationManager::class.java)
+        // A host is running again: the "stopped" / "time limit" / "ready to start" notices are done.
+        runCatching { nm.cancel(STOPPED_ID); nm.cancel(INFO_ID) }
+        var lastId: String? = null
+        var lastAt = 0L
         combine(runner.active, tracker.progress) { active, map -> active to map }
             .collect { (active, map) ->
                 val active1 = active ?: return@collect
                 val p = map[active1.id]
                 if (p == null || p.state == DownloadState.DOWNLOADING) {
+                    val now = android.os.SystemClock.elapsedRealtime()
+                    if (!shouldPost(if (active1.id == lastId) lastAt else null, now, p)) return@collect
+                    lastId = active1.id
+                    lastAt = now
                     // notify() can throw SecurityException if the user revoked
                     // notifications mid-run; the download must not die for it.
                     runCatching { nm.notify(ONGOING_ID, ongoing(context, p, active1.filename)) }
                 }
             }
     }
+
+    /** Progress ticks are throttled to ~1/s; the first update, the end, and state changes always go through. */
+    internal fun shouldPost(lastAtMs: Long?, nowMs: Long, p: DownloadProgress?): Boolean =
+        lastAtMs == null || p == null || p.finishing || p.waitingReasonRes != null ||
+            p.fraction >= 1f || nowMs - lastAtMs >= 1000L
 
     internal fun openAppIntent(context: Context): PendingIntent =
         PendingIntent.getActivity(

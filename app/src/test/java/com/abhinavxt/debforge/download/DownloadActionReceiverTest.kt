@@ -1,5 +1,6 @@
 package com.abhinavxt.debforge.download
 
+import com.abhinavxt.debforge.domain.DownloadProgress
 import com.abhinavxt.debforge.domain.DownloadState
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -42,4 +43,28 @@ class DownloadActionReceiverTest {
 
     @Test fun reAskedUsesOnlyTheNewIds() =
         assertEquals(listOf("c"), idsToCancel(listOf("c"), mapOf("a" to D, "c" to D)))
+
+    @Test fun resumeOnlyWhatThisPauseHeld() {
+        // "x" was paused earlier on purpose (never marked); "a" was resumed in-app, "b" finished, "d" deleted.
+        val states = mapOf("a" to D, "b" to DownloadState.COMPLETED, "c" to DownloadState.PAUSED, "d" to null, "x" to DownloadState.PAUSED)
+        assertEquals(listOf("c"), idsToResume(listOf("a", "b", "c", "d"), states))
+    }
+
+    private fun p(fraction: Float, finishing: Boolean = false, wait: Int? = null) = DownloadProgress(
+        "a", (fraction * 100).toLong(), 100, 1, DownloadState.DOWNLOADING, wait, finishing
+    )
+
+    @Test fun throttleLetsFirstFinalAndStateChangesThrough() {
+        val n = DownloadNotifications
+        assertEquals(true, n.shouldPost(null, 10, p(0.1f)))
+        assertEquals(true, n.shouldPost(0, 10, null))
+        assertEquals(true, n.shouldPost(0, 10, p(1f)))
+        assertEquals(true, n.shouldPost(0, 10, p(0.5f, finishing = true)))
+        assertEquals(true, n.shouldPost(0, 10, p(0.5f, wait = 1)))
+    }
+
+    @Test fun throttleDropsTicksWithinASecond() {
+        assertEquals(false, DownloadNotifications.shouldPost(1000, 1999, p(0.5f)))
+        assertEquals(true, DownloadNotifications.shouldPost(1000, 2000, p(0.5f)))
+    }
 }

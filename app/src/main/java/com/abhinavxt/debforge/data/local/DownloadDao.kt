@@ -152,6 +152,14 @@ interface DownloadDao {
     @Query("UPDATE downloads SET state = 'PAUSED', updatedAt = :now WHERE state = 'QUEUED'")
     suspend fun pauseQueued(now: Long = System.currentTimeMillis()): Int
 
+    /** What a "Pause all" is about to put on hold. */
+    @Query("SELECT rdId FROM downloads WHERE state IN ('QUEUED', 'DOWNLOADING')")
+    suspend fun activeIds(): List<String>
+
+    /** Compare-and-set: only a row still QUEUED starts; a pause that landed first wins. Returns rows changed. */
+    @Query("UPDATE downloads SET state = 'DOWNLOADING', updatedAt = :now WHERE rdId = :rdId AND state = 'QUEUED'")
+    suspend fun markDownloading(rdId: String, now: Long = System.currentTimeMillis()): Int
+
     @Query("SELECT rdId FROM downloads WHERE state = 'DOWNLOADING'")
     suspend fun downloadingIds(): List<String>
 

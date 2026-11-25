@@ -271,14 +271,14 @@ class DownloadQueueRunner @Inject constructor(
         // Guards: a non-active cancel/pause may have raced ahead and deleted
         // or paused this row, or the host may have asked us to stop.
         val fresh = downloadDao.getById(entity.id)
-        if (fresh == null || fresh.state == DownloadState.PAUSED || s.stopRequested) {
+        // markDownloading is a compare-and-set: a pause between the read above and this write wins.
+        if (fresh == null || fresh.state == DownloadState.PAUSED || s.stopRequested || downloadDao.markDownloading(entity.id) == 0) {
             job.cancel()
             unpublish()
             progressTracker.clear(entity.id)
             return null
         }
 
-        downloadDao.updateState(entity.id, DownloadState.DOWNLOADING)
         progressTracker.update(
             entity.id, entity.bytesDownloaded, entity.filesize, DownloadState.DOWNLOADING
         )

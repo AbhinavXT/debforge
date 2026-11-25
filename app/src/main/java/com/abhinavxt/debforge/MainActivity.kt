@@ -191,6 +191,10 @@ class MainActivity : ComponentActivity() {
             AppActions.ADD -> pendingAdds.offer(PendingAdd.Text(""))
             // The app is coming to the front, so the engine may start now.
             AppActions.RESUME_ALL -> lifecycleScope.launch { downloadController.resumeAll() }
+            AppActions.RESUME_IDS -> {
+                val ids = intent.getStringArrayExtra(AppActions.EXTRA_IDS)?.toList().orEmpty()
+                lifecycleScope.launch { downloadController.resumeIds(ids) }
+            }
         }
     }
 

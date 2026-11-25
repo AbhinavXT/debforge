@@ -35,8 +35,10 @@ class DownloadActionReceiver : BroadcastReceiver() {
         CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
             try {
                 when (step) {
-                    NotifStep.PAUSE_ALL ->
-                        if (controller.pauseAll() > 0) DownloadNotifications.notifyPausedByUser(context)
+                    NotifStep.PAUSE_ALL -> {
+                        val paused = controller.pauseAllTracked()
+                        if (paused.isNotEmpty()) DownloadNotifications.notifyPausedByUser(context, paused)
+                    }
                     NotifStep.ASK_CANCEL -> {
                         val running = controller.running()
                         if (running.isNotEmpty()) DownloadNotifications.notifyCancelAsk(context, running)
@@ -74,3 +76,7 @@ class DownloadActionReceiver : BroadcastReceiver() {
 /** Of the ids the user was asked about, those still safe to cancel: downloading or queued; finished, paused, failed or deleted ones are not. */
 fun idsToCancel(asked: List<String>, states: Map<String, DownloadState?>): List<String> =
     asked.distinct().filter { states[it] == DownloadState.DOWNLOADING || states[it] == DownloadState.QUEUED }
+
+/** Of the ids a Pause put on hold, those still paused: rows resumed, finished or deleted since are left alone, and rows paused earlier were never in the list. */
+fun idsToResume(marked: List<String>, states: Map<String, DownloadState?>): List<String> =
+    marked.distinct().filter { states[it] == DownloadState.PAUSED }

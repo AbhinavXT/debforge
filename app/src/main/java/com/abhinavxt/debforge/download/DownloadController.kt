@@ -128,6 +128,22 @@ class DownloadController @Inject constructor(
         return queued + running.size
     }
 
+    /** [pauseAll], returning the ids it put on hold (for the notification's Resume). */
+    suspend fun pauseAllTracked(): List<String> {
+        val ids = downloadDao.activeIds()
+        pauseAll()
+        return ids
+    }
+
+    /** Resume from the "paused" notification: only the rows that Pause paused, if still paused. */
+    suspend fun resumeIds(marked: List<String>) {
+        val ids = idsToResume(marked, marked.associateWith { downloadDao.getById(it)?.state })
+        DownloadNotifications.cancelPausedByUser(context)
+        if (ids.isEmpty()) return
+        ids.forEach { downloadDao.updateState(it, DownloadState.QUEUED) }
+        scheduler.ensureRunning(foreground = true)
+    }
+
     /** (id, filename) of what is downloading now, for the notification's "Cancel?" question. */
     suspend fun running(): List<Pair<String, String>> =
         downloadDao.downloadingIds().mapNotNull { id -> downloadDao.getById(id)?.let { id to it.filename } }
@@ -156,12 +172,14 @@ class DownloadController @Inject constructor(
     }
 
     suspend fun resume(id: String) {
+        DownloadNotifications.cancelPausedByUser(context)
         downloadDao.updateState(id, DownloadState.QUEUED)
         scheduler.ensureRunning(foreground = true)
     }
 
     /** Retry a FAILED download: clear the error, re-queue, kick the engine. */
     suspend fun retry(id: String) {
+        DownloadNotifications.cancelPausedByUser(context)
         downloadDao.setFailed(id, message = null, state = DownloadState.QUEUED)
         scheduler.ensureRunning(foreground = true)
     }
