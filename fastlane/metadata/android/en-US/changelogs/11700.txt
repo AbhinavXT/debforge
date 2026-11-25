@@ -1,0 +1,6 @@
+• Full title page with a large picture, Play or Resume, seasons and episodes
+• Library filters: Movies, Shows, 4K and Unwatched
+• Swipe Library rows to download or remove (removing always asks first)
+• Tablets: titles open beside the Library
+• Continue watching shows a frame from downloaded videos without artwork
+• Clearer warning when removing one file deletes a whole torrent
