@@ -531,7 +531,7 @@ class AudioPlayer @Inject constructor(
     private fun blocked() {
         player?.pause()
         publish()
-        Toast.makeText(context, R.string.yt_not_responding, Toast.LENGTH_LONG).show()
+        if (!quietStart) Toast.makeText(context, R.string.yt_not_responding, Toast.LENGTH_LONG).show()
     }
 
     private suspend fun lookUpOnce(track: AudioTrack, yt: YouTubeAudio): Refresh {
@@ -1122,6 +1122,9 @@ class AudioPlayer @Inject constructor(
             val at = p.currentMediaItemIndex
             val track = tracks.getOrNull(at)
             var failed = false
+            // Offline: no service for a stream that cannot start. Not isOnline(): a local network may still serve it.
+            if (quietStart && track?.isRemoteStream == true &&
+                context.getSystemService(ConnectivityManager::class.java)?.activeNetwork == null) return false
             if (track?.youtube != null) {
                 val r = refreshed(track)
                 if (player !== p) return false
@@ -1272,6 +1275,20 @@ class AudioPlayer @Inject constructor(
 
     /** True when this process has a player (playing, or a restored queue waiting for a tap). */
     val isActive: Boolean get() = player != null
+
+    /** [playFromWidget] for a headset key (no screen to look at): a failed start shows no message. */
+    suspend fun playFromMediaKey(action: WidgetAction): Boolean = withContext(Dispatchers.Main.immediate) {
+        quietStart = true
+        try { playFromWidget(action) } finally { quietStart = false }
+    }
+
+    private var quietStart = false
+
+    /** [playFromMediaKey] failed: lets go of a service it brought up without playing. The queue stays, parked. */
+    fun abandonFailedStart() {
+        val p = player ?: return
+        if (BackgroundPlayback.player === p && !wantsToPlay(p.playWhenReady, p.playbackState)) parkForVideo()
+    }
 
     /**
      * A home-screen widget button: restores the saved queue when the process is new, then does [action].

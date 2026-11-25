@@ -1086,7 +1086,15 @@ class VideoSession @Inject constructor(
         if (mediaSession != null || lifecycle.inBackground) return
         val p = episodePlayer ?: return
         mediaSession = runCatching {
-            androidx.media3.session.MediaSession.Builder(context, p).setId(SESSION_ID).build()
+            androidx.media3.session.MediaSession.Builder(context, p).setId(SESSION_ID)
+                .setCallback(object : androidx.media3.session.MediaSession.Callback {
+                    override fun onConnect(
+                        session: androidx.media3.session.MediaSession, controller: androidx.media3.session.MediaSession.ControllerInfo
+                    ) = androidx.media3.session.MediaSession.ConnectionResult.AcceptedResultBuilder(session)
+                        .setAvailablePlayerCommands(com.abhinavxt.debforge.player.playerCommandsFor(controller.packageName, context.packageName))
+                        .build()
+                })
+                .build()
         }.getOrNull()
     }
 

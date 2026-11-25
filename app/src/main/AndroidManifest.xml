@@ -161,6 +161,16 @@
             </intent-filter>
         </service>
 
+        <!-- Headset / Bluetooth / lock-screen Play after the app was closed resumes the last audio.
+             The only MEDIA_BUTTON receiver allowed: Media3 throws when it finds two. -->
+        <receiver
+            android:name=".player.MediaButtonResumeReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MEDIA_BUTTON" />
+            </intent-filter>
+        </receiver>
+
         <!-- Background check for new episodes of followed shows. -->
         <service
             android:name=".download.follow.FollowJobService"

@@ -236,6 +236,7 @@ class BackgroundPlaybackService : MediaSessionService() {
             }.build()
             return MediaSession.ConnectionResult.AcceptedResultBuilder(session)
                 .setAvailableSessionCommands(commands)
+                .setAvailablePlayerCommands(playerCommandsFor(controller.packageName, packageName))
                 .setMediaButtonPreferences(currentButtons)
                 .build()
         }
@@ -306,6 +307,17 @@ class BackgroundPlaybackService : MediaSessionService() {
             button(skipIcon(n, forward = true), getString(R.string.audio_forward_n, n), ButtonCommands.FORWARD)
         )
     }
+}
+
+/**
+ * Other apps get every transport command but no playlist edits: those would put the session's player out of step with
+ * [AudioPlayer]'s tracks. Our own package is Media3's notification controller, whose commands the system UI shares.
+ */
+@OptIn(UnstableApi::class)
+fun playerCommandsFor(controllerPackage: String, ownPackage: String): Player.Commands {
+    val all = MediaSession.ConnectionResult.DEFAULT_PLAYER_COMMANDS
+    if (controllerPackage == ownPackage) return all
+    return all.buildUpon().removeAll(Player.COMMAND_CHANGE_MEDIA_ITEMS, Player.COMMAND_SET_MEDIA_ITEM).build()
 }
 
 /** Same commands, icons and names: a redraw would change nothing. */
