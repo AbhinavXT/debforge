@@ -15,6 +15,8 @@
     <!-- The player's "keep playing in the background". -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Android 16+: lets the download progress notification show as a Live Update. -->
+    <uses-permission android:name="android.permission.POST_PROMOTED_NOTIFICATIONS" />
     <!-- Android 14+: user-initiated data transfer jobs (no 6h dataSync cap). -->
     <uses-permission android:name="android.permission.RUN_USER_INITIATED_JOBS" />
     <!-- Keeps the "download when ready" check scheduled across reboots. -->

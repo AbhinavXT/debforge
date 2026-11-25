@@ -6,6 +6,8 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import com.abhinavxt.debforge.AppActions
 import com.abhinavxt.debforge.MainActivity
@@ -60,6 +62,7 @@ object DownloadNotifications {
             .addAction(0, context.getString(R.string.notif_act_pause), actionIntent(context, DownloadActionReceiver.ACTION_PAUSE, 10))
             .addAction(0, context.getString(R.string.notif_act_cancel), actionIntent(context, DownloadActionReceiver.ACTION_CANCEL_ASK, 11))
 
+        var percent: Int? = null
         when {
             progress == null -> builder
                 .setContentText(context.getString(R.string.notif_preparing))
@@ -74,12 +77,32 @@ object DownloadNotifications {
                 .setProgress(0, 0, true)
             else -> {
                 val pct = (progress.fraction * 100).toInt()
+                percent = pct
                 builder
                     .setContentText("$pct%  •  ${formatSpeed(progress.bytesPerSecond)}")
                     .setProgress(100, pct, false)
             }
         }
-        return builder.build()
+        val n = builder.build()
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) liveUpdate(context, n, percent) else n
+    }
+
+    /**
+     * Android 16 Live Update: the same notification, promoted, with the system
+     * progress style and the percent as the short chip text. Needs
+     * POST_PROMOTED_NOTIFICATIONS (manifest); if the system declines to promote
+     * it, it stays an ordinary ongoing notification. Built from the compat
+     * result because the pinned androidx.core predates these APIs.
+     */
+    @RequiresApi(Build.VERSION_CODES.BAKLAVA)
+    private fun liveUpdate(context: Context, n: Notification, percent: Int?): Notification {
+        val style = Notification.ProgressStyle()
+        if (percent == null) style.setProgressIndeterminate(true) else style.setProgress(percent)
+        return Notification.Builder.recoverBuilder(context, n)
+            .setStyle(style)
+            .setRequestPromotedOngoing(true)
+            .setShortCriticalText(percent?.let { "$it%" })
+            .build()
     }
 
     /** Everything was paused from the notification: a dismissible one with Resume (opens the app, the only place downloads may restart). */
