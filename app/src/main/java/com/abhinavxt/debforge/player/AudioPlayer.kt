@@ -1347,6 +1347,7 @@ class AudioPlayer @Inject constructor(
                     return
                 }
                 if (it.playbackState == Player.STATE_IDLE) it.prepare() // stopped by an error (kept while offline): try again
+                if (it.playbackState == Player.STATE_ENDED) it.seekTo(0) // a finished queue's last track: Play plays it again
                 it.play()
             }
         }

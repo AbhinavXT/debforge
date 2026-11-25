@@ -137,6 +137,8 @@ object AudioQueueCodec {
 /** What to rebuild: the surviving [tracks], the current one's [index] and where in it to start. */
 data class RestorePlan(val tracks: List<SavedTrack>, val index: Int, val posMs: Long)
 
+private const val FINISHED_MS = 1_000L
+
 /**
  * Drops local tracks whose file is gone ([existsLocal]); YouTube tracks always survive. When the current track
  * went, the next surviving one starts at 0 (the last one when none follows). Null when nothing is left.
@@ -147,7 +149,12 @@ fun restorePlan(snapshot: Snapshot, existsLocal: (String) -> Boolean): RestorePl
     if (kept.isEmpty()) return null
     val cur = snapshot.position.curId
     val same = kept.indexOfFirst { it.id == cur }
-    if (same >= 0) return RestorePlan(kept, same, snapshot.position.positionMs.coerceAtLeast(0))
+    if (same >= 0) {
+        val (_, pos, duration) = snapshot.position
+        // Finished: resuming at the very end would only stop again.
+        val finished = duration > 0 && pos >= duration - FINISHED_MS
+        return RestorePlan(kept, same, if (finished) 0L else pos.coerceAtLeast(0))
+    }
     val was = all.indexOfFirst { it.id == cur }
     val next = if (was < 0) 0 else {
         val keptIds = kept.map { it.id }.toSet()

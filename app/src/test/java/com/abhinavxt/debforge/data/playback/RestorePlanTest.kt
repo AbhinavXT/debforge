@@ -26,6 +26,11 @@ class RestorePlanTest {
         assertEquals(0L, p.posMs)
     }
 
+    @Test fun finishedTrackStartsOver() {
+        assertEquals(0L, restorePlan(snap("c", pos = 100_011)) { true }!!.posMs)
+        assertEquals(98_000L, restorePlan(snap("c", pos = 98_000)) { true }!!.posMs)
+    }
+
     @Test fun allGoneIsNull() = assertNull(restorePlan(snap("a")) { false })
 
     @Test fun firstAndLastRemovedKeepCurrent() {
