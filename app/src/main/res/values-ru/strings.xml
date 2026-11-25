@@ -914,6 +914,15 @@
     <string name="player_night_mode_detail">Громкие сцены тише, диалоги разборчивее</string>
     <string name="player_night_mode_unavailable">Ночной режим недоступен на этом устройстве</string>
     <string name="player_chapters">Главы</string>
+    <string name="bookmarks">Закладки</string>
+    <string name="bookmarks_add">Добавить закладку на %1$s</string>
+    <string name="bookmarks_empty">Закладок пока нет</string>
+    <string name="bookmarks_name_hint">Название (необязательно)</string>
+    <string name="bookmarks_rename">Переименовать закладку</string>
+    <string name="bookmarks_delete">Удалить закладку</string>
+    <string name="bookmarks_deleted">Закладка удалена</string>
+    <string name="bookmarks_undo">Отменить</string>
+    <string name="bookmarks_go_to">Перейти к %1$s</string>
     <string name="player_chapter_n">Глава %1$d</string>
     <string name="player_stats">Статистика для гиков</string>
     <string name="player_stats_detail">Кодеки, декодеры, буфер и пропущенные кадры на экране</string>

@@ -155,7 +155,10 @@ class VideoSession @Inject constructor(
     // --- the current file ---
     /** Which file this is (null for plain links): positions are saved only when known. */
     var identity: VideoIdentity? = null
-        internal set
+        internal set(value) {
+            field = value
+            controls.bookmarkKey = value?.itemId?.takeIf { it.isNotBlank() }?.let { com.abhinavxt.debforge.data.bookmarks.bookmarkKey(it) }
+        }
     /** Set when streaming a YouTube video (video-only URL in [uri], audio merged in); null for everything else. */
     var youtube: YtStream? = null
         internal set

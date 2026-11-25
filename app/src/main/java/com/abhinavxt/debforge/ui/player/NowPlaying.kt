@@ -42,6 +42,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Bedtime
+import androidx.compose.material.icons.rounded.Bookmarks
 import androidx.compose.material.icons.rounded.Lyrics
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Forward10
@@ -180,6 +181,14 @@ fun NowPlaying(
     var lyricsOn by androidx.compose.runtime.saveable.rememberSaveable { androidx.compose.runtime.mutableStateOf(false) }
     val showLyrics = lyricsOn && lyrics != null
     val onLyrics = if (lyrics != null) ({ lyricsOn = !lyricsOn }) else null
+    var bookmarksOpen by androidx.compose.runtime.saveable.rememberSaveable { androidx.compose.runtime.mutableStateOf(false) }
+    if (bookmarksOpen) {
+        // Live position, so "Add" takes the moment it is tapped; the key shares YouTube audio and video bookmarks.
+        com.abhinavxt.debforge.ui.bookmarks.BookmarksSheet(
+            com.abhinavxt.debforge.data.bookmarks.bookmarkKey(track.resumeId), state.positionMs, state.durationMs,
+            onSeek, { bookmarksOpen = false }
+        )
+    }
     val surface = MaterialTheme.colorScheme.surface
     val art = rememberArtColor(track, artColor)
     val top by animateColorAsState(
@@ -199,6 +208,12 @@ fun NowPlaying(
                         Icon(Icons.Rounded.KeyboardArrowDown, stringResource(R.string.audio_close))
                     }
                     Row {
+                        if (track.resumeId.isNotBlank()) {
+                            val bk = remember { MutableInteractionSource() }
+                            IconButton({ bookmarksOpen = true }, Modifier.size(48.dp).focusRing(bk, CircleShape), interactionSource = bk) {
+                                Icon(Icons.Rounded.Bookmarks, stringResource(R.string.bookmarks))
+                            }
+                        }
                         if (onWatch != null && track.canWatch) WatchVideoButton(watchBusy, onWatch)
                         val sx = remember { MutableInteractionSource() }
                         IconButton(onStop, Modifier.size(48.dp).focusRing(sx, CircleShape), interactionSource = sx) {

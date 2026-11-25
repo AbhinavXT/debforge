@@ -54,6 +54,10 @@ abstract class BookmarkDao {
     @Query("UPDATE bookmarks SET name = :name WHERE id = :id")
     abstract suspend fun rename(id: Long, name: String?)
 
+    /** Undo of a delete: puts the row back under its old id. */
+    @androidx.room.Upsert
+    abstract suspend fun restore(row: BookmarkEntity)
+
     @Query("DELETE FROM bookmarks WHERE id = :id")
     abstract suspend fun delete(id: Long)
 

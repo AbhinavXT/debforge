@@ -876,6 +876,15 @@
     <string name="player_night_mode_detail">Escenas fuertes más suaves, diálogos más claros</string>
     <string name="player_night_mode_unavailable">El modo nocturno no está disponible en este dispositivo</string>
     <string name="player_chapters">Capítulos</string>
+    <string name="bookmarks">Marcadores</string>
+    <string name="bookmarks_add">Añadir marcador en %1$s</string>
+    <string name="bookmarks_empty">Aún no hay marcadores</string>
+    <string name="bookmarks_name_hint">Nombre (opcional)</string>
+    <string name="bookmarks_rename">Renombrar marcador</string>
+    <string name="bookmarks_delete">Eliminar marcador</string>
+    <string name="bookmarks_deleted">Marcador eliminado</string>
+    <string name="bookmarks_undo">Deshacer</string>
+    <string name="bookmarks_go_to">Ir a %1$s</string>
     <string name="player_chapter_n">Capítulo %1$d</string>
     <string name="player_stats">Estadísticas para nerds</string>
     <string name="player_stats_detail">Códecs, decodificadores, búfer y fotogramas perdidos en pantalla</string>

@@ -840,6 +840,15 @@
     <string name="player_night_mode_detail">Loud scenes quieter, dialogue clearer</string>
     <string name="player_night_mode_unavailable">Night mode isn\'t available on this device</string>
     <string name="player_chapters">Chapters</string>
+    <string name="bookmarks">Bookmarks</string>
+    <string name="bookmarks_add">Add bookmark at %1$s</string>
+    <string name="bookmarks_empty">No bookmarks yet</string>
+    <string name="bookmarks_name_hint">Name (optional)</string>
+    <string name="bookmarks_rename">Rename bookmark</string>
+    <string name="bookmarks_delete">Delete bookmark</string>
+    <string name="bookmarks_deleted">Bookmark deleted</string>
+    <string name="bookmarks_undo">Undo</string>
+    <string name="bookmarks_go_to">Go to %1$s</string>
     <string name="player_chapter_n">Chapter %1$d</string>
     <string name="player_stats">Stats for nerds</string>
     <string name="player_stats_detail">Codecs, decoders, buffer and dropped frames on screen</string>

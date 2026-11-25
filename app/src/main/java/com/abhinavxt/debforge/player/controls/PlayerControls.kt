@@ -48,6 +48,7 @@ import androidx.compose.material.icons.automirrored.rounded.OpenInNew
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.AspectRatio
 import androidx.compose.material.icons.rounded.Bedtime
+import androidx.compose.material.icons.rounded.Bookmarks
 import androidx.compose.material.icons.rounded.Headphones
 import androidx.compose.material.icons.rounded.HighQuality
 import androidx.compose.material.icons.rounded.MoreVert
@@ -876,6 +877,7 @@ private fun SidePanel(panel: Panel, state: ControlsState, actions: ControlsActio
                     Panel.SPEED -> R.string.player_speed
                     Panel.MORE -> R.string.player_more
                     Panel.QUALITY -> R.string.player_quality
+                    Panel.BOOKMARKS -> R.string.bookmarks
                 }
             ),
             color = Color.White,
@@ -949,6 +951,12 @@ private fun SidePanel(panel: Panel, state: ControlsState, actions: ControlsActio
                         }
                     }
                 }
+            }
+            Panel.BOOKMARKS -> state.bookmarkKey?.let { key ->
+                com.abhinavxt.debforge.ui.bookmarks.BookmarksContent(
+                    key, state.snapshot.positionMs, state.snapshot.durationMs, actions::seekTo, Color.White,
+                    onJump = { state.panel = null }
+                )
             }
             Panel.ONLINE_SUBTITLES -> OnlineSubtitlesPanel(state.onlineSubs, actions)
             Panel.SYNC -> SyncPanel(state, actions)
@@ -1179,6 +1187,12 @@ private fun MorePanel(state: ControlsState, actions: ControlsActions) {
                         Text(stringResource(R.string.player_sleep_end), color = Color.White, fontSize = 13.sp)
                     }
                 }
+            }
+        }
+        // Not for a live stream: it has no fixed spot to come back to.
+        if (state.bookmarkKey != null && !state.snapshot.live) {
+            item {
+                MoreRow(Icons.Rounded.Bookmarks, stringResource(R.string.bookmarks)) { state.panel = Panel.BOOKMARKS }
             }
         }
         if (state.chapters.size >= 2) {

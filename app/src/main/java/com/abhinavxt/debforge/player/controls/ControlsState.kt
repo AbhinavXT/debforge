@@ -14,7 +14,7 @@ import androidx.media3.common.TrackGroup
 enum class Fill { FIT, CROP, STRETCH }
 
 /** A side panel over the video. */
-enum class Panel { AUDIO, SUBTITLES, ONLINE_SUBTITLES, SYNC, SPEED, MORE, CHAPTERS, QUALITY }
+enum class Panel { AUDIO, SUBTITLES, ONLINE_SUBTITLES, SYNC, SPEED, MORE, CHAPTERS, QUALITY, BOOKMARKS }
 
 /** Searching OpenSubtitles from the Subtitles panel. */
 sealed interface OnlineSubs {
@@ -54,6 +54,8 @@ class ControlsState {
     var unlockPromptAt by mutableLongStateOf(0L)
     var panel by mutableStateOf<Panel?>(null)
     var title by mutableStateOf("")
+    /** Where this video's bookmarks are kept (see bookmarkKey); null = none for this video (no stable id). */
+    var bookmarkKey by mutableStateOf<String?>(null)
     var hasNext by mutableStateOf(false)
     var hasPrevious by mutableStateOf(false)
     /** Subtitle / audio sync (ms, + = later), set in the Subtitles and Audio panels. */

@@ -236,7 +236,7 @@ class VideoSurface(
                     appTheme = AppTheme.fromName(themeName)
                 ) {
                     androidx.compose.foundation.layout.Box {
-                        if (!isTv) PlayerControls(shownControls, actions)
+                        if (!isTv) PlayerControls(shownControls, actions) else com.abhinavxt.debforge.ui.bookmarks.TvBookmarks(shownControls, actions)
                         GestureOverlay(shownGestureUi)
                     }
                 }

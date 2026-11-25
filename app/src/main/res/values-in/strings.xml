@@ -800,6 +800,15 @@
     <string name="player_night_mode_detail">Adegan keras lebih pelan, dialog lebih jelas</string>
     <string name="player_night_mode_unavailable">Mode malam tidak tersedia di perangkat ini</string>
     <string name="player_chapters">Bab</string>
+    <string name="bookmarks">Penanda</string>
+    <string name="bookmarks_add">Tambahkan penanda di %1$s</string>
+    <string name="bookmarks_empty">Belum ada penanda</string>
+    <string name="bookmarks_name_hint">Nama (opsional)</string>
+    <string name="bookmarks_rename">Ganti nama penanda</string>
+    <string name="bookmarks_delete">Hapus penanda</string>
+    <string name="bookmarks_deleted">Penanda dihapus</string>
+    <string name="bookmarks_undo">Urungkan</string>
+    <string name="bookmarks_go_to">Buka %1$s</string>
     <string name="player_chapter_n">Bab %1$d</string>
     <string name="player_stats">Statistik teknis</string>
     <string name="player_stats_detail">Codec, decoder, buffer, dan frame terlewat di layar</string>

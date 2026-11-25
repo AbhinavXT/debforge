@@ -32,6 +32,7 @@ import com.abhinavxt.debforge.domain.ProviderId
 import com.abhinavxt.debforge.domain.SubtitleLink
 import com.abhinavxt.debforge.player.controls.ControlsActions
 import com.abhinavxt.debforge.player.controls.Fill
+import com.abhinavxt.debforge.player.controls.Panel
 import com.abhinavxt.debforge.player.controls.fillLabel
 import com.abhinavxt.debforge.player.session.VideoHost
 import com.abhinavxt.debforge.player.session.VideoIdentity
@@ -291,9 +292,15 @@ class PlayerActivity : ComponentActivity() {
 
     /** TV: the remote's MENU key offers "Play as audio" (Media3's controller has no slot for it). False when there is nothing to offer. */
     private fun showTvOptions(): Boolean {
-        if (!session.canPlayAsAudio()) return false
+        val options = buildList<Pair<String, () -> Unit>> {
+            if (session.controls.bookmarkKey != null && !controlsActions.snapshot().live) {
+                add(getString(R.string.bookmarks) to { session.controls.panel = Panel.BOOKMARKS })
+            }
+            if (session.canPlayAsAudio()) add(getString(R.string.player_play_as_audio) to { session.handOffToAudio() })
+        }
+        if (options.isEmpty()) return false
         AlertDialog.Builder(this)
-            .setItems(arrayOf(getString(R.string.player_play_as_audio))) { _, _ -> session.handOffToAudio() }
+            .setItems(options.map { it.first }.toTypedArray()) { _, i -> options[i].second() }
             .show()
         return true
     }

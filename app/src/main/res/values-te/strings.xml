@@ -838,6 +838,15 @@
     <string name="player_night_mode_detail">పెద్ద శబ్దాలు తగ్గి, సంభాషణ స్పష్టంగా</string>
     <string name="player_night_mode_unavailable">ఈ పరికరంలో నైట్ మోడ్ అందుబాటులో లేదు</string>
     <string name="player_chapters">అధ్యాయాలు</string>
+    <string name="bookmarks">బుక్‌మార్క్‌లు</string>
+    <string name="bookmarks_add">%1$s వద్ద బుక్‌మార్క్ జోడించు</string>
+    <string name="bookmarks_empty">ఇంకా బుక్‌మార్క్‌లు లేవు</string>
+    <string name="bookmarks_name_hint">పేరు (ఐచ్ఛికం)</string>
+    <string name="bookmarks_rename">బుక్‌మార్క్ పేరు మార్చు</string>
+    <string name="bookmarks_delete">బుక్‌మార్క్ తొలగించు</string>
+    <string name="bookmarks_deleted">బుక్‌మార్క్ తొలగించబడింది</string>
+    <string name="bookmarks_undo">రద్దు చేయి</string>
+    <string name="bookmarks_go_to">%1$s కి వెళ్లు</string>
     <string name="player_chapter_n">అధ్యాయం %1$d</string>
     <string name="player_stats">సాంకేతిక వివరాలు</string>
     <string name="player_stats_detail">కోడెక్, డీకోడర్, బఫర్, వదిలేసిన ఫ్రేమ్‌లు తెరపై</string>

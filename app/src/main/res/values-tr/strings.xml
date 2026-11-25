@@ -838,6 +838,15 @@
     <string name="player_night_mode_detail">Yüksek sahneler kısılır, diyaloglar netleşir</string>
     <string name="player_night_mode_unavailable">Gece modu bu cihazda kullanılamıyor</string>
     <string name="player_chapters">Bölümler</string>
+    <string name="bookmarks">Yer imleri</string>
+    <string name="bookmarks_add">%1$s konumuna yer imi ekle</string>
+    <string name="bookmarks_empty">Henüz yer imi yok</string>
+    <string name="bookmarks_name_hint">Ad (isteğe bağlı)</string>
+    <string name="bookmarks_rename">Yer imini yeniden adlandır</string>
+    <string name="bookmarks_delete">Yer imini sil</string>
+    <string name="bookmarks_deleted">Yer imi silindi</string>
+    <string name="bookmarks_undo">Geri al</string>
+    <string name="bookmarks_go_to">%1$s konumuna git</string>
     <string name="player_chapter_n">Bölüm %1$d</string>
     <string name="player_stats">Teknik istatistikler</string>
     <string name="player_stats_detail">Codec, çözücü, arabellek ve atlanan kareler ekranda</string>

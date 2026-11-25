@@ -838,6 +838,15 @@
     <string name="player_night_mode_detail">Laute Szenen leiser, Dialoge klarer</string>
     <string name="player_night_mode_unavailable">Nachtmodus ist auf diesem Gerät nicht verfügbar</string>
     <string name="player_chapters">Kapitel</string>
+    <string name="bookmarks">Lesezeichen</string>
+    <string name="bookmarks_add">Lesezeichen bei %1$s hinzufügen</string>
+    <string name="bookmarks_empty">Noch keine Lesezeichen</string>
+    <string name="bookmarks_name_hint">Name (optional)</string>
+    <string name="bookmarks_rename">Lesezeichen umbenennen</string>
+    <string name="bookmarks_delete">Lesezeichen löschen</string>
+    <string name="bookmarks_deleted">Lesezeichen gelöscht</string>
+    <string name="bookmarks_undo">Rückgängig</string>
+    <string name="bookmarks_go_to">Zu %1$s springen</string>
     <string name="player_chapter_n">Kapitel %1$d</string>
     <string name="player_stats">Statistiken für Nerds</string>
     <string name="player_stats_detail">Codecs, Decoder, Puffer und verlorene Frames im Bild</string>

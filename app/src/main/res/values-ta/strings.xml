@@ -838,6 +838,15 @@
     <string name="player_night_mode_detail">சத்தமான காட்சிகள் மென்மையாக, உரையாடல் தெளிவாக</string>
     <string name="player_night_mode_unavailable">இந்தச் சாதனத்தில் இரவு பயன்முறை இல்லை</string>
     <string name="player_chapters">அத்தியாயங்கள்</string>
+    <string name="bookmarks">புக்மார்க்குகள்</string>
+    <string name="bookmarks_add">%1$s இல் புக்மார்க் சேர்</string>
+    <string name="bookmarks_empty">புக்மார்க்குகள் இன்னும் இல்லை</string>
+    <string name="bookmarks_name_hint">பெயர் (விருப்பம்)</string>
+    <string name="bookmarks_rename">புக்மார்க் பெயரை மாற்று</string>
+    <string name="bookmarks_delete">புக்மார்க்கை நீக்கு</string>
+    <string name="bookmarks_deleted">புக்மார்க் நீக்கப்பட்டது</string>
+    <string name="bookmarks_undo">செயல்தவிர்</string>
+    <string name="bookmarks_go_to">%1$s க்குச் செல்</string>
     <string name="player_chapter_n">அத்தியாயம் %1$d</string>
     <string name="player_stats">தொழில்நுட்ப விவரங்கள்</string>
     <string name="player_stats_detail">கோடெக், டிகோடர், பஃபர், விடுபட்ட ஃப்ரேம்கள் திரையில்</string>

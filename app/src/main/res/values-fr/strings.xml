@@ -876,6 +876,15 @@
     <string name="player_night_mode_detail">Scènes bruyantes adoucies, dialogues plus clairs</string>
     <string name="player_night_mode_unavailable">Le mode nuit n’est pas disponible sur cet appareil</string>
     <string name="player_chapters">Chapitres</string>
+    <string name="bookmarks">Signets</string>
+    <string name="bookmarks_add">Ajouter un signet à %1$s</string>
+    <string name="bookmarks_empty">Aucun signet pour l\'instant</string>
+    <string name="bookmarks_name_hint">Nom (facultatif)</string>
+    <string name="bookmarks_rename">Renommer le signet</string>
+    <string name="bookmarks_delete">Supprimer le signet</string>
+    <string name="bookmarks_deleted">Signet supprimé</string>
+    <string name="bookmarks_undo">Annuler</string>
+    <string name="bookmarks_go_to">Aller à %1$s</string>
     <string name="player_chapter_n">Chapitre %1$d</string>
     <string name="player_stats">Statistiques avancées</string>
     <string name="player_stats_detail">Codecs, décodeurs, tampon et images perdues à l’écran</string>

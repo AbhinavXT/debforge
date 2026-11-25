@@ -838,6 +838,15 @@
     <string name="player_night_mode_detail">জোরালো দৃশ্য নরম, সংলাপ স্পষ্ট</string>
     <string name="player_night_mode_unavailable">এই ডিভাইসে নাইট মোড নেই</string>
     <string name="player_chapters">অধ্যায়</string>
+    <string name="bookmarks">বুকমার্ক</string>
+    <string name="bookmarks_add">%1$s-এ বুকমার্ক যোগ করুন</string>
+    <string name="bookmarks_empty">এখনও কোনো বুকমার্ক নেই</string>
+    <string name="bookmarks_name_hint">নাম (ঐচ্ছিক)</string>
+    <string name="bookmarks_rename">বুকমার্কের নাম বদলান</string>
+    <string name="bookmarks_delete">বুকমার্ক মুছুন</string>
+    <string name="bookmarks_deleted">বুকমার্ক মুছে ফেলা হয়েছে</string>
+    <string name="bookmarks_undo">পূর্বাবস্থায় ফেরান</string>
+    <string name="bookmarks_go_to">%1$s-এ যান</string>
     <string name="player_chapter_n">অধ্যায় %1$d</string>
     <string name="player_stats">প্রযুক্তিগত তথ্য</string>
     <string name="player_stats_detail">কোডেক, ডিকোডার, বাফার ও বাদ পড়া ফ্রেম স্ক্রিনে</string>

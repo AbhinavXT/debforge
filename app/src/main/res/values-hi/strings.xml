@@ -838,6 +838,15 @@
     <string name="player_night_mode_detail">तेज़ दृश्य धीमे, संवाद साफ़</string>
     <string name="player_night_mode_unavailable">इस डिवाइस पर नाइट मोड उपलब्ध नहीं है</string>
     <string name="player_chapters">चैप्टर</string>
+    <string name="bookmarks">बुकमार्क</string>
+    <string name="bookmarks_add">%1$s पर बुकमार्क जोड़ें</string>
+    <string name="bookmarks_empty">अभी कोई बुकमार्क नहीं</string>
+    <string name="bookmarks_name_hint">नाम (वैकल्पिक)</string>
+    <string name="bookmarks_rename">बुकमार्क का नाम बदलें</string>
+    <string name="bookmarks_delete">बुकमार्क हटाएं</string>
+    <string name="bookmarks_deleted">बुकमार्क हटाया गया</string>
+    <string name="bookmarks_undo">पूर्ववत करें</string>
+    <string name="bookmarks_go_to">%1$s पर जाएं</string>
     <string name="player_chapter_n">चैप्टर %1$d</string>
     <string name="player_stats">तकनीकी आँकड़े</string>
     <string name="player_stats_detail">कोडेक, डिकोडर, बफ़र और छूटे फ़्रेम स्क्रीन पर</string>
