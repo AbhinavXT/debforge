@@ -32,6 +32,7 @@
     <string name="setup_privacy">Seu %1$s fica criptografado somente neste dispositivo e é usado apenas para acessar a API do %2$s.</string>
     <string name="setup_sign_in_with">Fazer login com %1$s</string>
     <string name="setup_enter_code_at">Digite este código em %1$s</string>
+    <string name="setup_err_no_browser">Nenhum app consegue abrir esta página. Abra o endereço em outro dispositivo.</string>
     <string name="setup_open_service">Abrir %1$s</string>
     <string name="setup_waiting_approval">Aguardando aprovação…</string>
     <string name="add_title">Adicionar ao %1$s</string>

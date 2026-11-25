@@ -180,7 +180,9 @@ data class DeviceCode(
 /** Result of an approved device login. [refresh] is stored for token renewal. */
 data class DeviceGrant(
     val accessToken: String,
-    val refresh: OAuthCredentials?
+    val refresh: OAuthCredentials?,
+    /** Set if the login already validated [accessToken] (a token that can't be fetched twice). */
+    val account: AccountInfo? = null
 )
 
 data class OAuthCredentials(

@@ -32,6 +32,7 @@
     <string name="setup_privacy">%1$s Anda disimpan terenkripsi hanya di perangkat ini dan hanya digunakan untuk memanggil API %2$s.</string>
     <string name="setup_sign_in_with">Masuk dengan %1$s</string>
     <string name="setup_enter_code_at">Masukkan kode ini di %1$s</string>
+    <string name="setup_err_no_browser">Tidak ada aplikasi yang bisa membuka halaman ini. Buka alamatnya di perangkat lain.</string>
     <string name="setup_open_service">Buka %1$s</string>
     <string name="setup_waiting_approval">Menunggu persetujuan…</string>
     <string name="add_title">Tambah ke %1$s</string>

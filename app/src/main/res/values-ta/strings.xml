@@ -32,6 +32,7 @@
     <string name="setup_privacy">உங்கள் %1$s இந்தச் சாதனத்தில் மட்டும் என்க்ரிப்ட் செய்து சேமிக்கப்படும், %2$s API-ஐ அழைக்க மட்டுமே பயன்படுத்தப்படும்.</string>
     <string name="setup_sign_in_with">%1$s மூலம் உள்நுழை</string>
     <string name="setup_enter_code_at">இந்தக் குறியீட்டை %1$s-இல் உள்ளிடவும்</string>
+    <string name="setup_err_no_browser">இந்தப் பக்கத்தைத் திறக்கக்கூடிய ஆப்ஸ் இல்லை. முகவரியை வேறொரு சாதனத்தில் திறக்கவும்.</string>
     <string name="setup_open_service">%1$s-ஐத் திற</string>
     <string name="setup_waiting_approval">ஒப்புதலுக்காகக் காத்திருக்கிறது…</string>
     <string name="add_title">%1$s-இல் சேர்</string>

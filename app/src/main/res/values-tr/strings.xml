@@ -32,6 +32,7 @@
     <string name="setup_privacy">%1$s yalnızca bu cihazda şifreli olarak saklanır ve yalnızca %2$s API çağrıları için kullanılır.</string>
     <string name="setup_sign_in_with">%1$s ile giriş yap</string>
     <string name="setup_enter_code_at">Bu kodu şurada girin: %1$s</string>
+    <string name="setup_err_no_browser">Bu sayfayı açabilecek uygulama yok. Adresi başka bir cihazda açın.</string>
     <string name="setup_open_service">%1$s sayfasını aç</string>
     <string name="setup_waiting_approval">Onay bekleniyor…</string>
     <string name="add_title">%1$s hesabına ekle</string>

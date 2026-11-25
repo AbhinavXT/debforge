@@ -33,6 +33,7 @@
     <string name="setup_privacy">Your %1$s is stored encrypted on this device only and used solely to call the %2$s API.</string>
     <string name="setup_sign_in_with">Sign in with %1$s</string>
     <string name="setup_enter_code_at">Enter this code at %1$s</string>
+    <string name="setup_err_no_browser">No app can open this page. Open the address on another device.</string>
     <string name="setup_open_service">Open %1$s</string>
     <string name="setup_waiting_approval">Waiting for approval…</string>
     <string name="add_title">Add to %1$s</string>

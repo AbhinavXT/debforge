@@ -1,10 +1,18 @@
 package com.abhinavxt.debforge.data.provider.torbox
 
+import com.abhinavxt.debforge.data.provider.AccountInfo
 import com.abhinavxt.debforge.data.provider.DeviceCode
 import com.abhinavxt.debforge.data.provider.ProviderException
 import com.abhinavxt.debforge.di.ProviderModule
 import com.squareup.moshi.Moshi
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Protocol
@@ -36,12 +44,16 @@ class TorBoxDeviceLoginTest {
             .body(body.toResponseBody("application/json".toMediaType())).build()
     }.build()
 
-    private val login = TorBoxDeviceLogin(ProviderModule.provideTorBoxDeviceApi(client, Moshi.Builder().build())) {
+    private val api = ProviderModule.provideTorBoxDeviceApi(client, Moshi.Builder().build())
+    private val account = AccountInfo("me", null)
+
+    private val login = TorBoxDeviceLogin(api) {
         validated += it
         validateFailures.removeFirstOrNull()?.let { e -> throw e }
+        account
     }
 
-    private val code = DeviceCode("123456", "u", null, 5, Long.MAX_VALUE, "dev")
+    private val code = DeviceCode("123456", "u", null, 0, Long.MAX_VALUE, "dev")
     private val granted =
         200 to """{"success":true,"error":null,"detail":"d","data":{"access_token":"tok","token_type":"Bearer"}}"""
 
@@ -60,7 +72,7 @@ class TorBoxDeviceLoginTest {
 
     @Test fun startReadsTheCode() {
         val c = start(
-            """{"device_code":"dev","code":"123456","interval":7,"expires_in":300,"expires_at":"2026-01-01T00:00:00Z",
+            """{"device_code":"dev","code":"123456","interval":5,"expires_in":600,"expires_at":"2026-01-01T00:00:00Z",
             "verification_url":"https://torbox.app/oauth/device?app=DebForge",
             "verification_url_complete":"https://torbox.app/oauth/device?app=DebForge&code=123456",
             "friendly_verification_url":"https://tor.box/link"}"""
@@ -69,7 +81,8 @@ class TorBoxDeviceLoginTest {
         assertEquals("dev", c.handle)
         assertEquals("https://tor.box/link", c.verificationUrl)
         assertEquals("https://torbox.app/oauth/device?app=DebForge&code=123456", c.directUrl)
-        assertEquals(7, c.intervalSeconds)
+        assertEquals(5, c.intervalSeconds)
+        assertEquals(600.0, (c.expiresAtMillis - System.currentTimeMillis()) / 1000.0, 5.0)
         assertEquals("https://api.torbox.app/v1/api/user/auth/device/start?app=DebForge", requests.single().url.toString())
         assertNull(requests.single().header("Authorization"))
     }
@@ -151,25 +164,48 @@ class TorBoxDeviceLoginTest {
 
     @Test fun networkBlipWhileValidatingDoesNotLoseTheToken() {
         answers += granted
-        validateFailures += listOf(IOException("offline"), http(503))
-        assertNull(poll())
-        assertNull(poll())
-        assertEquals("tok", poll()!!.accessToken)
+        validateFailures += listOf(IOException("offline"), http(429), http(503))
+        val grant = poll()!!
+        assertEquals("tok", grant.accessToken)
+        assertEquals("already validated, so it isn't checked again", account, grant.account)
         assertEquals("redeemed once", 1, requests.size)
+        assertEquals(4, validated.size)
     }
 
     @Test fun rejectedTokenIsNotGranted() {
         answers += granted
         validateFailures += http(401)
         assertThrows(HttpException::class.java) { poll() }
+        answers += granted
+        validateFailures += ProviderException("no")
+        assertThrows(ProviderException::class.java) { poll() }
+        assertEquals("a refusal isn't retried", 2, validated.size)
     }
 
-    @Test fun aNewSignInDropsTheOldToken() {
+    @Test fun validatingIsBoundedInTime() {
         answers += granted
-        validateFailures += IOException("offline")
-        assertNull(poll())
-        start("""{"device_code":"dev2","code":"1"}""")
-        answers += fail(400, "DEVICE_CODE_NOT_USED")
-        assertNull(poll())
+        val stuck = TorBoxDeviceLogin(api, validateForMillis = 50) { delay(60_000); account }
+        assertThrows(ProviderException::class.java) { runBlocking { stuck.poll(code) } }
+    }
+
+    @Test fun cancellingStopsTheRetries() = runBlocking {
+        answers += granted
+        repeat(1000) { validateFailures += IOException("offline") }
+        val job = launch(Dispatchers.IO) { login.poll(code.copy(intervalSeconds = 1)) }
+        withTimeout(5_000) { while (validated.isEmpty()) delay(10) }
+        job.cancelAndJoin()
+        assertEquals(1, validated.size)
+    }
+
+    @Test fun overlappingSignInsKeepTheirOwnToken() = runBlocking {
+        val gate = CompletableDeferred<Unit>()
+        val slow = TorBoxDeviceLogin(api) { gate.await(); account }
+        answers += granted
+        val first = async(Dispatchers.IO) { slow.poll(code) }
+        withTimeout(5_000) { while (requests.isEmpty()) delay(10) }
+        answers += 200 to """{"success":true,"error":null,"detail":"d","data":{"device_code":"dev2","code":"1"}}"""
+        slow.start()
+        gate.complete(Unit)
+        assertEquals("tok", first.await()!!.accessToken)
     }
 }

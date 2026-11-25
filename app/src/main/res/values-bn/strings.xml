@@ -32,6 +32,7 @@
     <string name="setup_privacy">আপনার %1$s শুধু এই ডিভাইসেই এনক্রিপ্ট করে রাখা হয় এবং কেবল %2$s API ব্যবহারের জন্যই কাজে লাগে।</string>
     <string name="setup_sign_in_with">%1$s দিয়ে সাইন ইন করুন</string>
     <string name="setup_enter_code_at">এই কোডটি %1$s-এ লিখুন</string>
+    <string name="setup_err_no_browser">কোনো অ্যাপ এই পেজ খুলতে পারে না। অন্য ডিভাইসে ঠিকানাটি খুলুন।</string>
     <string name="setup_open_service">%1$s খুলুন</string>
     <string name="setup_waiting_approval">অনুমোদনের অপেক্ষায়…</string>
     <string name="add_title">%1$s-এ যোগ করুন</string>

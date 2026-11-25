@@ -32,6 +32,7 @@
     <string name="setup_privacy">Tu %1$s se guarda de forma cifrada solo en este dispositivo y solo se usa para llamar a la API de %2$s.</string>
     <string name="setup_sign_in_with">Iniciar sesión con %1$s</string>
     <string name="setup_enter_code_at">Introduce este código en %1$s</string>
+    <string name="setup_err_no_browser">Ninguna aplicación puede abrir esta página. Abre la dirección en otro dispositivo.</string>
     <string name="setup_open_service">Abrir %1$s</string>
     <string name="setup_waiting_approval">Esperando la aprobación…</string>
     <string name="add_title">Añadir a %1$s</string>

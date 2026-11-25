@@ -32,6 +32,7 @@
     <string name="setup_privacy">你的 %1$s 仅加密保存在本设备上，只用于调用 %2$s API。</string>
     <string name="setup_sign_in_with">使用 %1$s 登录</string>
     <string name="setup_enter_code_at">请在 %1$s 输入此代码</string>
+    <string name="setup_err_no_browser">没有可打开此页面的应用。请在其他设备上打开该网址。</string>
     <string name="setup_open_service">打开 %1$s</string>
     <string name="setup_waiting_approval">正在等待授权…</string>
     <string name="add_title">添加到 %1$s</string>

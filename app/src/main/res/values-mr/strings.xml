@@ -32,6 +32,7 @@
     <string name="setup_privacy">तुमची %1$s फक्त या डिव्हाइसवर एन्क्रिप्ट करून ठेवली जाते आणि फक्त %2$s API ला कॉल करण्यासाठी वापरली जाते.</string>
     <string name="setup_sign_in_with">%1$s ने साइन इन करा</string>
     <string name="setup_enter_code_at">हा कोड %1$s वर टाका</string>
+    <string name="setup_err_no_browser">हे पेज उघडू शकेल असे कोणतेही अॅप नाही. हा पत्ता दुसऱ्या डिव्हाइसवर उघडा.</string>
     <string name="setup_open_service">%1$s उघडा</string>
     <string name="setup_waiting_approval">मंजुरीची वाट पाहत आहे…</string>
     <string name="add_title">%1$s मध्ये जोडा</string>

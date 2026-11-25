@@ -75,7 +75,7 @@ class AuthRepository @Inject constructor(
         val login = p.deviceLogin ?: return DataResult.Error("${p.info.displayName} doesn't support this sign-in")
         return ProviderCalls.run(p.info, "signing in") {
             val grant = login.poll(code) ?: return@run null
-            val account = p.validateToken(grant.accessToken)
+            val account = grant.account ?: p.validateToken(grant.accessToken)
             // Refresh creds first: setToken flips the app to Home, which
             // immediately starts making (possibly refreshing) calls.
             tokenStore.setOAuth(provider, grant.refresh)

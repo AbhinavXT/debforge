@@ -1,5 +1,6 @@
 package com.abhinavxt.debforge.data.provider.torbox
 
+import com.abhinavxt.debforge.data.provider.AccountInfo
 import com.abhinavxt.debforge.data.provider.DeviceCode
 import com.abhinavxt.debforge.data.provider.DeviceGrant
 import com.abhinavxt.debforge.data.provider.DeviceLogin
@@ -8,6 +9,8 @@ import com.abhinavxt.debforge.data.provider.torbox.dto.TbEnvelope
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 import com.squareup.moshi.JsonDataException
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withTimeoutOrNull
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import retrofit2.HttpException
 import retrofit2.http.Body
@@ -53,19 +56,16 @@ data class TbDeviceTokenDto(
 
 /**
  * [DeviceLogin] for TorBox. [validate] checks a token against user/me: TorBox
- * hands the token out only once, so it is checked here, where a network
- * failure can be retried on the next poll instead of losing the token.
+ * hands the token out only once, so a network failure there is retried (for
+ * up to [validateForMillis]) instead of losing the token.
  */
 class TorBoxDeviceLogin(
     private val api: TorBoxDeviceApi,
-    private val validate: suspend (String) -> Unit
+    private val validateForMillis: Long = 5 * 60_000L,
+    private val validate: suspend (String) -> AccountInfo
 ) : DeviceLogin {
 
-    /** Device code to its token, between redeeming it and validating it. Memory only. */
-    @Volatile private var redeemed: Pair<String, String>? = null
-
     override suspend fun start(): DeviceCode {
-        redeemed = null
         val r = api.start()
         val d = r.data
         val handle = d?.deviceCode
@@ -88,25 +88,30 @@ class TorBoxDeviceLogin(
 
     override suspend fun poll(code: DeviceCode): DeviceGrant? {
         val token = try {
-            redeemed?.takeIf { it.first == code.handle }?.second ?: redeem(code.handle) ?: return null
+            redeem(code.handle) ?: return null
         } catch (e: IOException) {
             return null // transient; keep polling
         } catch (e: JsonDataException) {
             return null // not TorBox's answer (e.g. a proxy's)
         }
-        redeemed = code.handle to token
-        try {
-            validate(token)
-        } catch (e: IOException) {
-            return null
-        } catch (e: HttpException) {
-            if (e.isTransient()) return null
-            redeemed = null
-            throw e
-        }
-        redeemed = null
+        // The token lives only in this call: cancelling, failing or succeeding drops it.
+        val account = withTimeoutOrNull(validateForMillis) { validateWithRetry(token, code.intervalSeconds) }
+            ?: throw ProviderException("TorBox: couldn't reach the service to finish signing in. Try again.")
         // TorBox hands out the account's API token, which doesn't expire.
-        return DeviceGrant(accessToken = token, refresh = null)
+        return DeviceGrant(accessToken = token, refresh = null, account = account)
+    }
+
+    private suspend fun validateWithRetry(token: String, intervalSeconds: Int): AccountInfo {
+        while (true) {
+            try {
+                return validate(token)
+            } catch (e: IOException) {
+                // no network, or a captive portal's page: retry
+            } catch (e: HttpException) {
+                if (!e.isTransient()) throw e
+            }
+            delay(intervalSeconds * 1000L)
+        }
     }
 
     /** The token, or null if not approved yet. Throws [ProviderException] once the code is dead. */

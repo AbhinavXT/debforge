@@ -32,6 +32,7 @@
     <string name="setup_privacy">మీ %1$s ఈ పరికరంలో మాత్రమే ఎన్‌క్రిప్ట్ చేసి నిల్వ చేయబడుతుంది, %2$s APIని కాల్ చేయడానికి మాత్రమే ఉపయోగించబడుతుంది.</string>
     <string name="setup_sign_in_with">%1$sతో సైన్ ఇన్ చేయి</string>
     <string name="setup_enter_code_at">ఈ కోడ్‌ను %1$sలో ఎంటర్ చేయండి</string>
+    <string name="setup_err_no_browser">ఈ పేజీని తెరవగల యాప్ ఏదీ లేదు. చిరునామాను మరో పరికరంలో తెరవండి.</string>
     <string name="setup_open_service">%1$sను తెరువు</string>
     <string name="setup_waiting_approval">ఆమోదం కోసం వేచి ఉంది…</string>
     <string name="add_title">%1$sకు జోడించు</string>

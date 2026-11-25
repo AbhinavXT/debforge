@@ -32,6 +32,7 @@
     <string name="setup_privacy">Ключ (%1$s) хранится в зашифрованном виде только на этом устройстве и используется только для запросов к API (%2$s).</string>
     <string name="setup_sign_in_with">Войти через %1$s</string>
     <string name="setup_enter_code_at">Введите этот код на %1$s</string>
+    <string name="setup_err_no_browser">Нет приложения, которое может открыть эту страницу. Откройте адрес на другом устройстве.</string>
     <string name="setup_open_service">Открыть %1$s</string>
     <string name="setup_waiting_approval">Ожидание подтверждения…</string>
     <string name="add_title">Добавить в %1$s</string>

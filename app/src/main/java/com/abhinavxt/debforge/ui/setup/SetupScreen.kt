@@ -1,5 +1,6 @@
 package com.abhinavxt.debforge.ui.setup
 
+import android.widget.Toast
 import androidx.compose.ui.res.stringResource
 import com.abhinavxt.debforge.R
 import androidx.compose.foundation.layout.Arrangement
@@ -49,6 +50,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -61,6 +63,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 fun SetupScreen(viewModel: SetupViewModel = hiltViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val uriHandler = LocalUriHandler.current
+    val context = LocalContext.current
+    val openPage: (String) -> Unit = { url ->
+        // No browser (some TVs): the address and code stay on screen.
+        runCatching { uriHandler.openUri(url) }.onFailure {
+            Toast.makeText(context, R.string.setup_err_no_browser, Toast.LENGTH_LONG).show()
+        }
+    }
     val clipboard = LocalClipboardManager.current
     val info = state.selectedInfo
     val serviceName = info?.displayName ?: stringResource(R.string.setup_your_service)
@@ -153,8 +162,7 @@ fun SetupScreen(viewModel: SetupViewModel = hiltViewModel()) {
                     state = state,
                     onStart = viewModel::startDeviceLogin,
                     onCancel = viewModel::cancelDeviceLogin,
-                    // No browser (some TVs): the address and code stay on screen.
-                    onOpen = { url -> runCatching { uriHandler.openUri(url) } }
+                    onOpen = openPage
                 )
                 Text(
                     stringResource(R.string.setup_or_paste, tokenLabel),
@@ -217,7 +225,7 @@ fun SetupScreen(viewModel: SetupViewModel = hiltViewModel()) {
             // Help block — non-essential, pushed below the fold visually.
             Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                 if (info != null) {
-                    TextButton(onClick = { uriHandler.openUri(info.tokenUrl) }) {
+                    TextButton(onClick = { openPage(info.tokenUrl) }) {
                         Icon(Icons.AutoMirrored.Rounded.OpenInNew, contentDescription = null, modifier = Modifier.size(18.dp))
                         Spacer(Modifier.width(8.dp))
                         Text(stringResource(R.string.setup_get_token, tokenLabel, info.tokenUrlLabel))

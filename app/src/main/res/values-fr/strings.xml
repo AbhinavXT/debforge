@@ -32,6 +32,7 @@
     <string name="setup_privacy">Votre %1$s reste uniquement sur cet appareil, sous forme chiffrée, et ne sert qu\'à appeler l\'API de %2$s.</string>
     <string name="setup_sign_in_with">Se connecter avec %1$s</string>
     <string name="setup_enter_code_at">Saisissez ce code sur %1$s</string>
+    <string name="setup_err_no_browser">Aucune application ne peut ouvrir cette page. Ouvrez l\'adresse sur un autre appareil.</string>
     <string name="setup_open_service">Ouvrir %1$s</string>
     <string name="setup_waiting_approval">En attente d\'approbation…</string>
     <string name="add_title">Ajouter à %1$s</string>
