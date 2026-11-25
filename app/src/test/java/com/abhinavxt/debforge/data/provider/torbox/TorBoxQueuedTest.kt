@@ -63,6 +63,9 @@ class TorBoxQueuedTest {
             }
             "controlQueued" -> {
                 val c = args[0] as TbQueuedControl
+                controlRefusal?.let { (code, body) ->
+                    throw retrofit2.HttpException(retrofit2.Response.error<Any>(code, okhttp3.ResponseBody.create(null, body)))
+                }
                 controls += c
                 queued.removeAll { it.id == c.queuedId }
                 TbEnvelope<Any>(true, null, null, null)
@@ -82,6 +85,7 @@ class TorBoxQueuedTest {
 
     init { com.abhinavxt.debforge.data.prefs.TokenCipher.testKey = javax.crypto.spec.SecretKeySpec(ByteArray(16), "AES") }
     private val tokens = TokenStore(RuntimeEnvironment.getApplication())
+    private var controlRefusal: Pair<Int, String>? = null
     private val provider = TorBoxProvider(api, deviceApi, tokens)
 
     private fun q(id: Long, hash: String = "abcdef") = TbQueuedDto(id = id, hash = hash, name = "q$id")
@@ -153,6 +157,16 @@ class TorBoxQueuedTest {
         torrents += TbItemDto(1, "a", 1, null, false, false, null, eta = 8_640_000.0, downloadState = "checking")
         torrents += TbItemDto(2, "b", 1, null, false, false, null, eta = 90.0, downloadState = "downloading")
         assertEquals(listOf(90L, null), provider.listProcessing().sortedByDescending { it.etaSeconds ?: 0 }.map { it.etaSeconds })
+    }
+
+    @Test fun refusedStartShowsTorBoxsReason() = runBlocking {
+        queued += q(9)
+        provider.listProcessing()
+        controlRefusal = 500 to """{"success":false,"error":"ACTIVE_LIMIT","detail":"You have reached your active download limit.","data":null}"""
+        val e = runCatching { provider.controlJob("queued:9:abcdef:torrent", JobAction.START_NOW) }.exceptionOrNull()
+        assertEquals("TorBox: You have reached your active download limit.", e?.message)
+        controlRefusal = 500 to "<html>bad gateway</html>"
+        assertTrue(runCatching { provider.controlJob("queued:9:abcdef:torrent", JobAction.START_NOW) }.exceptionOrNull() is retrofit2.HttpException)
     }
 
     @Test fun startAndRemoveCallControlQueued() = runBlocking {

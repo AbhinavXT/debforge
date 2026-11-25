@@ -571,7 +571,7 @@ class TorBoxProvider @Inject constructor(
         // Never send an id that isn't in this account's queue (e.g. a row left over from another account).
         if (!isQueued(id)) throw ProviderException("TorBox: that download is no longer in the queue")
         val envelope = try {
-            changing { api.controlQueued(TbQueuedControl(id, operation)) }
+            changing { explained { api.controlQueued(TbQueuedControl(id, operation)) } }
         } finally {
             queuedChangedAt = android.os.SystemClock.elapsedRealtime()
         }
@@ -579,6 +579,19 @@ class TorBoxProvider @Inject constructor(
             throw ProviderException("TorBox: ${envelope.detail ?: envelope.error ?: "couldn't $operation"}")
         }
         forgetQueued(id)
+    }
+
+    /**
+     * TorBox answers a refused Start now (slots full) or control with an error status, even 500, and its
+     * reason in the body: show that reason. Sign-in and rate-limit errors keep the app's own messages.
+     */
+    private suspend fun <T> explained(block: suspend () -> T): T = try {
+        block()
+    } catch (e: HttpException) {
+        val detail = if (e.code() == 401 || e.code() == 403 || e.code() == 429) null
+        else tbError(runCatching { e.response()?.errorBody()?.string() }.getOrNull())
+            ?.takeIf { val c = it.code.orEmpty().uppercase(); "TOKEN" !in c && "AUTH" !in c }?.detail
+        throw if (detail != null) ProviderException("TorBox: $detail", e) else e
     }
 
     override suspend fun controlJob(ref: String, action: JobAction) {
@@ -589,7 +602,7 @@ class TorBoxProvider @Inject constructor(
         val (kind, id) = parseJobRef(ref)?.takeIf { it.first == Kind.TORRENT }
             ?: throw ProviderException("Corrupt TorBox reference: $ref")
         val operation = if (action == JobAction.RESUME) "resume" else "reannounce"
-        val envelope = changing { api.controlTorrent(TbTorrentControl(id, operation)) }
+        val envelope = changing { explained { api.controlTorrent(TbTorrentControl(id, operation)) } }
         if (!envelope.success) {
             throw ProviderException("TorBox: ${envelope.detail ?: envelope.error ?: "couldn't $operation"}")
         }
