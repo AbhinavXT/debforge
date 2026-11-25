@@ -87,6 +87,13 @@ interface DebridProvider {
      */
     fun removalKey(itemId: String): String? = null
 
+    /**
+     * Runs [action] on a job from [listProcessing] ([RemoteJob.actions] says
+     * which are offered). Throws on failure.
+     */
+    suspend fun controlJob(ref: String, action: JobAction): Unit =
+        throw ProviderException("${info.displayName} doesn't support that")
+
     /** Deletes [key] (from [removalKey] or a [RemoteJob.ref]) on the service. */
     suspend fun remove(key: String): Unit =
         throw ProviderException("${info.displayName} doesn't support removing items from the app")
@@ -140,8 +147,13 @@ data class RemoteJob(
     val status: String,
     val sizeBytes: Long,
     val etaSeconds: Long?,
-    val bytesPerSecond: Long?
+    val bytesPerSecond: Long?,
+    /** Extra things the service can do with this job (besides removing it). */
+    val actions: Set<JobAction> = emptySet()
 )
+
+/** Optional per-job actions of the processing strip. */
+enum class JobAction { START_NOW, REANNOUNCE, RESUME }
 
 /**
  * OAuth-style device flow: show [DeviceCode.userCode], the user approves it

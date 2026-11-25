@@ -46,6 +46,11 @@
     <string name="processing_auto_short">अपने-आप डाउनलोड</string>
     <string name="processing_auto_on_short">अपने-आप डाउनलोड चालू</string>
     <string name="processing_cd_remove">%1$s को सेवा से हटाएँ</string>
+    <string name="processing_cd_actions">%1$s के लिए कार्रवाइयाँ</string>
+    <string name="processing_start_now">अभी शुरू करें</string>
+    <string name="processing_reannounce">फिर से घोषित करें</string>
+    <string name="processing_resume">फिर शुरू करें</string>
+    <string name="processing_menu_remove">हटाएँ</string>
     <string name="eta_seconds">%1$d से. बाकी</string>
     <string name="eta_minutes">%1$d मि. बाकी</string>
     <string name="eta_hours">%1$d घं. %2$d मि. बाकी</string>
@@ -242,6 +247,9 @@
     <string name="chooser_open_with">इससे खोलें</string>
     <string name="chooser_share">शेयर करें</string>
     <string name="msg_will_download_when_ready">\"%1$s\" तैयार होते ही डाउनलोड होगा</string>
+    <string name="msg_job_started">\"%1$s\" शुरू हुआ</string>
+    <string name="msg_job_reannounced">\"%1$s\" फिर से घोषित किया गया</string>
+    <string name="msg_job_resumed">\"%1$s\" फिर शुरू हुआ</string>
     <string name="msg_ready_one">तैयार — %1$s डाउनलोड हो रहा है</string>
     <string name="msg_no_player">कोई वीडियो प्लेयर नहीं मिला — VLC या mpv इंस्टॉल करें</string>
     <string name="msg_app_storage">ऐप स्टोरेज में सेव हो रहा है — सेटिंग्स में कभी भी बदलें</string>

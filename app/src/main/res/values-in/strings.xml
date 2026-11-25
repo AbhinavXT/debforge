@@ -46,6 +46,11 @@
     <string name="processing_auto_short">Unduh otomatis</string>
     <string name="processing_auto_on_short">Unduh otomatis aktif</string>
     <string name="processing_cd_remove">Hapus %1$s dari layanan</string>
+    <string name="processing_cd_actions">Aksi untuk %1$s</string>
+    <string name="processing_start_now">Mulai sekarang</string>
+    <string name="processing_reannounce">Umumkan ulang</string>
+    <string name="processing_resume">Lanjutkan</string>
+    <string name="processing_menu_remove">Hapus</string>
     <string name="eta_seconds">%1$d dtk lagi</string>
     <string name="eta_minutes">%1$d mnt lagi</string>
     <string name="eta_hours">%1$d j %2$d mnt lagi</string>
@@ -239,6 +244,9 @@
     <string name="chooser_open_with">Buka dengan</string>
     <string name="chooser_share">Bagikan</string>
     <string name="msg_will_download_when_ready">\"%1$s\" akan diunduh saat siap</string>
+    <string name="msg_job_started">\"%1$s\" dimulai</string>
+    <string name="msg_job_reannounced">\"%1$s\" diumumkan ulang</string>
+    <string name="msg_job_resumed">\"%1$s\" dilanjutkan</string>
     <string name="msg_ready_one">Siap — mengunduh %1$s</string>
     <string name="msg_no_player">Pemutar video tidak ditemukan — instal VLC atau mpv</string>
     <string name="msg_app_storage">Menyimpan ke penyimpanan aplikasi — ubah kapan saja di Setelan</string>

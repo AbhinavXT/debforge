@@ -46,6 +46,11 @@
     <string name="processing_auto_short">आपोआप डाउनलोड</string>
     <string name="processing_auto_on_short">आपोआप डाउनलोड चालू</string>
     <string name="processing_cd_remove">सेवेतून %1$s काढून टाका</string>
+    <string name="processing_cd_actions">%1$s साठी क्रिया</string>
+    <string name="processing_start_now">आता सुरू करा</string>
+    <string name="processing_reannounce">पुन्हा जाहीर करा</string>
+    <string name="processing_resume">पुन्हा सुरू करा</string>
+    <string name="processing_menu_remove">काढून टाका</string>
     <string name="eta_seconds">%1$d से. बाकी</string>
     <string name="eta_minutes">%1$d मि. बाकी</string>
     <string name="eta_hours">%1$d ता. %2$d मि. बाकी</string>
@@ -242,6 +247,9 @@
     <string name="chooser_open_with">यासह उघडा</string>
     <string name="chooser_share">शेअर करा</string>
     <string name="msg_will_download_when_ready">\"%1$s\" तयार झाल्यावर डाउनलोड होईल</string>
+    <string name="msg_job_started">\"%1$s\" सुरू झाले</string>
+    <string name="msg_job_reannounced">\"%1$s\" पुन्हा जाहीर केले</string>
+    <string name="msg_job_resumed">\"%1$s\" पुन्हा सुरू झाले</string>
     <string name="msg_ready_one">तयार — %1$s डाउनलोड होत आहे</string>
     <string name="msg_no_player">कोणताही व्हिडिओ प्लेअर सापडला नाही — VLC किंवा mpv इंस्टॉल करा</string>
     <string name="msg_app_storage">ॲप स्टोरेजमध्ये सेव्ह होत आहे — सेटिंग्जमध्ये कधीही बदला</string>

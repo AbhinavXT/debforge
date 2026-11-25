@@ -534,7 +534,8 @@ fun BrowseScreen(
                 jobs = lastJobs,
                 isWatched = { "${it.provider.name}|${it.ref}" in watchedJobs },
                 onToggleWatch = viewModel::toggleWatch,
-                onRemove = { job -> confirmRemove = RemoveRequest(job.name, job = job) }
+                onRemove = { job -> confirmRemove = RemoveRequest(job.name, job = job) },
+                onAction = viewModel::controlJob
             )
         }
         // True when the poster grid or the list is what fills the screen.

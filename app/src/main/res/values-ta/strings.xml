@@ -46,6 +46,11 @@
     <string name="processing_auto_short">தானியங்கிப் பதிவிறக்கம்</string>
     <string name="processing_auto_on_short">தானியங்கிப் பதிவிறக்கம் இயக்கத்தில்</string>
     <string name="processing_cd_remove">சேவையிலிருந்து %1$s-ஐ அகற்று</string>
+    <string name="processing_cd_actions">%1$s க்கான செயல்கள்</string>
+    <string name="processing_start_now">இப்போது தொடங்கு</string>
+    <string name="processing_reannounce">மீண்டும் அறிவி</string>
+    <string name="processing_resume">தொடரவும்</string>
+    <string name="processing_menu_remove">அகற்று</string>
     <string name="eta_seconds">%1$d வி. மீதம்</string>
     <string name="eta_minutes">%1$d நி. மீதம்</string>
     <string name="eta_hours">%1$d ம. %2$d நி. மீதம்</string>
@@ -242,6 +247,9 @@
     <string name="chooser_open_with">இதன் மூலம் திற</string>
     <string name="chooser_share">பகிர்</string>
     <string name="msg_will_download_when_ready">\"%1$s\" தயாரானதும் பதிவிறக்கப்படும்</string>
+    <string name="msg_job_started">\"%1$s\" தொடங்கியது</string>
+    <string name="msg_job_reannounced">\"%1$s\" மீண்டும் அறிவிக்கப்பட்டது</string>
+    <string name="msg_job_resumed">\"%1$s\" தொடர்ந்தது</string>
     <string name="msg_ready_one">தயார் — %1$s பதிவிறக்கப்படுகிறது</string>
     <string name="msg_no_player">வீடியோ பிளேயர் எதுவும் இல்லை — VLC அல்லது mpv-ஐ நிறுவவும்</string>
     <string name="msg_app_storage">ஆப்ஸ் ஸ்டோரேஜில் சேமிக்கிறது — அமைப்புகளில் எப்போது வேண்டுமானாலும் மாற்றலாம்</string>

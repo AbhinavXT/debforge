@@ -46,6 +46,11 @@
     <string name="processing_auto_short">ఆటో-డౌన్‌లోడ్</string>
     <string name="processing_auto_on_short">ఆటో-డౌన్‌లోడ్ ఆన్</string>
     <string name="processing_cd_remove">సర్వీస్ నుండి %1$s ను తీసివేయి</string>
+    <string name="processing_cd_actions">%1$s కోసం చర్యలు</string>
+    <string name="processing_start_now">ఇప్పుడే ప్రారంభించు</string>
+    <string name="processing_reannounce">మళ్లీ ప్రకటించు</string>
+    <string name="processing_resume">తిరిగి ప్రారంభించు</string>
+    <string name="processing_menu_remove">తీసివేయి</string>
     <string name="eta_seconds">%1$d సె. మిగిలి ఉంది</string>
     <string name="eta_minutes">%1$d ని. మిగిలి ఉంది</string>
     <string name="eta_hours">%1$d గం. %2$d ని. మిగిలి ఉంది</string>
@@ -242,6 +247,9 @@
     <string name="chooser_open_with">దీనితో తెరువు</string>
     <string name="chooser_share">షేర్ చేయి</string>
     <string name="msg_will_download_when_ready">\"%1$s\" సిద్ధమైనప్పుడు డౌన్‌లోడ్ అవుతుంది</string>
+    <string name="msg_job_started">\"%1$s\" ప్రారంభమైంది</string>
+    <string name="msg_job_reannounced">\"%1$s\" మళ్లీ ప్రకటించబడింది</string>
+    <string name="msg_job_resumed">\"%1$s\" తిరిగి ప్రారంభమైంది</string>
     <string name="msg_ready_one">సిద్ధం — %1$s డౌన్‌లోడ్ అవుతోంది</string>
     <string name="msg_no_player">వీడియో ప్లేయర్ ఏదీ కనుగొనబడలేదు — VLC లేదా mpvని ఇన్‌స్టాల్ చేయండి</string>
     <string name="msg_app_storage">యాప్ స్టోరేజ్‌కు సేవ్ అవుతోంది — సెట్టింగ్‌లలో ఎప్పుడైనా మార్చవచ్చు</string>

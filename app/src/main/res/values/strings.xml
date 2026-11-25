@@ -47,6 +47,11 @@
     <string name="processing_auto_short">Auto-download</string>
     <string name="processing_auto_on_short">Auto-download on</string>
     <string name="processing_cd_remove">Remove %1$s from the service</string>
+    <string name="processing_cd_actions">Actions for %1$s</string>
+    <string name="processing_start_now">Start now</string>
+    <string name="processing_reannounce">Reannounce</string>
+    <string name="processing_resume">Resume</string>
+    <string name="processing_menu_remove">Remove</string>
     <string name="eta_seconds">%1$ds left</string>
     <string name="eta_minutes">%1$dm left</string>
     <string name="eta_hours">%1$dh %2$dm left</string>
@@ -243,6 +248,9 @@
     <string name="chooser_open_with">Open with</string>
     <string name="chooser_share">Share</string>
     <string name="msg_will_download_when_ready">Will download \"%1$s\" when it\'s ready</string>
+    <string name="msg_job_started">Started \"%1$s\"</string>
+    <string name="msg_job_reannounced">Reannounced \"%1$s\"</string>
+    <string name="msg_job_resumed">Resumed \"%1$s\"</string>
     <string name="msg_ready_one">Ready — downloading %1$s</string>
     <string name="msg_no_player">No video player found — install VLC or mpv</string>
     <string name="msg_app_storage">Saving to app storage — change it any time in Settings</string>

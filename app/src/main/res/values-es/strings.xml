@@ -46,6 +46,11 @@
     <string name="processing_auto_short">Descarga automática</string>
     <string name="processing_auto_on_short">Descarga automática activada</string>
     <string name="processing_cd_remove">Quitar %1$s del servicio</string>
+    <string name="processing_cd_actions">Acciones para %1$s</string>
+    <string name="processing_start_now">Iniciar ahora</string>
+    <string name="processing_reannounce">Reanunciar</string>
+    <string name="processing_resume">Reanudar</string>
+    <string name="processing_menu_remove">Quitar</string>
     <string name="eta_seconds">Quedan %1$d s</string>
     <string name="eta_minutes">Quedan %1$d min</string>
     <string name="eta_hours">Quedan %1$d h %2$d min</string>
@@ -245,6 +250,9 @@
     <string name="chooser_open_with">Abrir con</string>
     <string name="chooser_share">Compartir</string>
     <string name="msg_will_download_when_ready">\"%1$s\" se descargará cuando esté listo</string>
+    <string name="msg_job_started">Se inició \"%1$s\"</string>
+    <string name="msg_job_reannounced">Se reanunció \"%1$s\"</string>
+    <string name="msg_job_resumed">Se reanudó \"%1$s\"</string>
     <string name="msg_ready_one">Listo: descargando %1$s</string>
     <string name="msg_no_player">No se encontró ningún reproductor de video: instala VLC o mpv</string>
     <string name="msg_app_storage">Guardando en el almacenamiento de la app; puedes cambiarlo cuando quieras en Ajustes</string>

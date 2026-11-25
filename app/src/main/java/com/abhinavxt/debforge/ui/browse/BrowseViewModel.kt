@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.abhinavxt.debforge.data.local.DownloadDao
 import com.abhinavxt.debforge.data.metadata.MediaMeta
 import com.abhinavxt.debforge.data.metadata.MetadataRepository
+import com.abhinavxt.debforge.data.provider.JobAction
 import com.abhinavxt.debforge.data.provider.RemoteJob
 import com.abhinavxt.debforge.download.watch.ReadyWatcher
 import android.net.Uri
@@ -627,6 +628,26 @@ class BrowseViewModel @Inject constructor(
                 if (failed > 0) res.getQuantityString(R.plurals.msg_delete_failed_n, failed, failed)
                 else res.getQuantityString(R.plurals.msg_deleted_device_n, deleted, deleted)
             )
+        }
+    }
+
+    /** Start now / Reannounce / Resume on a job in the processing strip; the result goes out as a snackbar. */
+    fun controlJob(job: RemoteJob, action: JobAction) {
+        viewModelScope.launch {
+            when (val r = downloadsRepository.controlJob(job.provider, job.ref, action)) {
+                is DataResult.Success -> _events.emit(
+                    str(
+                        when (action) {
+                            JobAction.START_NOW -> R.string.msg_job_started
+                            JobAction.REANNOUNCE -> R.string.msg_job_reannounced
+                            JobAction.RESUME -> R.string.msg_job_resumed
+                        },
+                        job.name
+                    )
+                )
+                is DataResult.Error -> _events.emit(r.message)
+            }
+            updateProcessing()
         }
     }
 

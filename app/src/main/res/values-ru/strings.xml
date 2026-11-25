@@ -46,6 +46,11 @@
     <string name="processing_auto_short">Автозагрузка</string>
     <string name="processing_auto_on_short">Автозагрузка включена</string>
     <string name="processing_cd_remove">Удалить %1$s из сервиса</string>
+    <string name="processing_cd_actions">Действия для %1$s</string>
+    <string name="processing_start_now">Запустить сейчас</string>
+    <string name="processing_reannounce">Переанонсировать</string>
+    <string name="processing_resume">Возобновить</string>
+    <string name="processing_menu_remove">Удалить</string>
     <string name="eta_seconds">осталось %1$d с</string>
     <string name="eta_minutes">осталось %1$d мин</string>
     <string name="eta_hours">осталось %1$d ч %2$d мин</string>
@@ -248,6 +253,9 @@
     <string name="chooser_open_with">Открыть с помощью</string>
     <string name="chooser_share">Поделиться</string>
     <string name="msg_will_download_when_ready">\"%1$s\" будет скачан, когда будет готов</string>
+    <string name="msg_job_started">\"%1$s\" запущено</string>
+    <string name="msg_job_reannounced">\"%1$s\" переанонсировано</string>
+    <string name="msg_job_resumed">\"%1$s\" возобновлено</string>
     <string name="msg_ready_one">Готово — скачивается %1$s</string>
     <string name="msg_no_player">Видеоплеер не найден — установите VLC или mpv</string>
     <string name="msg_app_storage">Сохранение в хранилище приложения — это можно изменить в Настройках</string>

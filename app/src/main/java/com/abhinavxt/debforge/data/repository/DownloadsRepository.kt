@@ -1,6 +1,7 @@
 package com.abhinavxt.debforge.data.repository
 
 import com.abhinavxt.debforge.data.provider.AddResult
+import com.abhinavxt.debforge.data.provider.JobAction
 import com.abhinavxt.debforge.data.provider.ProviderCalls
 import com.abhinavxt.debforge.data.provider.RemoteJob
 import com.abhinavxt.debforge.data.provider.ProviderRegistry
@@ -57,6 +58,11 @@ class DownloadsRepository @Inject constructor(
     suspend fun listProcessing(provider: ProviderId): DataResult<List<RemoteJob>> {
         val p = registry[provider]
         return ProviderCalls.run(p.info, "checking active jobs") { p.listProcessing() }
+    }
+
+    suspend fun controlJob(provider: ProviderId, ref: String, action: JobAction): DataResult<Unit> {
+        val p = registry[provider]
+        return ProviderCalls.run(p.info, "updating the job") { p.controlJob(ref, action) }
     }
 
     /** Success(null) = still processing. */

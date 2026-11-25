@@ -46,6 +46,11 @@
     <string name="processing_auto_short">নিজে থেকে ডাউনলোড</string>
     <string name="processing_auto_on_short">নিজে থেকে ডাউনলোড চালু</string>
     <string name="processing_cd_remove">সার্ভিস থেকে %1$s সরান</string>
+    <string name="processing_cd_actions">%1$s এর জন্য অ্যাকশন</string>
+    <string name="processing_start_now">এখনই শুরু করুন</string>
+    <string name="processing_reannounce">আবার ঘোষণা করুন</string>
+    <string name="processing_resume">আবার চালু করুন</string>
+    <string name="processing_menu_remove">সরান</string>
     <string name="eta_seconds">%1$d সে. বাকি</string>
     <string name="eta_minutes">%1$d মি. বাকি</string>
     <string name="eta_hours">%1$d ঘ. %2$d মি. বাকি</string>
@@ -242,6 +247,9 @@
     <string name="chooser_open_with">এটি দিয়ে খুলুন</string>
     <string name="chooser_share">শেয়ার করুন</string>
     <string name="msg_will_download_when_ready">\"%1$s\" তৈরি হলেই ডাউনলোড হবে</string>
+    <string name="msg_job_started">\"%1$s\" শুরু হয়েছে</string>
+    <string name="msg_job_reannounced">\"%1$s\" আবার ঘোষণা করা হয়েছে</string>
+    <string name="msg_job_resumed">\"%1$s\" আবার চালু হয়েছে</string>
     <string name="msg_ready_one">তৈরি — %1$s ডাউনলোড হচ্ছে</string>
     <string name="msg_no_player">কোনো ভিডিও প্লেয়ার পাওয়া যায়নি — VLC বা mpv ইনস্টল করুন</string>
     <string name="msg_app_storage">অ্যাপ স্টোরেজে সেভ হচ্ছে — সেটিংসে যেকোনো সময় বদলাতে পারেন</string>

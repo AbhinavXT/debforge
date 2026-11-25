@@ -22,6 +22,12 @@ import androidx.compose.material.icons.rounded.Bolt
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.CloudDownload
 import androidx.compose.material.icons.rounded.DeleteOutline
+import androidx.compose.material.icons.rounded.MoreVert
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import com.abhinavxt.debforge.data.provider.JobAction
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
@@ -55,7 +61,8 @@ fun ProcessingStrip(
     jobs: List<RemoteJob>,
     isWatched: (RemoteJob) -> Boolean,
     onToggleWatch: (RemoteJob) -> Unit,
-    onRemove: ((RemoteJob) -> Unit)? = null
+    onRemove: ((RemoteJob) -> Unit)? = null,
+    onAction: ((RemoteJob, JobAction) -> Unit)? = null
 ) {
     if (jobs.isEmpty()) return
     Column(Modifier.padding(top = 4.dp)) {
@@ -70,14 +77,21 @@ fun ProcessingStrip(
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             items(jobs, key = { it.ref }) { job ->
-                JobCard(job, isWatched(job), onToggle = { onToggleWatch(job) }, onRemove = onRemove?.let { { it(job) } })
+                JobCard(job, isWatched(job), onToggle = { onToggleWatch(job) }, onRemove = onRemove?.let { { it(job) } },
+                    onAction = onAction?.let { { a -> it(job, a) } })
             }
         }
     }
 }
 
 @Composable
-private fun JobCard(job: RemoteJob, watched: Boolean, onToggle: () -> Unit, onRemove: (() -> Unit)?) {
+private fun JobCard(
+    job: RemoteJob,
+    watched: Boolean,
+    onToggle: () -> Unit,
+    onRemove: (() -> Unit)?,
+    onAction: ((JobAction) -> Unit)?
+) {
     val labels = remember(job.name) { releaseLabels(job.name) }
     val haptic = LocalHapticFeedback.current
     Surface(
@@ -95,7 +109,7 @@ private fun JobCard(job: RemoteJob, watched: Boolean, onToggle: () -> Unit, onRe
                     size = 32.dp
                 )
                 Spacer(Modifier.width(10.dp))
-                Column(Modifier.weight(1f).padding(end = if (onRemove != null) 36.dp else 0.dp)) {
+                Column(Modifier.weight(1f).padding(end = if (onRemove != null || job.actions.isNotEmpty()) 36.dp else 0.dp)) {
                     Text(
                         labels.title,
                         style = MaterialTheme.typography.bodyMedium,
@@ -159,7 +173,41 @@ private fun JobCard(job: RemoteJob, watched: Boolean, onToggle: () -> Unit, onRe
                 )
             }
         }
-        if (onRemove != null) {
+        if (onAction != null && job.actions.isNotEmpty()) {
+            var open by remember { mutableStateOf(false) }
+            Box(Modifier.align(Alignment.TopEnd)) {
+                IconButton(onClick = { open = true }) {
+                    Icon(
+                        Icons.Rounded.MoreVert,
+                        contentDescription = stringResource(R.string.processing_cd_actions, labels.title)
+                    )
+                }
+                DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
+                    job.actions.forEach { action ->
+                        DropdownMenuItem(
+                            text = {
+                                Text(
+                                    stringResource(
+                                        when (action) {
+                                            JobAction.START_NOW -> R.string.processing_start_now
+                                            JobAction.REANNOUNCE -> R.string.processing_reannounce
+                                            JobAction.RESUME -> R.string.processing_resume
+                                        }
+                                    )
+                                )
+                            },
+                            onClick = { open = false; onAction(action) }
+                        )
+                    }
+                    if (onRemove != null) {
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.processing_menu_remove), color = MaterialTheme.colorScheme.error) },
+                            onClick = { open = false; haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove); onRemove() }
+                        )
+                    }
+                }
+            }
+        } else if (onRemove != null) {
             IconButton(
                 onClick = { haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove); onRemove() },
                 modifier = Modifier.align(Alignment.TopEnd)

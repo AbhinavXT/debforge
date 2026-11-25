@@ -46,6 +46,11 @@
     <string name="processing_auto_short">自动下载</string>
     <string name="processing_auto_on_short">自动下载已开启</string>
     <string name="processing_cd_remove">从服务中移除 %1$s</string>
+    <string name="processing_cd_actions">%1$s 的操作</string>
+    <string name="processing_start_now">立即开始</string>
+    <string name="processing_reannounce">重新通告</string>
+    <string name="processing_resume">继续</string>
+    <string name="processing_menu_remove">移除</string>
     <string name="eta_seconds">剩余 %1$d 秒</string>
     <string name="eta_minutes">剩余 %1$d 分钟</string>
     <string name="eta_hours">剩余 %1$d 小时 %2$d 分钟</string>
@@ -239,6 +244,9 @@
     <string name="chooser_open_with">打开方式</string>
     <string name="chooser_share">分享</string>
     <string name="msg_will_download_when_ready">“%1$s”就绪后将自动下载</string>
+    <string name="msg_job_started">已开始“%1$s”</string>
+    <string name="msg_job_reannounced">已重新通告“%1$s”</string>
+    <string name="msg_job_resumed">已继续“%1$s”</string>
     <string name="msg_ready_one">已就绪 — 正在下载 %1$s</string>
     <string name="msg_no_player">未找到视频播放器 — 请安装 VLC 或 mpv</string>
     <string name="msg_app_storage">正在保存到应用存储 — 可随时在设置中更改</string>

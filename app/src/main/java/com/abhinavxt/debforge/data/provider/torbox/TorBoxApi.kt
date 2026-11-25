@@ -1,6 +1,8 @@
 package com.abhinavxt.debforge.data.provider.torbox
 
 import com.abhinavxt.debforge.data.provider.torbox.dto.TbEnvelope
+import com.abhinavxt.debforge.data.provider.torbox.dto.TbQueuedControl
+import com.abhinavxt.debforge.data.provider.torbox.dto.TbQueuedDto
 import com.abhinavxt.debforge.data.provider.torbox.dto.TbTorrentControl
 import com.abhinavxt.debforge.data.provider.torbox.dto.TbUsenetControl
 import com.abhinavxt.debforge.data.provider.torbox.dto.TbWebControl
@@ -130,6 +132,19 @@ interface TorBoxApi {
 
     @POST("webdl/controlwebdownload")
     suspend fun controlWebDownload(@Body body: TbWebControl): TbEnvelope<Any>
+
+    // --- queued (adds TorBox accepted while the account's slots were full) -----
+
+    @GET("queued/getqueued")
+    suspend fun queued(
+        @Query("type") type: String,
+        @Query("offset") offset: Int,
+        @Query("limit") limit: Int,
+        @Query("bypass_cache") bypassCache: Boolean = true
+    ): TbEnvelope<List<TbQueuedDto>>
+
+    @POST("queued/controlqueued")
+    suspend fun controlQueued(@Body body: TbQueuedControl): TbEnvelope<Any>
 
     // --- cache check -------------------------------------------------------
     //

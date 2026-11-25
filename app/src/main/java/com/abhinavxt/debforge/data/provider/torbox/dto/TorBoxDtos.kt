@@ -49,7 +49,8 @@ data class TbItemDto(
     @Json(name = "progress") val progress: Double? = null,
     @Json(name = "download_state") val downloadState: String? = null,
     @Json(name = "eta") val eta: Double? = null,
-    @Json(name = "download_speed") val downloadSpeed: Double? = null
+    @Json(name = "download_speed") val downloadSpeed: Double? = null,
+    @Json(name = "hash") val hash: String? = null
 )
 
 /**
@@ -65,6 +66,28 @@ data class TbFileDto(
     @Json(name = "mimetype") val mimetype: String?
 )
 
+/**
+ * One entry of `queued/getqueued`: an add TorBox accepted but couldn't start
+ * because the account's slots were full. Every field is optional so an
+ * unexpected shape never breaks the torrent list.
+ */
+@JsonClass(generateAdapter = true)
+data class TbQueuedDto(
+    @Json(name = "id") val id: Long? = null,
+    @Json(name = "created_at") val createdAt: String? = null,
+    @Json(name = "hash") val hash: String? = null,
+    @Json(name = "name") val name: String? = null,
+    @Json(name = "name_override") val nameOverride: String? = null,
+    @Json(name = "type") val type: String? = null
+)
+
+@JsonClass(generateAdapter = true)
+data class TbQueuedControl(
+    @Json(name = "queued_id") val queuedId: Long,
+    @Json(name = "operation") val operation: String,
+    @Json(name = "all") val all: Boolean = false
+)
+
 // --- control (delete) -----------------------------------------------------------
 // Each control endpoint names its id field differently (per TorBox's SDKs and
 // maintained clients): torrent_id / usenet_id / webdl_id.
@@ -72,6 +95,7 @@ data class TbFileDto(
 @JsonClass(generateAdapter = true)
 data class TbTorrentControl(
     @Json(name = "torrent_id") val torrentId: Long,
+    /** "delete", "reannounce" or "resume" (TorBox has no pause). */
     @Json(name = "operation") val operation: String = "delete"
 )
 
