@@ -35,7 +35,7 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import com.abhinavxt.debforge.ui.components.rememberSafeGridState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -121,7 +121,7 @@ fun PosterGrid(
     /** Titles selected (multi-select); empty = not selecting. */
     selectedKeys: Set<String> = emptySet(),
     onLongPress: (TitleGroup) -> Unit = {},
-    gridState: LazyGridState = rememberLazyGridState(),
+    gridState: LazyGridState = rememberSafeGridState(),
     /** When given, the header and FAB follow this grid's exact scroll position. */
     scroll: LibraryScrollState? = null
 ) {

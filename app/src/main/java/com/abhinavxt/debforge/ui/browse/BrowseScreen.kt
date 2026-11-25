@@ -105,7 +105,7 @@ import com.abhinavxt.debforge.ui.components.SearchPill
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.key
-import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import com.abhinavxt.debforge.ui.components.rememberSafeGridState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.material3.SnackbarDuration
@@ -291,7 +291,7 @@ fun BrowseScreen(
     }
 
     // Owned here so the exact scroll position drives the header; each view mode starts at its top.
-    val gridState = key(state.posterView) { rememberLazyGridState() }
+    val gridState = key(state.posterView) { rememberSafeGridState() }
 
     // D-pad: DOWN from the last row of posters or files reaches the Add button, which sits over the list's end.
     val fabFocus = remember { androidx.compose.ui.focus.FocusRequester() }

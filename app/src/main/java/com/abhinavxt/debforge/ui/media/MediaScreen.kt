@@ -41,7 +41,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import com.abhinavxt.debforge.ui.components.rememberSafeGridState
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.material.icons.rounded.Album
 import androidx.compose.material.icons.rounded.Folder
@@ -325,7 +325,7 @@ internal fun MediaContent(
     BackHandler(selecting, onClearSelection)
     // Registered after the selection handler, so it only wins when nothing is selected.
     BackHandler(state.openGroup != null && state.kind == FileKind.Audio && !selecting) { onCloseGroup() }
-    val groupGridState = rememberLazyGridState()
+    val groupGridState = rememberSafeGridState()
     // The group row that opened the current group: it gets focus back when the group closes.
     var restoreKey by remember { mutableStateOf<String?>(null) }
     val restoreFocus = remember { FocusRequester() }
@@ -545,7 +545,7 @@ internal fun MediaContent(
                     restoreKey = null
                 }
                 LazyVerticalGrid(
-                    state = if (groupList != null) groupGridState else rememberLazyGridState(),
+                    state = if (groupList != null) groupGridState else rememberSafeGridState(),
                     columns = if (audio) GridCells.Fixed(audioCols) else GridCells.Adaptive(168.dp),
                     modifier = Modifier.fillMaxSize(),
                     // Bottom space keeps the last row clear of the 64dp mini player.
