@@ -12,6 +12,7 @@
     <string name="action_open">Open</string>
     <string name="action_share">Share</string>
     <string name="action_remove">Remove</string>
+    <string name="swipe_removed">Removed %1$s</string>
     <string name="action_retry">Retry</string>
     <string name="action_save">Save</string>
     <string name="action_allow">Allow</string>

@@ -11,6 +11,7 @@
     <string name="action_open">उघडा</string>
     <string name="action_share">शेअर करा</string>
     <string name="action_remove">काढून टाका</string>
+    <string name="swipe_removed">%1$s काढले</string>
     <string name="action_retry">पुन्हा प्रयत्न करा</string>
     <string name="action_save">सेव्ह करा</string>
     <string name="action_allow">परवानगी द्या</string>

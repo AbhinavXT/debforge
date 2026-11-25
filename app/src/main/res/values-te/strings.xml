@@ -11,6 +11,7 @@
     <string name="action_open">తెరువు</string>
     <string name="action_share">షేర్ చేయి</string>
     <string name="action_remove">తీసివేయి</string>
+    <string name="swipe_removed">%1$s తీసివేయబడింది</string>
     <string name="action_retry">మళ్లీ ప్రయత్నించు</string>
     <string name="action_save">సేవ్ చేయి</string>
     <string name="action_allow">అనుమతించు</string>

@@ -11,6 +11,7 @@
     <string name="action_open">Buka</string>
     <string name="action_share">Bagikan</string>
     <string name="action_remove">Hapus</string>
+    <string name="swipe_removed">%1$s dihapus</string>
     <string name="action_retry">Coba lagi</string>
     <string name="action_save">Simpan</string>
     <string name="action_allow">Izinkan</string>

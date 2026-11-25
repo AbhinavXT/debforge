@@ -96,6 +96,13 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxValue
+import androidx.compose.material3.rememberSwipeToDismissBoxState
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.ui.semantics.CustomAccessibilityAction
+import androidx.compose.ui.semantics.customActions
 import com.abhinavxt.debforge.ui.components.BannerCard
 import com.abhinavxt.debforge.ui.posters.PosterSetupSheet
 import com.abhinavxt.debforge.domain.MediaKind
@@ -165,6 +172,7 @@ fun BrowseScreen(
     val comingUp by viewModel.comingUp.collectAsStateWithLifecycle()
     val playback by viewModel.playback.collectAsStateWithLifecycle()
     val traktWatched by viewModel.traktWatched.collectAsStateWithLifecycle()
+    val pendingRemoval by viewModel.pendingRemoval.collectAsStateWithLifecycle()
     var posterSetupOpen by remember { mutableStateOf(false) }
     val lifecycleOwner = LocalLifecycleOwner.current
     val uriHandler = LocalUriHandler.current
@@ -223,6 +231,32 @@ fun BrowseScreen(
             }
         }
     }
+    // Swipe-to-remove: undo for 5 s (the view-model's timer decides), then the service is asked.
+    val undoLabel = stringResource(R.string.action_undo)
+    LaunchedEffect(pendingRemoval) {
+        val p = pendingRemoval ?: return@LaunchedEffect
+        snackbar.currentSnackbarData?.dismiss()
+        val result = snackbar.showSnackbar(
+            message = context.getString(R.string.swipe_removed, p.label),
+            actionLabel = undoLabel,
+            duration = SnackbarDuration.Indefinite
+        )
+        if (result == SnackbarResult.ActionPerformed) viewModel.cancelRemoval()
+    }
+    // Leaving the screen (tab, app in the background) cancels a pending removal rather than deleting unseen. Rotation keeps it.
+    val activity = remember(context) {
+        generateSequence(context) { (it as? android.content.ContextWrapper)?.baseContext }.firstNotNullOfOrNull { it as? android.app.Activity }
+    }
+    DisposableEffect(lifecycleOwner) {
+        val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_STOP && activity?.isChangingConfigurations != true) viewModel.cancelRemoval()
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+            if (activity?.isChangingConfigurations != true) viewModel.cancelRemoval()
+        }
+    }
     // Back exits multi-select; switching between posters and the list clears it.
     BackHandler(enabled = selected.isNotEmpty()) { selected = emptySet() }
     LaunchedEffect(state.posterView) { selected = emptySet() }
@@ -256,8 +290,9 @@ fun BrowseScreen(
     // unless the user turned them on in Settings.
     val showExtras by viewModel.showExtraFiles.collectAsStateWithLifecycle()
     // Subtitle files are never listed here; they stay in the torrent's files and the player.
-    val shown: List<DownloadItem> = remember(state.items, showExtras) {
-        val listed = ExtraFiles.hideSubtitles(state.items)
+    val shown: List<DownloadItem> = remember(state.items, showExtras, pendingRemoval) {
+        val gone = pendingRemoval?.items?.map { it.id }?.toSet().orEmpty()
+        val listed = ExtraFiles.hideSubtitles(state.items.filterNot { it.id in gone })
         if (showExtras) listed else ExtraFiles.hide(listed)
     }
     // Parse every filename once per list change (cheap, but not per frame).
@@ -705,6 +740,17 @@ fun BrowseScreen(
                             endReached = state.endReached,
                             downloadStates = downloadStates,
                             onEnqueue = { handleEnqueue(listOf(it)) },
+                            canRemove = { viewModel.canRemove(listOf(it)) },
+                            onSwipeRemove = { item ->
+                                val torrent = item.parentRef
+                                val siblings = if (torrent == null) emptyList() else state.items.filter { it.provider == item.provider && it.parentRef == torrent }
+                                if (siblings.size >= 2) {
+                                    // Removing one file removes the whole torrent: ask first, as the other remove buttons do.
+                                    confirmRemove = RemoveRequest(context.resources.getQuantityString(R.plurals.n_files, siblings.size, siblings.size), items = siblings)
+                                } else {
+                                    viewModel.requestRemoval(listOf(item), parsed[item.id]?.displayTitle ?: item.filename)
+                                }
+                            },
                             selected = selected,
                             onOpen = { item ->
                                 if (selected.isNotEmpty()) {
@@ -819,6 +865,8 @@ private fun SectionList(
     endReached: Boolean,
     downloadStates: Map<String, DownloadState>,
     onEnqueue: (DownloadItem) -> Unit,
+    canRemove: (DownloadItem) -> Boolean,
+    onSwipeRemove: (DownloadItem) -> Unit,
     selected: Set<String>,
     onOpen: (DownloadItem) -> Unit,
     onLongPress: (DownloadItem) -> Unit,
@@ -852,6 +900,8 @@ private fun SectionList(
         selectionMode = selected.isNotEmpty(),
         isSelected = item.id in selected,
         onEnqueue = onEnqueue,
+        removable = canRemove(item),
+        onSwipeRemove = onSwipeRemove,
         onOpen = onOpen,
         onLongPress = onLongPress
     )
@@ -932,17 +982,65 @@ private fun ItemRow(
     selectionMode: Boolean,
     isSelected: Boolean,
     onEnqueue: (DownloadItem) -> Unit,
+    removable: Boolean,
+    onSwipeRemove: (DownloadItem) -> Unit,
     onOpen: (DownloadItem) -> Unit,
     onLongPress: (DownloadItem) -> Unit
 ) {
     val cs = MaterialTheme.colorScheme
-    Row(
+    // Start to end downloads, end to start removes (both follow the layout direction). Not while selecting.
+    val canDownload = downloadState == null && !selectionMode
+    val canRemoveSwipe = removable && !selectionMode
+    val currentItem by rememberUpdatedState(item)
+    val currentEnqueue by rememberUpdatedState(onEnqueue)
+    val currentRemove by rememberUpdatedState(onSwipeRemove)
+    val dismissState = rememberSwipeToDismissBoxState(confirmValueChange = { target ->
+        when (target) {
+            SwipeToDismissBoxValue.StartToEnd -> currentEnqueue(currentItem)
+            SwipeToDismissBoxValue.EndToStart -> currentRemove(currentItem)
+            SwipeToDismissBoxValue.Settled -> Unit
+        }
+        false // always springs back: the row's real state comes from the data (a pill, or gone)
+    })
+    val downloadLabel = stringResource(R.string.action_download)
+    val removeLabel = stringResource(R.string.action_remove)
+    SwipeToDismissBox(
+        state = dismissState,
+        enableDismissFromStartToEnd = canDownload,
+        enableDismissFromEndToStart = canRemoveSwipe,
         modifier = Modifier
             .fillMaxWidth()
             .padding(start = if (indent) 20.dp else 12.dp, end = 12.dp, top = 3.dp, bottom = 3.dp)
-            .clip(MaterialTheme.shapes.medium)
+            .clip(MaterialTheme.shapes.medium),
+        backgroundContent = {
+            val direction = dismissState.dismissDirection
+            val removing = direction == SwipeToDismissBoxValue.EndToStart
+            if (direction != SwipeToDismissBoxValue.Settled) {
+                Box(
+                    Modifier.fillMaxSize().background(if (removing) cs.errorContainer else cs.primaryContainer).padding(horizontal = 20.dp),
+                    contentAlignment = if (removing) Alignment.CenterEnd else Alignment.CenterStart
+                ) {
+                    Icon(
+                        if (removing) Icons.Rounded.DeleteOutline else Icons.Rounded.Download,
+                        contentDescription = null,
+                        tint = if (removing) cs.onErrorContainer else cs.onPrimaryContainer
+                    )
+                }
+            }
+        }
+    ) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
             .background(if (isSelected) cs.secondaryContainer else cs.surfaceContainerLow)
             .combinedClickable(onClick = { onOpen(item) }, onLongClick = { onLongPress(item) })
+            .semantics {
+                // The swipes for TalkBack and switch users.
+                customActions = listOfNotNull(
+                    if (canDownload) CustomAccessibilityAction(downloadLabel) { onEnqueue(item); true } else null,
+                    if (canRemoveSwipe) CustomAccessibilityAction(removeLabel) { onSwipeRemove(item); true } else null
+                )
+            }
             .padding(start = 12.dp, end = 8.dp, top = 10.dp, bottom = 10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -993,6 +1091,7 @@ private fun ItemRow(
                 Icon(Icons.Rounded.Download, contentDescription = stringResource(R.string.action_download))
             }
         }
+    }
     }
 }
 

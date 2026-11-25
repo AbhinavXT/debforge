@@ -36,6 +36,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.getAndUpdate
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -605,6 +606,35 @@ class BrowseViewModel @Inject constructor(
         viewModelScope.launch { removeKeys(p, keys) }
     }
 
+    /** A swiped-away row waiting out its undo time: hidden, but nothing has reached the service yet. */
+    data class PendingRemoval(val items: List<DownloadItem>, val label: String)
+
+    private val _pendingRemoval = MutableStateFlow<PendingRemoval?>(null)
+    val pendingRemoval: StateFlow<PendingRemoval?> = _pendingRemoval.asStateFlow()
+    private var removalTimer: Job? = null
+
+    /** Removes [items] from the service after [UNDO_MS] unless [cancelRemoval] comes first; one at a time. */
+    fun requestRemoval(items: List<DownloadItem>, label: String) {
+        commitRemoval()
+        _pendingRemoval.value = PendingRemoval(items, label)
+        removalTimer = viewModelScope.launch {
+            kotlinx.coroutines.delay(UNDO_MS)
+            commitRemoval()
+        }
+    }
+
+    /** Undo, or the screen going away: the row comes back and the service is never called. */
+    fun cancelRemoval() {
+        removalTimer?.cancel()
+        _pendingRemoval.value = null
+    }
+
+    private fun commitRemoval() {
+        val p = _pendingRemoval.getAndUpdate { null } ?: return
+        removeFromService(p.items)
+        removalTimer?.cancel()
+    }
+
     // --- deleting from the device ----------------------------------------------
 
     /** The downloads are shown and at least one of [items] is a finished file. */
@@ -1027,6 +1057,8 @@ class BrowseViewModel @Inject constructor(
         private const val BUSY_POLL_MS = 10_000L
         /** Newest-page check when nothing is processing (catches website adds). */
         private const val IDLE_POLL_MS = 60_000L
+        /** How long a swiped-away row can be brought back. */
+        private const val UNDO_MS = 5_000L
         /** Returning to the screen with an older list than this refreshes at once. */
         private const val RESUME_STALE_MS = 15_000L
         private const val SEARCH_DEBOUNCE_MS = 400L

@@ -11,6 +11,7 @@
     <string name="action_open">Открыть</string>
     <string name="action_share">Поделиться</string>
     <string name="action_remove">Удалить</string>
+    <string name="swipe_removed">Удалено: %1$s</string>
     <string name="action_retry">Повторить</string>
     <string name="action_save">Сохранить</string>
     <string name="action_allow">Разрешить</string>

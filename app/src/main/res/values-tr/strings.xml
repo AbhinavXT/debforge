@@ -11,6 +11,7 @@
     <string name="action_open">Aç</string>
     <string name="action_share">Paylaş</string>
     <string name="action_remove">Kaldır</string>
+    <string name="swipe_removed">%1$s kaldırıldı</string>
     <string name="action_retry">Tekrar dene</string>
     <string name="action_save">Kaydet</string>
     <string name="action_allow">İzin ver</string>

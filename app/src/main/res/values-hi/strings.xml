@@ -11,6 +11,7 @@
     <string name="action_open">खोलें</string>
     <string name="action_share">शेयर करें</string>
     <string name="action_remove">हटाएँ</string>
+    <string name="swipe_removed">%1$s हटाया गया</string>
     <string name="action_retry">फिर से कोशिश करें</string>
     <string name="action_save">सेव करें</string>
     <string name="action_allow">अनुमति दें</string>

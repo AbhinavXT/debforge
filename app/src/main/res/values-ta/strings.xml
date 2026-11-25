@@ -11,6 +11,7 @@
     <string name="action_open">திற</string>
     <string name="action_share">பகிர்</string>
     <string name="action_remove">அகற்று</string>
+    <string name="swipe_removed">%1$s நீக்கப்பட்டது</string>
     <string name="action_retry">மீண்டும் முயல்</string>
     <string name="action_save">சேமி</string>
     <string name="action_allow">அனுமதி</string>

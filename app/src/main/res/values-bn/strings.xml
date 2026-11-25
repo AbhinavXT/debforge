@@ -11,6 +11,7 @@
     <string name="action_open">খুলুন</string>
     <string name="action_share">শেয়ার করুন</string>
     <string name="action_remove">সরান</string>
+    <string name="swipe_removed">%1$s সরানো হয়েছে</string>
     <string name="action_retry">আবার চেষ্টা করুন</string>
     <string name="action_save">সেভ করুন</string>
     <string name="action_allow">অনুমতি দিন</string>

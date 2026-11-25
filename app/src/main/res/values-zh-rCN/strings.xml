@@ -11,6 +11,7 @@
     <string name="action_open">打开</string>
     <string name="action_share">分享</string>
     <string name="action_remove">移除</string>
+    <string name="swipe_removed">已移除 %1$s</string>
     <string name="action_retry">重试</string>
     <string name="action_save">保存</string>
     <string name="action_allow">允许</string>
