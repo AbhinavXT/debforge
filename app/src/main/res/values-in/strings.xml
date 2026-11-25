@@ -102,6 +102,10 @@
     <string name="sheet_download_season">Unduh musim (%1$d)</string>
     <string name="sheet_play_cd">Putar %1$s</string>
     <string name="sheet_download_cd">Unduh %1$s</string>
+    <string name="title_resume">Lanjutkan</string>
+    <string name="title_resume_episode">Lanjutkan %1$s</string>
+    <string name="title_play_episode">Putar %1$s</string>
+    <string name="title_pick">Pilih judul untuk melihat detailnya</string>
     <string name="state_queued">Dalam antrean</string>
     <string name="state_downloading">Mengunduh</string>
     <string name="state_paused">Dijeda</string>

@@ -105,6 +105,10 @@
     <string name="sheet_download_season">Download season (%1$d)</string>
     <string name="sheet_play_cd">Play %1$s</string>
     <string name="sheet_download_cd">Download %1$s</string>
+    <string name="title_resume">Resume</string>
+    <string name="title_resume_episode">Resume %1$s</string>
+    <string name="title_play_episode">Play %1$s</string>
+    <string name="title_pick">Pick a title to see its details</string>
     <string name="state_queued">Queued</string>
     <string name="state_downloading">Downloading</string>
     <string name="state_paused">Paused</string>

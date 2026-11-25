@@ -24,6 +24,8 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -176,7 +178,10 @@ fun BrowseScreen(
             android.content.res.Configuration.UI_MODE_TYPE_TELEVISION
     }
     var pendingPermission by remember { mutableStateOf<List<DownloadItem>?>(null) }
-    var openGroupKey by remember { mutableStateOf<String?>(null) }
+    // Saveable: the open title page survives rotation and process death (the group is looked up by key).
+    var openGroupKey by rememberSaveable { mutableStateOf<String?>(null) }
+    // The tile to give D-pad focus back to once the page closes.
+    var returnFocusKey by remember { mutableStateOf<String?>(null) }
     var openFile by remember { mutableStateOf<ParsedItem?>(null) }
     // Pending "remove from service" confirmation: what to remove and its display name.
     var confirmRemove by remember { mutableStateOf<RemoveRequest?>(null) }
@@ -299,8 +304,71 @@ fun BrowseScreen(
     // Owned here so the exact scroll position drives the header; each view mode starts at its top.
     val gridState = key(state.posterView) { rememberSafeGridState() }
 
+    // Tablet: grid or list on the left, the title page on the right.
+    val config = LocalConfiguration.current
+    val twoPane = config.screenWidthDp >= 840 && config.screenHeightDp >= 480
+    // Looked up without the search so the page stays while the query changes.
+    val pageGroup = remember(openGroupKey, shown, parsed, state.sort) {
+        openGroupKey?.let { key -> buildTitleGroups(shown, parsed, "", state.sort).firstOrNull { it.key == key } }
+    }
+    // After a restore the title may be on a page that is not loaded yet.
+    LaunchedEffect(openGroupKey, pageGroup, state.canLoadMore, state.endReached, state.error, state.isInitialLoad) {
+        if (openGroupKey != null && pageGroup == null && !state.isInitialLoad) {
+            if (state.canLoadMore) viewModel.loadMore()
+            else if (state.endReached || state.error != null) openGroupKey = null
+        }
+    }
+    fun closePage() {
+        returnFocusKey = openGroupKey
+        openGroupKey = null
+    }
+    val page: @Composable () -> Unit = {
+        val group = pageGroup
+        if (group != null) {
+            // Per-title scroll and season, not carried over to the next title.
+            key(group.key) {
+                TitlePage(
+                    group = group,
+                    meta = meta[group.info.groupKey],
+                    downloadStates = downloadStates,
+                    onDownload = ::handleEnqueue,
+                    onPlay = { viewModel.play(it.item, it.info.displayTitle) },
+                    zipFor = viewModel::zipFor,
+                    onClose = ::closePage,
+                    onRemove = removeAction(group.files.map { it.item }, group.title) { confirmRemove = it },
+                    removeLabel = if (state.local) stringResource(R.string.action_delete_device)
+                        else stringResource(R.string.action_remove_from, state.providerName),
+                    following = group.files.firstOrNull()
+                        ?.takeIf { group.kind == MediaKind.SHOW }
+                        ?.let { "${it.item.provider.name}|${group.info.groupKey}" in followed },
+                    onToggleFollow = { viewModel.toggleFollow(group) },
+                    playback = playback,
+                    traktWatched = traktWatched
+                )
+            }
+        } else if (openGroupKey != null) {
+            // Waiting for the title to load.
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
+            BackHandler(onBack = ::closePage)
+        } else if (twoPane) {
+            MessageState(
+                icon = Icons.Rounded.Movie,
+                title = stringResource(R.string.title_pick),
+                body = null,
+                tone = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+
     // D-pad: DOWN from the last row of posters or files reaches the Add button, which sits over the list's end.
     val fabFocus = remember { androidx.compose.ui.focus.FocusRequester() }
+    Box(Modifier.fillMaxSize()) {
+    Row(Modifier.fillMaxSize()) {
+    Box(
+        Modifier.weight(1f).fillMaxHeight()
+            // The page covers the screen: keep the D-pad from reaching what is underneath.
+            .then(if (!twoPane && openGroupKey != null) Modifier.focusProperties { canFocus = false } else Modifier)
+    ) {
     Scaffold(
         snackbarHost = { SnackbarHost(snackbar) },
         floatingActionButton = {
@@ -597,6 +665,8 @@ fun BrowseScreen(
                                 groups.filter { g -> g.files.isNotEmpty() && g.files.all { it.item.id in selected } }.map { it.key }.toSet()
                             },
                             onLongPress = { group -> selected = selected + group.files.map { it.item.id } },
+                            returnFocusKey = returnFocusKey,
+                            onFocusReturned = { returnFocusKey = null },
                             // Not while searching: results come first then.
                             header = if (state.query.isBlank() && (continueWatching.isNotEmpty() || comingUp.isNotEmpty())) {
                                 {
@@ -613,31 +683,6 @@ fun BrowseScreen(
                                 }
                             } else null
                         )
-                    }
-                    // The sheet reads the live group so badges update while open.
-                    openGroupKey?.let { key ->
-                        // If the group vanished (search changed), just don't show it.
-                        val group = groups.firstOrNull { it.key == key }
-                        if (group != null) {
-                            TitleSheet(
-                                group = group,
-                                meta = meta[group.info.groupKey],
-                                downloadStates = downloadStates,
-                                onDownload = ::handleEnqueue,
-                                onPlay = { viewModel.play(it.item, it.info.displayTitle) },
-                                zipFor = viewModel::zipFor,
-                                onDismiss = { openGroupKey = null },
-                                onRemove = removeAction(group.files.map { it.item }, group.title) { confirmRemove = it },
-                                removeLabel = if (state.local) stringResource(R.string.action_delete_device)
-                                    else stringResource(R.string.action_remove_from, state.providerName),
-                                following = group.files.firstOrNull()
-                                    ?.takeIf { group.kind == MediaKind.SHOW }
-                                    ?.let { "${it.item.provider.name}|${group.info.groupKey}" in followed },
-                                onToggleFollow = { viewModel.toggleFollow(group) },
-                                playback = playback,
-                                traktWatched = traktWatched
-                            )
-                        }
                     }
                 }
                 else -> {
@@ -670,6 +715,16 @@ fun BrowseScreen(
             }
             }
         }
+    }
+    }
+    if (twoPane) Box(Modifier.weight(1f).fillMaxHeight()) { page() }
+    }
+    if (!twoPane && openGroupKey != null) {
+        Box(Modifier.fillMaxSize()) {
+            page()
+            SnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter))
+        }
+    }
     }
 
     if (posterSetupOpen) {

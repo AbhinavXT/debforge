@@ -104,6 +104,10 @@
     <string name="sheet_download_season">சீசனைப் பதிவிறக்கு (%1$d)</string>
     <string name="sheet_play_cd">%1$s-ஐ இயக்கு</string>
     <string name="sheet_download_cd">%1$s-ஐப் பதிவிறக்கு</string>
+    <string name="title_resume">தொடரவும்</string>
+    <string name="title_resume_episode">%1$s தொடரவும்</string>
+    <string name="title_play_episode">%1$s இயக்கு</string>
+    <string name="title_pick">விவரங்களைக் காண ஒரு தலைப்பைத் தேர்ந்தெடுக்கவும்</string>
     <string name="state_queued">வரிசையில்</string>
     <string name="state_downloading">பதிவிறக்குகிறது</string>
     <string name="state_paused">இடைநிறுத்தப்பட்டது</string>

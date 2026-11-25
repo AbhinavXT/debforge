@@ -102,6 +102,10 @@
     <string name="sheet_download_season">下载本季（%1$d）</string>
     <string name="sheet_play_cd">播放 %1$s</string>
     <string name="sheet_download_cd">下载 %1$s</string>
+    <string name="title_resume">继续播放</string>
+    <string name="title_resume_episode">继续播放 %1$s</string>
+    <string name="title_play_episode">播放 %1$s</string>
+    <string name="title_pick">选择一个标题以查看详情</string>
     <string name="state_queued">排队中</string>
     <string name="state_downloading">下载中</string>
     <string name="state_paused">已暂停</string>

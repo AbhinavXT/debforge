@@ -104,6 +104,10 @@
     <string name="sheet_download_season">Sezonu indir (%1$d)</string>
     <string name="sheet_play_cd">%1$s öğesini oynat</string>
     <string name="sheet_download_cd">%1$s öğesini indir</string>
+    <string name="title_resume">Devam et</string>
+    <string name="title_resume_episode">%1$s devam et</string>
+    <string name="title_play_episode">%1$s oynat</string>
+    <string name="title_pick">Ayrıntıları görmek için bir başlık seçin</string>
     <string name="state_queued">Sırada</string>
     <string name="state_downloading">İndiriliyor</string>
     <string name="state_paused">Duraklatıldı</string>

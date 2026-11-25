@@ -81,6 +81,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
@@ -125,7 +126,10 @@ fun PosterGrid(
     gridState: LazyGridState = rememberSafeGridState(),
     /** When given, the header and FAB follow this grid's exact scroll position. */
     scroll: LibraryScrollState? = null,
-    gridSize: GridSize = GridSize.MEDIUM
+    gridSize: GridSize = GridSize.MEDIUM,
+    /** D-pad: the tile that gets focus back (the title page it opened was closed); [onFocusReturned] follows. */
+    returnFocusKey: String? = null,
+    onFocusReturned: () -> Unit = {}
 ) {
     if (scroll != null) {
         TrackLibraryScroll(
@@ -135,6 +139,7 @@ fun PosterGrid(
         )
     }
 
+    val keyboard = androidx.compose.ui.platform.LocalInputModeManager.current.inputMode == androidx.compose.ui.input.InputMode.Keyboard
     LaunchedEffect(gridState) {
         snapshotFlow { gridState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0 }
             .collect { last ->
@@ -165,8 +170,15 @@ fun PosterGrid(
             // Ask for artwork only for cards that are actually composed
             // (i.e. on or near screen); the ViewModel de-duplicates.
             LaunchedEffect(group.key) { onRequestMeta(group) }
+            val tileFocus = remember { androidx.compose.ui.focus.FocusRequester() }
+            LaunchedEffect(returnFocusKey) {
+                if (returnFocusKey == group.key) {
+                    if (keyboard) runCatching { tileFocus.requestFocus() }
+                    onFocusReturned()
+                }
+            }
             PosterCard(
-                modifier = Modifier.animateItem(),
+                modifier = Modifier.animateItem().focusRequester(tileFocus),
                 group = group,
                 meta = meta[group.key],
                 allDone = group.files.all { downloadStates[it.item.id] == DownloadState.COMPLETED },
@@ -339,297 +351,8 @@ fun Poster(group: TitleGroup, meta: MediaMeta?, modifier: Modifier = Modifier, d
     }
 }
 
-// --- detail sheet ------------------------------------------------------------
-
-private val ARROW_KEYS = setOf(Key.DirectionUp, Key.DirectionDown, Key.DirectionLeft, Key.DirectionRight)
-
-/**
- * Bottom sheet for one title: artwork, overview, "Download all", and every
- * file (grouped by season for shows) with its own Download button.
- */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TitleSheet(
-    group: TitleGroup,
-    meta: MediaMeta?,
-    downloadStates: Map<String, DownloadState>,
-    onDownload: (List<DownloadItem>) -> Unit,
-    onPlay: (ParsedItem) -> Unit,
-    zipFor: (DownloadItem, Int) -> DownloadItem?,
-    onDismiss: () -> Unit,
-    /** Null when the service can't remove these files. */
-    onRemove: (() -> Unit)? = null,
-    removeLabel: String = "",
-    /** Shows only: followed right now? Null hides the button (movies, other files). */
-    following: Boolean? = null,
-    onToggleFollow: () -> Unit = {},
-    /** Saved positions by item id: progress bars and "Watched". */
-    playback: Map<String, com.abhinavxt.debforge.data.playback.PlaybackEntity> = emptyMap(),
-    /** Watched on Trakt ([com.abhinavxt.debforge.domain.TraktMatch] keys). */
-    traktWatched: Set<String> = emptySet()
-) {
-    val files = remember(group) { group.sortedFiles }
-    // One "whole torrent as .zip" option per multi-file torrent in this title
-    // (only services that support archives return anything).
-    val zips = remember(group) {
-        group.files
-            .filter { it.item.parentRef != null }
-            .groupBy { it.item.parentRef }
-            .values
-            .filter { it.size >= 2 }
-            .mapNotNull { fs -> zipFor(fs.first().item, fs.size) }
-    }
-    val pending = files.filter { downloadStates[it.item.id] == null }.map { it.item }
-
-    val sheetState = androidx.compose.material3.rememberModalBottomSheetState()
-    val sheetScope = androidx.compose.runtime.rememberCoroutineScope()
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        sheetState = sheetState,
-        containerColor = MaterialTheme.colorScheme.surfaceContainerLow
-    ) {
-        LazyColumn(
-            contentPadding = PaddingValues(bottom = 32.dp),
-            // D-pad: at half height the rows below the fold are laid out but off screen, so focus would vanish. Open the sheet fully on the first arrow key.
-            modifier = Modifier.onPreviewKeyEvent { e ->
-                if (e.type == KeyEventType.KeyDown && e.key in ARROW_KEYS && sheetState.currentValue == SheetValue.PartiallyExpanded) {
-                    sheetScope.launch { sheetState.expand() }
-                }
-                false
-            }
-        ) {
-            item(key = "fixed:header") {
-                // Large font on a narrow phone: details go under the poster, so the buttons keep their width.
-                val stacked = LocalConfiguration.current.screenWidthDp / LocalDensity.current.fontScale < 320
-                val headerTop: @Composable () -> Unit = {
-                        Text(
-                            meta?.title ?: group.title,
-                            style = MaterialTheme.typography.headlineSmall
-                        )
-                        val year = meta?.year ?: group.info.year
-                        Text(
-                            listOfNotNull(
-                                year?.toString(),
-                                when (group.kind) {
-                                    MediaKind.SHOW -> stringResource(R.string.kind_series)
-                                    MediaKind.MOVIE -> stringResource(R.string.kind_movie)
-                                    MediaKind.OTHER -> null
-                                },
-                                pluralRes(R.plurals.n_files, files.size, files.size),
-                                formatSize(group.totalSize)
-                            ).joinToString(" · "),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                }
-                val headerBottom: @Composable () -> Unit = {
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Button(
-                            onClick = { onDownload(pending) },
-                            enabled = pending.isNotEmpty(),
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Icon(
-                                if (pending.isEmpty()) Icons.Rounded.Check else Icons.Rounded.Download,
-                                contentDescription = null,
-                                modifier = Modifier.size(18.dp)
-                            )
-                            Spacer(Modifier.width(8.dp))
-                            Column {
-                                Text(
-                                    when {
-                                        pending.isEmpty() -> stringResource(R.string.sheet_all_queued)
-                                        pending.size == 1 -> stringResource(R.string.action_download)
-                                        else -> stringResource(R.string.sheet_download_all, pending.size)
-                                    },
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                                if (pending.size > 1) {
-                                    Text(
-                                        formatSize(pending.sumOf { it.filesize }),
-                                        style = MaterialTheme.typography.labelSmall,
-                                        maxLines = 1
-                                    )
-                                }
-                            }
-                        }
-                        if (following != null) {
-                            val followCd = stringResource(if (following) R.string.follow_following else R.string.follow_action)
-                            val followIcon: @Composable () -> Unit = {
-                                Icon(
-                                    if (following) Icons.Rounded.NotificationsActive else Icons.Rounded.NotificationAdd,
-                                    contentDescription = followCd
-                                )
-                            }
-                            if (following) {
-                                FilledTonalIconButton(onClick = onToggleFollow, modifier = Modifier.size(48.dp), content = followIcon)
-                            } else {
-                                androidx.compose.material3.OutlinedIconButton(onClick = onToggleFollow, modifier = Modifier.size(48.dp), content = followIcon)
-                            }
-                        }
-                    }
-                }
-                if (stacked) {
-                    Column(Modifier.padding(horizontal = 20.dp).padding(bottom = 12.dp)) {
-                        Poster(group = group, meta = meta, modifier = Modifier.padding(bottom = 12.dp).width(104.dp))
-                        headerTop()
-                        Spacer(Modifier.height(12.dp))
-                        headerBottom()
-                    }
-                } else {
-                    // Poster-height column: title and meta on top, the main button on the poster's bottom edge.
-                    Row(Modifier.padding(horizontal = 20.dp).padding(bottom = 12.dp).height(IntrinsicSize.Min)) {
-                        Poster(group = group, meta = meta, modifier = Modifier.padding(end = 16.dp).width(104.dp))
-                        Column(Modifier.weight(1f).fillMaxHeight(), verticalArrangement = Arrangement.SpaceBetween) {
-                            Column { headerTop() }
-                            headerBottom()
-                        }
-                    }
-                }
-                Column(Modifier.padding(horizontal = 20.dp)) {
-                    if (zips.size == 1) {
-                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                            if (zips.size == 1) {
-                                val zip = zips.first()
-                                val zipState = downloadStates[zip.id]
-                                if (zipState != null) {
-                                    Box(Modifier.weight(1f).height(40.dp), contentAlignment = Alignment.Center) {
-                                        DownloadStatePill(zipState)
-                                    }
-                                } else {
-                                    OutlinedButton(onClick = { onDownload(listOf(zip)) }, modifier = Modifier.weight(1f)) {
-                                        Icon(Icons.Rounded.FolderZip, contentDescription = null, modifier = Modifier.size(18.dp))
-                                        Spacer(Modifier.width(8.dp))
-                                        Text(
-                                            stringResource(R.string.sheet_zip_download),
-                                            maxLines = 1,
-                                            overflow = TextOverflow.Ellipsis
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    // Several archives: one named line each, with its own action or state.
-                    if (zips.size >= 2) {
-                        zips.forEach { zip ->
-                            val zipState = downloadStates[zip.id]
-                            Row(
-                                Modifier.fillMaxWidth().padding(top = 8.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(12.dp)
-                            ) {
-                                Icon(
-                                    Icons.Rounded.FolderZip,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier = Modifier.size(20.dp)
-                                )
-                                Text(
-                                    zip.filename,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    maxLines = 2,
-                                    overflow = TextOverflow.Ellipsis,
-                                    modifier = Modifier.weight(1f)
-                                )
-                                if (zipState != null) {
-                                    DownloadStatePill(zipState)
-                                } else {
-                                    OutlinedButton(onClick = { onDownload(listOf(zip)) }) {
-                                        Text(stringResource(R.string.sheet_zip_download), maxLines = 1)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    if (following == true) {
-                        Text(
-                            stringResource(R.string.follow_hint),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(top = 12.dp)
-                        )
-                    }
-                }
-            }
-            meta?.overview?.let { overview ->
-                item(key = "fixed:overview") { Overview(overview) }
-            }
-            item(key = "fixed:divider") { Spacer(Modifier.height(4.dp)) }
-
-            // Several files for one episode (different releases): number them so they can be told apart.
-            val versionsByEpisode = files
-                .filter { it.info.episodeLabel != null }
-                .groupBy { it.info.season to it.info.episodeLabel }
-                .filterValues { it.size > 1 }
-            var lastSeason: Int? = null
-            files.forEach { f ->
-                val season = f.info.season
-                if (group.kind == MediaKind.SHOW && season != null && season != lastSeason) {
-                    lastSeason = season
-                    val seasonFiles = files.filter { it.info.season == season }
-                    val seasonPending = seasonFiles.filter { downloadStates[it.item.id] == null }.map { it.item }
-                    item(key = "season:$season") {
-                        Row(
-                            Modifier.fillMaxWidth().padding(start = 16.dp, end = 8.dp, top = 12.dp, bottom = 4.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                stringResource(R.string.sheet_season, season),
-                                style = MaterialTheme.typography.titleSmall,
-                                color = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.weight(1f)
-                            )
-                            if (seasonPending.size > 1) {
-                                TextButton(onClick = { onDownload(seasonPending) }) {
-                                    Text(stringResource(R.string.sheet_download_season, seasonPending.size))
-                                }
-                            }
-                        }
-                    }
-                }
-                item(key = "file:" + f.item.id) {
-                    val versions = versionsByEpisode[f.info.season to f.info.episodeLabel]
-                    FileRow(
-                        file = f,
-                        version = versions?.let { it.indexOf(f) + 1 to it.size },
-                        state = downloadStates[f.item.id],
-                        onDownload = { onDownload(listOf(f.item)) },
-                        onPlay = { onPlay(f) },
-                        playback = playback[f.item.id],
-                        watchedOnTrakt = traktWatched.isNotEmpty() &&
-                            com.abhinavxt.debforge.domain.TraktMatch.keyOf(f.info) in traktWatched
-                    )
-                }
-            }
-            if (onRemove != null) {
-                item(key = "fixed:remove") {
-                    Column(Modifier.padding(start = 20.dp, end = 20.dp, top = 16.dp)) {
-                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                        TextButton(
-                            onClick = onRemove,
-                            contentPadding = PaddingValues(end = 12.dp),
-                            modifier = Modifier.heightIn(min = 48.dp)
-                        ) {
-                            Icon(
-                                Icons.Rounded.DeleteOutline,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.error,
-                                modifier = Modifier.size(18.dp)
-                            )
-                            Spacer(Modifier.width(8.dp))
-                            Text(removeLabel, color = MaterialTheme.colorScheme.error)
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun Overview(text: String) {
+internal fun Overview(text: String) {
     var expanded by remember { mutableStateOf(false) }
     Text(
         text = text,
@@ -643,7 +366,7 @@ private fun Overview(text: String) {
 }
 
 @Composable
-private fun FileRow(
+internal fun FileRow(
     file: ParsedItem,
     /** (n, of) when this episode has several files. */
     version: Pair<Int, Int>? = null,

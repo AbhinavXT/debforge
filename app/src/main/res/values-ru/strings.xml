@@ -108,6 +108,10 @@
     <string name="sheet_download_season">Скачать сезон (%1$d)</string>
     <string name="sheet_play_cd">Воспроизвести %1$s</string>
     <string name="sheet_download_cd">Скачать %1$s</string>
+    <string name="title_resume">Продолжить</string>
+    <string name="title_resume_episode">Продолжить %1$s</string>
+    <string name="title_play_episode">Смотреть %1$s</string>
+    <string name="title_pick">Выберите название, чтобы увидеть подробности</string>
     <string name="state_queued">В очереди</string>
     <string name="state_downloading">Загрузка</string>
     <string name="state_paused">Приостановлено</string>

@@ -104,6 +104,10 @@
     <string name="sheet_download_season">सीझन डाउनलोड करा (%1$d)</string>
     <string name="sheet_play_cd">%1$s प्ले करा</string>
     <string name="sheet_download_cd">%1$s डाउनलोड करा</string>
+    <string name="title_resume">पुन्हा सुरू करा</string>
+    <string name="title_resume_episode">%1$s पुन्हा सुरू करा</string>
+    <string name="title_play_episode">%1$s प्ले करा</string>
+    <string name="title_pick">तपशील पाहण्यासाठी एखादे शीर्षक निवडा</string>
     <string name="state_queued">रांगेत</string>
     <string name="state_downloading">डाउनलोड होत आहे</string>
     <string name="state_paused">थांबवले</string>

@@ -106,6 +106,10 @@
     <string name="sheet_download_season">Télécharger la saison (%1$d)</string>
     <string name="sheet_play_cd">Lire %1$s</string>
     <string name="sheet_download_cd">Télécharger %1$s</string>
+    <string name="title_resume">Reprendre</string>
+    <string name="title_resume_episode">Reprendre %1$s</string>
+    <string name="title_play_episode">Lire %1$s</string>
+    <string name="title_pick">Choisissez un titre pour voir ses détails</string>
     <string name="state_queued">En attente</string>
     <string name="state_downloading">Téléchargement</string>
     <string name="state_paused">En pause</string>
