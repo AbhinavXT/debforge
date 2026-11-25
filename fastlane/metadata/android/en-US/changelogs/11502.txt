@@ -1,0 +1,3 @@
+• Fixed: new TorBox torrents could take minutes to show in the Library
+• Fixed: a possible crash when swiping the app away just as background playback starts
+• Fixed: the crash report prompt came back on every launch until the report was deleted
