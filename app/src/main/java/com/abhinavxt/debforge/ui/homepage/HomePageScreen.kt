@@ -129,7 +129,9 @@ fun HomePageScreen(
     LaunchedEffect(lifecycleOwner) {
         lifecycleOwner.repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) { browse.pollWhileVisible() }
     }
-    val showShortcuts = HomeRow.SHORTCUTS !in hidden && shortcuts.isNotEmpty()
+    // The side rail (width >= 600dp, as in HomeScreen) already lists every tab.
+    val railShown = androidx.compose.ui.platform.LocalConfiguration.current.screenWidthDp >= 600
+    val showShortcuts = HomeRow.SHORTCUTS !in hidden && shortcuts.isNotEmpty() && !railShown
 
     val snackbar = remember { SnackbarHostState() }
     val clipMessage = stringResource(R.string.clipboard_offer)
