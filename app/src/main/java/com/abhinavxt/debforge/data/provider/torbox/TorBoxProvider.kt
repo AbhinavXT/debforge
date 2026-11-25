@@ -487,7 +487,11 @@ class TorBoxProvider @Inject constructor(
             queuedChangedAt = android.os.SystemClock.elapsedRealtime()
             queuedSince[queuedId] = System.currentTimeMillis() - QUEUED_SKEW_MS
             val hash = (data?.get("hash") as? String)?.trim()?.lowercase().orEmpty()
-            val type = if (kind == Kind.WEB) "webdl" else "torrent"
+            val type = when (kind) {
+                Kind.TORRENT -> "torrent"
+                Kind.USENET -> "usenet"
+                Kind.WEB -> "webdl"
+            }
             // No hash: the started item can't be found, so there is nothing to watch.
             return AddResult(message, jobRef = hash.takeIf { it.isNotEmpty() }?.let { "$QUEUED_PREFIX$queuedId:$it:$type" })
         }

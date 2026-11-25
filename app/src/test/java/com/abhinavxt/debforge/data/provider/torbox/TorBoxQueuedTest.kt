@@ -71,7 +71,7 @@ class TorBoxQueuedTest {
                 torrentControls += args[0] as TbTorrentControl
                 TbEnvelope<Any>(true, null, null, null)
             }
-            "createTorrentFromMagnet" -> TbEnvelope(true, null, "Added to queue.", addData)
+            "createTorrentFromMagnet", "createUsenetFromLink", "createWebDownload" -> TbEnvelope(true, null, "Added to queue.", addData)
             else -> error(m.name)
         }
     } as TorBoxApi
@@ -137,6 +137,8 @@ class TorBoxQueuedTest {
 
     @Test fun addReturnsQueuedRefAndOtherAddsKeepTheirs() = runBlocking {
         assertEquals("queued:9:abcdef:torrent", provider.add(AddRequest.Magnet("m")).jobRef)
+        assertEquals("queued:9:abcdef:usenet", provider.add(AddRequest.NzbLink("https://x/a.nzb")).jobRef)
+        assertEquals("queued:9:abcdef:webdl", provider.add(AddRequest.Link("https://x/a")).jobRef)
         addData = mapOf("torrent_id" to 7.0)
         assertEquals("torrent:7", provider.add(AddRequest.Magnet("m")).jobRef)
     }
