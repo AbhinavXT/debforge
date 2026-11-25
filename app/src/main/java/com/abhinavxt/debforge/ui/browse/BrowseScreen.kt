@@ -344,8 +344,10 @@ fun BrowseScreen(
     var pageSeen by remember(openGroupKey) { mutableStateOf(false) }
     if (pageGroup != null) pageSeen = true
     var restorePages by remember(openGroupKey) { mutableIntStateOf(0) }
-    LaunchedEffect(openGroupKey, pageGroup, state.canLoadMore, state.endReached, state.error, state.isInitialLoad, state.items.size) {
-        if (openGroupKey != null && pageGroup == null && !state.isInitialLoad) {
+    // The key this pageGroup was looked up for: a key set since (a title opened from Home) has not been looked up yet.
+    val lookedUpKey = openGroupKey
+    LaunchedEffect(lookedUpKey, pageGroup, state.canLoadMore, state.endReached, state.error, state.isInitialLoad, state.items.size) {
+        if (lookedUpKey != null && lookedUpKey == openGroupKey && pageGroup == null && !state.isInitialLoad) {
             if (!pageSeen && state.canLoadMore && restorePages < RESTORE_PAGES) {
                 restorePages++
                 viewModel.loadMore()
