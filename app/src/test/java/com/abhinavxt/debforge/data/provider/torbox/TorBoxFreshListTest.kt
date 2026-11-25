@@ -18,7 +18,7 @@ import java.lang.reflect.Proxy
 import java.time.Duration
 
 @RunWith(RobolectricTestRunner::class)
-@Config(application = android.app.Application::class, sdk = [34])
+@Config(application = android.app.Application::class, sdk = [35])
 class TorBoxFreshListTest {
     private val server = mutableListOf<TbItemDto>()
     private val limits = mutableListOf<Int>()

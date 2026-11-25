@@ -30,7 +30,7 @@ import org.robolectric.annotation.Config
 
 /** The Library's grid: titles rearrange (something was added, sort changed) while a finger scrolls up. */
 @RunWith(RobolectricTestRunner::class)
-@Config(application = android.app.Application::class, sdk = [34])
+@Config(application = android.app.Application::class, sdk = [35])
 class SafeGridScrollTest {
     @get:Rule val rule = createComposeRule()
 
