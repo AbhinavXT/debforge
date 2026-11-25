@@ -76,7 +76,8 @@ class TorBoxDeviceLogin(
         val page = torBoxUrl(d.verificationUrl)
         return DeviceCode(
             userCode = userCode,
-            verificationUrl = torBoxUrl(d.friendlyVerificationUrl) ?: page ?: FALLBACK_URL,
+            // Not the short tor.box address: some ISPs block it (Airtel India, measured 2026-11-26).
+            verificationUrl = page?.substringBefore('?') ?: torBoxUrl(d.friendlyVerificationUrl) ?: FALLBACK_URL,
             directUrl = torBoxUrl(d.verificationUrlComplete) ?: page ?: FALLBACK_URL,
             intervalSeconds = (d.interval ?: 0).coerceIn(5, 30),
             // TorBox's codes last 10 minutes; its docs show 0 here.

@@ -79,7 +79,7 @@ class TorBoxDeviceLoginTest {
         )
         assertEquals("123456", c.userCode)
         assertEquals("dev", c.handle)
-        assertEquals("https://tor.box/link", c.verificationUrl)
+        assertEquals("https://torbox.app/oauth/device", c.verificationUrl)
         assertEquals("https://torbox.app/oauth/device?app=DebForge&code=123456", c.directUrl)
         assertEquals(5, c.intervalSeconds)
         assertEquals(600.0, (c.expiresAtMillis - System.currentTimeMillis()) / 1000.0, 5.0)
