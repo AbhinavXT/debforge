@@ -230,8 +230,13 @@
     <string name="notif_act_retry">Tentar de novo</string>
     <string name="notif_act_yes">Sim, cancelar</string>
     <string name="notif_act_keep">Manter</string>
-    <string name="notif_cancel_title">Cancelar o download?</string>
+    <string name="notif_cancel_title_one">Cancelar %1$s?</string>
     <string name="notif_cancel_body">O progresso dos downloads em andamento será perdido.</string>
+    <plurals name="notif_cancel_title_many">
+        <item quantity="one">Cancelar %1$d download?</item>
+        <item quantity="many">Cancelar %1$d downloads?</item>
+        <item quantity="other">Cancelar %1$d downloads?</item>
+    </plurals>
     <string name="notif_paused_all_body">Toque em Retomar para continuar.</string>
     <string name="notif_ready_one">Pronto: %1$s</string>
     <string name="notif_ready_body">Na fila para download. Toque para começar.</string>

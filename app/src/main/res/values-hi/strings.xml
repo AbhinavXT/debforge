@@ -228,8 +228,12 @@
     <string name="notif_act_retry">फिर कोशिश करें</string>
     <string name="notif_act_yes">हाँ, रद्द करें</string>
     <string name="notif_act_keep">रहने दें</string>
-    <string name="notif_cancel_title">डाउनलोड रद्द करें?</string>
+    <string name="notif_cancel_title_one">%1$s रद्द करें?</string>
     <string name="notif_cancel_body">चल रहे डाउनलोड की प्रगति खो जाएगी।</string>
+    <plurals name="notif_cancel_title_many">
+        <item quantity="one">%1$d डाउनलोड रद्द करें?</item>
+        <item quantity="other">%1$d डाउनलोड रद्द करें?</item>
+    </plurals>
     <string name="notif_paused_all_body">जारी रखने के लिए फिर शुरू करें पर टैप करें।</string>
     <string name="notif_ready_one">तैयार: %1$s</string>
     <string name="notif_ready_body">डाउनलोड कतार में है। शुरू करने के लिए टैप करें।</string>

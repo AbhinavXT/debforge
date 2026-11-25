@@ -226,8 +226,11 @@
     <string name="notif_act_retry">Coba lagi</string>
     <string name="notif_act_yes">Ya, batalkan</string>
     <string name="notif_act_keep">Pertahankan</string>
-    <string name="notif_cancel_title">Batalkan unduhan?</string>
+    <string name="notif_cancel_title_one">Batalkan %1$s?</string>
     <string name="notif_cancel_body">Kemajuan unduhan yang sedang berjalan akan hilang.</string>
+    <plurals name="notif_cancel_title_many">
+        <item quantity="other">Batalkan %1$d unduhan?</item>
+    </plurals>
     <string name="notif_paused_all_body">Ketuk Lanjutkan untuk meneruskan.</string>
     <string name="notif_ready_one">Siap: %1$s</string>
     <string name="notif_ready_body">Masuk antrean unduhan. Ketuk untuk memulai.</string>

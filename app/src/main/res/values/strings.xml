@@ -229,8 +229,12 @@
     <string name="notif_act_retry">Retry</string>
     <string name="notif_act_yes">Yes, cancel</string>
     <string name="notif_act_keep">Keep</string>
-    <string name="notif_cancel_title">Cancel download?</string>
+    <string name="notif_cancel_title_one">Cancel %1$s?</string>
     <string name="notif_cancel_body">Progress of the running downloads will be lost.</string>
+    <plurals name="notif_cancel_title_many">
+        <item quantity="one">Cancel %1$d download?</item>
+        <item quantity="other">Cancel %1$d downloads?</item>
+    </plurals>
     <string name="notif_paused_all_body">Tap Resume to continue.</string>
     <string name="notif_ready_one">Ready: %1$s</string>
     <string name="notif_ready_body">Queued for download. Tap to start.</string>

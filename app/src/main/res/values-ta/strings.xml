@@ -228,8 +228,12 @@
     <string name="notif_act_retry">மீண்டும் முயற்சி</string>
     <string name="notif_act_yes">ஆம், ரத்து செய்</string>
     <string name="notif_act_keep">வைத்திரு</string>
-    <string name="notif_cancel_title">பதிவிறக்கத்தை ரத்து செய்யவா?</string>
+    <string name="notif_cancel_title_one">%1$s ஐ ரத்து செய்யவா?</string>
     <string name="notif_cancel_body">நடந்துகொண்டிருக்கும் பதிவிறக்கங்களின் முன்னேற்றம் இழக்கப்படும்.</string>
+    <plurals name="notif_cancel_title_many">
+        <item quantity="one">%1$d பதிவிறக்கத்தை ரத்து செய்யவா?</item>
+        <item quantity="other">%1$d பதிவிறக்கங்களை ரத்து செய்யவா?</item>
+    </plurals>
     <string name="notif_paused_all_body">தொடர தொடர் என்பதைத் தட்டவும்.</string>
     <string name="notif_ready_one">தயார்: %1$s</string>
     <string name="notif_ready_body">பதிவிறக்க வரிசையில் உள்ளது. தொடங்க தட்டவும்.</string>

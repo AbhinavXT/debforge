@@ -232,8 +232,14 @@
     <string name="notif_act_retry">Повторить</string>
     <string name="notif_act_yes">Да, отменить</string>
     <string name="notif_act_keep">Оставить</string>
-    <string name="notif_cancel_title">Отменить загрузку?</string>
+    <string name="notif_cancel_title_one">Отменить %1$s?</string>
     <string name="notif_cancel_body">Прогресс текущих загрузок будет потерян.</string>
+    <plurals name="notif_cancel_title_many">
+        <item quantity="one">Отменить %1$d загрузку?</item>
+        <item quantity="few">Отменить %1$d загрузки?</item>
+        <item quantity="many">Отменить %1$d загрузок?</item>
+        <item quantity="other">Отменить %1$d загрузки?</item>
+    </plurals>
     <string name="notif_paused_all_body">Нажмите «Продолжить».</string>
     <string name="notif_ready_one">Готово: %1$s</string>
     <string name="notif_ready_body">Добавлено в очередь загрузок. Нажмите, чтобы начать.</string>

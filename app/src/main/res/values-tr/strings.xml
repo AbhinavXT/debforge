@@ -228,8 +228,12 @@
     <string name="notif_act_retry">Yeniden dene</string>
     <string name="notif_act_yes">Evet, iptal et</string>
     <string name="notif_act_keep">Kalsın</string>
-    <string name="notif_cancel_title">İndirme iptal edilsin mi?</string>
+    <string name="notif_cancel_title_one">%1$s iptal edilsin mi?</string>
     <string name="notif_cancel_body">Süren indirmelerin ilerlemesi kaybolacak.</string>
+    <plurals name="notif_cancel_title_many">
+        <item quantity="one">%1$d indirme iptal edilsin mi?</item>
+        <item quantity="other">%1$d indirme iptal edilsin mi?</item>
+    </plurals>
     <string name="notif_paused_all_body">Devam etmek için Devam et düğmesine dokunun.</string>
     <string name="notif_ready_one">Hazır: %1$s</string>
     <string name="notif_ready_body">İndirme sırasına eklendi. Başlatmak için dokunun.</string>

@@ -3,6 +3,7 @@ package com.abhinavxt.debforge.download
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import com.abhinavxt.debforge.domain.DownloadState
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -36,10 +37,13 @@ class DownloadActionReceiver : BroadcastReceiver() {
                 when (step) {
                     NotifStep.PAUSE_ALL ->
                         if (controller.pauseAll() > 0) DownloadNotifications.notifyPausedByUser(context)
-                    NotifStep.ASK_CANCEL -> DownloadNotifications.notifyCancelAsk(context)
+                    NotifStep.ASK_CANCEL -> {
+                        val running = controller.running()
+                        if (running.isNotEmpty()) DownloadNotifications.notifyCancelAsk(context, running)
+                    }
                     NotifStep.CANCEL_RUNNING -> {
                         DownloadNotifications.dismissCancelAsk(context)
-                        controller.cancelRunning()
+                        controller.cancelAsked(intent.getStringArrayExtra(EXTRA_IDS)?.toList().orEmpty())
                     }
                     NotifStep.KEEP -> DownloadNotifications.dismissCancelAsk(context)
                     NotifStep.IGNORE -> Unit
@@ -54,6 +58,7 @@ class DownloadActionReceiver : BroadcastReceiver() {
         const val ACTION_PAUSE = "com.abhinavxt.debforge.action.NOTIF_PAUSE"
         const val ACTION_CANCEL_ASK = "com.abhinavxt.debforge.action.NOTIF_CANCEL_ASK"
         const val ACTION_CANCEL_YES = "com.abhinavxt.debforge.action.NOTIF_CANCEL_YES"
+        const val EXTRA_IDS = "com.abhinavxt.debforge.extra.CANCEL_IDS"
         const val ACTION_KEEP = "com.abhinavxt.debforge.action.NOTIF_KEEP"
 
         fun stepFor(action: String?): NotifStep = when (action) {
@@ -65,3 +70,7 @@ class DownloadActionReceiver : BroadcastReceiver() {
         }
     }
 }
+
+/** Of the ids the user was asked about, those still safe to cancel: downloading or queued; finished, paused, failed or deleted ones are not. */
+fun idsToCancel(asked: List<String>, states: Map<String, DownloadState?>): List<String> =
+    asked.distinct().filter { states[it] == DownloadState.DOWNLOADING || states[it] == DownloadState.QUEUED }

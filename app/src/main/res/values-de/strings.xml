@@ -228,8 +228,12 @@
     <string name="notif_act_retry">Erneut versuchen</string>
     <string name="notif_act_yes">Ja, abbrechen</string>
     <string name="notif_act_keep">Behalten</string>
-    <string name="notif_cancel_title">Download abbrechen?</string>
+    <string name="notif_cancel_title_one">%1$s abbrechen?</string>
     <string name="notif_cancel_body">Der Fortschritt der laufenden Downloads geht verloren.</string>
+    <plurals name="notif_cancel_title_many">
+        <item quantity="one">%1$d Download abbrechen?</item>
+        <item quantity="other">%1$d Downloads abbrechen?</item>
+    </plurals>
     <string name="notif_paused_all_body">Tippe auf Fortsetzen, um weiterzumachen.</string>
     <string name="notif_ready_one">Bereit: %1$s</string>
     <string name="notif_ready_body">Zum Download eingereiht. Tippe zum Starten.</string>

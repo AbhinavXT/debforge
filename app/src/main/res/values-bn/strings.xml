@@ -228,8 +228,12 @@
     <string name="notif_act_retry">আবার চেষ্টা</string>
     <string name="notif_act_yes">হ্যাঁ, বাতিল করুন</string>
     <string name="notif_act_keep">রেখে দিন</string>
-    <string name="notif_cancel_title">ডাউনলোড বাতিল করবেন?</string>
+    <string name="notif_cancel_title_one">%1$s বাতিল করবেন?</string>
     <string name="notif_cancel_body">চলমান ডাউনলোডের অগ্রগতি হারিয়ে যাবে।</string>
+    <plurals name="notif_cancel_title_many">
+        <item quantity="one">%1$dটি ডাউনলোড বাতিল করবেন?</item>
+        <item quantity="other">%1$dটি ডাউনলোড বাতিল করবেন?</item>
+    </plurals>
     <string name="notif_paused_all_body">চালিয়ে যেতে আবার শুরু ট্যাপ করুন।</string>
     <string name="notif_ready_one">তৈরি: %1$s</string>
     <string name="notif_ready_body">ডাউনলোডের সারিতে আছে। শুরু করতে ট্যাপ করুন।</string>

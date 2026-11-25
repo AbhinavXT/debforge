@@ -230,8 +230,13 @@
     <string name="notif_act_retry">Réessayer</string>
     <string name="notif_act_yes">Oui, annuler</string>
     <string name="notif_act_keep">Garder</string>
-    <string name="notif_cancel_title">Annuler le téléchargement ?</string>
+    <string name="notif_cancel_title_one">Annuler %1$s ?</string>
     <string name="notif_cancel_body">La progression des téléchargements en cours sera perdue.</string>
+    <plurals name="notif_cancel_title_many">
+        <item quantity="one">Annuler %1$d téléchargement ?</item>
+        <item quantity="many">Annuler %1$d téléchargements ?</item>
+        <item quantity="other">Annuler %1$d téléchargements ?</item>
+    </plurals>
     <string name="notif_paused_all_body">Touchez Reprendre pour continuer.</string>
     <string name="notif_ready_one">Prêt : %1$s</string>
     <string name="notif_ready_body">En file d\'attente. Appuyez pour démarrer.</string>

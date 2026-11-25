@@ -124,15 +124,18 @@ object DownloadNotifications {
     }
 
     /** Second step of Cancel: nothing is discarded unless the user taps Yes. Times out on its own. */
-    fun notifyCancelAsk(context: Context) {
+    fun notifyCancelAsk(context: Context, running: List<Pair<String, String>>) {
         ensureChannel(context)
         val n = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification_download)
-            .setContentTitle(context.getString(R.string.notif_cancel_title))
+            .setContentTitle(
+                if (running.size == 1) context.getString(R.string.notif_cancel_title_one, running.first().second)
+                else context.resources.getQuantityString(R.plurals.notif_cancel_title_many, running.size, running.size)
+            )
             .setContentText(context.getString(R.string.notif_cancel_body))
             .setTimeoutAfter(CANCEL_ASK_TIMEOUT_MS)
             .setAutoCancel(true)
-            .addAction(0, context.getString(R.string.notif_act_yes), actionIntent(context, DownloadActionReceiver.ACTION_CANCEL_YES, 12))
+            .addAction(0, context.getString(R.string.notif_act_yes), actionIntent(context, DownloadActionReceiver.ACTION_CANCEL_YES, 12, running.map { it.first }))
             .addAction(0, context.getString(R.string.notif_act_keep), actionIntent(context, DownloadActionReceiver.ACTION_KEEP, 13))
             .build()
         runCatching { context.getSystemService(NotificationManager::class.java).notify(CANCEL_ASK_ID, n) }
@@ -143,11 +146,12 @@ object DownloadNotifications {
     }
 
     /** Broadcast to our own non-exported receiver; the request code keeps one PendingIntent per button. */
-    private fun actionIntent(context: Context, action: String, requestCode: Int): PendingIntent =
+    private fun actionIntent(context: Context, action: String, requestCode: Int, ids: List<String>? = null): PendingIntent =
         PendingIntent.getBroadcast(
             context,
             requestCode,
-            Intent(context, DownloadActionReceiver::class.java).setAction(action),
+            Intent(context, DownloadActionReceiver::class.java).setAction(action)
+                .apply { if (ids != null) putExtra(DownloadActionReceiver.EXTRA_IDS, ids.toTypedArray()) },
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
@@ -164,7 +168,7 @@ object DownloadNotifications {
             .setContentText(context.getString(R.string.notif_paused_body))
             .setAutoCancel(true)
             .setContentIntent(openAppIntent(context))
-            .addAction(0, context.getString(R.string.notif_act_retry), AppActions.pending(context, AppActions.RESUME_ALL))
+            .addAction(0, context.getString(R.string.notif_act_retry), openAppIntent(context))
             .build()
         runCatching { context.getSystemService(NotificationManager::class.java).notify(INFO_ID, n) }
     }
@@ -183,7 +187,7 @@ object DownloadNotifications {
             .setOnlyAlertOnce(true)
             .setAutoCancel(true)
             .setContentIntent(openAppIntent(context))
-            .addAction(0, context.getString(R.string.notif_act_retry), AppActions.pending(context, AppActions.RESUME_ALL))
+            .addAction(0, context.getString(R.string.notif_act_retry), openAppIntent(context))
             .build()
         runCatching { context.getSystemService(NotificationManager::class.java).notify(STOPPED_ID, n) }
     }

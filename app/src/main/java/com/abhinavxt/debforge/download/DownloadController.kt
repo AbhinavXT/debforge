@@ -128,11 +128,19 @@ class DownloadController @Inject constructor(
         return queued + running.size
     }
 
-    /** Cancels what is downloading now (notification Cancel); queued and paused rows stay. */
-    suspend fun cancelRunning(): Int {
-        val running = downloadDao.downloadingIds()
-        running.forEach { runner.cancel(it) }
-        return running.size
+    /** (id, filename) of what is downloading now, for the notification's "Cancel?" question. */
+    suspend fun running(): List<Pair<String, String>> =
+        downloadDao.downloadingIds().mapNotNull { id -> downloadDao.getById(id)?.let { id to it.filename } }
+
+    /**
+     * Cancels the [asked] downloads that are still cancellable (notification
+     * Yes). Finished, user-paused, or gone rows are left alone, and nothing
+     * that started after the question is touched.
+     */
+    suspend fun cancelAsked(asked: List<String>): Int {
+        val ids = idsToCancel(asked, asked.associateWith { downloadDao.getById(it)?.state })
+        ids.forEach { runner.cancel(it) }
+        return ids.size
     }
 
     /**
