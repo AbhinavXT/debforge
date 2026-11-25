@@ -161,7 +161,7 @@ class BackgroundPlaybackService : MediaSessionService() {
     /** Swiped away from recents: stop the sound with it. */
     override fun onTaskRemoved(rootIntent: Intent?) {
         session?.player?.pause()
-        stopSelf()
+        stopSafely()
     }
 
     override fun onDestroy() {
