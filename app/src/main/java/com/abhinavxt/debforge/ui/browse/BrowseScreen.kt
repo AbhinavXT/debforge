@@ -76,6 +76,7 @@ import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.FilterChip
@@ -312,7 +313,11 @@ fun BrowseScreen(
             if (selected.isNotEmpty()) {
                 // Contextual bar while multi-selecting.
                 TopAppBar(
-                    title = { Text(stringResource(R.string.browse_selected, selected.size)) },
+                    // Just the number on one line; the full "N selected" is the spoken label (the long phrase wrapped on phones).
+                    title = {
+                        val full = stringResource(R.string.browse_selected, selected.size)
+                        Text(selected.size.toString(), maxLines = 1, modifier = Modifier.semantics { contentDescription = full })
+                    },
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = MaterialTheme.colorScheme.secondaryContainer,
                         titleContentColor = MaterialTheme.colorScheme.onSecondaryContainer,
@@ -365,7 +370,7 @@ fun BrowseScreen(
                                 )
                             }
                         }
-                        Button(
+                        FilledIconButton(
                             onClick = {
                                 val picked = pickedItems.filter { downloadStates[it.id] == null }
                                 handleEnqueue(picked)
@@ -373,9 +378,7 @@ fun BrowseScreen(
                             },
                             modifier = Modifier.padding(end = 8.dp)
                         ) {
-                            Icon(Icons.Rounded.Download, contentDescription = null, modifier = Modifier.size(18.dp))
-                            Spacer(Modifier.width(6.dp))
-                            Text(stringResource(R.string.action_download))
+                            Icon(Icons.Rounded.Download, contentDescription = stringResource(R.string.action_download))
                         }
                     }
                 )
