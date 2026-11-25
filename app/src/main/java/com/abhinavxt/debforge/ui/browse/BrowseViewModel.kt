@@ -190,7 +190,9 @@ class BrowseViewModel @Inject constructor(
         // cached torrents (ready instantly on TorBox) appear right away.
         viewModelScope.launch {
             providerEvents.listChanged.collect { message ->
-                _events.emit(message)
+                // Added from another tab (Browser, Search): no snackbar host is showing there.
+                if (_events.subscriptionCount.value > 0) _events.emit(message)
+                else android.widget.Toast.makeText(appContext, message, android.widget.Toast.LENGTH_LONG).show()
                 refresh()
             }
         }
