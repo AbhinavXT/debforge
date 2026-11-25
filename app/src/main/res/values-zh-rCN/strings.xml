@@ -220,6 +220,15 @@
     <string name="notif_sched_body">点按即可开始。允许“闹钟和提醒”权限可自动开始。</string>
     <string name="notif_stopped_title">系统已暂停下载</string>
     <string name="notif_stopped_body">点按即可继续。</string>
+    <string name="notif_act_pause">暂停</string>
+    <string name="notif_act_cancel">取消</string>
+    <string name="notif_act_resume">继续</string>
+    <string name="notif_act_retry">重试</string>
+    <string name="notif_act_yes">是，取消</string>
+    <string name="notif_act_keep">保留</string>
+    <string name="notif_cancel_title">取消下载？</string>
+    <string name="notif_cancel_body">正在进行的下载进度将会丢失。</string>
+    <string name="notif_paused_all_body">点按“继续”即可恢复。</string>
     <string name="notif_ready_one">已就绪：%1$s</string>
     <string name="notif_ready_body">已加入下载队列。点按即可开始。</string>
     <string name="notif_downloaded">已下载</string>

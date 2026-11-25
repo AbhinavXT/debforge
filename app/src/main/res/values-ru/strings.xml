@@ -226,6 +226,15 @@
     <string name="notif_sched_body">Нажмите, чтобы начать. Разрешите \"Будильники и напоминания\" для автоматического запуска.</string>
     <string name="notif_stopped_title">Система приостановила загрузки</string>
     <string name="notif_stopped_body">Нажмите, чтобы продолжить.</string>
+    <string name="notif_act_pause">Пауза</string>
+    <string name="notif_act_cancel">Отмена</string>
+    <string name="notif_act_resume">Продолжить</string>
+    <string name="notif_act_retry">Повторить</string>
+    <string name="notif_act_yes">Да, отменить</string>
+    <string name="notif_act_keep">Оставить</string>
+    <string name="notif_cancel_title">Отменить загрузку?</string>
+    <string name="notif_cancel_body">Прогресс текущих загрузок будет потерян.</string>
+    <string name="notif_paused_all_body">Нажмите «Продолжить».</string>
     <string name="notif_ready_one">Готово: %1$s</string>
     <string name="notif_ready_body">Добавлено в очередь загрузок. Нажмите, чтобы начать.</string>
     <string name="notif_downloaded">Скачано</string>

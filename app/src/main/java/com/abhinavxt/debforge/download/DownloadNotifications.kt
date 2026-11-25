@@ -7,6 +7,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationCompat
+import com.abhinavxt.debforge.AppActions
 import com.abhinavxt.debforge.MainActivity
 import com.abhinavxt.debforge.R
 import com.abhinavxt.debforge.domain.DownloadProgress
@@ -31,6 +32,9 @@ object DownloadNotifications {
     private const val FEED_GONE_BASE = 20000
     private const val STOPPED_ID = 1005
     private const val STORAGE_ID = 1006
+    private const val PAUSED_ID = 1007
+    private const val CANCEL_ASK_ID = 1008
+    private const val CANCEL_ASK_TIMEOUT_MS = 30_000L
 
     fun ensureChannel(context: Context) {
         val nm = context.getSystemService(NotificationManager::class.java)
@@ -53,6 +57,8 @@ object DownloadNotifications {
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setContentIntent(openAppIntent(context))
             .setContentTitle(filename ?: "DebForge")
+            .addAction(0, context.getString(R.string.notif_act_pause), actionIntent(context, DownloadActionReceiver.ACTION_PAUSE, 10))
+            .addAction(0, context.getString(R.string.notif_act_cancel), actionIntent(context, DownloadActionReceiver.ACTION_CANCEL_ASK, 11))
 
         when {
             progress == null -> builder
@@ -75,6 +81,52 @@ object DownloadNotifications {
         }
         return builder.build()
     }
+
+    /** Everything was paused from the notification: a dismissible one with Resume (opens the app, the only place downloads may restart). */
+    fun notifyPausedByUser(context: Context) {
+        ensureChannel(context)
+        val n = NotificationCompat.Builder(context, CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_notification_download)
+            .setContentTitle(context.getString(R.string.notif_paused_title))
+            .setContentText(context.getString(R.string.notif_paused_all_body))
+            .setAutoCancel(true)
+            .setContentIntent(openAppIntent(context))
+            .addAction(0, context.getString(R.string.notif_act_resume), AppActions.pending(context, AppActions.RESUME_ALL))
+            .build()
+        runCatching { context.getSystemService(NotificationManager::class.java).notify(PAUSED_ID, n) }
+    }
+
+    fun cancelPausedByUser(context: Context) {
+        runCatching { context.getSystemService(NotificationManager::class.java).cancel(PAUSED_ID) }
+    }
+
+    /** Second step of Cancel: nothing is discarded unless the user taps Yes. Times out on its own. */
+    fun notifyCancelAsk(context: Context) {
+        ensureChannel(context)
+        val n = NotificationCompat.Builder(context, CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_notification_download)
+            .setContentTitle(context.getString(R.string.notif_cancel_title))
+            .setContentText(context.getString(R.string.notif_cancel_body))
+            .setTimeoutAfter(CANCEL_ASK_TIMEOUT_MS)
+            .setAutoCancel(true)
+            .addAction(0, context.getString(R.string.notif_act_yes), actionIntent(context, DownloadActionReceiver.ACTION_CANCEL_YES, 12))
+            .addAction(0, context.getString(R.string.notif_act_keep), actionIntent(context, DownloadActionReceiver.ACTION_KEEP, 13))
+            .build()
+        runCatching { context.getSystemService(NotificationManager::class.java).notify(CANCEL_ASK_ID, n) }
+    }
+
+    fun dismissCancelAsk(context: Context) {
+        runCatching { context.getSystemService(NotificationManager::class.java).cancel(CANCEL_ASK_ID) }
+    }
+
+    /** Broadcast to our own non-exported receiver; the request code keeps one PendingIntent per button. */
+    private fun actionIntent(context: Context, action: String, requestCode: Int): PendingIntent =
+        PendingIntent.getBroadcast(
+            context,
+            requestCode,
+            Intent(context, DownloadActionReceiver::class.java).setAction(action),
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
 
     /**
      * Shown when Android stops the foreground-service host at its daily time

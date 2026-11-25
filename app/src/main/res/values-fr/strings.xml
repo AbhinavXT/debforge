@@ -224,6 +224,15 @@
     <string name="notif_sched_body">Appuyez pour démarrer. Autorisez \"Alarmes et rappels\" pour démarrer automatiquement.</string>
     <string name="notif_stopped_title">Téléchargements suspendus par le système</string>
     <string name="notif_stopped_body">Touchez pour reprendre.</string>
+    <string name="notif_act_pause">Pause</string>
+    <string name="notif_act_cancel">Annuler</string>
+    <string name="notif_act_resume">Reprendre</string>
+    <string name="notif_act_retry">Réessayer</string>
+    <string name="notif_act_yes">Oui, annuler</string>
+    <string name="notif_act_keep">Garder</string>
+    <string name="notif_cancel_title">Annuler le téléchargement ?</string>
+    <string name="notif_cancel_body">La progression des téléchargements en cours sera perdue.</string>
+    <string name="notif_paused_all_body">Touchez Reprendre pour continuer.</string>
     <string name="notif_ready_one">Prêt : %1$s</string>
     <string name="notif_ready_body">En file d\'attente. Appuyez pour démarrer.</string>
     <string name="notif_downloaded">Téléchargé</string>

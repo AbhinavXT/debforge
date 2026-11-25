@@ -223,6 +223,15 @@
     <string name="notif_sched_body">Tap to start. Allow \"Alarms &amp; reminders\" to start automatically.</string>
     <string name="notif_stopped_title">Downloads paused by the system</string>
     <string name="notif_stopped_body">Tap to resume.</string>
+    <string name="notif_act_pause">Pause</string>
+    <string name="notif_act_cancel">Cancel</string>
+    <string name="notif_act_resume">Resume</string>
+    <string name="notif_act_retry">Retry</string>
+    <string name="notif_act_yes">Yes, cancel</string>
+    <string name="notif_act_keep">Keep</string>
+    <string name="notif_cancel_title">Cancel download?</string>
+    <string name="notif_cancel_body">Progress of the running downloads will be lost.</string>
+    <string name="notif_paused_all_body">Tap Resume to continue.</string>
     <string name="notif_ready_one">Ready: %1$s</string>
     <string name="notif_ready_body">Queued for download. Tap to start.</string>
     <string name="notif_downloaded">Downloaded</string>

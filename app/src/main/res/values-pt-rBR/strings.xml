@@ -224,6 +224,15 @@
     <string name="notif_sched_body">Toque para começar. Permita \"Alarmes e lembretes\" para começar automaticamente.</string>
     <string name="notif_stopped_title">Downloads pausados pelo sistema</string>
     <string name="notif_stopped_body">Toque para retomar.</string>
+    <string name="notif_act_pause">Pausar</string>
+    <string name="notif_act_cancel">Cancelar</string>
+    <string name="notif_act_resume">Retomar</string>
+    <string name="notif_act_retry">Tentar de novo</string>
+    <string name="notif_act_yes">Sim, cancelar</string>
+    <string name="notif_act_keep">Manter</string>
+    <string name="notif_cancel_title">Cancelar o download?</string>
+    <string name="notif_cancel_body">O progresso dos downloads em andamento será perdido.</string>
+    <string name="notif_paused_all_body">Toque em Retomar para continuar.</string>
     <string name="notif_ready_one">Pronto: %1$s</string>
     <string name="notif_ready_body">Na fila para download. Toque para começar.</string>
     <string name="notif_downloaded">Baixado</string>

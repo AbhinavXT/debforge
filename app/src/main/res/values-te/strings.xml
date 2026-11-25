@@ -222,6 +222,15 @@
     <string name="notif_sched_body">మొదలుపెట్టడానికి నొక్కండి. ఆటోమేటిక్‌గా మొదలవ్వాలంటే \"అలారాలు &amp; రిమైండర్‌లు\" అనుమతి ఇవ్వండి.</string>
     <string name="notif_stopped_title">సిస్టమ్ డౌన్‌లోడ్‌లను ఆపేసింది</string>
     <string name="notif_stopped_body">మళ్లీ కొనసాగించడానికి ట్యాప్ చేయండి.</string>
+    <string name="notif_act_pause">పాజ్ చేయి</string>
+    <string name="notif_act_cancel">రద్దు చేయి</string>
+    <string name="notif_act_resume">కొనసాగించు</string>
+    <string name="notif_act_retry">మళ్లీ ప్రయత్నించు</string>
+    <string name="notif_act_yes">అవును, రద్దు చేయి</string>
+    <string name="notif_act_keep">ఉంచు</string>
+    <string name="notif_cancel_title">డౌన్‌లోడ్‌ను రద్దు చేయాలా?</string>
+    <string name="notif_cancel_body">కొనసాగుతున్న డౌన్‌లోడ్‌ల పురోగతి పోతుంది.</string>
+    <string name="notif_paused_all_body">కొనసాగడానికి కొనసాగించు నొక్కండి.</string>
     <string name="notif_ready_one">సిద్ధం: %1$s</string>
     <string name="notif_ready_body">డౌన్‌లోడ్ క్యూలో ఉంది. మొదలుపెట్టడానికి నొక్కండి.</string>
     <string name="notif_downloaded">డౌన్‌లోడ్ అయింది</string>

@@ -128,6 +128,13 @@ class DownloadController @Inject constructor(
         return queued + running.size
     }
 
+    /** Cancels what is downloading now (notification Cancel); queued and paused rows stay. */
+    suspend fun cancelRunning(): Int {
+        val running = downloadDao.downloadingIds()
+        running.forEach { runner.cancel(it) }
+        return running.size
+    }
+
     /**
      * Re-queues every paused download and starts the engine. Android only
      * allows starting it while DebForge is visible, so callers outside the
@@ -135,6 +142,7 @@ class DownloadController @Inject constructor(
      */
     suspend fun resumeAll(): Int {
         val n = downloadDao.requeuePaused()
+        DownloadNotifications.cancelPausedByUser(context)
         if (n > 0) scheduler.ensureRunning(foreground = true)
         return n
     }

@@ -222,6 +222,15 @@
     <string name="notif_sched_body">सुरू करण्यासाठी टॅप करा. आपोआप सुरू होण्यासाठी \"अलार्म आणि रिमाइंडर\" ला परवानगी द्या.</string>
     <string name="notif_stopped_title">सिस्टमने डाउनलोड थांबवले</string>
     <string name="notif_stopped_body">पुन्हा सुरू करण्यासाठी टॅप करा.</string>
+    <string name="notif_act_pause">थांबवा</string>
+    <string name="notif_act_cancel">रद्द करा</string>
+    <string name="notif_act_resume">पुन्हा सुरू करा</string>
+    <string name="notif_act_retry">पुन्हा प्रयत्न करा</string>
+    <string name="notif_act_yes">होय, रद्द करा</string>
+    <string name="notif_act_keep">राहू द्या</string>
+    <string name="notif_cancel_title">डाउनलोड रद्द करायचे?</string>
+    <string name="notif_cancel_body">सुरू असलेल्या डाउनलोडची प्रगती गमावली जाईल.</string>
+    <string name="notif_paused_all_body">पुढे जाण्यासाठी पुन्हा सुरू करा वर टॅप करा.</string>
     <string name="notif_ready_one">तयार: %1$s</string>
     <string name="notif_ready_body">डाउनलोडसाठी रांगेत. सुरू करण्यासाठी टॅप करा.</string>
     <string name="notif_downloaded">डाउनलोड झाले</string>

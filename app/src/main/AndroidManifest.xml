@@ -101,6 +101,11 @@
             android:permission="android.permission.BIND_JOB_SERVICE"
             tools:targetApi="34" />
 
+        <!-- Pause / Cancel buttons on the download notification. -->
+        <receiver
+            android:name=".download.DownloadActionReceiver"
+            android:exported="false" />
+
         <receiver
             android:name=".download.ScheduleAlarmReceiver"
             android:exported="false" />

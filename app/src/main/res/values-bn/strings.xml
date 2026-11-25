@@ -222,6 +222,15 @@
     <string name="notif_sched_body">শুরু করতে ট্যাপ করুন। নিজে থেকে শুরু করতে \"অ্যালার্ম ও রিমাইন্ডার\"-এর অনুমতি দিন।</string>
     <string name="notif_stopped_title">সিস্টেম ডাউনলোড থামিয়ে দিয়েছে</string>
     <string name="notif_stopped_body">আবার শুরু করতে ট্যাপ করুন।</string>
+    <string name="notif_act_pause">বিরতি</string>
+    <string name="notif_act_cancel">বাতিল</string>
+    <string name="notif_act_resume">আবার শুরু</string>
+    <string name="notif_act_retry">আবার চেষ্টা</string>
+    <string name="notif_act_yes">হ্যাঁ, বাতিল করুন</string>
+    <string name="notif_act_keep">রেখে দিন</string>
+    <string name="notif_cancel_title">ডাউনলোড বাতিল করবেন?</string>
+    <string name="notif_cancel_body">চলমান ডাউনলোডের অগ্রগতি হারিয়ে যাবে।</string>
+    <string name="notif_paused_all_body">চালিয়ে যেতে আবার শুরু ট্যাপ করুন।</string>
     <string name="notif_ready_one">তৈরি: %1$s</string>
     <string name="notif_ready_body">ডাউনলোডের সারিতে আছে। শুরু করতে ট্যাপ করুন।</string>
     <string name="notif_downloaded">ডাউনলোড হয়েছে</string>

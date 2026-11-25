@@ -220,6 +220,15 @@
     <string name="notif_sched_body">Ketuk untuk memulai. Izinkan \"Alarm &amp; pengingat\" agar mulai otomatis.</string>
     <string name="notif_stopped_title">Unduhan dijeda oleh sistem</string>
     <string name="notif_stopped_body">Ketuk untuk melanjutkan.</string>
+    <string name="notif_act_pause">Jeda</string>
+    <string name="notif_act_cancel">Batal</string>
+    <string name="notif_act_resume">Lanjutkan</string>
+    <string name="notif_act_retry">Coba lagi</string>
+    <string name="notif_act_yes">Ya, batalkan</string>
+    <string name="notif_act_keep">Pertahankan</string>
+    <string name="notif_cancel_title">Batalkan unduhan?</string>
+    <string name="notif_cancel_body">Kemajuan unduhan yang sedang berjalan akan hilang.</string>
+    <string name="notif_paused_all_body">Ketuk Lanjutkan untuk meneruskan.</string>
     <string name="notif_ready_one">Siap: %1$s</string>
     <string name="notif_ready_body">Masuk antrean unduhan. Ketuk untuk memulai.</string>
     <string name="notif_downloaded">Terunduh</string>

@@ -224,6 +224,15 @@
     <string name="notif_sched_body">Toca para empezar. Permite \"Alarmas y recordatorios\" para que empiecen automáticamente.</string>
     <string name="notif_stopped_title">Descargas pausadas por el sistema</string>
     <string name="notif_stopped_body">Toca para reanudar.</string>
+    <string name="notif_act_pause">Pausar</string>
+    <string name="notif_act_cancel">Cancelar</string>
+    <string name="notif_act_resume">Reanudar</string>
+    <string name="notif_act_retry">Reintentar</string>
+    <string name="notif_act_yes">Sí, cancelar</string>
+    <string name="notif_act_keep">Mantener</string>
+    <string name="notif_cancel_title">¿Cancelar la descarga?</string>
+    <string name="notif_cancel_body">Se perderá el progreso de las descargas en curso.</string>
+    <string name="notif_paused_all_body">Toca Reanudar para continuar.</string>
     <string name="notif_ready_one">Listo: %1$s</string>
     <string name="notif_ready_body">En cola para descargar. Toca para empezar.</string>
     <string name="notif_downloaded">Descargado</string>

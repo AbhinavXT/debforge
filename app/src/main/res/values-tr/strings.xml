@@ -222,6 +222,15 @@
     <string name="notif_sched_body">Başlatmak için dokunun. Otomatik başlaması için \"Alarmlar ve hatırlatıcılar\" izni verin.</string>
     <string name="notif_stopped_title">İndirmeler sistem tarafından duraklatıldı</string>
     <string name="notif_stopped_body">Devam etmek için dokunun.</string>
+    <string name="notif_act_pause">Duraklat</string>
+    <string name="notif_act_cancel">İptal</string>
+    <string name="notif_act_resume">Devam et</string>
+    <string name="notif_act_retry">Yeniden dene</string>
+    <string name="notif_act_yes">Evet, iptal et</string>
+    <string name="notif_act_keep">Kalsın</string>
+    <string name="notif_cancel_title">İndirme iptal edilsin mi?</string>
+    <string name="notif_cancel_body">Süren indirmelerin ilerlemesi kaybolacak.</string>
+    <string name="notif_paused_all_body">Devam etmek için Devam et düğmesine dokunun.</string>
     <string name="notif_ready_one">Hazır: %1$s</string>
     <string name="notif_ready_body">İndirme sırasına eklendi. Başlatmak için dokunun.</string>
     <string name="notif_downloaded">İndirildi</string>

@@ -222,6 +222,15 @@
     <string name="notif_sched_body">Tippe zum Starten. Erlaube \"Wecker &amp; Erinnerungen\", damit sie automatisch starten.</string>
     <string name="notif_stopped_title">Downloads vom System pausiert</string>
     <string name="notif_stopped_body">Zum Fortsetzen tippen.</string>
+    <string name="notif_act_pause">Pausieren</string>
+    <string name="notif_act_cancel">Abbrechen</string>
+    <string name="notif_act_resume">Fortsetzen</string>
+    <string name="notif_act_retry">Erneut versuchen</string>
+    <string name="notif_act_yes">Ja, abbrechen</string>
+    <string name="notif_act_keep">Behalten</string>
+    <string name="notif_cancel_title">Download abbrechen?</string>
+    <string name="notif_cancel_body">Der Fortschritt der laufenden Downloads geht verloren.</string>
+    <string name="notif_paused_all_body">Tippe auf Fortsetzen, um weiterzumachen.</string>
     <string name="notif_ready_one">Bereit: %1$s</string>
     <string name="notif_ready_body">Zum Download eingereiht. Tippe zum Starten.</string>
     <string name="notif_downloaded">Heruntergeladen</string>
