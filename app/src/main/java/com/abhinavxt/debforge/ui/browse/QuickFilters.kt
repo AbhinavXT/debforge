@@ -38,3 +38,14 @@ fun applyQuickFilters(
         }
     }
 }
+
+/** With a quick filter on, keep loading pages until at least this many tiles (titles in posters, rows in the list) match. */
+const val FILTER_FILL_TILES = 24
+
+/**
+ * True when the next page should be fetched now: the loaded part shows nothing, or a filter leaves
+ * too few tiles to fill the screen. Callers ask again after each page, so it runs one page at a time;
+ * [canLoadMore] is false while a page loads and after an error.
+ */
+fun needsFillPage(hasItems: Boolean, canLoadMore: Boolean, visibleEmpty: Boolean, filtering: Boolean, tiles: Int): Boolean =
+    hasItems && canLoadMore && (visibleEmpty || (filtering && tiles < FILTER_FILL_TILES))

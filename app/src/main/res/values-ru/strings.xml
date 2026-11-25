@@ -11,7 +11,6 @@
     <string name="action_open">Открыть</string>
     <string name="action_share">Поделиться</string>
     <string name="action_remove">Удалить</string>
-    <string name="swipe_removed">Удалено: %1$s</string>
     <string name="action_retry">Повторить</string>
     <string name="action_save">Сохранить</string>
     <string name="action_allow">Разрешить</string>
@@ -21,7 +20,6 @@
     <string name="action_renew">Продлить</string>
     <string name="action_refresh">Обновить</string>
     <string name="action_clear">Очистить</string>
-    <string name="action_undo">Отменить</string>
     <string name="action_done">Готово</string>
     <string name="setup_your_service">ваш debrid-сервис</string>
     <string name="setup_intro">Выберите сервис и войдите в %1$s, используя %2$s.</string>
@@ -338,6 +336,8 @@
     <string name="action_remove_from">Удалить из %1$s</string>
     <string name="remove_title">Удалить из %1$s?</string>
     <string name="remove_body">«%1$s» будет удалён из вашего аккаунта %2$s. Файлы, уже сохранённые на телефоне, останутся. Незавершённые загрузки будут отменены.</string>
+    <string name="remove_body_torrent">«%1$s» входит в торрент. Весь торрент со всеми файлами будет удалён из вашего аккаунта %2$s. Файлы, уже сохранённые на этом телефоне, останутся. Незавершённые загрузки будут отменены.</string>
+    <string name="remove_body_torrent_n">«%1$s» входит в торрент. Весь торрент будет удалён из вашего аккаунта %2$s, а не только выбранное (файлов в нём: %3$d). Файлы, уже сохранённые на этом телефоне, останутся. Незавершённые загрузки будут отменены.</string>
     <plurals name="msg_removed_n">
         <item quantity="one">Удалён %1$d элемент из %2$s</item>
         <item quantity="few">Удалено %1$d элемента из %2$s</item>

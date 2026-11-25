@@ -11,7 +11,6 @@
     <string name="action_open">திற</string>
     <string name="action_share">பகிர்</string>
     <string name="action_remove">அகற்று</string>
-    <string name="swipe_removed">%1$s நீக்கப்பட்டது</string>
     <string name="action_retry">மீண்டும் முயல்</string>
     <string name="action_save">சேமி</string>
     <string name="action_allow">அனுமதி</string>
@@ -21,7 +20,6 @@
     <string name="action_renew">புதுப்பி</string>
     <string name="action_refresh">ரெஃப்ரெஷ் செய்</string>
     <string name="action_clear">அழி</string>
-    <string name="action_undo">செயல்தவிர்</string>
     <string name="action_done">முடிந்தது</string>
     <string name="setup_your_service">உங்கள் டெப்ரிட் சேவை</string>
     <string name="setup_intro">உங்கள் சேவையைத் தேர்ந்தெடுத்து, உங்கள் %1$s %2$s மூலம் உள்நுழையவும்.</string>
@@ -314,6 +312,8 @@
     <string name="action_remove_from">%1$s-இலிருந்து அகற்று</string>
     <string name="remove_title">%1$s-இலிருந்து அகற்றவா?</string>
     <string name="remove_body">“%1$s” உங்கள் %2$s கணக்கிலிருந்து நீக்கப்படும். இந்த ஃபோனில் ஏற்கெனவே சேமிக்கப்பட்ட கோப்புகள் அப்படியே இருக்கும். இதன் முடிக்கப்படாத பதிவிறக்கங்கள் ரத்துசெய்யப்படும்.</string>
+    <string name="remove_body_torrent">“%1$s” ஒரு டொரண்டின் பகுதி. முழு டொரண்டும், அதன் அனைத்து கோப்புகளுடன், உங்கள் %2$s கணக்கிலிருந்து நீக்கப்படும். இந்த ஃபோனில் ஏற்கனவே சேமித்த கோப்புகள் இருக்கும். முடியாத பதிவிறக்கங்கள் ரத்து செய்யப்படும்.</string>
+    <string name="remove_body_torrent_n">“%1$s” ஒரு டொரண்டின் பகுதி. முழு டொரண்டும் உங்கள் %2$s கணக்கிலிருந்து நீக்கப்படும், தேர்ந்தெடுத்தவை மட்டும் அல்ல (அதிலுள்ள கோப்புகள்: %3$d). இந்த ஃபோனில் ஏற்கனவே சேமித்த கோப்புகள் இருக்கும். முடியாத பதிவிறக்கங்கள் ரத்து செய்யப்படும்.</string>
     <plurals name="msg_removed_n">
         <item quantity="one">%2$s-இலிருந்து %1$d உருப்படி அகற்றப்பட்டது</item>
         <item quantity="other">%2$s-இலிருந்து %1$d உருப்படிகள் அகற்றப்பட்டன</item>

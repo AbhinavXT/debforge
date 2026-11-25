@@ -11,7 +11,6 @@
     <string name="action_open">खोलें</string>
     <string name="action_share">शेयर करें</string>
     <string name="action_remove">हटाएँ</string>
-    <string name="swipe_removed">%1$s हटाया गया</string>
     <string name="action_retry">फिर से कोशिश करें</string>
     <string name="action_save">सेव करें</string>
     <string name="action_allow">अनुमति दें</string>
@@ -21,7 +20,6 @@
     <string name="action_renew">नवीनीकरण करें</string>
     <string name="action_refresh">रीफ़्रेश करें</string>
     <string name="action_clear">साफ़ करें</string>
-    <string name="action_undo">पहले जैसा करें</string>
     <string name="action_done">हो गया</string>
     <string name="setup_your_service">आपकी डेब्रिड सेवा</string>
     <string name="setup_intro">अपनी सेवा चुनें और अपने %1$s %2$s से साइन इन करें।</string>
@@ -314,6 +312,8 @@
     <string name="action_remove_from">%1$s से हटाएँ</string>
     <string name="remove_title">%1$s से हटाएँ?</string>
     <string name="remove_body">“%1$s” आपके %2$s खाते से हटा दिया जाएगा। इस फ़ोन पर सहेजी गई फ़ाइलें बनी रहेंगी। इसके अधूरे डाउनलोड रद्द हो जाएँगे।</string>
+    <string name="remove_body_torrent">“%1$s” एक टोरेंट का हिस्सा है। पूरा टोरेंट, उसकी सभी फ़ाइलों समेत, आपके %2$s खाते से हटा दिया जाएगा। इस फ़ोन पर पहले से सेव की गई फ़ाइलें बनी रहेंगी। अधूरे डाउनलोड रद्द हो जाएँगे।</string>
+    <string name="remove_body_torrent_n">“%1$s” एक टोरेंट का हिस्सा है। पूरा टोरेंट आपके %2$s खाते से हटा दिया जाएगा, सिर्फ़ चुनी हुई फ़ाइलें नहीं (इसमें फ़ाइलें: %3$d)। इस फ़ोन पर पहले से सेव की गई फ़ाइलें बनी रहेंगी। अधूरे डाउनलोड रद्द हो जाएँगे।</string>
     <plurals name="msg_removed_n">
         <item quantity="one">%2$s से %1$d आइटम हटाया गया</item>
         <item quantity="other">%2$s से %1$d आइटम हटाए गए</item>

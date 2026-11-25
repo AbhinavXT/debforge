@@ -11,7 +11,6 @@
     <string name="action_open">打开</string>
     <string name="action_share">分享</string>
     <string name="action_remove">移除</string>
-    <string name="swipe_removed">已移除 %1$s</string>
     <string name="action_retry">重试</string>
     <string name="action_save">保存</string>
     <string name="action_allow">允许</string>
@@ -21,7 +20,6 @@
     <string name="action_renew">续费</string>
     <string name="action_refresh">刷新</string>
     <string name="action_clear">清除</string>
-    <string name="action_undo">撤销</string>
     <string name="action_done">完成</string>
     <string name="setup_your_service">你的 debrid 服务</string>
     <string name="setup_intro">选择你的服务，然后使用 %1$s %2$s 登录。</string>
@@ -302,6 +300,8 @@
     <string name="action_remove_from">从 %1$s 中移除</string>
     <string name="remove_title">要从 %1$s 中移除吗？</string>
     <string name="remove_body">“%1$s”将从你的 %2$s 账户中删除。已保存到本机的文件会保留，未完成的相关下载将被取消。</string>
+    <string name="remove_body_torrent">“%1$s”属于一个种子。整个种子及其所有文件都将从你的 %2$s 账户中删除。已保存在此手机上的文件会保留。未完成的下载将被取消。</string>
+    <string name="remove_body_torrent_n">“%1$s”属于一个种子。整个种子都将从你的 %2$s 账户中删除，而不只是所选内容（其中的文件数：%3$d）。已保存在此手机上的文件会保留。未完成的下载将被取消。</string>
     <plurals name="msg_removed_n">
         <item quantity="other">已从 %2$s 中移除 %1$d 项</item>
     </plurals>

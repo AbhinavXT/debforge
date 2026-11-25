@@ -49,4 +49,18 @@ class QuickFiltersTest {
     @Test fun togglingTwiceClears() = assertEquals(emptySet<QuickFilter>(), emptySet<QuickFilter>().toggled(UHD).toggled(UHD))
 
     @Test fun nothingMatchingGivesEmpty() = assertEquals(emptyList<DownloadItem>(), run(setOf(MOVIES, SHOWS)))
+
+    // A 24-episode show is one tile: many files must not count as a filled screen.
+    @Test fun fillCountsTilesNotFiles() {
+        assertEquals(true, needsFillPage(hasItems = true, canLoadMore = true, visibleEmpty = false, filtering = true, tiles = 1))
+        assertEquals(false, needsFillPage(true, true, false, true, FILTER_FILL_TILES))
+    }
+
+    @Test fun fillStopsAtEndErrorOrWhileLoading() =
+        assertEquals(false, needsFillPage(true, canLoadMore = false, visibleEmpty = true, filtering = true, tiles = 0))
+
+    @Test fun noFilterOnlyFillsWhenEmpty() {
+        assertEquals(false, needsFillPage(true, true, false, false, 2))
+        assertEquals(true, needsFillPage(true, true, true, false, 0))
+    }
 }

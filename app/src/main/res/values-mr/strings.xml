@@ -11,7 +11,6 @@
     <string name="action_open">उघडा</string>
     <string name="action_share">शेअर करा</string>
     <string name="action_remove">काढून टाका</string>
-    <string name="swipe_removed">%1$s काढले</string>
     <string name="action_retry">पुन्हा प्रयत्न करा</string>
     <string name="action_save">सेव्ह करा</string>
     <string name="action_allow">परवानगी द्या</string>
@@ -21,7 +20,6 @@
     <string name="action_renew">नूतनीकरण करा</string>
     <string name="action_refresh">रिफ्रेश करा</string>
     <string name="action_clear">साफ करा</string>
-    <string name="action_undo">पूर्ववत करा</string>
     <string name="action_done">झाले</string>
     <string name="setup_your_service">तुमची डेब्रिड सेवा</string>
     <string name="setup_intro">तुमची सेवा निवडा आणि तुमच्या %1$s %2$s ने साइन इन करा.</string>
@@ -314,6 +312,8 @@
     <string name="action_remove_from">%1$s मधून काढा</string>
     <string name="remove_title">%1$s मधून काढायचे?</string>
     <string name="remove_body">“%1$s” तुमच्या %2$s खात्यातून हटवले जाईल. या फोनवर आधीच सेव्ह केलेल्या फाइल राहतील. त्याचे अपूर्ण डाउनलोड रद्द केले जातील.</string>
+    <string name="remove_body_torrent">“%1$s” हा टोरेंटचा भाग आहे. संपूर्ण टोरेंट, त्यातील सर्व फाइलींसह, तुमच्या %2$s खात्यातून हटवला जाईल. या फोनवर आधीच सेव्ह केलेल्या फाइली राहतील. अपूर्ण डाउनलोड रद्द केले जातील.</string>
+    <string name="remove_body_torrent_n">“%1$s” हा टोरेंटचा भाग आहे. संपूर्ण टोरेंट तुमच्या %2$s खात्यातून हटवला जाईल, फक्त निवड नाही (त्यातील फाइली: %3$d). या फोनवर आधीच सेव्ह केलेल्या फाइली राहतील. अपूर्ण डाउनलोड रद्द केले जातील.</string>
     <plurals name="msg_removed_n">
         <item quantity="one">%2$s मधून काढले</item>
         <item quantity="other">%2$s मधून %1$d आयटम काढले</item>

@@ -11,7 +11,6 @@
     <string name="action_open">Abrir</string>
     <string name="action_share">Compartir</string>
     <string name="action_remove">Quitar</string>
-    <string name="swipe_removed">%1$s eliminado</string>
     <string name="action_retry">Reintentar</string>
     <string name="action_save">Guardar</string>
     <string name="action_allow">Permitir</string>
@@ -21,7 +20,6 @@
     <string name="action_renew">Renovar</string>
     <string name="action_refresh">Actualizar</string>
     <string name="action_clear">Borrar</string>
-    <string name="action_undo">Deshacer</string>
     <string name="action_done">Listo</string>
     <string name="setup_your_service">tu servicio debrid</string>
     <string name="setup_intro">Elige tu servicio e inicia sesión con tu %2$s de %1$s.</string>
@@ -326,6 +324,8 @@
     <string name="action_remove_from">Quitar de %1$s</string>
     <string name="remove_title">¿Quitar de %1$s?</string>
     <string name="remove_body">“%1$s” se eliminará de tu cuenta de %2$s. Los archivos ya guardados en este teléfono se conservan. Sus descargas sin terminar se cancelan.</string>
+    <string name="remove_body_torrent">“%1$s” forma parte de un torrent. Se eliminará todo el torrent, con todos sus archivos, de tu cuenta de %2$s. Los archivos ya guardados en este teléfono se conservan. Las descargas sin terminar se cancelan.</string>
+    <string name="remove_body_torrent_n">“%1$s” forma parte de un torrent. Se eliminará todo el torrent de tu cuenta de %2$s, no solo la selección (archivos que contiene: %3$d). Los archivos ya guardados en este teléfono se conservan. Las descargas sin terminar se cancelan.</string>
     <plurals name="msg_removed_n">
         <item quantity="one">Quitado de %2$s</item>
         <item quantity="many">Se quitaron %1$d elementos de %2$s</item>

@@ -1,6 +1,5 @@
 package com.abhinavxt.debforge.ui.browse
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -18,6 +17,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -44,12 +44,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
@@ -88,6 +86,13 @@ internal fun isWatched(info: ReleaseInfo, entry: PlaybackEntity?, traktWatched: 
         (traktWatched.isNotEmpty() && TraktMatch.keyOf(info) in traktWatched &&
             (entry == null || entry.positionMs < Resume.MIN_RESUME_MS))
 
+/** One key per episode or movie, shared by all its versions. */
+internal fun episodeKey(f: ParsedItem): String = TraktMatch.keyOf(f.info) ?: f.item.id
+
+/** Keys ([episodeKey]) of everything watched in at least one version. */
+internal fun watchedKeys(files: List<ParsedItem>, playback: Map<String, PlaybackEntity>, traktWatched: Set<String>): Set<String> =
+    files.filter { isWatched(it.info, playback[it.item.id], traktWatched) }.map(::episodeKey).toSet()
+
 /**
  * The file the main button plays: the one started and left (latest first), else the first
  * unwatched in watch order, else the first. [files] must be in watch order.
@@ -101,7 +106,9 @@ internal fun playTarget(files: List<ParsedItem>, playback: Map<String, PlaybackE
             ?.let { f to it.updatedAt }
     }.maxByOrNull { it.second }
     if (resumable != null) return PlayTarget(resumable.first, true)
-    val next = videos.firstOrNull { !isWatched(it.info, playback[it.item.id], traktWatched) } ?: videos.first()
+    // An episode counts as watched when any of its versions is.
+    val watched = watchedKeys(videos, playback, traktWatched)
+    val next = videos.firstOrNull { episodeKey(it) !in watched } ?: videos.first()
     return PlayTarget(next, false)
 }
 
@@ -118,6 +125,10 @@ fun TitlePage(
     onPlay: (ParsedItem) -> Unit,
     zipFor: (DownloadItem, Int) -> DownloadItem?,
     onClose: () -> Unit,
+    /** Hoisted so a rotation that moves the page between layouts keeps them. */
+    chosenSeason: Int?,
+    onSeasonChosen: (Int) -> Unit,
+    listState: LazyListState,
     modifier: Modifier = Modifier,
     /** Null when the service can't remove these files. */
     onRemove: (() -> Unit)? = null,
@@ -130,7 +141,6 @@ fun TitlePage(
     /** Watched on Trakt ([TraktMatch] keys). */
     traktWatched: Set<String> = emptySet()
 ) {
-    BackHandler(onBack = onClose)
     val files = remember(group) { group.sortedFiles }
     // One "whole torrent as .zip" option per multi-file torrent in this title
     // (only services that support archives return anything).
@@ -146,7 +156,6 @@ fun TitlePage(
     val target = remember(files, playback, traktWatched) { playTarget(files, playback, traktWatched) }
 
     val seasons = remember(files) { files.mapNotNull { it.info.season }.distinct().sorted() }
-    var chosenSeason by rememberSaveable(group.key) { mutableStateOf<Int?>(null) }
     val season = if (group.kind == MediaKind.SHOW) chosenSeason?.takeIf { it in seasons } ?: target?.file?.info?.season ?: seasons.firstOrNull() else null
     // Files with no season number always show, after the chosen season's.
     val listed = if (season == null) files else files.filter { it.info.season == season || it.info.season == null }
@@ -158,7 +167,7 @@ fun TitlePage(
 
     Surface(modifier = modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
         Box(Modifier.fillMaxSize()) {
-            LazyColumn(contentPadding = PaddingValues(bottom = 32.dp), modifier = Modifier.fillMaxSize()) {
+            LazyColumn(state = listState, contentPadding = PaddingValues(bottom = 32.dp), modifier = Modifier.fillMaxSize()) {
                 item(key = "fixed:backdrop") { Backdrop(group, meta) }
                 item(key = "fixed:header") {
                     Column(Modifier.padding(horizontal = 20.dp)) {
@@ -308,7 +317,7 @@ fun TitlePage(
                                 seasons.forEach { s ->
                                     FilterChip(
                                         selected = s == season,
-                                        onClick = { chosenSeason = s },
+                                        onClick = { onSeasonChosen(s) },
                                         label = { Text(stringResource(R.string.sheet_season, s)) }
                                     )
                                 }
@@ -372,7 +381,26 @@ fun TitlePage(
                     }
                 }
             }
-            BackButton(onClose, Modifier.align(Alignment.TopStart))
+            // Once the backdrop has scrolled away a plain bar keeps the arrow readable over the list.
+            val barShown by remember { androidx.compose.runtime.derivedStateOf { listState.firstVisibleItemIndex > 0 } }
+            if (barShown) {
+                Surface(Modifier.fillMaxWidth().align(Alignment.TopStart), color = MaterialTheme.colorScheme.surfaceContainerHigh, tonalElevation = 3.dp) {
+                    Row(Modifier.statusBarsPadding().height(56.dp), verticalAlignment = Alignment.CenterVertically) {
+                        IconButton(onClick = onClose) {
+                            Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = stringResource(R.string.shell_cd_back))
+                        }
+                        Text(
+                            meta?.title ?: group.title,
+                            style = MaterialTheme.typography.titleMedium,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.padding(end = 16.dp)
+                        )
+                    }
+                }
+            } else {
+                BackButton(onClose, Modifier.align(Alignment.TopStart))
+            }
         }
     }
 }

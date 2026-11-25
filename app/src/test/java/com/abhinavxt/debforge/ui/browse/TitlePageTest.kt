@@ -61,6 +61,19 @@ class TitlePageTest {
     @Test fun nothingPlayableGivesNoTarget() =
         assertNull(playTarget(listOf(file("notes.txt")), emptyMap(), emptySet()))
 
+    @Test fun watchedVersionMeansEpisodeWatched() {
+        val e2b = file("The.Bear.S01E02.2160p.WEB-DL.mkv")
+        val files = listOf(e1, e2, e2b, e3)
+        val p = mapOf(e2b.item.id to pos(e2b, 3_500_000, finished = true), e1.item.id to pos(e1, 3_500_000, finished = true))
+        assertEquals(PlayTarget(e3, false), playTarget(files, p, emptySet()))
+    }
+
+    @Test fun nextEpisodeTakesFirstVersionInOrder() {
+        val e2b = file("The.Bear.S01E02.2160p.WEB-DL.mkv")
+        val p = mapOf(e1.item.id to pos(e1, 3_500_000, finished = true))
+        assertEquals(PlayTarget(e2, false), playTarget(listOf(e1, e2, e2b), p, emptySet()))
+    }
+
     @Test fun watchedOnTrakt() {
         val key = TraktMatch.keyOf(e1.info)!!
         assertTrue(isWatched(e1.info, null, setOf(key)))

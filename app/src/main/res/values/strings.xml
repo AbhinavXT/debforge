@@ -12,7 +12,6 @@
     <string name="action_open">Open</string>
     <string name="action_share">Share</string>
     <string name="action_remove">Remove</string>
-    <string name="swipe_removed">Removed %1$s</string>
     <string name="action_retry">Retry</string>
     <string name="action_save">Save</string>
     <string name="action_allow">Allow</string>
@@ -22,7 +21,6 @@
     <string name="action_renew">Renew</string>
     <string name="action_refresh">Refresh</string>
     <string name="action_clear">Clear</string>
-    <string name="action_undo">Undo</string>
     <string name="action_done">Done</string>
     <string name="setup_your_service">your debrid service</string>
     <string name="setup_intro">Choose your service and sign in with your %1$s %2$s.</string>
@@ -315,6 +313,8 @@
     <string name="action_remove_from">Remove from %1$s</string>
     <string name="remove_title">Remove from %1$s?</string>
     <string name="remove_body">“%1$s” will be deleted from your %2$s account. Files already saved on this phone stay. Unfinished downloads of it are cancelled.</string>
+    <string name="remove_body_torrent">“%1$s” is part of a torrent. The whole torrent, with all its files, will be deleted from your %2$s account. Files already saved on this phone stay. Unfinished downloads of it are cancelled.</string>
+    <string name="remove_body_torrent_n">“%1$s” is part of a torrent. The whole torrent will be deleted from your %2$s account, not just this selection (files in it: %3$d). Files already saved on this phone stay. Unfinished downloads of it are cancelled.</string>
     <plurals name="msg_removed_n">
         <item quantity="one">Removed from %2$s</item>
         <item quantity="other">Removed %1$d items from %2$s</item>

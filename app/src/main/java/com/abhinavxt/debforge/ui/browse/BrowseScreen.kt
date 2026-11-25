@@ -101,6 +101,7 @@ import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.customActions
 import com.abhinavxt.debforge.ui.components.BannerCard
@@ -172,7 +173,6 @@ fun BrowseScreen(
     val comingUp by viewModel.comingUp.collectAsStateWithLifecycle()
     val playback by viewModel.playback.collectAsStateWithLifecycle()
     val traktWatched by viewModel.traktWatched.collectAsStateWithLifecycle()
-    val pendingRemoval by viewModel.pendingRemoval.collectAsStateWithLifecycle()
     var posterSetupOpen by remember { mutableStateOf(false) }
     val lifecycleOwner = LocalLifecycleOwner.current
     val uriHandler = LocalUriHandler.current
@@ -231,32 +231,6 @@ fun BrowseScreen(
             }
         }
     }
-    // Swipe-to-remove: undo for 5 s (the view-model's timer decides), then the service is asked.
-    val undoLabel = stringResource(R.string.action_undo)
-    LaunchedEffect(pendingRemoval) {
-        val p = pendingRemoval ?: return@LaunchedEffect
-        snackbar.currentSnackbarData?.dismiss()
-        val result = snackbar.showSnackbar(
-            message = context.getString(R.string.swipe_removed, p.label),
-            actionLabel = undoLabel,
-            duration = SnackbarDuration.Indefinite
-        )
-        if (result == SnackbarResult.ActionPerformed) viewModel.cancelRemoval()
-    }
-    // Leaving the screen (tab, app in the background) cancels a pending removal rather than deleting unseen. Rotation keeps it.
-    val activity = remember(context) {
-        generateSequence(context) { (it as? android.content.ContextWrapper)?.baseContext }.firstNotNullOfOrNull { it as? android.app.Activity }
-    }
-    DisposableEffect(lifecycleOwner) {
-        val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_STOP && activity?.isChangingConfigurations != true) viewModel.cancelRemoval()
-        }
-        lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose {
-            lifecycleOwner.lifecycle.removeObserver(observer)
-            if (activity?.isChangingConfigurations != true) viewModel.cancelRemoval()
-        }
-    }
     // Back exits multi-select; switching between posters and the list clears it.
     BackHandler(enabled = selected.isNotEmpty()) { selected = emptySet() }
     LaunchedEffect(state.posterView) { selected = emptySet() }
@@ -290,9 +264,8 @@ fun BrowseScreen(
     // unless the user turned them on in Settings.
     val showExtras by viewModel.showExtraFiles.collectAsStateWithLifecycle()
     // Subtitle files are never listed here; they stay in the torrent's files and the player.
-    val shown: List<DownloadItem> = remember(state.items, showExtras, pendingRemoval) {
-        val gone = pendingRemoval?.items?.map { it.id }?.toSet().orEmpty()
-        val listed = ExtraFiles.hideSubtitles(state.items.filterNot { it.id in gone })
+    val shown: List<DownloadItem> = remember(state.items, showExtras) {
+        val listed = ExtraFiles.hideSubtitles(state.items)
         if (showExtras) listed else ExtraFiles.hide(listed)
     }
     // Parse every filename once per list change (cheap, but not per frame).
@@ -300,15 +273,28 @@ fun BrowseScreen(
         shown.associate { it.id to ReleaseNameParser.parse(it.filename) }
     }
     val visible: List<DownloadItem> = remember(shown, parsed, state.quickFilters, playback, traktWatched) {
-        applyQuickFilters(shown, parsed, state.quickFilters) { item, info -> isWatched(info, playback[item.id], traktWatched) }
+        // An episode is watched when any of its versions is.
+        val watched = watchedKeys(shown.mapNotNull { i -> parsed[i.id]?.let { ParsedItem(i, it) } }, playback, traktWatched)
+        applyQuickFilters(shown, parsed, state.quickFilters) { item, info ->
+            isWatched(info, playback[item.id], traktWatched) || (com.abhinavxt.debforge.domain.TraktMatch.keyOf(info) ?: item.id) in watched
+        }
     }
-    // When everything loaded so far is hidden, or too little is left to fill the screen, fetch the next page.
+    val groups = remember(visible, parsed, state.query, state.sort, state.posterView) {
+        if (state.posterView) buildTitleGroups(visible, parsed, state.query, state.sort) else emptyList()
+    }
+    val sections = remember(visible, state.query, state.sort, state.grouped, state.posterView) {
+        if (state.posterView) emptyList() else buildSections(visible, state.query, state.sort, state.grouped)
+    }
+    // Tiles in the grid, rows in the list: what the filters leave on screen.
+    val tiles = if (state.posterView) groups.size else sections.sumOf { it.items.size }
     val filtering = state.quickFilters.isNotEmpty()
-    val needsMore = state.items.isNotEmpty() && state.canLoadMore &&
-        (visible.isEmpty() || (filtering && visible.size < FILTER_FILL))
+    // Nothing shown, or a filter leaves too little to fill the screen: fetch the next page (one at a time, each page re-keys this).
+    val needsMore = needsFillPage(state.items.isNotEmpty(), state.canLoadMore, visible.isEmpty(), filtering, tiles)
     LaunchedEffect(needsMore, state.items.size) {
         if (needsMore) viewModel.loadMore()
     }
+    // "No matches" would flash while the filter is still paging in more.
+    val stillLoading = state.isAppending || state.searchingAll || (filtering && state.canLoadMore)
 
     val addDescription = stringResource(R.string.browse_add_cd)
 
@@ -320,8 +306,11 @@ fun BrowseScreen(
     val pickedItems = remember(selected, state.items) { state.items.filter { it.id in selected } }
 
     // A sheet's remove button: from the service, or from the device in the downloads view.
+    // The service removes whole torrents: work out whether that is more than what is picked, for the dialog.
+    fun removeRequest(label: String, items: List<DownloadItem>) =
+        RemoveRequest(label, items = items, scope = removalScope(items, state.items, state.endReached, viewModel::removalKey))
     fun removeAction(items: List<DownloadItem>, label: String, confirm: (RemoveRequest) -> Unit): (() -> Unit)? = when {
-        viewModel.canRemove(items) -> { { confirm(RemoveRequest(label, items = items)) } }
+        viewModel.canRemove(items) -> { { confirm(removeRequest(label, items)) } }
         viewModel.canDelete(items) -> { { confirm(RemoveRequest(label, items = items, fromDevice = true)) } }
         else -> null
     }
@@ -350,17 +339,39 @@ fun BrowseScreen(
     val pageGroup = remember(openGroupKey, shown, parsed, state.sort) {
         openGroupKey?.let { key -> buildTitleGroups(shown, parsed, "", state.sort).firstOrNull { it.key == key } }
     }
-    // After a restore the title may be on a page that is not loaded yet.
-    LaunchedEffect(openGroupKey, pageGroup, state.canLoadMore, state.endReached, state.error, state.isInitialLoad) {
+    // Only a restore after process death may page in a title that is not loaded yet, a few pages at most;
+    // a title that was showing and vanished (removed, other service, signed out) closes the page at once.
+    var pageSeen by remember(openGroupKey) { mutableStateOf(false) }
+    if (pageGroup != null) pageSeen = true
+    var restorePages by remember(openGroupKey) { mutableIntStateOf(0) }
+    LaunchedEffect(openGroupKey, pageGroup, state.canLoadMore, state.endReached, state.error, state.isInitialLoad, state.items.size) {
         if (openGroupKey != null && pageGroup == null && !state.isInitialLoad) {
-            if (state.canLoadMore) viewModel.loadMore()
-            else if (state.endReached || state.error != null) openGroupKey = null
+            if (!pageSeen && state.canLoadMore && restorePages < RESTORE_PAGES) {
+                restorePages++
+                viewModel.loadMore()
+            } else if (pageSeen || !state.isAppending) {
+                openGroupKey = null
+            }
+        }
+    }
+    // Hoisted out of the page so a rotation that switches between overlay and two-pane keeps them.
+    var pageSeasonKey by rememberSaveable { mutableStateOf<String?>(null) }
+    var pageSeason by rememberSaveable { mutableStateOf<Int?>(null) }
+    val pageListState = androidx.compose.foundation.lazy.rememberLazyListState()
+    var pageListKey by rememberSaveable { mutableStateOf<String?>(null) }
+    LaunchedEffect(openGroupKey) {
+        if (openGroupKey != pageListKey) {
+            pageListKey = openGroupKey
+            pageListState.scrollToItem(0)
         }
     }
     fun closePage() {
-        returnFocusKey = openGroupKey
+        // Only the poster grid has a tile to give focus back to.
+        returnFocusKey = if (state.posterView) openGroupKey else null
         openGroupKey = null
     }
+    // Tablet back: selection first, then the page.
+    BackHandler(enabled = openGroupKey != null && selected.isEmpty()) { closePage() }
     val page: @Composable () -> Unit = {
         val group = pageGroup
         if (group != null) {
@@ -374,6 +385,9 @@ fun BrowseScreen(
                     onPlay = { viewModel.play(it.item, it.info.displayTitle) },
                     zipFor = viewModel::zipFor,
                     onClose = ::closePage,
+                    chosenSeason = pageSeason.takeIf { pageSeasonKey == group.key },
+                    onSeasonChosen = { pageSeasonKey = group.key; pageSeason = it },
+                    listState = pageListState,
                     onRemove = removeAction(group.files.map { it.item }, group.title) { confirmRemove = it },
                     removeLabel = if (state.local) stringResource(R.string.action_delete_device)
                         else stringResource(R.string.action_remove_from, state.providerName),
@@ -388,7 +402,6 @@ fun BrowseScreen(
         } else if (openGroupKey != null) {
             // Waiting for the title to load.
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
-            BackHandler(onBack = ::closePage)
         } else if (twoPane) {
             MessageState(
                 icon = Icons.Rounded.Movie,
@@ -406,7 +419,11 @@ fun BrowseScreen(
     Box(
         Modifier.weight(1f).fillMaxHeight()
             // The page covers the screen: keep the D-pad from reaching what is underneath.
-            .then(if (!twoPane && openGroupKey != null) Modifier.focusProperties { canFocus = false } else Modifier)
+            // canFocus alone stops at this box; the group's enter = Cancel also keeps D-pad moves from reaching its tiles.
+            .then(
+                if (!twoPane && openGroupKey != null) Modifier.focusProperties { canFocus = false; enter = { androidx.compose.ui.focus.FocusRequester.Cancel } }.focusGroup()
+                else Modifier
+            )
     ) {
     Scaffold(
         snackbarHost = { SnackbarHost(snackbar) },
@@ -448,7 +465,7 @@ fun BrowseScreen(
                         }
                         if (viewModel.canRemove(pickedItems)) {
                             val label = pluralRes(R.plurals.n_files, pickedItems.size, pickedItems.size)
-                            IconButton(onClick = { confirmRemove = RemoveRequest(label, items = pickedItems) }) {
+                            IconButton(onClick = { confirmRemove = removeRequest(label, pickedItems) }) {
                                 Icon(Icons.Rounded.DeleteOutline, contentDescription = stringResource(R.string.action_remove))
                             }
                         } else if (viewModel.canDelete(pickedItems)) {
@@ -517,12 +534,6 @@ fun BrowseScreen(
                 onToggleWatch = viewModel::toggleWatch,
                 onRemove = { job -> confirmRemove = RemoveRequest(job.name, job = job) }
             )
-        }
-        val groups = remember(visible, parsed, state.query, state.sort, state.posterView) {
-            if (state.posterView) buildTitleGroups(visible, parsed, state.query, state.sort) else emptyList()
-        }
-        val sections = remember(visible, state.query, state.sort, state.grouped, state.posterView) {
-            if (state.posterView) emptyList() else buildSections(visible, state.query, state.sort, state.grouped)
         }
         // True when the poster grid or the list is what fills the screen.
         val contentShown = !state.isInitialLoad &&
@@ -681,7 +692,10 @@ fun BrowseScreen(
                 }
                 state.posterView -> {
                     if (groups.isEmpty()) {
-                        PullableFill(scroll) { NoMatches(state.query, state.quickFilters, viewModel::clearQuickFilters) }
+                        PullableFill(scroll) {
+                            if (stillLoading) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
+                            else NoMatches(state.query, state.quickFilters, viewModel::clearQuickFilters)
+                        }
                     } else {
                         PosterGrid(
                             gridSize = gridSize,
@@ -729,7 +743,10 @@ fun BrowseScreen(
                 }
                 else -> {
                     if (sections.sumOf { it.items.size } == 0) {
-                        PullableFill(scroll) { NoMatches(state.query, state.quickFilters, viewModel::clearQuickFilters) }
+                        PullableFill(scroll) {
+                            if (stillLoading) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
+                            else NoMatches(state.query, state.quickFilters, viewModel::clearQuickFilters)
+                        }
                     } else {
                         SectionList(
                             sections = sections,
@@ -741,16 +758,9 @@ fun BrowseScreen(
                             downloadStates = downloadStates,
                             onEnqueue = { handleEnqueue(listOf(it)) },
                             canRemove = { viewModel.canRemove(listOf(it)) },
-                            onSwipeRemove = { item ->
-                                val torrent = item.parentRef
-                                val siblings = if (torrent == null) emptyList() else state.items.filter { it.provider == item.provider && it.parentRef == torrent }
-                                if (siblings.size >= 2) {
-                                    // Removing one file removes the whole torrent: ask first, as the other remove buttons do.
-                                    confirmRemove = RemoveRequest(context.resources.getQuantityString(R.plurals.n_files, siblings.size, siblings.size), items = siblings)
-                                } else {
-                                    viewModel.requestRemoval(listOf(item), parsed[item.id]?.displayTitle ?: item.filename)
-                                }
-                            },
+                            providerName = state.providerName,
+                            // Never deletes by itself: opens the same confirmation as the other remove buttons.
+                            onSwipeRemove = { item -> confirmRemove = removeRequest(parsed[item.id]?.displayTitle ?: item.filename, listOf(item)) },
                             selected = selected,
                             onOpen = { item ->
                                 if (selected.isNotEmpty()) {
@@ -773,7 +783,14 @@ fun BrowseScreen(
     if (twoPane) Box(Modifier.weight(1f).fillMaxHeight()) { page() }
     }
     if (!twoPane && openGroupKey != null) {
-        Box(Modifier.fillMaxSize()) {
+        Box(
+            Modifier.fillMaxSize()
+                .background(MaterialTheme.colorScheme.surface)
+                // Swallows touches the page leaves unused, so nothing reaches the Library underneath.
+                .pointerInput(Unit) {
+                    awaitPointerEventScope { while (true) awaitPointerEvent().changes.forEach { it.consume() } }
+                }
+        ) {
             page()
             SnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter))
         }
@@ -814,7 +831,11 @@ fun BrowseScreen(
             text = {
                 Text(
                     if (req.fromDevice) stringResource(R.string.delete_device_body, req.label)
-                    else stringResource(R.string.remove_body, req.label, state.providerName)
+                    else when {
+                        req.scope?.files != null -> stringResource(R.string.remove_body_torrent_n, req.label, state.providerName, req.scope.files)
+                        req.scope?.wholeTorrent == true -> stringResource(R.string.remove_body_torrent, req.label, state.providerName)
+                        else -> stringResource(R.string.remove_body, req.label, state.providerName)
+                    }
                 )
             },
             confirmButton = {
@@ -866,6 +887,7 @@ private fun SectionList(
     downloadStates: Map<String, DownloadState>,
     onEnqueue: (DownloadItem) -> Unit,
     canRemove: (DownloadItem) -> Boolean,
+    providerName: String,
     onSwipeRemove: (DownloadItem) -> Unit,
     selected: Set<String>,
     onOpen: (DownloadItem) -> Unit,
@@ -901,6 +923,7 @@ private fun SectionList(
         isSelected = item.id in selected,
         onEnqueue = onEnqueue,
         removable = canRemove(item),
+        providerName = providerName,
         onSwipeRemove = onSwipeRemove,
         onOpen = onOpen,
         onLongPress = onLongPress
@@ -983,6 +1006,7 @@ private fun ItemRow(
     isSelected: Boolean,
     onEnqueue: (DownloadItem) -> Unit,
     removable: Boolean,
+    providerName: String,
     onSwipeRemove: (DownloadItem) -> Unit,
     onOpen: (DownloadItem) -> Unit,
     onLongPress: (DownloadItem) -> Unit
@@ -994,16 +1018,20 @@ private fun ItemRow(
     val currentItem by rememberUpdatedState(item)
     val currentEnqueue by rememberUpdatedState(onEnqueue)
     val currentRemove by rememberUpdatedState(onSwipeRemove)
+    // A full-width drag reports its target twice: act once per gesture, re-armed when the row has settled.
+    var handled by remember { mutableStateOf(false) }
     val dismissState = rememberSwipeToDismissBoxState(confirmValueChange = { target ->
-        when (target) {
-            SwipeToDismissBoxValue.StartToEnd -> currentEnqueue(currentItem)
-            SwipeToDismissBoxValue.EndToStart -> currentRemove(currentItem)
-            SwipeToDismissBoxValue.Settled -> Unit
+        if (target != SwipeToDismissBoxValue.Settled && !handled) {
+            handled = true
+            if (target == SwipeToDismissBoxValue.StartToEnd) currentEnqueue(currentItem) else currentRemove(currentItem)
         }
-        false // always springs back: the row's real state comes from the data (a pill, or gone)
+        false // always springs back: the row's real state comes from the data (a pill), or the dialog's answer
     })
+    LaunchedEffect(dismissState.targetValue) {
+        if (dismissState.targetValue == SwipeToDismissBoxValue.Settled) handled = false
+    }
     val downloadLabel = stringResource(R.string.action_download)
-    val removeLabel = stringResource(R.string.action_remove)
+    val removeLabel = stringResource(R.string.action_remove_from, providerName)
     SwipeToDismissBox(
         state = dismissState,
         enableDismissFromStartToEnd = canDownload,
@@ -1329,11 +1357,13 @@ private data class RemoveRequest(
     val items: List<com.abhinavxt.debforge.domain.DownloadItem>? = null,
     val job: com.abhinavxt.debforge.data.provider.RemoteJob? = null,
     /** Delete the downloaded files from this device instead (the downloads view). */
-    val fromDevice: Boolean = false
+    val fromDevice: Boolean = false,
+    /** What removing reaches beyond the picked files (service removals of files). */
+    val scope: RemovalScope? = null
 )
 
-/** With a quick filter on, keep loading pages until at least this many titles match. */
-private const val FILTER_FILL = 24
+/** Pages a restored title page may load to find its title. */
+private const val RESTORE_PAGES = 3
 
 /** After the finger lifts, give the pull indicator this long to settle by itself. */
 private const val PULL_SETTLE_MS = 400L

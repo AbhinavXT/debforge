@@ -11,7 +11,6 @@
     <string name="action_open">Buka</string>
     <string name="action_share">Bagikan</string>
     <string name="action_remove">Hapus</string>
-    <string name="swipe_removed">%1$s dihapus</string>
     <string name="action_retry">Coba lagi</string>
     <string name="action_save">Simpan</string>
     <string name="action_allow">Izinkan</string>
@@ -21,7 +20,6 @@
     <string name="action_renew">Perpanjang</string>
     <string name="action_refresh">Muat ulang</string>
     <string name="action_clear">Bersihkan</string>
-    <string name="action_undo">Urungkan</string>
     <string name="action_done">Selesai</string>
     <string name="setup_your_service">layanan debrid Anda</string>
     <string name="setup_intro">Pilih layanan Anda dan masuk dengan %2$s %1$s Anda.</string>
@@ -302,6 +300,8 @@
     <string name="action_remove_from">Hapus dari %1$s</string>
     <string name="remove_title">Hapus dari %1$s?</string>
     <string name="remove_body">“%1$s” akan dihapus dari akun %2$s Anda. File yang sudah tersimpan di ponsel ini tetap ada. Unduhan yang belum selesai akan dibatalkan.</string>
+    <string name="remove_body_torrent">“%1$s” adalah bagian dari sebuah torrent. Seluruh torrent beserta semua filenya akan dihapus dari akun %2$s Anda. File yang sudah tersimpan di ponsel ini tetap ada. Unduhan yang belum selesai dibatalkan.</string>
+    <string name="remove_body_torrent_n">“%1$s” adalah bagian dari sebuah torrent. Seluruh torrent akan dihapus dari akun %2$s Anda, bukan hanya pilihan ini (jumlah file: %3$d). File yang sudah tersimpan di ponsel ini tetap ada. Unduhan yang belum selesai dibatalkan.</string>
     <plurals name="msg_removed_n">
         <item quantity="other">%1$d item dihapus dari %2$s</item>
     </plurals>

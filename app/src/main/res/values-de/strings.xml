@@ -11,7 +11,6 @@
     <string name="action_open">Öffnen</string>
     <string name="action_share">Teilen</string>
     <string name="action_remove">Entfernen</string>
-    <string name="swipe_removed">%1$s entfernt</string>
     <string name="action_retry">Wiederholen</string>
     <string name="action_save">Speichern</string>
     <string name="action_allow">Zulassen</string>
@@ -21,7 +20,6 @@
     <string name="action_renew">Verlängern</string>
     <string name="action_refresh">Aktualisieren</string>
     <string name="action_clear">Leeren</string>
-    <string name="action_undo">Rückgängig</string>
     <string name="action_done">Fertig</string>
     <string name="setup_your_service">deinem Debrid-Dienst</string>
     <string name="setup_intro">Wähle deinen Dienst und melde dich bei %1$s an (mit %2$s).</string>
@@ -314,6 +312,8 @@
     <string name="action_remove_from">Von %1$s entfernen</string>
     <string name="remove_title">Von %1$s entfernen?</string>
     <string name="remove_body">„%1$s“ wird aus deinem %2$s-Konto gelöscht. Bereits auf diesem Handy gespeicherte Dateien bleiben erhalten. Nicht abgeschlossene Downloads davon werden abgebrochen.</string>
+    <string name="remove_body_torrent">„%1$s“ gehört zu einem Torrent. Der gesamte Torrent mit allen Dateien wird aus deinem %2$s-Konto gelöscht. Bereits auf dem Handy gespeicherte Dateien bleiben erhalten. Nicht abgeschlossene Downloads werden abgebrochen.</string>
+    <string name="remove_body_torrent_n">„%1$s“ gehört zu einem Torrent. Der gesamte Torrent wird aus deinem %2$s-Konto gelöscht, nicht nur die Auswahl (Dateien darin: %3$d). Bereits auf dem Handy gespeicherte Dateien bleiben erhalten. Nicht abgeschlossene Downloads werden abgebrochen.</string>
     <plurals name="msg_removed_n">
         <item quantity="one">Von %2$s entfernt</item>
         <item quantity="other">%1$d Einträge von %2$s entfernt</item>

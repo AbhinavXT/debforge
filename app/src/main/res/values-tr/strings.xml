@@ -11,7 +11,6 @@
     <string name="action_open">Aç</string>
     <string name="action_share">Paylaş</string>
     <string name="action_remove">Kaldır</string>
-    <string name="swipe_removed">%1$s kaldırıldı</string>
     <string name="action_retry">Tekrar dene</string>
     <string name="action_save">Kaydet</string>
     <string name="action_allow">İzin ver</string>
@@ -21,7 +20,6 @@
     <string name="action_renew">Yenile</string>
     <string name="action_refresh">Yenile</string>
     <string name="action_clear">Temizle</string>
-    <string name="action_undo">Geri al</string>
     <string name="action_done">Bitti</string>
     <string name="setup_your_service">debrid hizmetiniz</string>
     <string name="setup_intro">Hizmetinizi seçin ve %1$s %2$s ile giriş yapın.</string>
@@ -314,6 +312,8 @@
     <string name="action_remove_from">%1$s hesabından kaldır</string>
     <string name="remove_title">%1$s hesabından kaldırılsın mı?</string>
     <string name="remove_body">“%1$s”, %2$s hesabınızdan silinecek. Bu telefona zaten kaydedilmiş dosyalar kalır. Tamamlanmamış indirmeleri iptal edilir.</string>
+    <string name="remove_body_torrent">“%1$s” bir torrent\'in parçası. Torrent\'in tamamı, tüm dosyalarıyla birlikte %2$s hesabından silinecek. Bu telefona önceden kaydedilen dosyalar kalır. Tamamlanmamış indirmeler iptal edilir.</string>
+    <string name="remove_body_torrent_n">“%1$s” bir torrent\'in parçası. Torrent\'in tamamı %2$s hesabından silinecek, yalnızca seçim değil (içindeki dosyalar: %3$d). Bu telefona önceden kaydedilen dosyalar kalır. Tamamlanmamış indirmeler iptal edilir.</string>
     <plurals name="msg_removed_n">
         <item quantity="one">%2$s hesabından kaldırıldı</item>
         <item quantity="other">%2$s hesabından %1$d öğe kaldırıldı</item>

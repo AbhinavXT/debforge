@@ -11,7 +11,6 @@
     <string name="action_open">খুলুন</string>
     <string name="action_share">শেয়ার করুন</string>
     <string name="action_remove">সরান</string>
-    <string name="swipe_removed">%1$s সরানো হয়েছে</string>
     <string name="action_retry">আবার চেষ্টা করুন</string>
     <string name="action_save">সেভ করুন</string>
     <string name="action_allow">অনুমতি দিন</string>
@@ -21,7 +20,6 @@
     <string name="action_renew">রিনিউ করুন</string>
     <string name="action_refresh">রিফ্রেশ করুন</string>
     <string name="action_clear">মুছুন</string>
-    <string name="action_undo">পূর্বাবস্থায় ফেরান</string>
     <string name="action_done">হয়ে গেছে</string>
     <string name="setup_your_service">আপনার ডেব্রিড সার্ভিস</string>
     <string name="setup_intro">আপনার সার্ভিস বেছে নিন এবং আপনার %1$s %2$s দিয়ে সাইন ইন করুন।</string>
@@ -314,6 +312,8 @@
     <string name="action_remove_from">%1$s থেকে সরান</string>
     <string name="remove_title">%1$s থেকে সরাবেন?</string>
     <string name="remove_body">“%1$s” আপনার %2$s অ্যাকাউন্ট থেকে মুছে ফেলা হবে। এই ফোনে আগে থেকে সেভ করা ফাইল থেকে যাবে। এর অসম্পূর্ণ ডাউনলোডগুলো বাতিল হবে।</string>
+    <string name="remove_body_torrent">“%1$s” একটি টরেন্টের অংশ। পুরো টরেন্টটি, এর সব ফাইল সহ, আপনার %2$s অ্যাকাউন্ট থেকে মুছে যাবে। এই ফোনে আগে থেকে সংরক্ষিত ফাইল থেকে যাবে। এর অসমাপ্ত ডাউনলোড বাতিল হবে।</string>
+    <string name="remove_body_torrent_n">“%1$s” একটি টরেন্টের অংশ। পুরো টরেন্টটি আপনার %2$s অ্যাকাউন্ট থেকে মুছে যাবে, শুধু এই নির্বাচন নয় (এতে ফাইল: %3$d)। এই ফোনে আগে থেকে সংরক্ষিত ফাইল থেকে যাবে। এর অসমাপ্ত ডাউনলোড বাতিল হবে।</string>
     <plurals name="msg_removed_n">
         <item quantity="one">%2$s থেকে %1$dটি আইটেম সরানো হয়েছে</item>
         <item quantity="other">%2$s থেকে %1$dটি আইটেম সরানো হয়েছে</item>
