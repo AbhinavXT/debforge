@@ -1343,4 +1343,8 @@
     <string name="settings_search_none">Aucun réglage correspondant</string>
     <string name="settings_sum_connections">Trakt, sous-titres, sources de recherche</string>
     <string name="settings_sum_data">Consommation de données et sauvegarde</string>
+    <string name="set_grid_size">Taille des affiches</string>
+    <string name="set_grid_small">Petit</string>
+    <string name="set_grid_medium">Moyen</string>
+    <string name="set_grid_large">Grand</string>
 </resources>

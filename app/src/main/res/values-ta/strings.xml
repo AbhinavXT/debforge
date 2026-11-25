@@ -1283,4 +1283,8 @@
     <string name="settings_search_none">பொருந்தும் அமைப்புகள் இல்லை</string>
     <string name="settings_sum_connections">Trakt, வசனங்கள், தேடல் மூலங்கள்</string>
     <string name="settings_sum_data">தரவு பயன்பாடு மற்றும் காப்புப்பிரதி</string>
+    <string name="set_grid_size">போஸ்டர் அளவு</string>
+    <string name="set_grid_small">சிறியது</string>
+    <string name="set_grid_medium">நடுத்தரம்</string>
+    <string name="set_grid_large">பெரியது</string>
 </resources>

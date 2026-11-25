@@ -1224,4 +1224,8 @@
     <string name="settings_search_none">Tidak ada pengaturan yang cocok</string>
     <string name="settings_sum_connections">Trakt, subjudul, sumber pencarian</string>
     <string name="settings_sum_data">Penggunaan data dan cadangan</string>
+    <string name="set_grid_size">Ukuran poster</string>
+    <string name="set_grid_small">Kecil</string>
+    <string name="set_grid_medium">Sedang</string>
+    <string name="set_grid_large">Besar</string>
 </resources>

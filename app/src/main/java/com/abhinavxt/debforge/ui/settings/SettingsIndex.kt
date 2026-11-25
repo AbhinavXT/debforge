@@ -38,7 +38,7 @@ val SETTINGS_INDEX: List<SettingEntry> = run {
     listOf(
         e(ACCOUNT, R.string.set_service), e(ACCOUNT, R.string.set_sign_out), e(ACCOUNT, R.string.set_expiry_reminder),
         e(APPEARANCE, R.string.set_theme), e(APPEARANCE, R.string.set_pure_black, R.string.set_pure_black_detail),
-        e(APPEARANCE, R.string.set_language),
+        e(APPEARANCE, R.string.set_language), e(APPEARANCE, R.string.set_grid_size),
         e(HOME, R.string.set_default_sort), e(HOME, R.string.set_show_extras, R.string.set_show_extras_detail),
         e(HOME, R.string.set_following), e(HOME, R.string.set_posters, R.string.set_tmdb_note),
         e(HOME, R.string.set_clipboard_offer, R.string.set_clipboard_offer_detail),

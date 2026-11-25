@@ -1283,4 +1283,8 @@
     <string name="settings_search_none">సరిపోలే సెట్టింగ్‌లు లేవు</string>
     <string name="settings_sum_connections">Trakt, ఉపశీర్షికలు, శోధన మూలాలు</string>
     <string name="settings_sum_data">డేటా వినియోగం మరియు బ్యాకప్</string>
+    <string name="set_grid_size">పోస్టర్ పరిమాణం</string>
+    <string name="set_grid_small">చిన్నది</string>
+    <string name="set_grid_medium">మధ్యస్థం</string>
+    <string name="set_grid_large">పెద్దది</string>
 </resources>

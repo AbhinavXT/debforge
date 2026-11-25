@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import com.abhinavxt.debforge.data.provider.ProviderInfo
 import com.abhinavxt.debforge.data.repository.AuthRepository
+import com.abhinavxt.debforge.domain.GridSize
 import com.abhinavxt.debforge.domain.ProviderId
 import com.abhinavxt.debforge.domain.SortOrder
 import com.abhinavxt.debforge.domain.ThemeMode
@@ -282,6 +283,11 @@ class SettingsViewModel @Inject constructor(
     /** Picture-in-picture exists here (most TVs and some phones don't have it). */
     val pipAvailable: Boolean = appContext.packageManager
         .hasSystemFeature(android.content.pm.PackageManager.FEATURE_PICTURE_IN_PICTURE)
+
+    val gridSize: StateFlow<GridSize> = settingsStore.gridSizeFlow.stateIn(
+        viewModelScope, SharingStarted.WhileSubscribed(5_000), GridSize.MEDIUM
+    )
+    fun setGridSize(v: GridSize) = viewModelScope.launch { settingsStore.setGridSize(v) }
 
     val clipboardOffer: StateFlow<Boolean> = settingsStore.clipboardOfferFlow.stateIn(
         viewModelScope, SharingStarted.WhileSubscribed(5_000), true

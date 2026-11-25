@@ -1285,4 +1285,8 @@
     <string name="settings_search_none">No settings match</string>
     <string name="settings_sum_connections">Trakt, subtitles, search sources</string>
     <string name="settings_sum_data">Data usage and backup</string>
+    <string name="set_grid_size">Poster size</string>
+    <string name="set_grid_small">Small</string>
+    <string name="set_grid_medium">Medium</string>
+    <string name="set_grid_large">Large</string>
 </resources>

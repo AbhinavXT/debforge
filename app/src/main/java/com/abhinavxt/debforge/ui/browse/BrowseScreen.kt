@@ -155,6 +155,7 @@ fun BrowseScreen(
     val meta by viewModel.meta.collectAsStateWithLifecycle()
     val processing by viewModel.processing.collectAsStateWithLifecycle()
     val watchedJobs by viewModel.watchedJobs.collectAsStateWithLifecycle()
+    val gridSize by viewModel.gridSize.collectAsStateWithLifecycle()
     val showPosterPrompt by viewModel.showPosterPrompt.collectAsStateWithLifecycle()
     val spaceWarning by viewModel.spaceWarning.collectAsStateWithLifecycle()
     val followed by viewModel.followed.collectAsStateWithLifecycle()
@@ -550,7 +551,7 @@ fun BrowseScreen(
             when {
                 state.isInitialLoad -> {
                     KeepHeaderOpen(scroll)
-                    if (state.posterView) PosterSkeleton() else ListSkeleton()
+                    if (state.posterView) PosterSkeleton(gridSize = gridSize) else ListSkeleton()
                 }
                 state.error != null && state.items.isEmpty() -> PullableFill(scroll) {
                     ErrorState(state.error!!, Modifier.holdFocus(held)) { viewModel.clearError(); viewModel.refresh() }
@@ -569,6 +570,7 @@ fun BrowseScreen(
                         PullableFill(scroll) { NoMatches(state.query) }
                     } else {
                         PosterGrid(
+                            gridSize = gridSize,
                             gridState = gridState,
                             scroll = scroll,
                             groups = groups,

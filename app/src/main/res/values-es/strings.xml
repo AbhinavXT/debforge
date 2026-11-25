@@ -1343,4 +1343,8 @@
     <string name="settings_search_none">Ningún ajuste coincide</string>
     <string name="settings_sum_connections">Trakt, subtítulos, fuentes de búsqueda</string>
     <string name="settings_sum_data">Uso de datos y copia de seguridad</string>
+    <string name="set_grid_size">Tamaño de los pósteres</string>
+    <string name="set_grid_small">Pequeño</string>
+    <string name="set_grid_medium">Mediano</string>
+    <string name="set_grid_large">Grande</string>
 </resources>

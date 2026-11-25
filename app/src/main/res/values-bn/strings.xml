@@ -1283,4 +1283,8 @@
     <string name="settings_search_none">কোনো সেটিং মেলেনি</string>
     <string name="settings_sum_connections">Trakt, সাবটাইটেল, সার্চ সোর্স</string>
     <string name="settings_sum_data">ডেটা ব্যবহার ও ব্যাকআপ</string>
+    <string name="set_grid_size">পোস্টারের আকার</string>
+    <string name="set_grid_small">ছোট</string>
+    <string name="set_grid_medium">মাঝারি</string>
+    <string name="set_grid_large">বড়</string>
 </resources>

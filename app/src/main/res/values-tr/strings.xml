@@ -1283,4 +1283,8 @@
     <string name="settings_search_none">Eşleşen ayar yok</string>
     <string name="settings_sum_connections">Trakt, altyazılar, arama kaynakları</string>
     <string name="settings_sum_data">Veri kullanımı ve yedekleme</string>
+    <string name="set_grid_size">Afiş boyutu</string>
+    <string name="set_grid_small">Küçük</string>
+    <string name="set_grid_medium">Orta</string>
+    <string name="set_grid_large">Büyük</string>
 </resources>

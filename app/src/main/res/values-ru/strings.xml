@@ -1403,4 +1403,8 @@
     <string name="settings_search_none">Нет подходящих настроек</string>
     <string name="settings_sum_connections">Trakt, субтитры, источники поиска</string>
     <string name="settings_sum_data">Расход трафика и резервная копия</string>
+    <string name="set_grid_size">Размер постеров</string>
+    <string name="set_grid_small">Маленький</string>
+    <string name="set_grid_medium">Средний</string>
+    <string name="set_grid_large">Крупный</string>
 </resources>

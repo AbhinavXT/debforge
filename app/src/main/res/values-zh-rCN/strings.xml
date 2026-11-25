@@ -1224,4 +1224,8 @@
     <string name="settings_search_none">没有匹配的设置</string>
     <string name="settings_sum_connections">Trakt、字幕、搜索源</string>
     <string name="settings_sum_data">数据用量和备份</string>
+    <string name="set_grid_size">海报大小</string>
+    <string name="set_grid_small">小</string>
+    <string name="set_grid_medium">中</string>
+    <string name="set_grid_large">大</string>
 </resources>

@@ -908,6 +908,9 @@ class BrowseViewModel @Inject constructor(
     val showExtraFiles: StateFlow<Boolean> = settingsStore.showExtraFilesFlow
         .stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
+    val gridSize: StateFlow<com.abhinavxt.debforge.domain.GridSize> = settingsStore.gridSizeFlow
+        .stateIn(viewModelScope, SharingStarted.Eagerly, com.abhinavxt.debforge.domain.GridSize.MEDIUM)
+
     val downloadDir: StateFlow<String> = settingsStore.downloadDirFlow
         .stateIn(viewModelScope, SharingStarted.Eagerly, SettingsStore.DEFAULT_DOWNLOAD_DIR)
 

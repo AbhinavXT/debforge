@@ -77,6 +77,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import com.abhinavxt.debforge.R
+import com.abhinavxt.debforge.domain.GridSize
 import com.abhinavxt.debforge.domain.SortOrder
 import com.abhinavxt.debforge.ui.components.SearchPill
 import kotlin.math.roundToInt
@@ -375,11 +376,11 @@ private fun rememberPulse(): State<Float> {
 
 /** Placeholder tiles in the poster grid's real columns and 2:3 ratio. */
 @Composable
-internal fun PosterSkeleton(modifier: Modifier = Modifier) {
+internal fun PosterSkeleton(modifier: Modifier = Modifier, gridSize: GridSize = GridSize.MEDIUM) {
     val pulse = rememberPulse()
     val loading = stringResource(R.string.library_loading)
     LazyVerticalGrid(
-        columns = GridCells.Adaptive(minSize = 112.dp),
+        columns = GridCells.Adaptive(minSize = gridSize.minDp.dp),
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 96.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalArrangement = Arrangement.spacedBy(18.dp),

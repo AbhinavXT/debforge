@@ -1283,4 +1283,8 @@
     <string name="settings_search_none">कोई सेटिंग नहीं मिली</string>
     <string name="settings_sum_connections">Trakt, उपशीर्षक, खोज स्रोत</string>
     <string name="settings_sum_data">डेटा उपयोग और बैकअप</string>
+    <string name="set_grid_size">पोस्टर का आकार</string>
+    <string name="set_grid_small">छोटा</string>
+    <string name="set_grid_medium">मध्यम</string>
+    <string name="set_grid_large">बड़ा</string>
 </resources>

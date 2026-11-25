@@ -9,6 +9,7 @@ import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.abhinavxt.debforge.data.update.InstallSource
 import com.abhinavxt.debforge.domain.DefaultQuality
+import com.abhinavxt.debforge.domain.GridSize
 import com.abhinavxt.debforge.domain.OnlineSubsWhenNone
 import com.abhinavxt.debforge.domain.ReleasePrefs
 import com.abhinavxt.debforge.domain.SortOrder
@@ -85,6 +86,7 @@ class SettingsStore @Inject constructor(
     private val keyOnlineSubsWhenNone = stringPreferencesKey("online_subs_when_none")
     private val keyFetchSubsOnDownload = booleanPreferencesKey("fetch_subs_on_download")
     private val keyAdBlockOffSites = stringPreferencesKey("browser_adblock_off_sites")
+    private val keyGridSize = stringPreferencesKey("grid_size")
 
     private val keyImportLocal = booleanPreferencesKey("import_local_files")
 
@@ -131,6 +133,10 @@ class SettingsStore @Inject constructor(
      * library and include them in auto-downloads. Off by default.
      */
     val showExtraFilesFlow: Flow<Boolean> = context.settingsDataStore.data.map { it[keyShowExtras] ?: false }
+
+    /** Library poster size. Medium (the original size) by default. */
+    val gridSizeFlow: Flow<GridSize> = context.settingsDataStore.data.map { GridSize.fromName(it[keyGridSize]) }
+    suspend fun setGridSize(v: GridSize) = context.settingsDataStore.edit { it[keyGridSize] = v.name }
 
     /** Offer a magnet / .torrent link found on the clipboard when the app opens. On by default. */
     val clipboardOfferFlow: Flow<Boolean> = context.settingsDataStore.data.map { it[keyClipboardOffer] ?: true }
@@ -385,7 +391,7 @@ class SettingsStore @Inject constructor(
     )
     /** May be blank on purpose (nothing avoided, no site left unblocked). */
     private val backupStrings get() = listOf(keyReleaseAvoid, keyReleasePrefer, keyAdBlockOffSites, keyYouTubeQuality,
-        keyAudioLanguage, keySubtitleLanguage, keySubtitleStyle, keySponsorCategories, keyOnlineSubsWhenNone)
+        keyAudioLanguage, keySubtitleLanguage, keySubtitleStyle, keySponsorCategories, keyOnlineSubsWhenNone, keyGridSize)
     private val backupInts get() = listOf(keySortOrder, keyThemeMode, keyScheduleStart, keyScheduleEnd, keySpeedLimit, keyAutoDeleteDays,
         keyExpiryReminder, keyAudioSkipSeconds, keyStorageLimitGb)
 

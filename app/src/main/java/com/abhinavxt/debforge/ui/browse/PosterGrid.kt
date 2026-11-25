@@ -101,6 +101,7 @@ import coil.compose.AsyncImage
 import com.abhinavxt.debforge.data.metadata.MediaMeta
 import com.abhinavxt.debforge.domain.DownloadItem
 import com.abhinavxt.debforge.domain.DownloadState
+import com.abhinavxt.debforge.domain.GridSize
 import com.abhinavxt.debforge.domain.MediaKind
 
 /** Poster grid. Columns adapt to width, so tablets/TV get more per row. */
@@ -123,7 +124,8 @@ fun PosterGrid(
     onLongPress: (TitleGroup) -> Unit = {},
     gridState: LazyGridState = rememberSafeGridState(),
     /** When given, the header and FAB follow this grid's exact scroll position. */
-    scroll: LibraryScrollState? = null
+    scroll: LibraryScrollState? = null,
+    gridSize: GridSize = GridSize.MEDIUM
 ) {
     if (scroll != null) {
         TrackLibraryScroll(
@@ -143,7 +145,7 @@ fun PosterGrid(
 
     LazyVerticalGrid(
         state = gridState,
-        columns = GridCells.Adaptive(minSize = 112.dp),
+        columns = GridCells.Adaptive(minSize = gridSize.minDp.dp),
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 96.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalArrangement = Arrangement.spacedBy(18.dp),

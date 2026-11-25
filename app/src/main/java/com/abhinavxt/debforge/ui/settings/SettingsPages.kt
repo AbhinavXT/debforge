@@ -24,6 +24,7 @@ import androidx.compose.material.icons.rounded.FilterList
 import androidx.compose.material.icons.rounded.Folder
 import androidx.compose.material.icons.rounded.FolderOpen
 import androidx.compose.material.icons.rounded.Fullscreen
+import androidx.compose.material.icons.rounded.GridView
 import androidx.compose.material.icons.rounded.Image
 import androidx.compose.material.icons.rounded.NotificationsActive
 import androidx.compose.material.icons.rounded.Palette
@@ -50,6 +51,7 @@ import com.abhinavxt.debforge.download.SafPaths
 import com.abhinavxt.debforge.download.ScheduleAlarm
 import com.abhinavxt.debforge.download.StorageAccess
 import com.abhinavxt.debforge.ui.browse.formatSize
+import com.abhinavxt.debforge.domain.GridSize
 import com.abhinavxt.debforge.ui.components.RowDivider
 import com.abhinavxt.debforge.ui.components.SectionCard
 import com.abhinavxt.debforge.ui.components.SettingRow
@@ -151,6 +153,16 @@ private fun LazyListScope.appearanceItems(viewModel: SettingsViewModel) {
                 onSelectWallpaper = { viewModel.setDynamicColor(true) },
                 onMode = viewModel::setThemeMode,
                 onPureBlack = viewModel::setPureBlack
+            )
+            RowDivider()
+            val gridSize by viewModel.gridSize.collectAsStateWithLifecycle()
+            ChoiceRow(
+                icon = Icons.Rounded.GridView,
+                title = stringResource(R.string.set_grid_size),
+                current = gridSize,
+                options = GridSize.entries,
+                label = { stringResource(it.labelRes()) },
+                onPick = viewModel::setGridSize
             )
             // Per-app language needs Android 13+.
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
