@@ -9,6 +9,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.background
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -114,12 +119,14 @@ fun HomePageScreen(
             .sortedBy { it.entity.state != DownloadState.DOWNLOADING }
     }
     val recent = remember(state.items) { recentTitles(state.items) }
+    // First load in flight: hold the row's place so it doesn't pop in when the list arrives (gone if it ends empty).
+    val loadingRecent = HomeRow.RECENT !in hidden && state.isInitialLoad
     val rows = visibleHomeRows(
         hidden,
         mapOf(
             HomeRow.CONTINUE_WATCHING to continueWatching.size,
             HomeRow.CONTINUE_LISTENING to listening.size,
-            HomeRow.RECENT to recent.size,
+            HomeRow.RECENT to if (loadingRecent) 1 else recent.size,
             HomeRow.DOWNLOADS to downloading.size,
             HomeRow.NEW_EPISODES to comingUp.size
         )
@@ -206,7 +213,7 @@ fun HomePageScreen(
                                     onRemove = browse::forgetPlayback
                                 )
                                 HomeRow.CONTINUE_LISTENING -> ContinueListeningRow(listening, history::replay, history::hideContinue)
-                                HomeRow.RECENT -> RecentRow(recent, meta, browse::requestMeta, onOpenTitle)
+                                HomeRow.RECENT -> RecentRow(recent, loadingRecent, meta, browse::requestMeta, onOpenTitle)
                                 HomeRow.DOWNLOADS -> DownloadingRow(downloading, onOpenDownloads)
                                 HomeRow.NEW_EPISODES -> UpcomingRow(comingUp, meta, browse::requestMeta)
                                 HomeRow.SHORTCUTS -> Unit
@@ -289,12 +296,35 @@ private fun ContinueListeningRow(
 @Composable
 private fun RecentRow(
     titles: List<TitleGroup>,
+    loading: Boolean,
     meta: Map<String, com.abhinavxt.debforge.data.metadata.MediaMeta?>,
     onRequestMeta: (com.abhinavxt.debforge.domain.ReleaseInfo) -> Unit,
     onOpen: (String) -> Unit
 ) {
     Column(Modifier.fillMaxWidth()) {
         RowTitle(R.string.home_recently_added)
+        if (loading) {
+            val pulse by androidx.compose.animation.core.rememberInfiniteTransition(label = "recent").animateFloat(
+                initialValue = 0.35f, targetValue = 0.8f,
+                animationSpec = androidx.compose.animation.core.infiniteRepeatable(
+                    androidx.compose.animation.core.tween(900), androidx.compose.animation.core.RepeatMode.Reverse
+                ),
+                label = "pulse"
+            )
+            Row(Modifier.graphicsLayer { alpha = pulse }, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                repeat(3) {
+                    Column(Modifier.width(112.dp)) {
+                        Box(
+                            Modifier.fillMaxWidth().aspectRatio(2f / 3f).clip(MaterialTheme.shapes.medium)
+                                .background(MaterialTheme.colorScheme.surfaceContainerHighest)
+                        )
+                        // Where the caption goes, so the row is as tall as the real one.
+                        Spacer(Modifier.height(6.dp + 20.dp))
+                    }
+                }
+            }
+            return@Column
+        }
         LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             items(titles, key = { it.key }) { group ->
                 LaunchedEffect(group.info.groupKey) { onRequestMeta(group.info) }
