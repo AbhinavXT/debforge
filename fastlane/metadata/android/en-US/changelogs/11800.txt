@@ -1,0 +1,6 @@
+• Download notification: Pause, Cancel (asks first), Resume and Retry; live progress on Android 16
+• Music notification: choose favourite, sleep timer, speed or skip buttons
+• Skip buttons for background video
+• Option to keep music playing after swiping the app away
+• Skip silence, audio Quick Settings tile, Continue listening and Search shortcuts
+• Fixed: Play doing nothing on a finished track
