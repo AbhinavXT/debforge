@@ -23,6 +23,12 @@ import com.abhinavxt.debforge.domain.DownloadItem
 import com.abhinavxt.debforge.domain.Page
 import com.abhinavxt.debforge.domain.ProviderId
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import com.abhinavxt.debforge.data.provider.JobFailedException
+import com.abhinavxt.debforge.domain.FollowMatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -106,7 +112,7 @@ class TorBoxProvider @Inject constructor(
 
     // --- whole-account snapshot ------------------------------------------------
 
-    private class Snapshot(val takenAt: Long, val items: List<Pair<Kind, TbItemDto>>)
+    private class Snapshot(val token: String?, val takenAt: Long, val items: List<Pair<Kind, TbItemDto>>)
 
     private val snapshotLock = kotlinx.coroutines.sync.Mutex()
     @Volatile private var snapshot: Snapshot? = null
@@ -129,7 +135,9 @@ class TorBoxProvider @Inject constructor(
      */
     private suspend fun allItems(fresh: Boolean): List<Pair<Kind, TbItemDto>> = snapshotLock.withLock {
         val now = android.os.SystemClock.elapsedRealtime()
-        snapshot?.let { s -> if (!fresh || (s.takenAt > changedAt && now - s.takenAt < SNAPSHOT_REUSE_MS)) return@withLock s.items }
+        // A snapshot belongs to one account: after a sign-in as someone else it is never served.
+        val token = tokenStore.token(ProviderId.TORBOX)
+        snapshot?.takeIf { it.token == token }?.let { s -> if (!fresh || (s.takenAt > changedAt && now - s.takenAt < SNAPSHOT_REUSE_MS)) return@withLock s.items }
         val items = coroutineScope {
             val torrents = async { fetchAll { off, lim -> api.torrents(off, lim, true).unwrapList() } }
             // Usenet / web downloads are secondary: a failure there (plan
@@ -142,46 +150,74 @@ class TorBoxProvider @Inject constructor(
                 web.await().map { Kind.WEB to it }
         }
         val sorted = TorBoxStatus.newestFirst(fillMissingFiles(items), { it.second.createdAt }, { it.second.id })
-        snapshot = Snapshot(now, sorted)
+        snapshot = Snapshot(token, now, sorted)
         sorted
     }
 
     // --- queued adds -------------------------------------------------------------
 
-    private val queuedLock = kotlinx.coroutines.sync.Mutex()
-    private var queuedList: List<TbQueuedDto> = emptyList()
-    /** When the queue was last read (or tried), null before the first read. */
-    private var queuedAt: Long? = null
-    /** False when the last read failed: the list above may be out of date. */
-    private var queuedOk = false
+    /** What the last queue read found, per type, for one account (token). [at] is when that read began. */
+    private class QueueState(val token: String?, val byType: Map<String, List<TbQueuedDto>>, val at: Long?)
+
+    @Volatile private var queue = QueueState(null, emptyMap(), null)
+    /** Epoch millis a queued id was created (or, for a fresh add, about now): a started copy can't be older. */
+    private val queuedSince = java.util.concurrent.ConcurrentHashMap<Long, Long>()
     /** When DebForge last queued, started or removed a queued item. */
     @Volatile private var queuedChangedAt = Long.MIN_VALUE
+    /** Reads run here, not in the caller: a cancelled or slow caller never leaves half a read behind. */
+    private val refreshScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private var refreshing: Deferred<Unit>? = null
 
     /**
-     * The account's queued adds. Read at most every [QUEUED_REUSE_MS], or at
-     * once after a change made here. Never throws: a failure of any kind
-     * (HTTP, JSON, timeout, auth) keeps the last list, and the torrent list
-     * never depends on this.
+     * The current account's queued adds. Read at most every [QUEUED_REUSE_MS],
+     * or at once after a change made here, by one shared background read. The
+     * caller waits at most [QUEUED_WAIT_MS] for it and otherwise gets the last
+     * known list (the next call gets the new one). Never throws, and holds no
+     * lock while waiting: the torrent list never depends on this.
      */
-    private suspend fun queuedJobs(): List<TbQueuedDto> = queuedLock.withLock {
-        val now = android.os.SystemClock.elapsedRealtime()
-        val at = queuedAt
-        if (at != null && queuedChangedAt < at && now - at < QUEUED_REUSE_MS) return@withLock queuedList
-        queuedAt = now
-        val read = try {
-            withTimeoutOrNull(QUEUED_TIMEOUT_MS) {
-                coroutineScope {
-                    QUEUED_TYPES.map { type -> async { fetchQueued(type) } }.awaitAll().flatten()
-                }
-            }
-        } catch (ce: CancellationException) {
-            throw ce
-        } catch (e: Exception) {
-            null
+    private suspend fun queuedJobs(): List<TbQueuedDto> {
+        val token = tokenStore.token(ProviderId.TORBOX)
+        if (queue.token != token) {
+            queue = QueueState(token, emptyMap(), null)
+            queuedSince.clear()
         }
-        queuedOk = read != null
-        if (read != null) queuedList = read.distinctBy { it.id }
-        queuedList
+        val now = android.os.SystemClock.elapsedRealtime()
+        val at = queue.at
+        if (at == null || queuedChangedAt >= at || now - at >= QUEUED_REUSE_MS) {
+            val read = synchronized(this) {
+                refreshing?.takeIf { it.isActive } ?: refreshScope.async { refreshQueue(token, now) }.also { refreshing = it }
+            }
+            withTimeoutOrNull(QUEUED_WAIT_MS) { read.await() }
+        }
+        return queue.takeIf { it.token == token }?.byType?.values?.flatten().orEmpty().distinctBy { it.id }
+    }
+
+    /** One read of the three types. A type that fails keeps its previous entries; the others are not affected. */
+    private suspend fun refreshQueue(token: String?, started: Long) {
+        val previous = queue.takeIf { it.token == token }?.byType.orEmpty()
+        val results = withTimeoutOrNull(QUEUED_TIMEOUT_MS) {
+            coroutineScope {
+                QUEUED_TYPES.map { type ->
+                    async {
+                        try {
+                            type to fetchQueued(type)
+                        } catch (ce: CancellationException) {
+                            throw ce
+                        } catch (e: Exception) {
+                            type to null
+                        }
+                    }
+                }.awaitAll()
+            }
+        }.orEmpty().toMap()
+        val byType = QUEUED_TYPES.associateWith { results[it] ?: previous[it].orEmpty() }
+        synchronized(this) {
+            if (queue.token != token) return // the account changed meanwhile
+            queue = QueueState(token, byType, started)
+        }
+        byType.values.flatten().forEach { q ->
+            FollowMatcher.addedMillis(q.createdAt)?.let { queuedSince[q.id!!] = it }
+        }
     }
 
     private suspend fun fetchQueued(type: String): List<TbQueuedDto> {
@@ -190,39 +226,63 @@ class TorBoxProvider @Inject constructor(
         while (offset < MAX_QUEUED) {
             val env = api.queued(type, offset, FRESH_LIMIT, true)
             if (!env.success) throw ProviderException("TorBox: ${env.detail ?: env.error ?: "request failed"}")
-            val batch = env.data.orEmpty().filter { it.id != null }
-            out += batch
-            if (env.data.orEmpty().size < FRESH_LIMIT) break
+            val rows = env.data.orEmpty()
+            out += rows.filter { it.id != null }.map { it.copy(type = type) }
+            if (rows.size < FRESH_LIMIT) break
             offset += FRESH_LIMIT
         }
         return out
     }
 
     /** Forgets [id] locally right after it was started or removed, until the next read. */
-    private suspend fun forgetQueued(id: Long) = queuedLock.withLock { queuedList = queuedList.filter { it.id != id } }
+    private fun forgetQueued(id: Long) = synchronized(this) {
+        val q = queue
+        queue = QueueState(q.token, q.byType.mapValues { (_, l) -> l.filter { it.id != id } }, q.at)
+    }
 
-    private fun TbQueuedDto.toJob() = RemoteJob(
-        ref = "$QUEUED_PREFIX$id:${hash.orEmpty()}",
-        provider = ProviderId.TORBOX,
-        name = nameOverride?.takeIf { it.isNotBlank() } ?: name?.takeIf { it.isNotBlank() }
-            ?: hash?.takeIf { it.isNotBlank() } ?: "Queued download",
-        progress = null,
-        status = "queued",
-        sizeBytes = 0L,
-        etaSeconds = null,
-        bytesPerSecond = null,
-        actions = setOf(JobAction.START_NOW)
-    )
+    private fun TbQueuedDto.toJob(): RemoteJob {
+        val h = hash?.trim()?.lowercase().orEmpty()
+        return RemoteJob(
+            ref = "$QUEUED_PREFIX$id:$h:${type ?: "torrent"}",
+            provider = ProviderId.TORBOX,
+            name = nameOverride?.takeIf { it.isNotBlank() } ?: name?.takeIf { it.isNotBlank() }
+                ?: h.takeIf { it.isNotEmpty() } ?: "Queued download",
+            progress = null,
+            status = "queued",
+            sizeBytes = 0L,
+            etaSeconds = null,
+            bytesPerSecond = null,
+            actions = setOf(JobAction.START_NOW),
+            // Without a hash there is no way to find the started item.
+            canWatch = h.isNotEmpty(),
+            hash = h.takeIf { it.isNotEmpty() }
+        )
+    }
 
-    /** Queued items hold no files: the torrent TorBox started from one carries the same hash. */
+    /** True when the queue says [id] is queued on the current account. */
+    private suspend fun isQueued(id: Long) = queuedJobs().any { it.id == id }
+
+    /**
+     * Queued items hold no files: the item TorBox started from one (same type
+     * and hash, and not older than the queued entry) carries them.
+     */
     private suspend fun queuedFiles(ref: QueuedRef): List<DownloadItem>? {
-        if (queuedJobs().any { it.id == ref.id }) return null
-        val hit = ref.hash.takeIf { it.isNotBlank() }?.let { h ->
-            allItems(fresh = true).firstOrNull { (kind, item) -> kind == Kind.TORRENT && item.hash.equals(h, ignoreCase = true) }
-        }
-        // Neither queued nor listed. If the queue couldn't be read we can't tell: keep waiting.
-        if (hit == null) return if (queuedOk) throw ProviderException("TorBox: the queued download is gone") else null
-        return if (hit.second.isListable()) hit.second.toFiles(Kind.TORRENT) else null
+        if (ref.hash.isEmpty()) throw JobFailedException("TorBox: this queued download can't be followed without its hash")
+        if (isQueued(ref.id)) return null
+        val since = queuedSince[ref.id]
+        val hit = allItems(fresh = true).firstOrNull { (kind, item) ->
+            val made = FollowMatcher.addedMillis(item.createdAt)
+            kind == ref.kind && item.hash.equals(ref.hash, ignoreCase = true) &&
+                (since == null || made == null || made >= since)
+        } ?: throw ProviderException("TorBox: the queued download is gone")
+        return if (hit.second.isListable()) hit.second.toFiles(ref.kind) else null
+    }
+
+    override fun sameJob(watchRef: String, job: RemoteJob): Boolean {
+        if (watchRef == job.ref) return true
+        val q = QueuedRef.parse(watchRef) ?: return false
+        val kind = parseJobRef(job.ref)?.first ?: QueuedRef.parse(job.ref)?.kind ?: return false
+        return q.hash.isNotEmpty() && q.hash == job.hash && q.kind == kind
     }
 
     /**
@@ -383,7 +443,11 @@ class TorBoxProvider @Inject constructor(
         val queuedId = (data?.get("queued_id") as? Number)?.toLong()
         if (queuedId != null) {
             queuedChangedAt = android.os.SystemClock.elapsedRealtime()
-            return AddResult(message, jobRef = "$QUEUED_PREFIX$queuedId:${(data?.get("hash") as? String).orEmpty()}")
+            queuedSince[queuedId] = System.currentTimeMillis() - QUEUED_SKEW_MS
+            val hash = (data?.get("hash") as? String)?.trim()?.lowercase().orEmpty()
+            val type = if (kind == Kind.WEB) "webdl" else "torrent"
+            // No hash: the started item can't be found, so there is nothing to watch.
+            return AddResult(message, jobRef = hash.takeIf { it.isNotEmpty() }?.let { "$QUEUED_PREFIX$queuedId:$it:$type" })
         }
         return AddResult(message = message, jobRef = id?.let { "${kind.key}:$it" })
     }
@@ -452,6 +516,8 @@ class TorBoxProvider @Inject constructor(
     }
 
     private suspend fun controlQueued(id: Long, operation: String) {
+        // Never send an id that isn't in this account's queue (e.g. a row left over from another account).
+        if (!isQueued(id)) throw ProviderException("TorBox: that download is no longer in the queue")
         val envelope = try {
             changing { api.controlQueued(TbQueuedControl(id, operation)) }
         } finally {
@@ -518,6 +584,7 @@ class TorBoxProvider @Inject constructor(
         sizeBytes = size ?: 0L,
         etaSeconds = eta?.toLong()?.takeIf { it > 0 },
         bytesPerSecond = downloadSpeed?.toLong()?.takeIf { it > 0 },
+        hash = hash?.trim()?.lowercase()?.takeIf { it.isNotEmpty() },
         actions = when {
             kind != Kind.TORRENT -> emptySet()
             downloadState.orEmpty().startsWith("stalled", ignoreCase = true) -> setOf(JobAction.REANNOUNCE)
@@ -565,13 +632,21 @@ class TorBoxProvider @Inject constructor(
         }
     }
 
-    /** "queued:<id>:<hash>", the hash possibly empty. */
-    private data class QueuedRef(val id: Long, val hash: String) {
+    /** "queued:<id>:<hash>:<type>" (older refs have no type: torrent); the hash may be empty. */
+    private data class QueuedRef(val id: Long, val hash: String, val type: String) {
+        val kind: Kind get() = when (type) {
+            "usenet" -> Kind.USENET
+            "webdl" -> Kind.WEB
+            else -> Kind.TORRENT
+        }
+
         companion object {
             fun parse(raw: String): QueuedRef? {
                 val parts = raw.split(':')
-                if (parts.size != 3 || parts[0] != "queued") return null
-                return QueuedRef(parts[1].toLongOrNull() ?: return null, parts[2])
+                if (parts.size !in 3..4 || parts[0] != "queued") return null
+                val type = parts.getOrElse(3) { "torrent" }
+                if (type !in QUEUED_TYPES) return null
+                return QueuedRef(parts[1].toLongOrNull() ?: return null, parts[2].lowercase(), type)
             }
         }
     }
@@ -607,6 +682,10 @@ class TorBoxProvider @Inject constructor(
         /** The queue is read at most this often (three requests), unless we just changed it. */
         const val QUEUED_REUSE_MS = 30_000L
         const val QUEUED_TIMEOUT_MS = 10_000L
+        /** Longest a caller waits for a queue read before using the last known queue. */
+        const val QUEUED_WAIT_MS = 2_500L
+        /** A fresh add is stamped this much earlier, for clock differences with TorBox. */
+        const val QUEUED_SKEW_MS = 120_000L
         /** Safety cap per type. */
         const val MAX_QUEUED = 500
 

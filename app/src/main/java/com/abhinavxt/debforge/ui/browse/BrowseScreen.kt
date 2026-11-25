@@ -532,7 +532,7 @@ fun BrowseScreen(
             ProcessingStrip(
                 providerName = state.providerName,
                 jobs = lastJobs,
-                isWatched = { "${it.provider.name}|${it.ref}" in watchedJobs },
+                isWatched = { watchedJobs.isNotEmpty() && viewModel.isWatched(it) },
                 onToggleWatch = viewModel::toggleWatch,
                 onRemove = { job -> confirmRemove = RemoveRequest(job.name, job = job) },
                 onAction = viewModel::controlJob

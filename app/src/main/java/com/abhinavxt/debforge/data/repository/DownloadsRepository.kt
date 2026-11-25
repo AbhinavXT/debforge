@@ -65,6 +65,9 @@ class DownloadsRepository @Inject constructor(
         return ProviderCalls.run(p.info, "updating the job") { p.controlJob(ref, action) }
     }
 
+    fun sameJob(provider: ProviderId, watchRef: String, job: RemoteJob): Boolean =
+        registry[provider].sameJob(watchRef, job)
+
     /** Success(null) = still processing. */
     suspend fun filesForJob(provider: ProviderId, jobRef: String): DataResult<List<DownloadItem>?> {
         val p = registry[provider]

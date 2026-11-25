@@ -532,12 +532,19 @@ class BrowseViewModel @Inject constructor(
         return (before - after).isNotEmpty()
     }
 
-    fun isWatched(job: RemoteJob) = "${job.provider.name}|${job.ref}" in watchedJobs.value
+    /** Refs of the saved watches that are for [job] (it may have been watched while still queued). */
+    private fun watchesOf(job: RemoteJob): List<String> = watchedJobs.value.mapNotNull { w ->
+        val ref = w.substringAfter('|')
+        ref.takeIf { w.substringBefore('|') == job.provider.name && downloadsRepository.sameJob(job.provider, ref, job) }
+    }
+
+    fun isWatched(job: RemoteJob) = watchesOf(job).isNotEmpty()
 
     fun toggleWatch(job: RemoteJob) {
+        if (!job.canWatch) return
         viewModelScope.launch {
             if (isWatched(job)) {
-                watcher.unwatch(job.provider, job.ref)
+                watchesOf(job).forEach { watcher.unwatch(job.provider, it) }
             } else {
                 watcher.watch(job.provider, job.ref, job.name)
                 _events.emit(str(R.string.msg_will_download_when_ready, job.name))
@@ -653,7 +660,12 @@ class BrowseViewModel @Inject constructor(
 
     /** Removes a job that's still processing (e.g. a stalled torrent). */
     fun removeJob(job: RemoteJob) {
-        viewModelScope.launch { removeKeys(job.provider, setOf(job.ref)) }
+        viewModelScope.launch {
+            val watches = watchesOf(job)
+            removeKeys(job.provider, setOf(job.ref))
+            // A removed job must not auto-download later (removeKeys already dropped its own watch).
+            if (_processing.value.none { it.ref == job.ref }) watches.forEach { watcher.unwatch(job.provider, it) }
+        }
     }
 
     private suspend fun removeKeys(p: ProviderId, keys: Set<String>) {
@@ -661,7 +673,7 @@ class BrowseViewModel @Inject constructor(
         var error: String? = null
         keys.forEach { key ->
             when (val r = downloadsRepository.remove(p, key)) {
-                is DataResult.Success -> removed += key
+                is DataResult.Success -> { removed += key; watcher.unwatch(p, key) }
                 is DataResult.Error -> error = r.message
             }
         }

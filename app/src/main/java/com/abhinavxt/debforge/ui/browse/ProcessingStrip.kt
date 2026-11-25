@@ -151,7 +151,7 @@ private fun JobCard(
                 overflow = TextOverflow.Ellipsis
             )
             Row(verticalAlignment = Alignment.CenterVertically) {
-                FilterChip(
+                if (job.canWatch) FilterChip(
                     selected = watched,
                     onClick = onToggle,
                     leadingIcon = {

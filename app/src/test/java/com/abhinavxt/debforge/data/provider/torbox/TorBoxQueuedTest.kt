@@ -2,6 +2,8 @@ package com.abhinavxt.debforge.data.provider.torbox
 
 import com.abhinavxt.debforge.data.prefs.TokenStore
 import com.abhinavxt.debforge.data.provider.JobAction
+import com.abhinavxt.debforge.data.provider.JobFailedException
+import com.abhinavxt.debforge.domain.ProviderId
 import com.abhinavxt.debforge.data.provider.ProviderException
 import com.abhinavxt.debforge.data.provider.torbox.dto.TbEnvelope
 import com.abhinavxt.debforge.data.provider.torbox.dto.TbFileDto
@@ -31,7 +33,11 @@ import java.time.Duration
 class TorBoxQueuedTest {
     private val torrents = mutableListOf<TbItemDto>()
     private val queued = mutableListOf<TbQueuedDto>()
+    private val queuedWeb = mutableListOf<TbQueuedDto>()
+    private val web = mutableListOf<TbItemDto>()
     private var queuedFailure: Throwable? = null
+    private var failType: String? = null
+    private var queuedDelayMs = 0L
     private var queuedReads = 0
     private val queuedPageLimits = mutableListOf<Int>()
     private val controls = mutableListOf<TbQueuedControl>()
@@ -41,12 +47,18 @@ class TorBoxQueuedTest {
     private val api = Proxy.newProxyInstance(javaClass.classLoader, arrayOf(TorBoxApi::class.java)) { _, m, args ->
         when (m.name) {
             "torrents" -> TbEnvelope(true, null, null, torrents.drop(args[0] as Int).take(args[1] as Int))
-            "usenet", "webDownloads" -> TbEnvelope<List<TbItemDto>>(true, null, null, emptyList())
+            "usenet" -> TbEnvelope<List<TbItemDto>>(true, null, null, emptyList())
+            "webDownloads" -> TbEnvelope(true, null, null, web.toList())
             "queued" -> {
                 queuedPageLimits += args[2] as Int
                 if (args[0] == "torrent") queuedReads++
-                queuedFailure?.let { throw it }
-                val rows = if (args[0] == "torrent") queued.drop(args[1] as Int).take(args[2] as Int) else emptyList()
+                if (queuedDelayMs > 0) Thread.sleep(queuedDelayMs)
+                if (failType == null || failType == args[0]) queuedFailure?.let { throw it }
+                val rows = when (args[0]) {
+                    "torrent" -> queued.drop(args[1] as Int).take(args[2] as Int)
+                    "webdl" -> queuedWeb.toList()
+                    else -> emptyList()
+                }
                 TbEnvelope(true, null, null, rows)
             }
             "controlQueued" -> {
@@ -68,7 +80,9 @@ class TorBoxQueuedTest {
         error(m.name)
     } as TorBoxDeviceApi
 
-    private val provider = TorBoxProvider(api, deviceApi, TokenStore(RuntimeEnvironment.getApplication()))
+    init { com.abhinavxt.debforge.data.prefs.TokenCipher.testKey = javax.crypto.spec.SecretKeySpec(ByteArray(16), "AES") }
+    private val tokens = TokenStore(RuntimeEnvironment.getApplication())
+    private val provider = TorBoxProvider(api, deviceApi, tokens)
 
     private fun q(id: Long, hash: String = "abcdef") = TbQueuedDto(id = id, hash = hash, name = "q$id")
     private fun file() = listOf(TbFileDto(1, "a.mkv", "a.mkv", 1, null))
@@ -77,7 +91,7 @@ class TorBoxQueuedTest {
     @Test fun queuedItemsListedAsQueuedWithStartNow() = runBlocking {
         queued += q(9)
         val job = provider.listProcessing().single()
-        assertEquals("queued:9:abcdef", job.ref)
+        assertEquals("queued:9:abcdef:torrent", job.ref)
         assertEquals("queued", job.status)
         assertEquals(setOf(JobAction.START_NOW), job.actions)
     }
@@ -98,7 +112,7 @@ class TorBoxQueuedTest {
     @Test fun malformedQueuedRowsAreSkippedAndPagesStaySmall() = runBlocking {
         queued += TbQueuedDto(id = null) // no id: not actionable
         queued += q(3)
-        assertEquals(listOf("queued:3:abcdef"), provider.listProcessing().map { it.ref })
+        assertEquals(listOf("queued:3:abcdef:torrent"), provider.listProcessing().map { it.ref })
         assertTrue(queuedPageLimits.all { it <= 100 })
     }
 
@@ -122,7 +136,7 @@ class TorBoxQueuedTest {
     }
 
     @Test fun addReturnsQueuedRefAndOtherAddsKeepTheirs() = runBlocking {
-        assertEquals("queued:9:ABCDEF", provider.add(AddRequest.Magnet("m")).jobRef)
+        assertEquals("queued:9:abcdef:torrent", provider.add(AddRequest.Magnet("m")).jobRef)
         addData = mapOf("torrent_id" to 7.0)
         assertEquals("torrent:7", provider.add(AddRequest.Magnet("m")).jobRef)
     }
@@ -172,9 +186,11 @@ class TorBoxQueuedTest {
         try { provider.filesForJob("queued:9:"); fail() } catch (_: ProviderException) {}
     }
 
-    @Test fun unreadableQueueKeepsWaitingInsteadOfGivingUp() = runBlocking {
+    @Test fun unreadableQueueErrorsSoTheWatchEndsAfterItsNormalLimit() = runBlocking {
         queuedFailure = IOException("offline")
-        assertNull(provider.filesForJob("queued:9:abcdef"))
+        try { provider.filesForJob("queued:9:abcdef"); fail() } catch (e: ProviderException) {
+            assertTrue(e !is JobFailedException)
+        }
     }
 
     @Test fun stalledGetsReannounceAndPausedGetsResume() = runBlocking {
@@ -188,5 +204,93 @@ class TorBoxQueuedTest {
         provider.controlJob("torrent:1", JobAction.REANNOUNCE)
         provider.controlJob("torrent:2", JobAction.RESUME)
         assertEquals(listOf("reannounce", "resume"), torrentControls.map { it.operation })
+    }
+
+    @Test fun queuedWebDownloadIsMatchedAmongWebDownloadsOnly() = runBlocking {
+        queuedWeb += TbQueuedDto(id = 4, hash = "FEED", name = "w", type = "webdl")
+        val job = provider.listProcessing().single()
+        assertEquals("queued:4:feed:webdl", job.ref)
+        queuedWeb.clear()
+        torrents += TbItemDto(1, "t", 1, null, true, true, file(), hash = "feed")
+        web += TbItemDto(2, "w", 1, null, true, true, file(), hash = "feed")
+        later(31)
+        assertEquals(listOf("tb:web:2:1"), provider.filesForJob(job.ref)!!.map { it.id })
+    }
+
+    @Test fun noHashCannotBeWatched() = runBlocking {
+        queued += TbQueuedDto(id = 5, name = "x")
+        assertTrue(!provider.listProcessing().single().canWatch)
+        addData = mapOf("queued_id" to 5.0)
+        assertNull(provider.add(AddRequest.Magnet("m")).jobRef)
+        try { provider.filesForJob("queued:5::torrent"); fail() } catch (_: JobFailedException) {}
+    }
+
+    @Test fun otherAccountNeverSeesOrActsOnTheFirstAccountsQueue() = runBlocking {
+        tokens.setToken(ProviderId.TORBOX, "a")
+        queued += q(9)
+        torrents += TbItemDto(1, "t", 1, null, false, false, null, downloadState = "downloading")
+        assertEquals(2, provider.listProcessing().size)
+        tokens.setToken(ProviderId.TORBOX, "b")
+        queued.clear(); torrents.clear()
+        assertTrue(provider.listProcessing().isEmpty())
+        try { provider.controlJob("queued:9:abcdef:torrent", JobAction.START_NOW); fail() } catch (_: ProviderException) {}
+        try { provider.remove("queued:9:abcdef:torrent"); fail() } catch (_: ProviderException) {}
+        assertTrue(controls.isEmpty())
+    }
+
+    @Test fun anOlderCopyWithTheSameHashIsNotTheQueuedItem() = runBlocking {
+        queued += TbQueuedDto(id = 9, hash = "abcdef", createdAt = "2026-11-25T10:00:00Z")
+        torrents += TbItemDto(1, "old", 1, "2026-11-20T10:00:00Z", true, true, file(), hash = "abcdef")
+        assertNull(provider.filesForJob("queued:9:abcdef:torrent"))
+        queued.clear(); later(31)
+        try { provider.filesForJob("queued:9:abcdef:torrent"); fail() } catch (_: ProviderException) {}
+        later(6)
+        torrents += TbItemDto(2, "new", 1, "2026-11-25T10:05:00Z", true, true, file(), hash = "abcdef")
+        assertEquals(listOf("tb:torrent:2:1"), provider.filesForJob("queued:9:abcdef:torrent")!!.map { it.id })
+    }
+
+    @Test fun cancelledQueueReadLeavesNoEmptyListBehind() = runBlocking {
+        queued += q(9)
+        queuedDelayMs = 300
+        kotlinx.coroutines.withTimeoutOrNull(50) { provider.listProcessing() }
+        Thread.sleep(1000)
+        queuedDelayMs = 0
+        assertEquals(1, provider.listProcessing().size)
+        assertEquals(1, queuedReads)
+    }
+
+    @Test fun oneFailingTypeDoesNotHideTheOthers() = runBlocking {
+        queued += q(9)
+        queuedWeb += TbQueuedDto(id = 4, hash = "feed", type = "webdl")
+        queuedFailure = retrofit2.HttpException(retrofit2.Response.error<Any>(403, okhttp3.ResponseBody.create(null, "")))
+        failType = "webdl"
+        assertEquals(listOf("queued:9:abcdef:torrent"), provider.listProcessing().map { it.ref })
+        try { provider.filesForJob("queued:4:feed:webdl"); fail() } catch (e: ProviderException) {
+            assertTrue(e !is JobFailedException)
+        }
+    }
+
+    @Test fun slowQueueDoesNotHoldTheStrip() = runBlocking {
+        torrents += TbItemDto(1, "t", 1, null, false, false, null, downloadState = "downloading")
+        queued += q(9)
+        queuedDelayMs = 4000
+        val t0 = System.nanoTime()
+        assertEquals(listOf("torrent:1"), provider.listProcessing().map { it.ref })
+        assertTrue((System.nanoTime() - t0) / 1_000_000 < 3500)
+    }
+
+    @Test fun watchFromAddIsTheSameJobAsTheStripRowAndAsTheStartedTorrent() = runBlocking {
+        val watch = provider.add(AddRequest.Magnet("m")).jobRef!!
+        queued += q(9, "ABCDEF")
+        val row = provider.listProcessing().single()
+        assertEquals(watch, row.ref)
+        assertTrue(provider.sameJob(watch, row))
+        queued.clear()
+        torrents += TbItemDto(5, "t", 1, null, false, false, null, downloadState = "downloading", hash = "AbCdEf")
+        later(31)
+        val started = provider.listProcessing().single()
+        assertEquals("torrent:5", started.ref)
+        assertTrue(provider.sameJob(watch, started))
+        assertTrue(!provider.sameJob("torrent:6", started))
     }
 }

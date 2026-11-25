@@ -94,6 +94,9 @@ interface DebridProvider {
     suspend fun controlJob(ref: String, action: JobAction): Unit =
         throw ProviderException("${info.displayName} doesn't support that")
 
+    /** True if a watch saved under [watchRef] is for [job] (a queued item and the download it became). */
+    fun sameJob(watchRef: String, job: RemoteJob): Boolean = watchRef == job.ref
+
     /** Deletes [key] (from [removalKey] or a [RemoteJob.ref]) on the service. */
     suspend fun remove(key: String): Unit =
         throw ProviderException("${info.displayName} doesn't support removing items from the app")
@@ -149,7 +152,11 @@ data class RemoteJob(
     val etaSeconds: Long?,
     val bytesPerSecond: Long?,
     /** Extra things the service can do with this job (besides removing it). */
-    val actions: Set<JobAction> = emptySet()
+    val actions: Set<JobAction> = emptySet(),
+    /** False when "download when ready" can't work for this job. */
+    val canWatch: Boolean = true,
+    /** Lowercase info hash, for telling a job apart from its earlier/later forms. */
+    val hash: String? = null
 )
 
 /** Optional per-job actions of the processing strip. */
