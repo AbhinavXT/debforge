@@ -1,0 +1,6 @@
+• Sign in to TorBox with a code, no API key to copy
+• TorBox queued downloads: see them, start now or remove
+• Reannounce stalled and resume paused TorBox torrents
+• Add .nzb files and links (TorBox plans with Usenet)
+• Add only if cached switch for TorBox
+• TorBox refusals now show TorBox's own reason
