@@ -49,8 +49,10 @@ class AudioTileService : TileService() {
 
     override fun onClick() {
         super.onClick()
-        scope.launch {
+        // Not the tile's own scope: closing the shade destroys the service, mid link lookup for a streamed track.
+        startScope.launch {
             val started = withTimeoutOrNull(START_TIMEOUT_MS) { audio.playFromWidget(WidgetAction.TOGGLE) }
+            if (destroyed) return@launch // the shade closed: the player's own state says what happened
             if (started != true) openApp() // refused, nothing to play, or too slow
             render(audio.state.value.isPlaying)
         }
@@ -78,12 +80,16 @@ class AudioTileService : TileService() {
         tile.updateTile()
     }
 
+    @Volatile private var destroyed = false
+
     override fun onDestroy() {
+        destroyed = true
         scope.cancel()
         super.onDestroy()
     }
 
     private companion object {
         const val START_TIMEOUT_MS = 8_000L
+        val startScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     }
 }

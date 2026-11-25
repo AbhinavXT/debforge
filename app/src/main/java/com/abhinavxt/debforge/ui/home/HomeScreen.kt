@@ -320,7 +320,12 @@ private fun HomeShell(signedIn: Boolean, prefs: NavPrefs) {
 
     val searchRequested by NowPlayingRequest.openSearch.collectAsStateWithLifecycle()
     LaunchedEffect(searchRequested) {
-        if (searchRequested) { go(HomeTab.Search); NowPlayingRequest.openSearch.value = false }
+        if (searchRequested) {
+            nowPlaying = false // the full audio player and the expanded video cover the tabs
+            if (videoExpanded) videoLauncher.dispatch(VideoModeEvent.Minimise)
+            go(HomeTab.Search)
+            NowPlayingRequest.openSearch.value = false
+        }
     }
 
     // A YouTube link shared into the app (cold start or already open).

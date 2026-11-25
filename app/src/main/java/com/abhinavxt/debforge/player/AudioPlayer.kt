@@ -1184,6 +1184,21 @@ class AudioPlayer @Inject constructor(
         } catch (e: IllegalStateException) { false } // not allowed from the background at all
     }
 
+    /**
+     * After a swipe from recents the player outlives its service. A start from anywhere (tile, widget, shortcut, in-app
+     * Play) must bring the service and session back first, or nothing shows a notification. False: Android refused.
+     */
+    private fun ensureService(p: ExoPlayer): Boolean {
+        if (BackgroundPlayback.service != null) return true
+        pauseBackgroundedVideo()
+        setOpenIntent()
+        BackgroundPlayback.player = p
+        if (startPlaybackService()) return true
+        BackgroundPlayback.player = null
+        BackgroundPlayback.openIntent = null
+        return false
+    }
+
     /** Runs [block] on the player; the first action on a restored queue starts it first (see [activate]). */
     private fun whenActive(block: (ExoPlayer) -> Unit) {
         val p = player ?: return
@@ -1279,6 +1294,7 @@ class AudioPlayer @Inject constructor(
             activated = true
             if (action == WidgetAction.TOGGLE) return@withContext playbackTookHold(p) // activating started playback
         }
+        if (!ensureService(p)) return@withContext false // the service ended with a swipe: bring it back, or open the app
         when (action) {
             WidgetAction.TOGGLE -> toggle()
             WidgetAction.NEXT -> next()
@@ -1309,6 +1325,7 @@ class AudioPlayer @Inject constructor(
         player?.let {
             if (wantsToPlay(it.playWhenReady, it.playbackState)) it.pause()
             else {
+                if (!ensureService(it)) return
                 youtubeBreaker.reset() // an explicit press: try afresh after the breaker tripped
                 val cur = tracks.getOrNull(it.currentMediaItemIndex)
                 if (cur?.youtube != null && cur.uri == Uri.EMPTY) {

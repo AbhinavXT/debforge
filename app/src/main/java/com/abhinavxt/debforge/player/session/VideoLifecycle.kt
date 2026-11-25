@@ -36,8 +36,8 @@ internal class VideoLifecycle(
         fun stopTicking()
         /** Hands the player to the background media service (sound goes on while away). */
         fun handToBackground()
-        /** The service lets go: the session and the picture come back. */
-        fun takeBack()
+        /** The service lets go: the session and the picture come back. [leaving]: the video is ending, so audio that took the service over meanwhile must be left alone. */
+        fun takeBack(leaving: Boolean)
         /** Sound only while away: no point decoding pictures nobody sees. */
         fun disableVideo()
         /** This video is over: drop its per-video state and jobs. */
@@ -62,7 +62,7 @@ internal class VideoLifecycle(
     fun open(): Long {
         if (isOpen) {
             steps.closeHost()
-            if (inBackground) takeBack()
+            if (inBackground) takeBack(leaving = false)
             steps.stopTicking()
             steps.savePosition()
             steps.releasePlayer()
@@ -81,7 +81,7 @@ internal class VideoLifecycle(
     /** Host visible: take the player back from the service, build it if needed, tick. False: [token] is stale. */
     fun hostStarted(token: Long): Boolean {
         if (!isCurrent(token)) return false
-        if (inBackground) takeBack()
+        if (inBackground) takeBack(leaving = false)
         steps.buildPlayer()
         steps.startTicking()
         return true
@@ -101,7 +101,7 @@ internal class VideoLifecycle(
     }
 
     fun hostResumed(token: Long) {
-        if (isCurrent(token) && inBackground) takeBack()
+        if (isCurrent(token) && inBackground) takeBack(leaving = false)
     }
 
     /** Host stopped; [finishing]: it will not come back (the video closes). */
@@ -122,7 +122,7 @@ internal class VideoLifecycle(
     fun hostDestroyed(token: Long, finishing: Boolean) {
         if (!isCurrent(token)) return
         if (inBackground) {
-            takeBack()
+            takeBack(leaving = finishing)
             steps.savePosition()
         }
         steps.releasePlayer()
@@ -139,8 +139,8 @@ internal class VideoLifecycle(
         hostDestroyed(token, finishing = true)
     }
 
-    private fun takeBack() {
+    private fun takeBack(leaving: Boolean) {
         inBackground = false
-        steps.takeBack()
+        steps.takeBack(leaving)
     }
 }

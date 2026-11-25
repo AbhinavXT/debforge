@@ -26,7 +26,7 @@ class VideoLifecycleTest {
         override fun startTicking() { log += "tick" }
         override fun stopTicking() { log += "stopTick" }
         override fun handToBackground() { log += "toBackground" }
-        override fun takeBack() { log += "takeBack" }
+        override fun takeBack(leaving: Boolean) { log += if (leaving) "takeBack(leaving)" else "takeBack" }
         override fun disableVideo() { log += "disableVideo" }
         override fun discard() { log += "discard" }
         override fun closeHost() { log += "closeHost" }
@@ -198,7 +198,7 @@ class VideoLifecycleTest {
         life.hostStopped(token, finishing = true)
         life.hostDestroyed(token, finishing = true)
         assertEquals(0, steps.count("videoClosed"))
-        assertEquals(1, steps.count("takeBack"))
+        assertEquals(1, steps.count("takeBack(leaving)"))
         assertFalse(life.isOpen)
     }
 
@@ -222,5 +222,13 @@ class VideoLifecycleTest {
         life.hostResumed(token)
         assertEquals(1, steps.count("takeBack"))
         assertFalse(life.inBackground)
+    }
+
+    @Test fun endingWhileInTheBackgroundTakesBackAsLeaving() {
+        val (steps, life, token) = started()
+        life.hostPaused(token, mayLeave = true, backgroundOn = true)
+        life.close()
+        assertEquals(1, steps.count("takeBack(leaving)"))
+        assertEquals(0, steps.count("takeBack"))
     }
 }

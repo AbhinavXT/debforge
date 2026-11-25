@@ -379,10 +379,15 @@ class VideoSession @Inject constructor(
         }
 
         /** Back in the player: the service lets go, pictures come back. */
-        override fun takeBack() {
-            audioPlayer.parkForVideo() // audio may have taken the service over meanwhile; video and audio never overlap
-            BackgroundPlayback.stop(context)
-            BackgroundPlayback.player = null
+        override fun takeBack(leaving: Boolean) {
+            // Audio may have taken the service over meanwhile (the video was paused). Back in the player, video and audio
+            // never overlap, so audio parks; but a video that is only ending (task swiped away) leaves that audio alone.
+            val audioOwnsService = BackgroundPlayback.player !== (episodePlayer ?: player)
+            if (!(leaving && audioOwnsService)) {
+                audioPlayer.parkForVideo()
+                BackgroundPlayback.stop(context)
+                BackgroundPlayback.player = null
+            }
             openMediaSession()
             player?.let { it.trackSelectionParameters = it.trackSelectionParameters.buildUpon().setTrackTypeDisabled(C.TRACK_TYPE_VIDEO, false).build() }
         }

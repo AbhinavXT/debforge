@@ -40,6 +40,13 @@ class NotificationButtonsTest {
         assertEquals(SwipeAction.STOP, swipeAction(false, true, true))
     }
 
+    @Test fun onlyAUserPauseEndsKeptPlayback() {
+        val user = androidx.media3.common.Player.PLAY_WHEN_READY_CHANGE_REASON_USER_REQUEST
+        assertEquals(true, endsKeptPlayback(false, user))
+        assertEquals(false, endsKeptPlayback(true, user))
+        assertEquals(false, endsKeptPlayback(false, androidx.media3.common.Player.PLAY_WHEN_READY_CHANGE_REASON_AUDIO_FOCUS_LOSS))
+    }
+
     @Test fun videoSkipNeedsSeekableNonLive() {
         assertEquals(true, canSkipVideo(isLive = false, seekable = true))
         assertEquals(false, canSkipVideo(isLive = true, seekable = true))

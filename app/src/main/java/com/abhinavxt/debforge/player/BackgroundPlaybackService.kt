@@ -113,9 +113,11 @@ class BackgroundPlaybackService : MediaSessionService() {
     private var isAudio = false
     @Volatile private var keepPlayingSwiped = false
     private var videoListener: Player.Listener? = null
+    private var swipeListener: Player.Listener? = null
     @Volatile private var currentButtons: ImmutableList<CommandButton> = ImmutableList.of()
 
     private fun applyButtons(buttons: ImmutableList<CommandButton>) {
+        if (sameButtons(buttons, currentButtons)) return
         currentButtons = buttons
         session?.setMediaButtonPreferences(buttons)
     }
@@ -189,11 +191,25 @@ class BackgroundPlaybackService : MediaSessionService() {
 
     /**
      * Swiped away from recents: stop the sound with it, unless audio is playing and the user chose to keep it going
-     * (then nothing changes: the service stays in the foreground with its notification, and Stop still ends it).
+     * (then nothing changes: the service stays up with its notification). Pausing drops the foreground state, so the
+     * notification can then be swiped away, which Media3 answers by stopping the service; the player stays parked.
      */
     override fun onTaskRemoved(rootIntent: Intent?) {
         val playing = session?.player?.let { wantsToPlay(it.playWhenReady, it.playbackState) } == true
-        if (swipeAction(isAudio, keepPlayingSwiped, playing) == SwipeAction.KEEP_PLAYING) return
+        if (swipeAction(isAudio, keepPlayingSwiped, playing) == SwipeAction.KEEP_PLAYING) {
+            // The app is gone, so a user pause ends it: park the queue (frees the player, stops this service).
+            val p = session?.player ?: return
+            swipeListener?.let { p.removeListener(it) }
+            swipeListener = object : Player.Listener {
+                override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
+                    if (!endsKeptPlayback(playWhenReady, reason)) return
+                    p.removeListener(this)
+                    swipeListener = null
+                    audio.parkForVideo()
+                }
+            }.also { p.addListener(it) }
+            return
+        }
         session?.player?.pause()
         stopSafely()
     }
@@ -201,6 +217,7 @@ class BackgroundPlaybackService : MediaSessionService() {
     override fun onDestroy() {
         // The player belongs to the activity: release only the session.
         videoListener?.let { session?.player?.removeListener(it) }
+        swipeListener?.let { session?.player?.removeListener(it) }
         session?.let {
             removeSession(it)
             it.release()
@@ -290,6 +307,10 @@ class BackgroundPlaybackService : MediaSessionService() {
         )
     }
 }
+
+/** Same commands, icons and names: a redraw would change nothing. */
+private fun sameButtons(a: List<CommandButton>, b: List<CommandButton>) =
+    a.size == b.size && a.indices.all { a[it] == b[it] }
 
 /** What the audio buttons depend on; the rest of the audio state (position) must not redraw the notification. */
 private data class AudioButtonState(val id: String?, val canFavourite: Boolean, val speed: Float, val sleepOn: Boolean)

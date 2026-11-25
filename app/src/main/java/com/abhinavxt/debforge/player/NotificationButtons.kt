@@ -1,5 +1,7 @@
 package com.abhinavxt.debforge.player
 
+import androidx.media3.common.Player
+
 /** Which two extra buttons the audio media notification shows (Settings > Audio player). Names are persisted. */
 enum class NotificationButtons { SKIP, FAVOURITE_SLEEP, FAVOURITE_SPEED, SLEEP_SPEED }
 
@@ -32,6 +34,10 @@ enum class SwipeAction { STOP, KEEP_PLAYING }
 /** Swiped from recents: only audio that is playing may carry on, and only when the user allowed it; video's surface dies with the task. */
 fun swipeAction(isAudio: Boolean, keepPlaying: Boolean, playing: Boolean): SwipeAction =
     if (isAudio && keepPlaying && playing) SwipeAction.KEEP_PLAYING else SwipeAction.STOP
+
+/** After a swipe that kept audio playing: a pause by the user (not a call or focus loss) ends it. */
+fun endsKeptPlayback(playWhenReady: Boolean, reason: Int): Boolean =
+    !playWhenReady && reason == Player.PLAY_WHEN_READY_CHANGE_REASON_USER_REQUEST
 
 /** Skip buttons for video: not for live streams or anything that cannot seek. */
 fun canSkipVideo(isLive: Boolean, seekable: Boolean): Boolean = seekable && !isLive
