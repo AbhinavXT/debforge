@@ -40,8 +40,8 @@
     <string name="add_remove_file">கோப்பை அகற்று</string>
     <string name="add_auto_download">தயாரானதும் இந்த ஃபோனில் தானாகப் பதிவிறக்கு</string>
     <string name="add_only_if_cached">%1$s-ல் கேஷில் இருந்தால் மட்டும் சேர்</string>
-    <string name="add_not_cached">%1$s-ல் கேஷில் இல்லை, எதுவும் சேர்க்கப்படவில்லை</string>
-    <string name="add_not_cached_some">%2$s-ல் கேஷில் இல்லாதவை: %1$d, சேர்க்கப்படவில்லை</string>
+    <string name="add_not_cached">%1$s-ல் கேஷில் இல்லை, எதுவும் சேர்க்கப்படவில்லை. \"%2$s\" இயக்கத்தில் உள்ளது.</string>
+    <string name="add_not_cached_some">%2$s-ல் கேஷில் இல்லாதவை: %1$d, சேர்க்கப்படவில்லை. \"%3$s\" இயக்கத்தில் உள்ளது.</string>
     <string name="add_needs_storage">முதலில் ஒரு பதிவிறக்கக் கோப்புறையைத் தேர்ந்தெடுக்கவும்.</string>
     <string name="add_hint_both">மேக்னெட் லிங்க் அல்லது URL, ஒரு வரிக்கு ஒன்று</string>
     <string name="add_hint_magnet">மேக்னெட் லிங்க், ஒரு வரிக்கு ஒன்று</string>
@@ -267,6 +267,8 @@
     <string name="add_err_open">கோப்பைத் திறக்க முடியவில்லை</string>
     <string name="add_err_not_torrent">%1$s ஒரு .torrent கோப்பாகத் தெரியவில்லை</string>
     <string name="add_err_not_nzb">%1$s ஒரு .nzb கோப்பாகத் தெரியவில்லை</string>
+    <string name="add_err_nzb_too_large">%1$s 50 MB-ஐ விடப் பெரியது</string>
+    <string name="add_err_nzb_gzip">%1$s சுருக்கப்பட்டுள்ளது (.gz). முதலில் சாதாரண .nzb ஆக விரிக்கவும்</string>
     <string name="add_err_read">கோப்பைப் படிக்க முடியவில்லை: %1$s</string>
     <string name="add_err_permission">அந்தக் கோப்பைப் படிக்க அனுமதி இல்லை — மீண்டும் தேர்ந்தெடுத்துப் பார்க்கவும்</string>
     <plurals name="n_episodes">

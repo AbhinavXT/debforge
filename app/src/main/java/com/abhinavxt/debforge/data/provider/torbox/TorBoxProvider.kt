@@ -37,6 +37,7 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withTimeoutOrNull
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
+import okio.source
 import okhttp3.RequestBody.Companion.toRequestBody
 import retrofit2.HttpException
 import javax.inject.Inject
@@ -418,11 +419,10 @@ class TorBoxProvider @Inject constructor(
     private suspend fun addChecked(request: AddRequest, onlyIfCached: Boolean): AddResult = try {
         addRequest(request, onlyIfCached)
     } catch (e: HttpException) {
-        val body = if (e.code() == 401 || e.code() == 403) null
-        else runCatching { e.response()?.errorBody()?.string() }.getOrNull()
-        val detail = tbRejectionDetail(body)
+        val body = runCatching { e.response()?.errorBody()?.string() }.getOrNull()
+        val detail = tbRefusalDetail(e.code(), body)
         throw when {
-            tbIsNotCached(body) -> NotCachedException("Not cached on TorBox, nothing was added")
+            tbError(body)?.code == "DOWNLOAD_NOT_CACHED" -> NotCachedException("Not cached on TorBox, nothing was added")
             detail != null -> ProviderException("TorBox: $detail", e)
             else -> e
         }
@@ -449,7 +449,14 @@ class TorBoxProvider @Inject constructor(
                     MultipartBody.Part.createFormData(
                         "file",
                         request.name.substringAfterLast('/').substringAfterLast('\\'),
-                        request.bytes.toRequestBody("application/x-nzb".toMediaType())
+                        // Streamed from the picked file: never held in memory.
+                        object : okhttp3.RequestBody() {
+                            override fun contentType() = "application/x-nzb".toMediaType()
+                            override fun contentLength() = request.size
+                            override fun writeTo(sink: okio.BufferedSink) {
+                                request.open().use { sink.writeAll(it.source()) }
+                            }
+                        }
                     ),
                     cachedOnly
                 )
@@ -459,7 +466,7 @@ class TorBoxProvider @Inject constructor(
         }
         if (!envelope.success) {
             if (envelope.error == "DOWNLOAD_NOT_CACHED") throw NotCachedException("Not cached on TorBox, nothing was added")
-            throw ProviderException("TorBox: ${envelope.detail ?: envelope.error ?: "couldn't add"}")
+            throw ProviderException("TorBox: ${tbCleanDetail(envelope.detail) ?: envelope.error ?: "couldn't add"}")
         }
         // e.g. "Found cached torrent. Using cached torrent." / "Added to queue."
         val message = envelope.detail?.takeIf { it.isNotBlank() } ?: "Added to TorBox"

@@ -40,8 +40,8 @@
     <string name="add_remove_file">移除文件</string>
     <string name="add_auto_download">准备就绪后自动下载到本机</string>
     <string name="add_only_if_cached">仅当 %1$s 已缓存时添加</string>
-    <string name="add_not_cached">%1$s 未缓存，未添加任何内容</string>
-    <string name="add_not_cached_some">%1$d 个在 %2$s 上未缓存，未添加</string>
+    <string name="add_not_cached">%1$s 未缓存，未添加任何内容。“%2$s”已开启。</string>
+    <string name="add_not_cached_some">%1$d 个在 %2$s 上未缓存，未添加。“%3$s”已开启。</string>
     <string name="add_needs_storage">请先选择下载文件夹。</string>
     <string name="add_hint_both">磁力链接或网址，每行一个</string>
     <string name="add_hint_magnet">磁力链接，每行一个</string>
@@ -264,6 +264,8 @@
     <string name="add_err_open">无法打开文件</string>
     <string name="add_err_not_torrent">%1$s 似乎不是 .torrent 文件</string>
     <string name="add_err_not_nzb">%1$s 似乎不是 .nzb 文件</string>
+    <string name="add_err_nzb_too_large">%1$s 超过 50 MB</string>
+    <string name="add_err_nzb_gzip">%1$s 已压缩 (.gz)。请先解压为普通 .nzb</string>
     <string name="add_err_read">无法读取文件：%1$s</string>
     <string name="add_err_permission">没有读取该文件的权限 — 请重新选择</string>
     <plurals name="n_episodes">

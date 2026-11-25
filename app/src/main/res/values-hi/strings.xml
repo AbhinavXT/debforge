@@ -40,8 +40,8 @@
     <string name="add_remove_file">फ़ाइल हटाएँ</string>
     <string name="add_auto_download">तैयार होते ही इस फ़ोन पर अपने-आप डाउनलोड करें</string>
     <string name="add_only_if_cached">%1$s पर कैश में हो तभी जोड़ें</string>
-    <string name="add_not_cached">%1$s पर कैश में नहीं है, कुछ नहीं जोड़ा गया</string>
-    <string name="add_not_cached_some">%2$s पर कैश में नहीं: %1$d, जोड़े नहीं गए</string>
+    <string name="add_not_cached">%1$s पर कैश में नहीं है, कुछ नहीं जोड़ा गया। \"%2$s\" चालू है।</string>
+    <string name="add_not_cached_some">%2$s पर कैश में नहीं: %1$d, जोड़े नहीं गए। \"%3$s\" चालू है।</string>
     <string name="add_needs_storage">पहले डाउनलोड फ़ोल्डर चुनें।</string>
     <string name="add_hint_both">मैग्नेट लिंक या URL, हर लाइन में एक</string>
     <string name="add_hint_magnet">मैग्नेट लिंक, हर लाइन में एक</string>
@@ -267,6 +267,8 @@
     <string name="add_err_open">फ़ाइल नहीं खुल सकी</string>
     <string name="add_err_not_torrent">%1$s .torrent फ़ाइल जैसी नहीं लगती</string>
     <string name="add_err_not_nzb">%1$s .nzb फ़ाइल जैसी नहीं लगती</string>
+    <string name="add_err_nzb_too_large">%1$s 50 MB से बड़ी है</string>
+    <string name="add_err_nzb_gzip">%1$s संपीड़ित (.gz) है। पहले इसे सादे .nzb में खोलें</string>
     <string name="add_err_read">फ़ाइल पढ़ी नहीं जा सकी: %1$s</string>
     <string name="add_err_permission">उस फ़ाइल को पढ़ने की अनुमति नहीं — फिर से चुनकर देखें</string>
     <plurals name="n_episodes">

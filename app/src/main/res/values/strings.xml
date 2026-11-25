@@ -41,8 +41,8 @@
     <string name="add_remove_file">Remove file</string>
     <string name="add_auto_download">Download to this phone automatically when ready</string>
     <string name="add_only_if_cached">Add only if cached on %1$s</string>
-    <string name="add_not_cached">Not cached on %1$s, nothing was added</string>
-    <string name="add_not_cached_some">%1$d not cached on %2$s, not added</string>
+    <string name="add_not_cached">Not cached on %1$s, nothing was added. \"%2$s\" is switched on.</string>
+    <string name="add_not_cached_some">%1$d not cached on %2$s, not added. \"%3$s\" is switched on.</string>
     <string name="add_needs_storage">Choose a download folder first.</string>
     <string name="add_hint_both">Magnet links or URLs, one per line</string>
     <string name="add_hint_magnet">Magnet links, one per line</string>
@@ -268,6 +268,8 @@
     <string name="add_err_open">Couldn\'t open the file</string>
     <string name="add_err_not_torrent">%1$s doesn\'t look like a .torrent file</string>
     <string name="add_err_not_nzb">%1$s doesn\'t look like an .nzb file</string>
+    <string name="add_err_nzb_too_large">%1$s is larger than 50 MB</string>
+    <string name="add_err_nzb_gzip">%1$s is compressed (.gz). Unpack it to a plain .nzb first</string>
     <string name="add_err_read">Couldn\'t read the file: %1$s</string>
     <string name="add_err_permission">No permission to read that file — try picking it again</string>
     <plurals name="n_episodes">

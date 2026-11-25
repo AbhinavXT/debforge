@@ -40,8 +40,8 @@
     <string name="add_remove_file">Remover arquivo</string>
     <string name="add_auto_download">Baixar neste celular automaticamente quando estiver pronto</string>
     <string name="add_only_if_cached">Adicionar só se estiver em cache no %1$s</string>
-    <string name="add_not_cached">Não está em cache no %1$s, nada foi adicionado</string>
-    <string name="add_not_cached_some">%1$d fora do cache do %2$s, não adicionados</string>
+    <string name="add_not_cached">Não está em cache no %1$s, nada foi adicionado. \"%2$s\" está ativado.</string>
+    <string name="add_not_cached_some">%1$d fora do cache do %2$s, não adicionados. \"%3$s\" está ativado.</string>
     <string name="add_needs_storage">Escolha uma pasta de downloads primeiro.</string>
     <string name="add_hint_both">Links magnet ou URLs, um por linha</string>
     <string name="add_hint_magnet">Links magnet, um por linha</string>
@@ -270,6 +270,8 @@
     <string name="add_err_open">Não foi possível abrir o arquivo</string>
     <string name="add_err_not_torrent">%1$s não parece ser um arquivo .torrent</string>
     <string name="add_err_not_nzb">%1$s não parece ser um arquivo .nzb</string>
+    <string name="add_err_nzb_too_large">%1$s é maior que 50 MB</string>
+    <string name="add_err_nzb_gzip">%1$s está compactado (.gz). Extraia primeiro para um .nzb simples</string>
     <string name="add_err_read">Não foi possível ler o arquivo: %1$s</string>
     <string name="add_err_permission">Sem permissão para ler esse arquivo. Tente escolhê-lo de novo</string>
     <plurals name="n_episodes">

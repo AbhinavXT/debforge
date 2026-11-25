@@ -79,6 +79,8 @@ data class AddUiState(
     val text: String = "",
     val torrentUri: Uri? = null,
     val torrentName: String? = null,
+    /** The picked file is an .nzb (by name or MIME type), not a .torrent. */
+    val torrentIsNzb: Boolean = false,
     val submitting: Boolean = false,
     val error: String? = null,
     /** Queue the files automatically once the service has them. */
@@ -244,7 +246,7 @@ class AddViewModel @Inject constructor(
     private fun inputKinds(): Set<AddKind> {
         val s = _state.value
         val kinds = AddInputParser.parse(s.text).requests.mapTo(HashSet()) { it.kind }
-        if (s.torrentUri != null) kinds += if (Nzb.isNzbName(s.torrentName)) AddKind.NZB_FILE else AddKind.TORRENT_FILE
+        if (s.torrentUri != null) kinds += if (s.torrentIsNzb) AddKind.NZB_FILE else AddKind.TORRENT_FILE
         return kinds
     }
 
@@ -396,9 +398,12 @@ class AddViewModel @Inject constructor(
         if (uri == null) return
         viewModelScope.launch {
             val name = withContext(Dispatchers.IO) { displayName(uri) } ?: "file.torrent"
-            _state.update { it.copy(torrentUri = uri, torrentName = name, error = null) }
+            // Some apps hand over an .nzb without the extension: the MIME type tells.
+            val nzb = Nzb.isNzbName(name) ||
+                withContext(Dispatchers.IO) { runCatching { context.contentResolver.getType(uri) }.getOrNull() } == "application/x-nzb"
+            _state.update { it.copy(torrentUri = uri, torrentName = name, torrentIsNzb = nzb, error = null) }
             // Hash the file now (it's small) so the cache line can show before submitting.
-            torrentHash = (readTorrent(uri, name) as? DataResult.Success)?.data
+            torrentHash = if (nzb) null else (readTorrent(uri, name, false) as? DataResult.Success)?.data
                 ?.let { it as? AddRequest.TorrentFile }
                 ?.let { com.abhinavxt.debforge.domain.TorrentHash.fromTorrentFile(it.bytes) }
             scheduleCacheCheck()
@@ -412,7 +417,7 @@ class AddViewModel @Inject constructor(
     }
 
     fun clearTorrent() {
-        _state.update { it.copy(torrentUri = null, torrentName = null) }
+        _state.update { it.copy(torrentUri = null, torrentName = null, torrentIsNzb = false) }
         torrentHash = null
         scheduleCacheCheck()
     }
@@ -509,7 +514,7 @@ class AddViewModel @Inject constructor(
             val requests = parsed.requests.mapTo(mutableListOf()) { Nzb.route(it, p) }
 
             if (s.torrentUri != null) {
-                when (val file = readTorrent(s.torrentUri, s.torrentName ?: "file.torrent")) {
+                when (val file = readTorrent(s.torrentUri, s.torrentName ?: "file.torrent", s.torrentIsNzb)) {
                     is DataResult.Success -> requests += file.data
                     is DataResult.Error -> {
                         _state.update { it.copy(submitting = false, error = file.message) }
@@ -552,6 +557,9 @@ class AddViewModel @Inject constructor(
             var lastMessage = ""
             val failures = mutableListOf<String>()
             var notCached = 0
+            // What went through: a retry after a partial result must not send it again.
+            val addedKeys = mutableSetOf<String>()
+            var fileAdded = false
             // Links are not torrents or Usenet jobs: nothing to check the cache of.
             val cachedOnly = s.onlyIfCached && s.canOnlyIfCached
             requests.forEach { req ->
@@ -559,6 +567,12 @@ class AddViewModel @Inject constructor(
                 when (val r = result) {
                     is DataResult.Success -> {
                         added++
+                        when (req) {
+                            is AddRequest.Magnet -> addedKeys += req.uri
+                            is AddRequest.Link -> addedKeys += req.url
+                            is AddRequest.NzbLink -> addedKeys += req.url
+                            is AddRequest.TorrentFile, is AddRequest.NzbFile -> fileAdded = true
+                        }
                         directFiles += r.data.readyFiles.size
                         lastMessage = r.data.message
                         if (auto) {
@@ -574,8 +588,10 @@ class AddViewModel @Inject constructor(
                 }
             }
             if (notCached > 0) {
-                failures += if (notCached == requests.size) context.getString(R.string.add_not_cached, s.providerName)
-                else context.getString(R.string.add_not_cached_some, notCached, s.providerName)
+                // Names the switch that caused it.
+                val switchLabel = context.getString(R.string.add_only_if_cached, s.providerName)
+                failures += if (notCached == requests.size) context.getString(R.string.add_not_cached, s.providerName, switchLabel)
+                else context.getString(R.string.add_not_cached_some, notCached, s.providerName, switchLabel)
             }
 
             // Cached torrents are ready instantly — don't wait for the next poll.
@@ -594,9 +610,14 @@ class AddViewModel @Inject constructor(
                 resetForm()
             } else {
                 if (added > 0) events.notifyListChanged(context.getString(R.string.add_partial, added, requests.size))
+                if (fileAdded) torrentHash = null
                 _state.update {
                     it.copy(
                         submitting = false,
+                        text = AddInputParser.withoutAdded(it.text, addedKeys),
+                        torrentUri = if (fileAdded) null else it.torrentUri,
+                        torrentName = if (fileAdded) null else it.torrentName,
+                        torrentIsNzb = if (fileAdded) false else it.torrentIsNzb,
                         error = failures.distinct().joinToString("\n") +
                             if (added > 0) "\n" + context.getString(R.string.add_partial_suffix, added, requests.size) else ""
                     )
@@ -623,9 +644,10 @@ class AddViewModel @Inject constructor(
 
     // --- file helpers ------------------------------------------------------
 
-    private suspend fun readTorrent(uri: Uri, name: String): DataResult<AddRequest> =
+    private suspend fun readTorrent(uri: Uri, name: String, nzb: Boolean): DataResult<AddRequest> =
         withContext(Dispatchers.IO) {
             try {
+                if (nzb) return@withContext readNzb(uri, name)
                 val bytes = context.contentResolver.openInputStream(uri)?.use { input ->
                     // .torrent files are small; refuse anything absurd rather
                     // than reading it all into memory.
@@ -635,12 +657,6 @@ class AddViewModel @Inject constructor(
                     }
                     buf
                 } ?: return@withContext DataResult.Error(context.getString(R.string.add_err_open))
-                if (Nzb.isNzbName(name)) {
-                    if (!Nzb.looksLikeNzb(bytes)) {
-                        return@withContext DataResult.Error(context.getString(R.string.add_err_not_nzb, name))
-                    }
-                    return@withContext DataResult.Success(AddRequest.NzbFile(name, bytes))
-                }
                 // Bencoded torrents always start with 'd' (a dictionary).
                 if (bytes.isEmpty() || bytes[0] != 'd'.code.toByte()) {
                     return@withContext DataResult.Error(context.getString(R.string.add_err_not_torrent, name))
@@ -652,6 +668,34 @@ class AddViewModel @Inject constructor(
                 DataResult.Error(context.getString(R.string.add_err_permission))
             }
         }
+
+    /**
+     * Checks an .nzb without keeping it: one pass over the stream counts its
+     * size and keeps only the first 64 KB to sniff. The upload reads the file
+     * again, so memory use stays flat whatever the size.
+     */
+    private fun readNzb(uri: Uri, name: String): DataResult<AddRequest> {
+        val head = ByteArray(Nzb.SNIFF_BYTES)
+        var headLen = 0
+        var total = 0L
+        val buf = ByteArray(64 * 1024)
+        context.contentResolver.openInputStream(uri)?.use { input ->
+            while (true) {
+                val n = input.read(buf)
+                if (n < 0) break
+                val take = minOf(n, head.size - headLen)
+                if (take > 0) { System.arraycopy(buf, 0, head, headLen, take); headLen += take }
+                total += n
+                if (total > Nzb.MAX_BYTES) return DataResult.Error(context.getString(R.string.add_err_nzb_too_large, name))
+            }
+        } ?: return DataResult.Error(context.getString(R.string.add_err_open))
+        val sniffed = head.copyOf(headLen)
+        if (Nzb.isGzip(sniffed)) return DataResult.Error(context.getString(R.string.add_err_nzb_gzip, name))
+        if (!Nzb.looksLikeNzb(sniffed)) return DataResult.Error(context.getString(R.string.add_err_not_nzb, name))
+        return DataResult.Success(AddRequest.NzbFile(name, total) {
+            context.contentResolver.openInputStream(uri) ?: throw IOException(context.getString(R.string.add_err_open))
+        })
+    }
 
     private fun displayName(uri: Uri): String? = runCatching {
         context.contentResolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)

@@ -17,8 +17,8 @@ sealed interface AddRequest {
         override val kind get() = AddKind.TORRENT_FILE
     }
 
-    /** Raw .nzb contents (Usenet). */
-    class NzbFile(val name: String, val bytes: ByteArray) : AddRequest {
+    /** An .nzb file (Usenet), streamed from [open] when sent: up to [Nzb.MAX_BYTES], never held in memory. */
+    class NzbFile(val name: String, val size: Long, val open: () -> java.io.InputStream) : AddRequest {
         override val kind get() = AddKind.NZB_FILE
     }
 
@@ -44,9 +44,28 @@ object Nzb {
 
     fun isNzbName(name: String?): Boolean = name?.endsWith(".nzb", ignoreCase = true) == true
 
-    /** Cheap sniff, no XML parsing of untrusted content: an <nzb root tag in the first bytes. */
-    fun looksLikeNzb(bytes: ByteArray): Boolean =
-        String(bytes, 0, minOf(bytes.size, 4096), Charsets.ISO_8859_1).contains("<nzb", ignoreCase = true)
+    const val MAX_BYTES = 50L * 1024 * 1024
+    /** How much of the start is searched for the root tag (long comments and DOCTYPEs come first). */
+    const val SNIFF_BYTES = 64 * 1024
+
+    /**
+     * Cheap sniff of the start of a file, no XML parsing of untrusted content:
+     * an <nzb root tag, after an optional UTF-8 or UTF-16 byte order mark.
+     */
+    fun looksLikeNzb(head: ByteArray): Boolean {
+        val n = minOf(head.size, SNIFF_BYTES)
+        fun at(i: Int) = if (i < n) head[i].toInt() and 0xFF else -1
+        val text = when {
+            at(0) == 0xFF && at(1) == 0xFE -> String(head, 2, n - 2, Charsets.UTF_16LE)
+            at(0) == 0xFE && at(1) == 0xFF -> String(head, 2, n - 2, Charsets.UTF_16BE)
+            at(0) == 0xEF && at(1) == 0xBB && at(2) == 0xBF -> String(head, 3, n - 3, Charsets.ISO_8859_1)
+            else -> String(head, 0, n, Charsets.ISO_8859_1)
+        }
+        return text.contains("<nzb", ignoreCase = true)
+    }
+
+    /** gzip magic: some indexers hand out .nzb.gz; TorBox wants plain XML. */
+    fun isGzip(head: ByteArray): Boolean = head.size >= 2 && head[0] == 0x1F.toByte() && head[1] == 0x8B.toByte()
 
     /** Only a service that takes Usenet sends .nzb links there; for others a link stays a link. */
     fun route(request: AddRequest, provider: ProviderId): AddRequest =
@@ -64,6 +83,16 @@ object AddInputParser {
     data class Parsed(val requests: List<AddRequest>, val ignored: List<String>)
 
     private val SPLIT = Regex("""\s+""")
+
+    /**
+     * [text] without the magnets and links in [added] (their exact text), so a
+     * retry after a partial result can't add them twice. Other lines stay.
+     */
+    fun withoutAdded(text: String, added: Set<String>): String =
+        text.split(SPLIT).filter { raw ->
+            val token = raw.trim().trim('<', '>', '"', '\'')
+            raw.isNotBlank() && token !in added
+        }.joinToString("\n")
 
     fun parse(text: String): Parsed {
         val requests = mutableListOf<AddRequest>()

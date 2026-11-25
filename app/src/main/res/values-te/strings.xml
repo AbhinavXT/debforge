@@ -40,8 +40,8 @@
     <string name="add_remove_file">ఫైల్‌ను తీసివేయి</string>
     <string name="add_auto_download">సిద్ధమైన వెంటనే ఈ ఫోన్‌కు ఆటోమేటిక్‌గా డౌన్‌లోడ్ చేయి</string>
     <string name="add_only_if_cached">%1$s లో కాష్‌లో ఉంటేనే జోడించు</string>
-    <string name="add_not_cached">%1$s లో కాష్‌లో లేదు, ఏదీ జోడించలేదు</string>
-    <string name="add_not_cached_some">%2$s లో కాష్‌లో లేనివి: %1$d, జోడించలేదు</string>
+    <string name="add_not_cached">%1$s లో కాష్‌లో లేదు, ఏదీ జోడించలేదు. \"%2$s\" ఆన్‌లో ఉంది.</string>
+    <string name="add_not_cached_some">%2$s లో కాష్‌లో లేనివి: %1$d, జోడించలేదు. \"%3$s\" ఆన్‌లో ఉంది.</string>
     <string name="add_needs_storage">ముందుగా డౌన్‌లోడ్ ఫోల్డర్‌ను ఎంచుకోండి.</string>
     <string name="add_hint_both">మాగ్నెట్ లింక్‌లు లేదా URLలు, ఒక్కో లైన్‌కు ఒకటి</string>
     <string name="add_hint_magnet">మాగ్నెట్ లింక్‌లు, ఒక్కో లైన్‌కు ఒకటి</string>
@@ -267,6 +267,8 @@
     <string name="add_err_open">ఫైల్‌ను తెరవలేకపోయాం</string>
     <string name="add_err_not_torrent">%1$s .torrent ఫైల్‌లా కనిపించడం లేదు</string>
     <string name="add_err_not_nzb">%1$s .nzb ఫైల్‌లా కనిపించడం లేదు</string>
+    <string name="add_err_nzb_too_large">%1$s 50 MB కంటే పెద్దది</string>
+    <string name="add_err_nzb_gzip">%1$s కుదించబడింది (.gz). ముందు సాధారణ .nzb గా తెరవండి</string>
     <string name="add_err_read">ఫైల్‌ను చదవలేకపోయాం: %1$s</string>
     <string name="add_err_permission">ఆ ఫైల్‌ను చదవడానికి అనుమతి లేదు — మళ్లీ ఎంచుకుని చూడండి</string>
     <plurals name="n_episodes">

@@ -40,8 +40,8 @@
     <string name="add_remove_file">Hapus file</string>
     <string name="add_auto_download">Unduh otomatis ke ponsel ini saat siap</string>
     <string name="add_only_if_cached">Tambahkan hanya jika ada di cache %1$s</string>
-    <string name="add_not_cached">Tidak ada di cache %1$s, tidak ada yang ditambahkan</string>
-    <string name="add_not_cached_some">%1$d tidak ada di cache %2$s, tidak ditambahkan</string>
+    <string name="add_not_cached">Tidak ada di cache %1$s, tidak ada yang ditambahkan. \"%2$s\" sedang aktif.</string>
+    <string name="add_not_cached_some">%1$d tidak ada di cache %2$s, tidak ditambahkan. \"%3$s\" sedang aktif.</string>
     <string name="add_needs_storage">Pilih folder unduhan terlebih dahulu.</string>
     <string name="add_hint_both">Link magnet atau URL, satu per baris</string>
     <string name="add_hint_magnet">Link magnet, satu per baris</string>
@@ -264,6 +264,8 @@
     <string name="add_err_open">Tidak dapat membuka file</string>
     <string name="add_err_not_torrent">%1$s sepertinya bukan file .torrent</string>
     <string name="add_err_not_nzb">%1$s sepertinya bukan file .nzb</string>
+    <string name="add_err_nzb_too_large">%1$s lebih besar dari 50 MB</string>
+    <string name="add_err_nzb_gzip">%1$s terkompresi (.gz). Ekstrak dulu menjadi .nzb biasa</string>
     <string name="add_err_read">Tidak dapat membaca file: %1$s</string>
     <string name="add_err_permission">Tidak ada izin untuk membaca file tersebut — coba pilih lagi</string>
     <plurals name="n_episodes">

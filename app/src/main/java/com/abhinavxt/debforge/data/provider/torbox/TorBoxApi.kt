@@ -185,10 +185,31 @@ interface TorBoxApi {
     }
 }
 
-/** The "detail" text of a TorBox error body, or null. Regex: the body is untrusted and tiny. */
-internal fun tbRejectionDetail(body: String?): String? =
-    body?.let { Regex(""""detail"\s*:\s*"((?:[^"\\]|\\.)*)"""").find(it)?.groupValues?.get(1) }
-        ?.replace("\\\"", "\"")?.trim()?.takeIf { it.isNotEmpty() }
+/** A TorBox error body: its machine code and human text. */
+internal class TbError(val code: String?, val detail: String?)
 
-/** TorBox's refusal to an add made with add_only_if_cached (404 DOWNLOAD_NOT_CACHED). */
-internal fun tbIsNotCached(body: String?): Boolean = body?.contains("\"DOWNLOAD_NOT_CACHED\"") == true
+/** Parses an error body (untrusted, so capped and fail-soft); null if it isn't TorBox's JSON. */
+internal fun tbError(body: String?): TbError? {
+    val map = runCatching {
+        com.squareup.moshi.Moshi.Builder().build().adapter(Any::class.java).fromJson(body.orEmpty().take(65_536))
+    }.getOrNull() as? Map<*, *> ?: return null
+    if (map["success"] == null && map["error"] == null && map["detail"] == null) return null
+    return TbError((map["error"] as? String)?.trim(), tbCleanDetail(map["detail"] as? String))
+}
+
+/** One line, no control characters, at most ~200 chars. */
+internal fun tbCleanDetail(raw: String?): String? =
+    raw?.map { if (it.isISOControl()) ' ' else it }?.joinToString("")
+        ?.replace(Regex("\\s+"), " ")?.trim()?.take(200)?.takeIf { it.isNotEmpty() }
+
+/**
+ * TorBox's own text for a refused add (plan without Usenet, feature limits),
+ * or null to keep the app's friendly messages: 401, auth/token errors, 429 and 5xx.
+ */
+internal fun tbRefusalDetail(httpCode: Int, body: String?): String? {
+    if (httpCode == 401 || httpCode == 429 || httpCode >= 500) return null
+    val e = tbError(body) ?: return null
+    val code = e.code.orEmpty().uppercase()
+    if ("TOKEN" in code || "AUTH" in code) return null
+    return e.detail
+}
