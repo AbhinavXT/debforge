@@ -67,4 +67,17 @@ class DownloadActionReceiverTest {
         assertEquals(false, DownloadNotifications.shouldPost(1000, 1999, p(0.5f)))
         assertEquals(true, DownloadNotifications.shouldPost(1000, 2000, p(0.5f)))
     }
+
+    private val ask = CancelAsk(listOf("a"), listOf("A.mkv"))
+
+    @Test fun questionHoldsWhileAskedFileIsActive() =
+        assertEquals(ask, DownloadNotifications.effectiveAsk(ask, "a"))
+
+    @Test fun questionVanishesWhenAnotherFileTakesOver() =
+        assertEquals(null, DownloadNotifications.effectiveAsk(ask, "b"))
+
+    @Test fun questionVanishesWhenNothingIsActiveOrAsked() {
+        assertEquals(null, DownloadNotifications.effectiveAsk(ask, null))
+        assertEquals(null, DownloadNotifications.effectiveAsk(null, "a"))
+    }
 }

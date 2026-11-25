@@ -41,13 +41,13 @@ class DownloadActionReceiver : BroadcastReceiver() {
                     }
                     NotifStep.ASK_CANCEL -> {
                         val running = controller.running()
-                        if (running.isNotEmpty()) DownloadNotifications.notifyCancelAsk(context, running)
+                        if (running.isNotEmpty()) DownloadNotifications.cancelAsk.value = CancelAsk(running.map { it.first }, running.map { it.second })
                     }
                     NotifStep.CANCEL_RUNNING -> {
-                        DownloadNotifications.dismissCancelAsk(context)
+                        DownloadNotifications.cancelAsk.value = null
                         controller.cancelAsked(intent.getStringArrayExtra(EXTRA_IDS)?.toList().orEmpty())
                     }
-                    NotifStep.KEEP -> DownloadNotifications.dismissCancelAsk(context)
+                    NotifStep.KEEP -> DownloadNotifications.cancelAsk.value = null
                     NotifStep.IGNORE -> Unit
                 }
             } finally {

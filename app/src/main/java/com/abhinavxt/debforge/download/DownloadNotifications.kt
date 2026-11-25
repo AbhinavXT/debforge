@@ -16,6 +16,9 @@ import com.abhinavxt.debforge.domain.DownloadProgress
 import com.abhinavxt.debforge.domain.DownloadState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
@@ -23,6 +26,9 @@ import kotlinx.coroutines.launch
  * Notification building shared by both queue hosts ([DownloadJobService] and
  * [DownloadService]) so the user sees the same thing whichever one runs.
  */
+/** What the ongoing notification is asking to cancel: ids captured at the tap, and their names for the title. */
+data class CancelAsk(val ids: List<String>, val names: List<String>)
+
 object DownloadNotifications {
 
     const val CHANNEL_ID = "debforge_downloads"
@@ -35,12 +41,14 @@ object DownloadNotifications {
     private const val STOPPED_ID = 1005
     private const val STORAGE_ID = 1006
     private const val PAUSED_ID = 1007
-    private const val CANCEL_ASK_ID = 1008
     private const val CANCEL_ASK_TIMEOUT_MS = 30_000L
 
     // Built once: ongoing() runs on every progress update.
     @Volatile private var pauseIntent: PendingIntent? = null
     @Volatile private var cancelAskIntent: PendingIntent? = null
+
+    /** Set by Cancel on the ongoing notification; [observe] turns the notification into the question while it is set. */
+    val cancelAsk = MutableStateFlow<CancelAsk?>(null)
 
     fun ensureChannel(context: Context) {
         val nm = context.getSystemService(NotificationManager::class.java)
@@ -55,7 +63,7 @@ object DownloadNotifications {
      * Ongoing progress notification. Filename as title; body is percent +
      * speed, "Waiting for network", or "Preparing" before the first file.
      */
-    fun ongoing(context: Context, progress: DownloadProgress?, filename: String?): Notification {
+    fun ongoing(context: Context, progress: DownloadProgress?, filename: String?, ask: CancelAsk? = null): Notification {
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification_download)
             .setOngoing(true)
@@ -63,8 +71,20 @@ object DownloadNotifications {
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setContentIntent(openAppIntent(context))
             .setContentTitle(filename ?: "DebForge")
-            .addAction(0, context.getString(R.string.notif_act_pause), pauseIntent ?: actionIntent(context, DownloadActionReceiver.ACTION_PAUSE, 10).also { pauseIntent = it })
-            .addAction(0, context.getString(R.string.notif_act_cancel), cancelAskIntent ?: actionIntent(context, DownloadActionReceiver.ACTION_CANCEL_ASK, 11).also { cancelAskIntent = it })
+        if (ask == null) {
+            builder
+                .addAction(0, context.getString(R.string.notif_act_pause), pauseIntent ?: actionIntent(context, DownloadActionReceiver.ACTION_PAUSE, 10).also { pauseIntent = it })
+                .addAction(0, context.getString(R.string.notif_act_cancel), cancelAskIntent ?: actionIntent(context, DownloadActionReceiver.ACTION_CANCEL_ASK, 11).also { cancelAskIntent = it })
+        } else {
+            // Yes carries only the ids captured when Cancel was tapped.
+            builder
+                .setContentTitle(
+                    if (ask.names.size == 1) context.getString(R.string.notif_cancel_title_one, ask.names.first())
+                    else context.resources.getQuantityString(R.plurals.notif_cancel_title_many, ask.names.size, ask.names.size)
+                )
+                .addAction(0, context.getString(R.string.notif_act_yes), actionIntent(context, DownloadActionReceiver.ACTION_CANCEL_YES, 12, ask.ids))
+                .addAction(0, context.getString(R.string.notif_act_keep), actionIntent(context, DownloadActionReceiver.ACTION_KEEP, 13))
+        }
 
         var percent: Int? = null
         when {
@@ -87,6 +107,7 @@ object DownloadNotifications {
                     .setProgress(100, pct, false)
             }
         }
+        if (ask != null) builder.setContentText(context.getString(R.string.notif_cancel_body))
         val n = builder.build()
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.BAKLAVA) return n
         // Never let a missing or changed API on some 16.x build take the download down: fall back to the plain one.
@@ -138,28 +159,6 @@ object DownloadNotifications {
             AppActions.intent(context, AppActions.RESUME_IDS).putExtra(AppActions.EXTRA_IDS, ids.toTypedArray()),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
-
-    /** Second step of Cancel: nothing is discarded unless the user taps Yes. Times out on its own. */
-    fun notifyCancelAsk(context: Context, running: List<Pair<String, String>>) {
-        ensureChannel(context)
-        val n = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_notification_download)
-            .setContentTitle(
-                if (running.size == 1) context.getString(R.string.notif_cancel_title_one, running.first().second)
-                else context.resources.getQuantityString(R.plurals.notif_cancel_title_many, running.size, running.size)
-            )
-            .setContentText(context.getString(R.string.notif_cancel_body))
-            .setTimeoutAfter(CANCEL_ASK_TIMEOUT_MS)
-            .setAutoCancel(true)
-            .addAction(0, context.getString(R.string.notif_act_yes), actionIntent(context, DownloadActionReceiver.ACTION_CANCEL_YES, 12, running.map { it.first }))
-            .addAction(0, context.getString(R.string.notif_act_keep), actionIntent(context, DownloadActionReceiver.ACTION_KEEP, 13))
-            .build()
-        runCatching { context.getSystemService(NotificationManager::class.java).notify(CANCEL_ASK_ID, n) }
-    }
-
-    fun dismissCancelAsk(context: Context) {
-        runCatching { context.getSystemService(NotificationManager::class.java).cancel(CANCEL_ASK_ID) }
-    }
 
     /** Broadcast to our own non-exported receiver; the request code keeps one PendingIntent per button. */
     private fun actionIntent(context: Context, action: String, requestCode: Int, ids: List<String>? = null): PendingIntent =
@@ -327,21 +326,38 @@ object DownloadNotifications {
         runCatching { nm.cancel(STOPPED_ID); nm.cancel(INFO_ID) }
         var lastId: String? = null
         var lastAt = 0L
-        combine(runner.active, tracker.progress) { active, map -> active to map }
-            .collect { (active, map) ->
-                val active1 = active ?: return@collect
-                val p = map[active1.id]
-                if (p == null || p.state == DownloadState.DOWNLOADING) {
-                    val now = android.os.SystemClock.elapsedRealtime()
-                    if (!shouldPost(if (active1.id == lastId) lastAt else null, now, p)) return@collect
-                    lastId = active1.id
-                    lastAt = now
-                    // notify() can throw SecurityException if the user revoked
-                    // notifications mid-run; the download must not die for it.
-                    runCatching { nm.notify(ONGOING_ID, ongoing(context, p, active1.filename)) }
+        var lastAsk: CancelAsk? = null
+        cancelAsk.value = null
+        // The question lapses by itself after a while.
+        launch { cancelAsk.collectLatest { if (it != null) { delay(CANCEL_ASK_TIMEOUT_MS); cancelAsk.compareAndSet(it, null) } } }
+        try {
+            combine(runner.active, tracker.progress, cancelAsk) { active, map, ask -> Triple(active, map, ask) }
+                .collect { (active, map, askRaw) ->
+                    // The question is about specific downloads: once they are gone it must not apply to the next one.
+                    val ask = effectiveAsk(askRaw, active?.id)
+                    if (askRaw != null && ask == null) cancelAsk.compareAndSet(askRaw, null)
+                    val active1 = active ?: return@collect
+                    val p = map[active1.id]
+                    val askChanged = ask != lastAsk
+                    if (askChanged || p == null || p.state == DownloadState.DOWNLOADING) {
+                        val now = android.os.SystemClock.elapsedRealtime()
+                        if (!askChanged && !shouldPost(if (active1.id == lastId) lastAt else null, now, p)) return@collect
+                        lastId = active1.id
+                        lastAt = now
+                        lastAsk = ask
+                        // notify() can throw SecurityException if the user revoked
+                        // notifications mid-run; the download must not die for it.
+                        runCatching { nm.notify(ONGOING_ID, ongoing(context, p, active1.filename, ask)) }
+                    }
                 }
-            }
+        } finally {
+            cancelAsk.value = null
+        }
     }
+
+    /** The asked-about downloads, as long as one of them is still the active file. */
+    internal fun effectiveAsk(ask: CancelAsk?, activeId: String?): CancelAsk? =
+        ask?.takeIf { activeId != null && activeId in it.ids }
 
     /** Progress ticks are throttled to ~1/s; the first update, the end, and state changes always go through. */
     internal fun shouldPost(lastAtMs: Long?, nowMs: Long, p: DownloadProgress?): Boolean =
