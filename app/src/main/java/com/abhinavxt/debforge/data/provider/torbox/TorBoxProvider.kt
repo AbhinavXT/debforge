@@ -102,16 +102,26 @@ class TorBoxProvider @Inject constructor(
 
     private val snapshotLock = kotlinx.coroutines.sync.Mutex()
     @Volatile private var snapshot: Snapshot? = null
+    /** When DebForge last added or removed something: older snapshots are out of date. */
+    @Volatile private var changedAt = Long.MIN_VALUE
+
+    /** Runs a change to the account. Counts as changed even on failure: TorBox may have done it anyway. */
+    private suspend fun <T> changing(block: suspend () -> T): T = try {
+        block()
+    } finally {
+        changedAt = android.os.SystemClock.elapsedRealtime()
+    }
 
     /**
      * Every torrent, usenet job and web download, newest first. [fresh] reads
      * TorBox again (bypassing its cache), except within a few seconds of the
-     * last read, so a refresh that loads page 1 and the processing strip
-     * together costs one round of requests, not two.
+     * last read (unless an add or remove happened since that read began), so a
+     * refresh that loads page 1 and the processing strip together costs one
+     * round of requests, not two.
      */
     private suspend fun allItems(fresh: Boolean): List<Pair<Kind, TbItemDto>> = snapshotLock.withLock {
         val now = android.os.SystemClock.elapsedRealtime()
-        snapshot?.let { s -> if (!fresh || now - s.takenAt < SNAPSHOT_REUSE_MS) return@withLock s.items }
+        snapshot?.let { s -> if (!fresh || (s.takenAt > changedAt && now - s.takenAt < SNAPSHOT_REUSE_MS)) return@withLock s.items }
         val items = coroutineScope {
             val torrents = async { fetchAll { off, lim -> api.torrents(off, lim, true).unwrapList() } }
             // Usenet / web downloads are secondary: a failure there (plan
@@ -164,17 +174,24 @@ class TorBoxProvider @Inject constructor(
         null
     }
 
-    /** One list in [FETCH_LIMIT]-sized requests until a short one (capped). */
+    /**
+     * One list until a short page (capped). Small pages first: TorBox ignores
+     * `bypass_cache` for limits around 500-1000 and serves a list that is
+     * minutes old (measured 2026-11-25; 100 and below were always fresh).
+     */
+    // shortcut: items past FRESH_ITEMS may be minutes old, until TorBox fixes bypass_cache for large limits.
     private suspend fun fetchAll(page: suspend (offset: Int, limit: Int) -> List<TbItemDto>): List<TbItemDto> {
         val out = ArrayList<TbItemDto>()
         var offset = 0
         while (offset < MAX_ITEMS) {
-            val batch = page(offset, FETCH_LIMIT)
+            val limit = if (offset < FRESH_ITEMS) FRESH_LIMIT else FETCH_LIMIT
+            val batch = page(offset, limit)
             out += batch
-            if (batch.size < FETCH_LIMIT) break
-            offset += FETCH_LIMIT
+            if (batch.size < limit) break
+            offset += limit
         }
-        return out
+        // The list can shift between two page requests.
+        return out.distinctBy { it.id }
     }
 
     private fun TbItemDto.isReady() = TorBoxStatus.isReady(downloadPresent, downloadFinished, downloadState)
@@ -245,18 +262,20 @@ class TorBoxProvider @Inject constructor(
 
     override suspend fun add(request: AddRequest): AddResult {
         val text = "text/plain".toMediaType()
-        val envelope = when (request) {
-            is AddRequest.Magnet ->
-                api.createTorrentFromMagnet(request.uri.toRequestBody(text))
-            is AddRequest.TorrentFile -> api.createTorrentFromFile(
-                MultipartBody.Part.createFormData(
-                    "file",
-                    request.name,
-                    request.bytes.toRequestBody("application/x-bittorrent".toMediaType())
+        val envelope = changing {
+            when (request) {
+                is AddRequest.Magnet ->
+                    api.createTorrentFromMagnet(request.uri.toRequestBody(text))
+                is AddRequest.TorrentFile -> api.createTorrentFromFile(
+                    MultipartBody.Part.createFormData(
+                        "file",
+                        request.name,
+                        request.bytes.toRequestBody("application/x-bittorrent".toMediaType())
+                    )
                 )
-            )
-            is AddRequest.Link ->
-                api.createWebDownload(request.url.toRequestBody(text))
+                is AddRequest.Link ->
+                    api.createWebDownload(request.url.toRequestBody(text))
+            }
         }
         if (!envelope.success) {
             throw ProviderException("TorBox: ${envelope.detail ?: envelope.error ?: "couldn't add"}")
@@ -323,10 +342,12 @@ class TorBoxProvider @Inject constructor(
 
     override suspend fun remove(key: String) {
         val (kind, id) = parseJobRef(key) ?: throw ProviderException("Corrupt TorBox reference: $key")
-        val envelope = when (kind) {
-            Kind.TORRENT -> api.controlTorrent(TbTorrentControl(id))
-            Kind.USENET -> api.controlUsenet(TbUsenetControl(id))
-            Kind.WEB -> api.controlWebDownload(TbWebControl(id))
+        val envelope = changing {
+            when (kind) {
+                Kind.TORRENT -> api.controlTorrent(TbTorrentControl(id))
+                Kind.USENET -> api.controlUsenet(TbUsenetControl(id))
+                Kind.WEB -> api.controlWebDownload(TbWebControl(id))
+            }
         }
         if (!envelope.success) {
             throw ProviderException("TorBox: ${envelope.detail ?: envelope.error ?: "couldn't delete"}")
@@ -441,7 +462,10 @@ class TorBoxProvider @Inject constructor(
         /** sourceRef prefix for whole-item zip downloads: "zip:torrent:123". */
         const val ZIP_PREFIX = "zip:"
 
-        /** Items per `mylist` request when reading the whole account. */
+        /** Largest `mylist` page known to honour `bypass_cache`, used for the first [FRESH_ITEMS]. */
+        const val FRESH_LIMIT = 100
+        const val FRESH_ITEMS = 1000
+        /** Items per `mylist` request after that. */
         const val FETCH_LIMIT = 1000
         /** Safety cap per list (very large accounts). */
         const val MAX_ITEMS = 20_000

@@ -48,6 +48,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import javax.inject.Inject
 
 /**
@@ -538,7 +539,12 @@ class BrowseViewModel @Inject constructor(
         }
         while (true) {
             val busy = _processing.value.isNotEmpty() || watchedJobs.value.isNotEmpty()
-            delay(if (busy) BUSY_POLL_MS else IDLE_POLL_MS)
+            if (busy) delay(BUSY_POLL_MS)
+            // Something added meanwhile cuts the idle wait short.
+            else withTimeoutOrNull(IDLE_POLL_MS) {
+                combine(_processing, watchedJobs) { p, w -> p.isNotEmpty() || w.isNotEmpty() }.first { it }
+                delay(BUSY_POLL_MS)
+            }
             val finished = updateProcessing()
             val ready = if (watchedJobs.value.isNotEmpty()) watcher.checkNow(fromBackground = false) else emptyList()
             if (ready.isNotEmpty()) {
