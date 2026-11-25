@@ -1,0 +1,5 @@
+• New Home tab: continue watching and listening, recently added, downloads, new episodes
+• Choose and reorder the bottom tabs, and pick the start tab
+• Settings are now grouped into pages, with search
+• Poster size: small, medium or large
+• Fixed: the keyboard opening by itself in Discover, and the cut-off selection bar
