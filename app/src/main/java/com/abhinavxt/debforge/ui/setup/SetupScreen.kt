@@ -122,7 +122,8 @@ fun SetupScreen(viewModel: SetupViewModel = hiltViewModel()) {
                 color = cs.onSurface
             )
             Text(
-                text = stringResource(R.string.setup_intro, serviceName, tokenLabel),
+                text = if (state.deviceLoginAvailable) stringResource(R.string.setup_intro_sign_in, serviceName)
+                else stringResource(R.string.setup_intro, serviceName, tokenLabel),
                 style = MaterialTheme.typography.bodyLarge,
                 color = cs.onSurfaceVariant
             )
@@ -211,7 +212,7 @@ fun SetupScreen(viewModel: SetupViewModel = hiltViewModel()) {
             ) {
                 if (state.isValidating) {
                     CircularProgressIndicator(
-                        modifier = Modifier.height(20.dp),
+                        modifier = Modifier.size(20.dp),
                         strokeWidth = 2.dp,
                         color = androidx.compose.material3.LocalContentColor.current
                     )
@@ -269,7 +270,7 @@ private fun DeviceLoginBlock(
         ) {
             if (state.startingDeviceLogin) {
                 CircularProgressIndicator(
-                    modifier = Modifier.height(20.dp),
+                    modifier = Modifier.size(20.dp),
                     strokeWidth = 2.dp,
                     color = androidx.compose.material3.LocalContentColor.current
                 )
@@ -310,7 +311,7 @@ private fun DeviceLoginBlock(
                 Text(stringResource(R.string.setup_open_service, serviceName))
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
-                CircularProgressIndicator(modifier = Modifier.height(16.dp), strokeWidth = 2.dp)
+                CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
                 Text(
                     "  " + stringResource(R.string.setup_waiting_approval),
                     style = MaterialTheme.typography.bodySmall,
