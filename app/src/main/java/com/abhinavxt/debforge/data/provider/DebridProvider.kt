@@ -54,6 +54,13 @@ interface DebridProvider {
     suspend fun add(request: AddRequest): AddResult =
         throw ProviderException("${info.displayName} doesn't support adding ${request.kind.label}")
 
+    /** True if [addOnlyIfCached] works (TorBox). */
+    val canAddOnlyIfCached: Boolean get() = false
+
+    /** Like [add], but adds nothing unless the service already has it cached; throws [NotCachedException] otherwise. */
+    suspend fun addOnlyIfCached(request: AddRequest): AddResult =
+        throw ProviderException("${info.displayName} can't add only what is cached")
+
     // --- optional: jobs still being fetched by the service ------------------
 
     /** Torrents / jobs the service is still fetching (not downloadable yet). */
@@ -249,6 +256,9 @@ data class ResolvedLink(
 
 /** An API-level failure with a message that is safe to show the user. */
 open class ProviderException(message: String, cause: Throwable? = null) : Exception(message, cause)
+
+/** "Add only if cached" found nothing cached: the service added nothing. */
+class NotCachedException(message: String) : ProviderException(message)
 
 /** A job the service gave up on (error or cancelled); it will never become ready. */
 class JobFailedException(message: String) : ProviderException(message)

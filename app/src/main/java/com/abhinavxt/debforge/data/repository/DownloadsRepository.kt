@@ -55,6 +55,14 @@ class DownloadsRepository @Inject constructor(
         return ProviderCalls.run(p.info, "adding ${request.kind.label}") { p.add(request) }
     }
 
+    fun canAddOnlyIfCached(provider: ProviderId): Boolean = registry[provider].canAddOnlyIfCached
+
+    /** A [NotCachedException] cause on the error means the service had it uncached and added nothing. */
+    suspend fun addOnlyIfCached(provider: ProviderId, request: AddRequest): DataResult<AddResult> {
+        val p = registry[provider]
+        return ProviderCalls.run(p.info, "adding ${request.kind.label}") { p.addOnlyIfCached(request) }
+    }
+
     suspend fun listProcessing(provider: ProviderId): DataResult<List<RemoteJob>> {
         val p = registry[provider]
         return ProviderCalls.run(p.info, "checking active jobs") { p.listProcessing() }

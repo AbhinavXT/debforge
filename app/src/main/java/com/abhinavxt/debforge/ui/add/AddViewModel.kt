@@ -11,6 +11,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.abhinavxt.debforge.data.repository.AuthRepository
 import com.abhinavxt.debforge.data.repository.DownloadsRepository
+import com.abhinavxt.debforge.data.provider.NotCachedException
 import com.abhinavxt.debforge.data.provider.ProviderException
 import com.abhinavxt.debforge.data.provider.direct.DirectLinks
 import com.abhinavxt.debforge.domain.DownloadItem
@@ -82,6 +83,10 @@ data class AddUiState(
     val error: String? = null,
     /** Queue the files automatically once the service has them. */
     val autoDownload: Boolean = true,
+    /** Add only what the service already has cached (remembered in settings). */
+    val onlyIfCached: Boolean = false,
+    /** The target can do that (TorBox) and checks the cache, so the switch is shown. */
+    val canOnlyIfCached: Boolean = false,
     /** Current download folder is writable (permission / app storage). */
     val canWriteStorage: Boolean = true,
     /** Cache status of the pasted magnets / picked file; null = nothing to check or unsupported. */
@@ -178,6 +183,7 @@ class AddViewModel @Inject constructor(
     /** Where this dialog sends to; picked by [ServicePicker] unless the user tapped one. */
     private var target: ProviderId? = null
     private var userPickedTarget = false
+    private var onlyIfCached = false
 
     // --- instant-availability check -------------------------------------------
     private var torrentHash: String? = null
@@ -280,6 +286,7 @@ class AddViewModel @Inject constructor(
                 targetIsSuggestion = !userPickedTarget && picked != active,
                 isDirect = picked == ProviderId.DIRECT,
                 directSuggested = !userPickedTarget && picked == ProviderId.DIRECT,
+                canOnlyIfCached = repository.canAddOnlyIfCached(picked) && repository.supportsCacheCheck(picked),
                 activeName = auth.info(active).displayName,
                 activeCanTake = targets.firstOrNull { t -> t.id == active }?.supportsInput != false,
                 cache = chosen.cache
@@ -313,6 +320,12 @@ class AddViewModel @Inject constructor(
     }
 
     init {
+        viewModelScope.launch {
+            settings.addOnlyIfCachedFlow.collect { v ->
+                onlyIfCached = v
+                _state.update { it.copy(onlyIfCached = v) }
+            }
+        }
         // One collector for both inputs: an intent that arrived before the
         // provider was known (e.g. a magnet tapped before sign-in) is still
         // delivered the moment a signed-in provider appears.
@@ -370,7 +383,7 @@ class AddViewModel @Inject constructor(
     private fun resetForm() {
         userPickedTarget = false
         target = null
-        _state.value = AddUiState()
+        _state.value = AddUiState(onlyIfCached = onlyIfCached)
         refreshTargets()
     }
 
@@ -393,6 +406,10 @@ class AddViewModel @Inject constructor(
     }
 
     fun onAutoDownloadChange(value: Boolean) = _state.update { it.copy(autoDownload = value) }
+
+    fun onOnlyIfCachedChange(value: Boolean) {
+        viewModelScope.launch { settings.setAddOnlyIfCached(value) }
+    }
 
     fun clearTorrent() {
         _state.update { it.copy(torrentUri = null, torrentName = null) }
@@ -534,8 +551,12 @@ class AddViewModel @Inject constructor(
             var directFiles = 0
             var lastMessage = ""
             val failures = mutableListOf<String>()
+            var notCached = 0
+            // Links are not torrents or Usenet jobs: nothing to check the cache of.
+            val cachedOnly = s.onlyIfCached && s.canOnlyIfCached
             requests.forEach { req ->
-                when (val r = repository.add(p, req)) {
+                val result = if (cachedOnly && req !is AddRequest.Link) repository.addOnlyIfCached(p, req) else repository.add(p, req)
+                when (val r = result) {
                     is DataResult.Success -> {
                         added++
                         directFiles += r.data.readyFiles.size
@@ -549,8 +570,12 @@ class AddViewModel @Inject constructor(
                             r.data.jobRef?.let { ref -> watcher.watch(p, ref, displayNameFor(req)) }
                         }
                     }
-                    is DataResult.Error -> failures += r.message
+                    is DataResult.Error -> if (r.cause is NotCachedException) notCached++ else failures += r.message
                 }
+            }
+            if (notCached > 0) {
+                failures += if (notCached == requests.size) context.getString(R.string.add_not_cached, s.providerName)
+                else context.getString(R.string.add_not_cached_some, notCached, s.providerName)
             }
 
             // Cached torrents are ready instantly — don't wait for the next poll.

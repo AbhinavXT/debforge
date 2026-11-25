@@ -39,6 +39,9 @@
     <string name="add_choose_torrent">Choisir un fichier .torrent ou .nzb</string>
     <string name="add_remove_file">Retirer le fichier</string>
     <string name="add_auto_download">Télécharger automatiquement sur ce téléphone dès que c\'est prêt</string>
+    <string name="add_only_if_cached">Ajouter seulement si en cache sur %1$s</string>
+    <string name="add_not_cached">Pas en cache sur %1$s, rien n\'a été ajouté</string>
+    <string name="add_not_cached_some">%1$d pas en cache sur %2$s, non ajoutés</string>
     <string name="add_needs_storage">Choisissez d\'abord un dossier de téléchargement.</string>
     <string name="add_hint_both">Liens magnet ou URL, un par ligne</string>
     <string name="add_hint_magnet">Liens magnet, un par ligne</string>

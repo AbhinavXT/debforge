@@ -112,11 +112,17 @@ interface TorBoxApi {
 
     @Multipart
     @POST("torrents/createtorrent")
-    suspend fun createTorrentFromMagnet(@Part("magnet") magnet: RequestBody): TbEnvelope<Any>
+    suspend fun createTorrentFromMagnet(
+        @Part("magnet") magnet: RequestBody,
+        @Part("add_only_if_cached") onlyIfCached: RequestBody? = null
+    ): TbEnvelope<Any>
 
     @Multipart
     @POST("torrents/createtorrent")
-    suspend fun createTorrentFromFile(@Part file: MultipartBody.Part): TbEnvelope<Any>
+    suspend fun createTorrentFromFile(
+        @Part file: MultipartBody.Part,
+        @Part("add_only_if_cached") onlyIfCached: RequestBody? = null
+    ): TbEnvelope<Any>
 
     @Multipart
     @POST("webdl/createwebdownload")
@@ -125,11 +131,17 @@ interface TorBoxApi {
     // data is {hash, usenetdownload_id} (or {queued_id}); plans without Usenet answer with an error.
     @Multipart
     @POST("usenet/createusenetdownload")
-    suspend fun createUsenetFromFile(@Part file: MultipartBody.Part): TbEnvelope<Any>
+    suspend fun createUsenetFromFile(
+        @Part file: MultipartBody.Part,
+        @Part("add_only_if_cached") onlyIfCached: RequestBody? = null
+    ): TbEnvelope<Any>
 
     @Multipart
     @POST("usenet/createusenetdownload")
-    suspend fun createUsenetFromLink(@Part("link") link: RequestBody): TbEnvelope<Any>
+    suspend fun createUsenetFromLink(
+        @Part("link") link: RequestBody,
+        @Part("add_only_if_cached") onlyIfCached: RequestBody? = null
+    ): TbEnvelope<Any>
 
     // --- delete (JSON bodies; `data` is empty) --------------------------------
 
@@ -177,3 +189,6 @@ interface TorBoxApi {
 internal fun tbRejectionDetail(body: String?): String? =
     body?.let { Regex(""""detail"\s*:\s*"((?:[^"\\]|\\.)*)"""").find(it)?.groupValues?.get(1) }
         ?.replace("\\\"", "\"")?.trim()?.takeIf { it.isNotEmpty() }
+
+/** TorBox's refusal to an add made with add_only_if_cached (404 DOWNLOAD_NOT_CACHED). */
+internal fun tbIsNotCached(body: String?): Boolean = body?.contains("\"DOWNLOAD_NOT_CACHED\"") == true

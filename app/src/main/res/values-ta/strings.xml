@@ -39,6 +39,9 @@
     <string name="add_choose_torrent">.torrent அல்லது .nzb கோப்பைத் தேர்ந்தெடு</string>
     <string name="add_remove_file">கோப்பை அகற்று</string>
     <string name="add_auto_download">தயாரானதும் இந்த ஃபோனில் தானாகப் பதிவிறக்கு</string>
+    <string name="add_only_if_cached">%1$s-ல் கேஷில் இருந்தால் மட்டும் சேர்</string>
+    <string name="add_not_cached">%1$s-ல் கேஷில் இல்லை, எதுவும் சேர்க்கப்படவில்லை</string>
+    <string name="add_not_cached_some">%2$s-ல் கேஷில் இல்லாதவை: %1$d, சேர்க்கப்படவில்லை</string>
     <string name="add_needs_storage">முதலில் ஒரு பதிவிறக்கக் கோப்புறையைத் தேர்ந்தெடுக்கவும்.</string>
     <string name="add_hint_both">மேக்னெட் லிங்க் அல்லது URL, ஒரு வரிக்கு ஒன்று</string>
     <string name="add_hint_magnet">மேக்னெட் லிங்க், ஒரு வரிக்கு ஒன்று</string>

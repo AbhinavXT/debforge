@@ -40,6 +40,9 @@
     <string name="add_choose_torrent">Choose .torrent or .nzb file</string>
     <string name="add_remove_file">Remove file</string>
     <string name="add_auto_download">Download to this phone automatically when ready</string>
+    <string name="add_only_if_cached">Add only if cached on %1$s</string>
+    <string name="add_not_cached">Not cached on %1$s, nothing was added</string>
+    <string name="add_not_cached_some">%1$d not cached on %2$s, not added</string>
     <string name="add_needs_storage">Choose a download folder first.</string>
     <string name="add_hint_both">Magnet links or URLs, one per line</string>
     <string name="add_hint_magnet">Magnet links, one per line</string>

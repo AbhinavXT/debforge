@@ -210,6 +210,21 @@ fun AddDialog(viewModel: AddViewModel) {
 
                 state.cache?.let { CacheLine(it, state.providerName) }
 
+                if (state.canOnlyIfCached) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            stringResource(R.string.add_only_if_cached, state.providerName),
+                            modifier = Modifier.weight(1f),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        androidx.compose.material3.Switch(
+                            checked = state.onlyIfCached,
+                            onCheckedChange = viewModel::onOnlyIfCachedChange,
+                            enabled = !state.submitting
+                        )
+                    }
+                }
+
                 // Auto-download needs a download folder; without one, offer
                 // the picker instead of queueing downloads that would fail.
                 val hasStorage = state.canWriteStorage

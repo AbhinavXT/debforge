@@ -73,6 +73,7 @@ class SettingsStore @Inject constructor(
     private val keyAudioSkipSeconds = intPreferencesKey("audio_skip_seconds")
     private val keyNotificationButtons = stringPreferencesKey("audio_notification_buttons")
     private val keyKeepPlayingSwiped = booleanPreferencesKey("audio_keep_playing_swiped")
+    private val keyAddOnlyIfCached = booleanPreferencesKey("add_only_if_cached")
     private val keyFadeSeconds = intPreferencesKey("audio_fade_seconds")
     private val keySkipSilence = booleanPreferencesKey("audio_skip_silence")
     private val keyPlayerGestures = booleanPreferencesKey("player_gestures")
@@ -140,6 +141,10 @@ class SettingsStore @Inject constructor(
      * library and include them in auto-downloads. Off by default.
      */
     val showExtraFilesFlow: Flow<Boolean> = context.settingsDataStore.data.map { it[keyShowExtras] ?: false }
+
+    /** Add dialog: on TorBox, add only what is already cached. Off by default. */
+    val addOnlyIfCachedFlow: Flow<Boolean> = context.settingsDataStore.data.map { it[keyAddOnlyIfCached] ?: false }
+    suspend fun setAddOnlyIfCached(v: Boolean) = context.settingsDataStore.edit { it[keyAddOnlyIfCached] = v }
 
     /** Library poster size. Medium (the original size) by default. */
     val gridSizeFlow: Flow<GridSize> = context.settingsDataStore.data.map { GridSize.fromName(it[keyGridSize]) }
@@ -424,7 +429,7 @@ class SettingsStore @Inject constructor(
         keyScheduleOn, keyAutoUpdate, keyRemoveAfter, keyPureBlack, keyShowExtras, keyClipboardOffer, keyAdBlock,
         keyInternalPlayer, keyAutoplayNext, keyPip, keyAutoSkipIntro, keySponsorBlock, keyYouTubeAutoplay, keyNightMode, keyEvenOutVolume, keyStreamPreviews,
         keyPlayerArtColor, keyPlayerGestures, keyPlayerShowRemaining, keyPlayerBackground, keyKeepPlayingSwiped, keySkipSilence, keyHistoryPaused, keyVideoFullScreen,
-        keyFetchSubsOnDownload
+        keyFetchSubsOnDownload, keyAddOnlyIfCached
     )
     /** May be blank on purpose (nothing avoided, no site left unblocked). */
     private val backupStrings get() = listOf(keyReleaseAvoid, keyReleasePrefer, keyAdBlockOffSites, keyYouTubeQuality,

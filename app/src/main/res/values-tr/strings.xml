@@ -39,6 +39,9 @@
     <string name="add_choose_torrent">.torrent veya .nzb dosyası seç</string>
     <string name="add_remove_file">Dosyayı kaldır</string>
     <string name="add_auto_download">Hazır olunca bu telefona otomatik indir</string>
+    <string name="add_only_if_cached">Yalnızca %1$s önbelleğindeyse ekle</string>
+    <string name="add_not_cached">%1$s önbelleğinde yok, hiçbir şey eklenmedi</string>
+    <string name="add_not_cached_some">%2$s önbelleğinde olmayan: %1$d, eklenmedi</string>
     <string name="add_needs_storage">Önce bir indirme klasörü seçin.</string>
     <string name="add_hint_both">Magnet bağlantıları veya URL\'ler, her satıra bir tane</string>
     <string name="add_hint_magnet">Magnet bağlantıları, her satıra bir tane</string>

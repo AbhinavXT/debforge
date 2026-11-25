@@ -39,6 +39,9 @@
     <string name="add_choose_torrent">选择 .torrent 或 .nzb 文件</string>
     <string name="add_remove_file">移除文件</string>
     <string name="add_auto_download">准备就绪后自动下载到本机</string>
+    <string name="add_only_if_cached">仅当 %1$s 已缓存时添加</string>
+    <string name="add_not_cached">%1$s 未缓存，未添加任何内容</string>
+    <string name="add_not_cached_some">%1$d 个在 %2$s 上未缓存，未添加</string>
     <string name="add_needs_storage">请先选择下载文件夹。</string>
     <string name="add_hint_both">磁力链接或网址，每行一个</string>
     <string name="add_hint_magnet">磁力链接，每行一个</string>

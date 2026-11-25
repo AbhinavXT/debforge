@@ -39,6 +39,9 @@
     <string name="add_choose_torrent">.torrent বা .nzb ফাইল বেছে নিন</string>
     <string name="add_remove_file">ফাইল সরান</string>
     <string name="add_auto_download">তৈরি হলেই এই ফোনে নিজে থেকে ডাউনলোড করুন</string>
+    <string name="add_only_if_cached">%1$s-এ ক্যাশে থাকলেই যোগ করুন</string>
+    <string name="add_not_cached">%1$s-এ ক্যাশে নেই, কিছু যোগ করা হয়নি</string>
+    <string name="add_not_cached_some">%2$s-এ ক্যাশে নেই: %1$d, যোগ করা হয়নি</string>
     <string name="add_needs_storage">আগে একটি ডাউনলোড ফোল্ডার বেছে নিন।</string>
     <string name="add_hint_both">ম্যাগনেট লিংক বা URL, প্রতি লাইনে একটি</string>
     <string name="add_hint_magnet">ম্যাগনেট লিংক, প্রতি লাইনে একটি</string>

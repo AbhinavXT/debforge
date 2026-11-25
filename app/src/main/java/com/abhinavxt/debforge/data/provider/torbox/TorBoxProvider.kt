@@ -7,6 +7,7 @@ import com.abhinavxt.debforge.data.provider.JobAction
 import com.abhinavxt.debforge.data.provider.RemoteJob
 import com.abhinavxt.debforge.data.provider.DebridProvider
 import com.abhinavxt.debforge.data.provider.DeviceLogin
+import com.abhinavxt.debforge.data.provider.NotCachedException
 import com.abhinavxt.debforge.data.provider.ProviderException
 import com.abhinavxt.debforge.data.provider.ProviderInfo
 import com.abhinavxt.debforge.data.provider.ResolvedLink
@@ -408,26 +409,39 @@ class TorBoxProvider @Inject constructor(
     override val addCapabilities = setOf(AddKind.MAGNET, AddKind.TORRENT_FILE, AddKind.LINK, AddKind.NZB_FILE, AddKind.NZB_LINK)
 
     /** TorBox answers refusals (no Usenet on the plan, limits) with a 4xx and its own message in the body. */
-    override suspend fun add(request: AddRequest): AddResult = try {
-        addRequest(request)
+    override suspend fun add(request: AddRequest): AddResult = addChecked(request, onlyIfCached = false)
+
+    override val canAddOnlyIfCached = true
+
+    override suspend fun addOnlyIfCached(request: AddRequest): AddResult = addChecked(request, onlyIfCached = true)
+
+    private suspend fun addChecked(request: AddRequest, onlyIfCached: Boolean): AddResult = try {
+        addRequest(request, onlyIfCached)
     } catch (e: HttpException) {
-        val detail = if (e.code() == 401 || e.code() == 403) null
-        else tbRejectionDetail(runCatching { e.response()?.errorBody()?.string() }.getOrNull())
-        throw if (detail != null) ProviderException("TorBox: $detail", e) else e
+        val body = if (e.code() == 401 || e.code() == 403) null
+        else runCatching { e.response()?.errorBody()?.string() }.getOrNull()
+        val detail = tbRejectionDetail(body)
+        throw when {
+            tbIsNotCached(body) -> NotCachedException("Not cached on TorBox, nothing was added")
+            detail != null -> ProviderException("TorBox: $detail", e)
+            else -> e
+        }
     }
 
-    private suspend fun addRequest(request: AddRequest): AddResult {
+    private suspend fun addRequest(request: AddRequest, onlyIfCached: Boolean): AddResult {
         val text = "text/plain".toMediaType()
+        val cachedOnly = if (onlyIfCached) "true".toRequestBody(text) else null
         val envelope = changing {
             when (request) {
                 is AddRequest.Magnet ->
-                    api.createTorrentFromMagnet(request.uri.toRequestBody(text))
+                    api.createTorrentFromMagnet(request.uri.toRequestBody(text), cachedOnly)
                 is AddRequest.TorrentFile -> api.createTorrentFromFile(
                     MultipartBody.Part.createFormData(
                         "file",
                         request.name,
                         request.bytes.toRequestBody("application/x-bittorrent".toMediaType())
-                    )
+                    ),
+                    cachedOnly
                 )
                 is AddRequest.Link ->
                     api.createWebDownload(request.url.toRequestBody(text))
@@ -436,13 +450,15 @@ class TorBoxProvider @Inject constructor(
                         "file",
                         request.name.substringAfterLast('/').substringAfterLast('\\'),
                         request.bytes.toRequestBody("application/x-nzb".toMediaType())
-                    )
+                    ),
+                    cachedOnly
                 )
                 is AddRequest.NzbLink ->
-                    api.createUsenetFromLink(request.url.toRequestBody(text))
+                    api.createUsenetFromLink(request.url.toRequestBody(text), cachedOnly)
             }
         }
         if (!envelope.success) {
+            if (envelope.error == "DOWNLOAD_NOT_CACHED") throw NotCachedException("Not cached on TorBox, nothing was added")
             throw ProviderException("TorBox: ${envelope.detail ?: envelope.error ?: "couldn't add"}")
         }
         // e.g. "Found cached torrent. Using cached torrent." / "Added to queue."

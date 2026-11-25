@@ -1,5 +1,6 @@
 package com.abhinavxt.debforge.domain
 
+import com.abhinavxt.debforge.data.provider.torbox.tbIsNotCached
 import com.abhinavxt.debforge.data.provider.torbox.tbRejectionDetail
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -46,5 +47,12 @@ class NzbTest {
         assertEquals("You need the \"Pro\" plan.", tbRejectionDetail(body))
         assertNull(tbRejectionDetail("<html>502</html>"))
         assertNull(tbRejectionDetail(null))
+    }
+
+    @Test fun recognisesNotCachedAnswer() {
+        val body = """{"success":false,"error":"DOWNLOAD_NOT_CACHED","detail":"Torrent not found in cache.","data":null}"""
+        assertTrue(tbIsNotCached(body))
+        assertFalse(tbIsNotCached("""{"success":false,"error":"ACTIVE_LIMIT"}"""))
+        assertFalse(tbIsNotCached(null))
     }
 }

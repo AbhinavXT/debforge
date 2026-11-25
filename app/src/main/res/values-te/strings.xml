@@ -39,6 +39,9 @@
     <string name="add_choose_torrent">.torrent లేదా .nzb ఫైల్‌ను ఎంచుకోండి</string>
     <string name="add_remove_file">ఫైల్‌ను తీసివేయి</string>
     <string name="add_auto_download">సిద్ధమైన వెంటనే ఈ ఫోన్‌కు ఆటోమేటిక్‌గా డౌన్‌లోడ్ చేయి</string>
+    <string name="add_only_if_cached">%1$s లో కాష్‌లో ఉంటేనే జోడించు</string>
+    <string name="add_not_cached">%1$s లో కాష్‌లో లేదు, ఏదీ జోడించలేదు</string>
+    <string name="add_not_cached_some">%2$s లో కాష్‌లో లేనివి: %1$d, జోడించలేదు</string>
     <string name="add_needs_storage">ముందుగా డౌన్‌లోడ్ ఫోల్డర్‌ను ఎంచుకోండి.</string>
     <string name="add_hint_both">మాగ్నెట్ లింక్‌లు లేదా URLలు, ఒక్కో లైన్‌కు ఒకటి</string>
     <string name="add_hint_magnet">మాగ్నెట్ లింక్‌లు, ఒక్కో లైన్‌కు ఒకటి</string>
