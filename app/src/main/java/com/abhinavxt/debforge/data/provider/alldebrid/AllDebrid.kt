@@ -273,6 +273,7 @@ class AllDebridProvider @Inject constructor(
     override val addCapabilities = setOf(AddKind.MAGNET, AddKind.TORRENT_FILE, AddKind.LINK)
 
     override suspend fun add(request: AddRequest): AddResult = when (request) {
+            is AddRequest.NzbFile, is AddRequest.NzbLink -> throw ProviderException("AllDebrid doesn't support Usenet")
         is AddRequest.Magnet -> {
             val m = api.uploadMagnets(listOf(request.uri)).unwrap().magnets.orEmpty().firstOrNull()
                 ?: throw ProviderException("AllDebrid didn't accept the magnet")

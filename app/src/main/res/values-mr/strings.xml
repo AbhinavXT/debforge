@@ -36,7 +36,7 @@
     <string name="setup_open_service">%1$s उघडा</string>
     <string name="setup_waiting_approval">मंजुरीची वाट पाहत आहे…</string>
     <string name="add_title">%1$s मध्ये जोडा</string>
-    <string name="add_choose_torrent">.torrent फाइल निवडा</string>
+    <string name="add_choose_torrent">.torrent किंवा .nzb फाइल निवडा</string>
     <string name="add_remove_file">फाइल काढा</string>
     <string name="add_auto_download">तयार झाल्यावर या फोनवर आपोआप डाउनलोड करा</string>
     <string name="add_needs_storage">आधी डाउनलोड फोल्डर निवडा.</string>
@@ -263,6 +263,7 @@
     <string name="add_err_too_large">ही फाइल .torrent असण्यासाठी खूप मोठी आहे</string>
     <string name="add_err_open">फाइल उघडता आली नाही</string>
     <string name="add_err_not_torrent">%1$s ही .torrent फाइल वाटत नाही</string>
+    <string name="add_err_not_nzb">%1$s ही .nzb फाइल वाटत नाही</string>
     <string name="add_err_read">फाइल वाचता आली नाही: %1$s</string>
     <string name="add_err_permission">ही फाइल वाचण्याची परवानगी नाही — ती पुन्हा निवडून पाहा</string>
     <plurals name="n_episodes">

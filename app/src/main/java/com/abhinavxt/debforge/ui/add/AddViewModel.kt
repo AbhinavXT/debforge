@@ -20,6 +20,7 @@ import com.abhinavxt.debforge.domain.AddRequest
 import com.abhinavxt.debforge.domain.DataResult
 import com.abhinavxt.debforge.domain.DirectLinkParser
 import com.abhinavxt.debforge.domain.ExtraFiles
+import com.abhinavxt.debforge.domain.Nzb
 import com.abhinavxt.debforge.domain.ProviderId
 import com.abhinavxt.debforge.domain.ServicePicker
 import com.abhinavxt.debforge.download.DownloadController
@@ -94,7 +95,7 @@ data class AddUiState(
     val pickedVideos: Set<String> = emptySet()
 ) {
     val acceptsText: Boolean get() = AddKind.MAGNET in capabilities || AddKind.LINK in capabilities
-    val acceptsTorrentFile: Boolean get() = AddKind.TORRENT_FILE in capabilities
+    val acceptsTorrentFile: Boolean get() = AddKind.TORRENT_FILE in capabilities || AddKind.NZB_FILE in capabilities
     val canSubmit: Boolean
         get() = !submitting && !scanning &&
             if (pageVideos != null) pickedVideos.isNotEmpty() else text.isNotBlank() || torrentUri != null
@@ -237,7 +238,7 @@ class AddViewModel @Inject constructor(
     private fun inputKinds(): Set<AddKind> {
         val s = _state.value
         val kinds = AddInputParser.parse(s.text).requests.mapTo(HashSet()) { it.kind }
-        if (s.torrentUri != null) kinds += AddKind.TORRENT_FILE
+        if (s.torrentUri != null) kinds += if (Nzb.isNzbName(s.torrentName)) AddKind.NZB_FILE else AddKind.TORRENT_FILE
         return kinds
     }
 
@@ -487,7 +488,8 @@ class AddViewModel @Inject constructor(
 
         viewModelScope.launch {
             val parsed = AddInputParser.parse(s.text)
-            val requests = parsed.requests.toMutableList()
+            // A .nzb link only becomes a Usenet job on a service that takes Usenet.
+            val requests = parsed.requests.mapTo(mutableListOf()) { Nzb.route(it, p) }
 
             if (s.torrentUri != null) {
                 when (val file = readTorrent(s.torrentUri, s.torrentName ?: "file.torrent")) {
@@ -589,7 +591,9 @@ class AddViewModel @Inject constructor(
             ?.let { runCatching { java.net.URLDecoder.decode(it, "UTF-8") }.getOrDefault(it) }
             ?: context.getString(R.string.add_magnet_link)
         is AddRequest.TorrentFile -> req.name.removeSuffix(".torrent")
+        is AddRequest.NzbFile -> req.name.removeSuffix(".nzb")
         is AddRequest.Link -> Uri.parse(req.url).lastPathSegment ?: req.url
+        is AddRequest.NzbLink -> Uri.parse(req.url).lastPathSegment?.removeSuffix(".nzb") ?: req.url
     }
 
     // --- file helpers ------------------------------------------------------
@@ -606,6 +610,12 @@ class AddViewModel @Inject constructor(
                     }
                     buf
                 } ?: return@withContext DataResult.Error(context.getString(R.string.add_err_open))
+                if (Nzb.isNzbName(name)) {
+                    if (!Nzb.looksLikeNzb(bytes)) {
+                        return@withContext DataResult.Error(context.getString(R.string.add_err_not_nzb, name))
+                    }
+                    return@withContext DataResult.Success(AddRequest.NzbFile(name, bytes))
+                }
                 // Bencoded torrents always start with 'd' (a dictionary).
                 if (bytes.isEmpty() || bytes[0] != 'd'.code.toByte()) {
                     return@withContext DataResult.Error(context.getString(R.string.add_err_not_torrent, name))

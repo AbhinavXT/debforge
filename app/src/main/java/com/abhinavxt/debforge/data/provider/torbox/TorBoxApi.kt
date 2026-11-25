@@ -122,6 +122,15 @@ interface TorBoxApi {
     @POST("webdl/createwebdownload")
     suspend fun createWebDownload(@Part("link") link: RequestBody): TbEnvelope<Any>
 
+    // data is {hash, usenetdownload_id} (or {queued_id}); plans without Usenet answer with an error.
+    @Multipart
+    @POST("usenet/createusenetdownload")
+    suspend fun createUsenetFromFile(@Part file: MultipartBody.Part): TbEnvelope<Any>
+
+    @Multipart
+    @POST("usenet/createusenetdownload")
+    suspend fun createUsenetFromLink(@Part("link") link: RequestBody): TbEnvelope<Any>
+
     // --- delete (JSON bodies; `data` is empty) --------------------------------
 
     @POST("torrents/controltorrent")
@@ -163,3 +172,8 @@ interface TorBoxApi {
         const val BASE_URL = "https://api.torbox.app/v1/api/"
     }
 }
+
+/** The "detail" text of a TorBox error body, or null. Regex: the body is untrusted and tiny. */
+internal fun tbRejectionDetail(body: String?): String? =
+    body?.let { Regex(""""detail"\s*:\s*"((?:[^"\\]|\\.)*)"""").find(it)?.groupValues?.get(1) }
+        ?.replace("\\\"", "\"")?.trim()?.takeIf { it.isNotEmpty() }

@@ -36,7 +36,7 @@
     <string name="setup_open_service">%1$s öffnen</string>
     <string name="setup_waiting_approval">Warte auf Bestätigung…</string>
     <string name="add_title">Zu %1$s hinzufügen</string>
-    <string name="add_choose_torrent">.torrent-Datei auswählen</string>
+    <string name="add_choose_torrent">.torrent- oder .nzb-Datei auswählen</string>
     <string name="add_remove_file">Datei entfernen</string>
     <string name="add_auto_download">Automatisch auf dieses Handy laden, sobald bereit</string>
     <string name="add_needs_storage">Wähle zuerst einen Download-Ordner.</string>
@@ -263,6 +263,7 @@
     <string name="add_err_too_large">Die Datei ist zu groß für eine .torrent-Datei</string>
     <string name="add_err_open">Datei konnte nicht geöffnet werden</string>
     <string name="add_err_not_torrent">%1$s sieht nicht wie eine .torrent-Datei aus</string>
+    <string name="add_err_not_nzb">%1$s sieht nicht wie eine .nzb-Datei aus</string>
     <string name="add_err_read">Datei konnte nicht gelesen werden: %1$s</string>
     <string name="add_err_permission">Keine Berechtigung zum Lesen der Datei – wähle sie erneut aus</string>
     <plurals name="n_episodes">

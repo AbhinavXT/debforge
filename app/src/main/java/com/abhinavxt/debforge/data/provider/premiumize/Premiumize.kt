@@ -259,6 +259,7 @@ class PremiumizeProvider @Inject constructor(
 
     override suspend fun add(request: AddRequest): AddResult {
         val created = when (request) {
+            is AddRequest.NzbFile, is AddRequest.NzbLink -> throw ProviderException("Premiumize doesn't support Usenet")
             is AddRequest.Magnet -> api.createTransfer(request.uri)
             is AddRequest.Link -> api.createTransfer(request.url)
             is AddRequest.TorrentFile -> api.createTransferFile(

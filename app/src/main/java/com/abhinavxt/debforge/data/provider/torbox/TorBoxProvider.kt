@@ -405,9 +405,18 @@ class TorBoxProvider @Inject constructor(
 
     // --- adding ------------------------------------------------------------
 
-    override val addCapabilities = setOf(AddKind.MAGNET, AddKind.TORRENT_FILE, AddKind.LINK)
+    override val addCapabilities = setOf(AddKind.MAGNET, AddKind.TORRENT_FILE, AddKind.LINK, AddKind.NZB_FILE, AddKind.NZB_LINK)
 
-    override suspend fun add(request: AddRequest): AddResult {
+    /** TorBox answers refusals (no Usenet on the plan, limits) with a 4xx and its own message in the body. */
+    override suspend fun add(request: AddRequest): AddResult = try {
+        addRequest(request)
+    } catch (e: HttpException) {
+        val detail = if (e.code() == 401 || e.code() == 403) null
+        else tbRejectionDetail(runCatching { e.response()?.errorBody()?.string() }.getOrNull())
+        throw if (detail != null) ProviderException("TorBox: $detail", e) else e
+    }
+
+    private suspend fun addRequest(request: AddRequest): AddResult {
         val text = "text/plain".toMediaType()
         val envelope = changing {
             when (request) {
@@ -422,6 +431,15 @@ class TorBoxProvider @Inject constructor(
                 )
                 is AddRequest.Link ->
                     api.createWebDownload(request.url.toRequestBody(text))
+                is AddRequest.NzbFile -> api.createUsenetFromFile(
+                    MultipartBody.Part.createFormData(
+                        "file",
+                        request.name.substringAfterLast('/').substringAfterLast('\\'),
+                        request.bytes.toRequestBody("application/x-nzb".toMediaType())
+                    )
+                )
+                is AddRequest.NzbLink ->
+                    api.createUsenetFromLink(request.url.toRequestBody(text))
             }
         }
         if (!envelope.success) {
@@ -435,6 +453,7 @@ class TorBoxProvider @Inject constructor(
         val data = envelope.data as? Map<*, *>
         val kind = when (request) {
             is AddRequest.Link -> Kind.WEB
+            is AddRequest.NzbFile, is AddRequest.NzbLink -> Kind.USENET
             else -> Kind.TORRENT
         }
         val id = listOf("torrent_id", "webdownload_id", "web_id", "usenetdownload_id", "id")

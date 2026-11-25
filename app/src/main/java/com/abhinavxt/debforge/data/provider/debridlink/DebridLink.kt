@@ -257,6 +257,7 @@ class DebridLinkProvider @Inject constructor(
     override val addCapabilities = setOf(AddKind.MAGNET, AddKind.TORRENT_FILE, AddKind.LINK)
 
     override suspend fun add(request: AddRequest): AddResult = when (request) {
+            is AddRequest.NzbFile, is AddRequest.NzbLink -> throw ProviderException("Debrid-Link doesn't support Usenet")
         is AddRequest.Magnet -> api.addTorrent(request.uri).unwrap().let {
             AddResult("Added ${it.name ?: "to Debrid-Link"}", jobRef = "sb:${it.id}")
         }

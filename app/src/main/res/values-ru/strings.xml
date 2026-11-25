@@ -36,7 +36,7 @@
     <string name="setup_open_service">Открыть %1$s</string>
     <string name="setup_waiting_approval">Ожидание подтверждения…</string>
     <string name="add_title">Добавить в %1$s</string>
-    <string name="add_choose_torrent">Выбрать файл .torrent</string>
+    <string name="add_choose_torrent">Выбрать файл .torrent или .nzb</string>
     <string name="add_remove_file">Убрать файл</string>
     <string name="add_auto_download">Автоматически скачать на телефон, когда будет готово</string>
     <string name="add_needs_storage">Сначала выберите папку для загрузок.</string>
@@ -269,6 +269,7 @@
     <string name="add_err_too_large">Файл слишком большой для .torrent</string>
     <string name="add_err_open">Не удалось открыть файл</string>
     <string name="add_err_not_torrent">%1$s не похож на файл .torrent</string>
+    <string name="add_err_not_nzb">%1$s не похож на файл .nzb</string>
     <string name="add_err_read">Не удалось прочитать файл: %1$s</string>
     <string name="add_err_permission">Нет разрешения на чтение файла — попробуйте выбрать его снова</string>
     <plurals name="n_episodes">

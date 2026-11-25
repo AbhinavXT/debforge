@@ -161,10 +161,10 @@ fun AddDialog(viewModel: AddViewModel) {
                     if (name == null) {
                         OutlinedButton(
                             onClick = {
-                                // Many file managers report .torrent as
-                                // octet-stream, so accept both.
+                                // Many file managers report .torrent / .nzb as
+                                // octet-stream, so accept it too.
                                 pickTorrent.launch(
-                                    arrayOf("application/x-bittorrent", "application/octet-stream")
+                                    arrayOf("application/x-bittorrent", "application/x-nzb", "application/octet-stream")
                                 )
                             },
                             enabled = !state.submitting,

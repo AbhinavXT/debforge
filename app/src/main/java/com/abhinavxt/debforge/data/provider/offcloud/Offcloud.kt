@@ -433,6 +433,7 @@ class OffcloudProvider internal constructor(
 
     override suspend fun add(request: AddRequest): AddResult {
         val url = when (request) {
+            is AddRequest.NzbFile, is AddRequest.NzbLink -> throw ProviderException("Offcloud doesn't support Usenet")
             is AddRequest.Magnet -> request.uri
             is AddRequest.Link -> request.url
             // Offcloud has no .torrent upload; send the torrent as a magnet.

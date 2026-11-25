@@ -16,12 +16,42 @@ sealed interface AddRequest {
     class TorrentFile(val name: String, val bytes: ByteArray) : AddRequest {
         override val kind get() = AddKind.TORRENT_FILE
     }
+
+    /** Raw .nzb contents (Usenet). */
+    class NzbFile(val name: String, val bytes: ByteArray) : AddRequest {
+        override val kind get() = AddKind.NZB_FILE
+    }
+
+    /** A link to an .nzb file (Usenet). */
+    data class NzbLink(val url: String) : AddRequest {
+        override val kind get() = AddKind.NZB_LINK
+    }
 }
 
 enum class AddKind(val label: String) {
     MAGNET("magnet links"),
     TORRENT_FILE(".torrent files"),
-    LINK("web links")
+    LINK("web links"),
+    NZB_FILE(".nzb files"),
+    NZB_LINK("Usenet links")
+}
+
+/** .nzb handling shared by the parser, the router and file validation. */
+object Nzb {
+    /** Path (before any query or fragment) ends in .nzb. */
+    fun isNzbUrl(url: String): Boolean =
+        url.substringBefore('#').substringBefore('?').endsWith(".nzb", ignoreCase = true)
+
+    fun isNzbName(name: String?): Boolean = name?.endsWith(".nzb", ignoreCase = true) == true
+
+    /** Cheap sniff, no XML parsing of untrusted content: an <nzb root tag in the first bytes. */
+    fun looksLikeNzb(bytes: ByteArray): Boolean =
+        String(bytes, 0, minOf(bytes.size, 4096), Charsets.ISO_8859_1).contains("<nzb", ignoreCase = true)
+
+    /** Only a service that takes Usenet sends .nzb links there; for others a link stays a link. */
+    fun route(request: AddRequest, provider: ProviderId): AddRequest =
+        if (request is AddRequest.Link && provider == ProviderId.TORBOX && isNzbUrl(request.url))
+            AddRequest.NzbLink(request.url) else request
 }
 
 /**
