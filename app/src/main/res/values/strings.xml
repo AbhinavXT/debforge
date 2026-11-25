@@ -1273,4 +1273,16 @@
         <item quantity="one">%d day before</item>
         <item quantity="other">%d days before</item>
     </plurals>
+    <string name="settings_cat_account">Account</string>
+    <string name="settings_cat_home">Home and Library</string>
+    <string name="settings_cat_downloads">Downloads</string>
+    <string name="settings_cat_video">Video player</string>
+    <string name="settings_cat_audio">Audio player</string>
+    <string name="settings_cat_youtube">YouTube</string>
+    <string name="settings_cat_connections">Connections</string>
+    <string name="settings_cat_data">Data and backup</string>
+    <string name="settings_search_hint">Search settings</string>
+    <string name="settings_search_none">No settings match</string>
+    <string name="settings_sum_connections">Trakt, subtitles, search sources</string>
+    <string name="settings_sum_data">Data usage and backup</string>
 </resources>

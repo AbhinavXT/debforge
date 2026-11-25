@@ -1271,4 +1271,16 @@
         <item quantity="one">%d দিন আগে</item>
         <item quantity="other">%d দিন আগে</item>
     </plurals>
+    <string name="settings_cat_account">অ্যাকাউন্ট</string>
+    <string name="settings_cat_home">হোম ও লাইব্রেরি</string>
+    <string name="settings_cat_downloads">ডাউনলোড</string>
+    <string name="settings_cat_video">ভিডিও প্লেয়ার</string>
+    <string name="settings_cat_audio">অডিও প্লেয়ার</string>
+    <string name="settings_cat_youtube">YouTube</string>
+    <string name="settings_cat_connections">সংযোগ</string>
+    <string name="settings_cat_data">ডেটা ও ব্যাকআপ</string>
+    <string name="settings_search_hint">সেটিংস খুঁজুন</string>
+    <string name="settings_search_none">কোনো সেটিং মেলেনি</string>
+    <string name="settings_sum_connections">Trakt, সাবটাইটেল, সার্চ সোর্স</string>
+    <string name="settings_sum_data">ডেটা ব্যবহার ও ব্যাকআপ</string>
 </resources>

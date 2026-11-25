@@ -1271,4 +1271,16 @@
         <item quantity="one">%d రోజు ముందు</item>
         <item quantity="other">%d రోజుల ముందు</item>
     </plurals>
+    <string name="settings_cat_account">ఖాతా</string>
+    <string name="settings_cat_home">హోమ్ మరియు లైబ్రరీ</string>
+    <string name="settings_cat_downloads">డౌన్‌లోడ్‌లు</string>
+    <string name="settings_cat_video">వీడియో ప్లేయర్</string>
+    <string name="settings_cat_audio">ఆడియో ప్లేయర్</string>
+    <string name="settings_cat_youtube">YouTube</string>
+    <string name="settings_cat_connections">కనెక్షన్లు</string>
+    <string name="settings_cat_data">డేటా మరియు బ్యాకప్</string>
+    <string name="settings_search_hint">సెట్టింగ్‌లను వెతకండి</string>
+    <string name="settings_search_none">సరిపోలే సెట్టింగ్‌లు లేవు</string>
+    <string name="settings_sum_connections">Trakt, ఉపశీర్షికలు, శోధన మూలాలు</string>
+    <string name="settings_sum_data">డేటా వినియోగం మరియు బ్యాకప్</string>
 </resources>

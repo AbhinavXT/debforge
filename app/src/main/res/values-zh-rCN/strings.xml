@@ -1212,4 +1212,16 @@
         <item quantity="one">提前 %d 天</item>
         <item quantity="other">提前 %d 天</item>
     </plurals>
+    <string name="settings_cat_account">账户</string>
+    <string name="settings_cat_home">主页和媒体库</string>
+    <string name="settings_cat_downloads">下载</string>
+    <string name="settings_cat_video">视频播放器</string>
+    <string name="settings_cat_audio">音频播放器</string>
+    <string name="settings_cat_youtube">YouTube</string>
+    <string name="settings_cat_connections">连接</string>
+    <string name="settings_cat_data">数据和备份</string>
+    <string name="settings_search_hint">搜索设置</string>
+    <string name="settings_search_none">没有匹配的设置</string>
+    <string name="settings_sum_connections">Trakt、字幕、搜索源</string>
+    <string name="settings_sum_data">数据用量和备份</string>
 </resources>

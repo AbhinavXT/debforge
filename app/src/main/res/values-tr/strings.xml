@@ -1271,4 +1271,16 @@
         <item quantity="one">%d gün önce</item>
         <item quantity="other">%d gün önce</item>
     </plurals>
+    <string name="settings_cat_account">Hesap</string>
+    <string name="settings_cat_home">Ana sayfa ve Kitaplık</string>
+    <string name="settings_cat_downloads">İndirmeler</string>
+    <string name="settings_cat_video">Video oynatıcı</string>
+    <string name="settings_cat_audio">Ses oynatıcı</string>
+    <string name="settings_cat_youtube">YouTube</string>
+    <string name="settings_cat_connections">Bağlantılar</string>
+    <string name="settings_cat_data">Veri ve yedekleme</string>
+    <string name="settings_search_hint">Ayarlarda ara</string>
+    <string name="settings_search_none">Eşleşen ayar yok</string>
+    <string name="settings_sum_connections">Trakt, altyazılar, arama kaynakları</string>
+    <string name="settings_sum_data">Veri kullanımı ve yedekleme</string>
 </resources>

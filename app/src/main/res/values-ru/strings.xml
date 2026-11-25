@@ -1391,4 +1391,16 @@
         <item quantity="many">За %d дней</item>
         <item quantity="other">За %d дня</item>
     </plurals>
+    <string name="settings_cat_account">Аккаунт</string>
+    <string name="settings_cat_home">Главная и библиотека</string>
+    <string name="settings_cat_downloads">Загрузки</string>
+    <string name="settings_cat_video">Видеоплеер</string>
+    <string name="settings_cat_audio">Аудиоплеер</string>
+    <string name="settings_cat_youtube">YouTube</string>
+    <string name="settings_cat_connections">Подключения</string>
+    <string name="settings_cat_data">Данные и резервная копия</string>
+    <string name="settings_search_hint">Поиск по настройкам</string>
+    <string name="settings_search_none">Нет подходящих настроек</string>
+    <string name="settings_sum_connections">Trakt, субтитры, источники поиска</string>
+    <string name="settings_sum_data">Расход трафика и резервная копия</string>
 </resources>

@@ -1271,4 +1271,16 @@
         <item quantity="one">%d நாள் முன்</item>
         <item quantity="other">%d நாட்கள் முன்</item>
     </plurals>
+    <string name="settings_cat_account">கணக்கு</string>
+    <string name="settings_cat_home">முகப்பு மற்றும் நூலகம்</string>
+    <string name="settings_cat_downloads">பதிவிறக்கங்கள்</string>
+    <string name="settings_cat_video">வீடியோ பிளேயர்</string>
+    <string name="settings_cat_audio">ஆடியோ பிளேயர்</string>
+    <string name="settings_cat_youtube">YouTube</string>
+    <string name="settings_cat_connections">இணைப்புகள்</string>
+    <string name="settings_cat_data">தரவு மற்றும் காப்புப்பிரதி</string>
+    <string name="settings_search_hint">அமைப்புகளைத் தேடு</string>
+    <string name="settings_search_none">பொருந்தும் அமைப்புகள் இல்லை</string>
+    <string name="settings_sum_connections">Trakt, வசனங்கள், தேடல் மூலங்கள்</string>
+    <string name="settings_sum_data">தரவு பயன்பாடு மற்றும் காப்புப்பிரதி</string>
 </resources>

@@ -1271,4 +1271,16 @@
         <item quantity="one">%d दिवस आधी</item>
         <item quantity="other">%d दिवस आधी</item>
     </plurals>
+    <string name="settings_cat_account">खाते</string>
+    <string name="settings_cat_home">मुख्यपृष्ठ आणि लायब्ररी</string>
+    <string name="settings_cat_downloads">डाउनलोड</string>
+    <string name="settings_cat_video">व्हिडिओ प्लेयर</string>
+    <string name="settings_cat_audio">ऑडिओ प्लेयर</string>
+    <string name="settings_cat_youtube">YouTube</string>
+    <string name="settings_cat_connections">कनेक्शन</string>
+    <string name="settings_cat_data">डेटा आणि बॅकअप</string>
+    <string name="settings_search_hint">सेटिंग्ज शोधा</string>
+    <string name="settings_search_none">कोणतीही सेटिंग जुळली नाही</string>
+    <string name="settings_sum_connections">Trakt, उपशीर्षके, शोध स्रोत</string>
+    <string name="settings_sum_data">डेटा वापर आणि बॅकअप</string>
 </resources>

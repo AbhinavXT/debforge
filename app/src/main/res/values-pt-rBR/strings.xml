@@ -1331,4 +1331,16 @@
         <item quantity="many">%d dias antes</item>
         <item quantity="other">%d dias antes</item>
     </plurals>
+    <string name="settings_cat_account">Conta</string>
+    <string name="settings_cat_home">Início e biblioteca</string>
+    <string name="settings_cat_downloads">Downloads</string>
+    <string name="settings_cat_video">Player de vídeo</string>
+    <string name="settings_cat_audio">Player de áudio</string>
+    <string name="settings_cat_youtube">YouTube</string>
+    <string name="settings_cat_connections">Conexões</string>
+    <string name="settings_cat_data">Dados e backup</string>
+    <string name="settings_search_hint">Pesquisar configurações</string>
+    <string name="settings_search_none">Nenhuma configuração encontrada</string>
+    <string name="settings_sum_connections">Trakt, legendas, fontes de busca</string>
+    <string name="settings_sum_data">Uso de dados e backup</string>
 </resources>

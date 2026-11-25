@@ -1212,4 +1212,16 @@
         <item quantity="one">%d hari sebelumnya</item>
         <item quantity="other">%d hari sebelumnya</item>
     </plurals>
+    <string name="settings_cat_account">Akun</string>
+    <string name="settings_cat_home">Beranda dan Pustaka</string>
+    <string name="settings_cat_downloads">Unduhan</string>
+    <string name="settings_cat_video">Pemutar video</string>
+    <string name="settings_cat_audio">Pemutar audio</string>
+    <string name="settings_cat_youtube">YouTube</string>
+    <string name="settings_cat_connections">Koneksi</string>
+    <string name="settings_cat_data">Data dan cadangan</string>
+    <string name="settings_search_hint">Cari pengaturan</string>
+    <string name="settings_search_none">Tidak ada pengaturan yang cocok</string>
+    <string name="settings_sum_connections">Trakt, subjudul, sumber pencarian</string>
+    <string name="settings_sum_data">Penggunaan data dan cadangan</string>
 </resources>

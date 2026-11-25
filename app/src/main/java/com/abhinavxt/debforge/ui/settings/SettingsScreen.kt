@@ -3,25 +3,19 @@
 package com.abhinavxt.debforge.ui.settings
 
 import android.app.LocaleManager
-import android.content.Intent
-import android.net.Uri
 import android.os.Build
 import android.os.LocaleList
 import android.provider.Settings
+import androidx.activity.compose.BackHandler
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material3.IconButton
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.selection.selectable
-import androidx.compose.ui.semantics.Role
-import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -33,38 +27,39 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.rounded.Logout
 import androidx.compose.material.icons.automirrored.rounded.Sort
 import androidx.compose.material.icons.rounded.AutoDelete
-import androidx.compose.material.icons.rounded.Forward10
-import androidx.compose.material.icons.rounded.Palette
-import androidx.compose.material.icons.rounded.TouchApp
-import androidx.compose.material.icons.rounded.FastForward
-import androidx.compose.material.icons.rounded.HighQuality
-import androidx.compose.material.icons.rounded.Image
-import androidx.compose.material.icons.rounded.Audiotrack
-import androidx.compose.material.icons.rounded.ClosedCaption
-import androidx.compose.material.icons.rounded.BatteryChargingFull
+import androidx.compose.material.icons.rounded.Backup
 import androidx.compose.material.icons.rounded.Check
-import androidx.compose.material.icons.rounded.ContentPaste
-import androidx.compose.material.icons.rounded.CreateNewFolder
-import androidx.compose.material.icons.rounded.DeleteSweep
-import androidx.compose.material.icons.rounded.FilterList
-import androidx.compose.material.icons.rounded.Folder
+import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.icons.rounded.FolderOpen
+import androidx.compose.material.icons.rounded.Forward10
+import androidx.compose.material.icons.rounded.Headphones
+import androidx.compose.material.icons.rounded.HighQuality
+import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material.icons.rounded.Image
+import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Language
-import androidx.compose.material.icons.rounded.Fullscreen
-import androidx.compose.material.icons.rounded.PictureInPictureAlt
-import androidx.compose.material.icons.rounded.PlayCircle
-import androidx.compose.material.icons.rounded.SkipNext
+import androidx.compose.material.icons.rounded.Link
+import androidx.compose.material.icons.rounded.Movie
 import androidx.compose.material.icons.rounded.NotificationsActive
-import androidx.compose.material.icons.rounded.Schedule
+import androidx.compose.material.icons.rounded.Palette
+import androidx.compose.material.icons.rounded.Person
+import androidx.compose.material.icons.rounded.PlayCircle
+import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.Speed
 import androidx.compose.material.icons.rounded.Storage
-import androidx.compose.material.icons.rounded.Wifi
 import androidx.compose.material.icons.rounded.WorkspacePremium
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
@@ -72,8 +67,10 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -82,90 +79,60 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.snapshotFlow
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.withTimeoutOrNull
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.abhinavxt.debforge.BuildConfig
 import com.abhinavxt.debforge.R
-import com.abhinavxt.debforge.domain.ExpiryReminder
-import com.abhinavxt.debforge.ui.posters.PosterSetupSheet
+import com.abhinavxt.debforge.data.prefs.STORAGE_LIMITS_GB
 import com.abhinavxt.debforge.data.provider.AccountInfo
+import com.abhinavxt.debforge.domain.DefaultQuality
+import com.abhinavxt.debforge.domain.ExpiryReminder
+import com.abhinavxt.debforge.domain.Housekeeping
 import com.abhinavxt.debforge.domain.SortOrder
 import com.abhinavxt.debforge.download.SafPaths
-import com.abhinavxt.debforge.download.ScheduleAlarm
-import com.abhinavxt.debforge.data.prefs.STORAGE_LIMITS_GB
 import com.abhinavxt.debforge.download.StorageAccess
+import com.abhinavxt.debforge.ui.browse.formatSize
 import com.abhinavxt.debforge.ui.components.RowDivider
-import com.abhinavxt.debforge.domain.DefaultQuality
 import com.abhinavxt.debforge.ui.components.SectionCard
 import com.abhinavxt.debforge.ui.components.SettingRow
 import com.abhinavxt.debforge.ui.components.StatusPill
-import com.abhinavxt.debforge.ui.components.SwitchSettingRow
 import com.abhinavxt.debforge.ui.pluralRes
-import com.abhinavxt.debforge.ui.browse.formatSize
-import com.abhinavxt.debforge.domain.Housekeeping
+import com.abhinavxt.debforge.ui.posters.PosterSetupSheet
+import kotlinx.coroutines.flow.first
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(onConnect: () -> Unit, onBack: (() -> Unit)? = null, viewModel: SettingsViewModel = hiltViewModel()) {
     val dir by viewModel.downloadDir.collectAsStateWithLifecycle()
-    val importLocal by viewModel.importLocal.collectAsStateWithLifecycle()
-    val sort by viewModel.sortDefault.collectAsStateWithLifecycle()
-    val theme by viewModel.themeMode.collectAsStateWithLifecycle()
     val providers by viewModel.providers.collectAsStateWithLifecycle()
-    val dynamicColor by viewModel.dynamicColor.collectAsStateWithLifecycle()
-    val appTheme by viewModel.appTheme.collectAsStateWithLifecycle()
-    val pureBlack by viewModel.pureBlack.collectAsStateWithLifecycle()
-    val tmdbKey by viewModel.tmdbKey.collectAsStateWithLifecycle()
-    val postersEnabled by viewModel.postersEnabled.collectAsStateWithLifecycle()
-    var posterSetupOpen by remember { mutableStateOf(false) }
-    val account by viewModel.account.collectAsStateWithLifecycle()
-    val organize by viewModel.organizeLibrary.collectAsStateWithLifecycle()
-    val rules by viewModel.rules.collectAsStateWithLifecycle()
-    val removeAfter by viewModel.removeAfterDownload.collectAsStateWithLifecycle()
-    val showExtras by viewModel.showExtraFiles.collectAsStateWithLifecycle()
-    val clipboardOffer by viewModel.clipboardOffer.collectAsStateWithLifecycle()
-    val storageInfo by viewModel.storageInfo.collectAsStateWithLifecycle()
-    val autoDeleteDays by viewModel.autoDeleteDays.collectAsStateWithLifecycle()
-    val expiryReminderDays by viewModel.expiryReminderDays.collectAsStateWithLifecycle()
-    val youTubeQuality by viewModel.youTubeQuality.collectAsStateWithLifecycle()
     val autoDeleteConfirm by viewModel.autoDeleteConfirm.collectAsStateWithLifecycle()
     val follows by viewModel.follows.collectAsStateWithLifecycle()
     val channels by viewModel.channels.collectAsStateWithLifecycle()
     val podcasts by viewModel.podcasts.collectAsStateWithLifecycle()
-    val sponsorBlock by viewModel.sponsorBlock.collectAsStateWithLifecycle()
-    val sponsorCategories by viewModel.sponsorCategories.collectAsStateWithLifecycle()
-    val youTubeAutoplay by viewModel.youTubeAutoplay.collectAsStateWithLifecycle()
-    val internalPlayer by viewModel.internalPlayer.collectAsStateWithLifecycle()
-    val evenOutVolume by viewModel.evenOutVolume.collectAsStateWithLifecycle()
-    val autoplayNext by viewModel.autoplayNext.collectAsStateWithLifecycle()
-    val pip by viewModel.pip.collectAsStateWithLifecycle()
-    val videoFullScreen by viewModel.videoFullScreen.collectAsStateWithLifecycle()
-    val autoSkipIntro by viewModel.autoSkipIntro.collectAsStateWithLifecycle()
-    val streamPreviews by viewModel.streamPreviews.collectAsStateWithLifecycle()
-    val playerArtColor by viewModel.playerArtColor.collectAsStateWithLifecycle()
-    val audioSkipSeconds by viewModel.audioSkipSeconds.collectAsStateWithLifecycle()
-    val playerGestures by viewModel.playerGestures.collectAsStateWithLifecycle()
-    val audioLanguage by viewModel.audioLanguage.collectAsStateWithLifecycle()
-    val subtitleLanguage by viewModel.subtitleLanguage.collectAsStateWithLifecycle()
+    var posterSetupOpen by remember { mutableStateOf(false) }
     var followsOpen by remember { mutableStateOf(false) }
     val context = LocalContext.current
-    val uriHandler = LocalUriHandler.current
-    val activeInfo = providers.firstOrNull { it.active }?.info
     val activeName = providers.firstOrNull { it.active }?.info?.displayName
         ?: stringResource(R.string.set_service_fallback)
 
@@ -181,6 +148,23 @@ fun SettingsScreen(onConnect: () -> Unit, onBack: (() -> Unit)? = null, viewMode
         }
     }
     var showSignOutDialog by remember { mutableStateOf(false) }
+    val actions = SettingsActions(
+        onConnect = onConnect,
+        showSignOut = { showSignOutDialog = true },
+        showFolderPicker = { showFolderDialog = true },
+        showFollows = { followsOpen = true },
+        showPosterSetup = { posterSetupOpen = true }
+    )
+
+    // The open category (null = the category list) and the search text survive rotation and process death.
+    var selectedKey by rememberSaveable { mutableStateOf<String?>(null) }
+    var query by rememberSaveable { mutableStateOf("") }
+    // Where Back from a sub-page puts D-pad focus again.
+    var returnTo by remember { mutableStateOf<SettingsCategory?>(null) }
+    var pendingScroll by remember { mutableStateOf<Pair<SettingsCategory, Int>?>(null) }
+    val rowFocus = remember { SettingsCategory.entries.associateWith { FocusRequester() } }
+    val pageFocus = remember { FocusRequester() }
+    val categoryListState = rememberLazyListState()
 
     // Large title that shrinks into the bar as the list scrolls, with the back arrow beside it.
     // Fresh bar state when the window changes size or density: a collapse offset measured for the old
@@ -190,7 +174,6 @@ fun SettingsScreen(onConnect: () -> Unit, onBack: (() -> Unit)? = null, viewMode
         androidx.compose.material3.TopAppBarState(-Float.MAX_VALUE, 0f, 0f)
     }
     val scrollBehavior = androidx.compose.material3.TopAppBarDefaults.exitUntilCollapsedScrollBehavior(barState)
-    val listState = androidx.compose.foundation.lazy.rememberLazyListState()
     val target by SettingsTarget.section.collectAsStateWithLifecycle()
     // The bar publishes its collapse limit when it is first measured; until then it is -Float.MAX_VALUE.
     // Keep the offset inside [limit, 0] whenever the limit changes so the bar never measures below its collapsed height.
@@ -201,34 +184,37 @@ fun SettingsScreen(onConnect: () -> Unit, onBack: (() -> Unit)? = null, viewMode
             }
         }
     }
+    // A fresh page starts under a full-size title.
+    LaunchedEffect(selectedKey) { scrollBehavior.state.heightOffset = 0f }
     LaunchedEffect(target) {
-        if (target == null) return@LaunchedEffect
-        try {
-            val index = SECTION_ORDER.indexOf(target)
-            if (index >= 0) {
-                listState.scrollToItem(index)
-                // Jumped down: show the small bar, not the large title (once the bar has been measured).
-                if (index > 0) {
-                    val limit = withTimeoutOrNull(1000) {
-                        snapshotFlow { scrollBehavior.state.heightOffsetLimit }.first { it > -Float.MAX_VALUE / 2 && it <= 0f }
-                    }
-                    if (limit != null) scrollBehavior.state.heightOffset = limit
-                }
-            }
-        } finally {
-            // Always consumed, so a stale target cannot fire again.
-            SettingsTarget.section.value = null
+        val category = SettingsCategory.forTarget(target)
+        if (category != null) {
+            selectedKey = category.key
+            query = ""
+            pendingScroll = category to SEARCH_SOURCES_ITEM
         }
+        // Always consumed, so a stale target cannot fire again.
+        if (target != null) SettingsTarget.section.value = null
     }
 
+    val wide = cfg.screenWidthDp >= 840
+    val searching = query.isNotBlank()
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             androidx.compose.material3.LargeTopAppBar(
-                title = { Text(stringResource(R.string.tab_settings), maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis) },
+                title = {
+                    val open = SettingsCategory.fromKey(selectedKey).takeIf { !wide }
+                    Text(
+                        stringResource(open?.title ?: R.string.tab_settings),
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                    )
+                },
                 navigationIcon = {
-                    if (onBack != null) {
-                        IconButton(onClick = onBack) {
+                    val back = if (selectedKey != null && !wide) ({ selectedKey = null }) else onBack
+                    if (back != null) {
+                        IconButton(onClick = back) {
                             Icon(Icons.AutoMirrored.Rounded.ArrowBack, stringResource(R.string.shell_cd_back))
                         }
                     }
@@ -237,366 +223,69 @@ fun SettingsScreen(onConnect: () -> Unit, onBack: (() -> Unit)? = null, viewMode
             )
         }
     ) { padding ->
-        // On wide screens the list keeps a readable width, centred, so a switch stays near its label.
         androidx.compose.foundation.layout.BoxWithConstraints(Modifier.padding(padding).fillMaxSize()) {
-        val side = ((maxWidth - 640.dp) / 2).coerceAtLeast(0.dp)
-        LazyColumn(
-            state = listState,
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(start = side, end = side, bottom = 32.dp)
-        ) {
-            item(key = "service") {
-                SectionCard(title = stringResource(R.string.set_service)) {
-                    AccountHeader(
-                        account = account,
-                        serviceName = activeInfo?.displayName,
-                        onManage = { activeInfo?.let { uriHandler.openUri(it.websiteUrl) } }
-                    )
-                    providers.forEach { row ->
-                        ProviderChoiceRow(
-                            name = row.info.displayName,
-                            signedIn = row.signedIn,
-                            selected = row.active,
-                            onClick = {
-                                viewModel.selectProvider(row.info.id)
-                                // Its sign-in is on the Library tab.
-                                if (!row.signedIn) onConnect()
-                            }
-                        )
-                    }
-                    if (providers.any { it.active && it.signedIn }) {
-                        RowDivider()
-                        SettingRow(
-                            icon = Icons.AutoMirrored.Rounded.Logout,
-                            title = stringResource(R.string.set_sign_out_of, activeName),
-                            onClick = { showSignOutDialog = true }
-                        )
-                    }
+            val open = SettingsCategory.fromKey(selectedKey)
+            // Wide: categories and options side by side, so one is always open. Narrow: one pane.
+            val shown = if (wide) open ?: SettingsCategory.ACCOUNT else open
+            // Back from a sub-page leaves it for the list; from search results it clears the search.
+            // Disabled otherwise, so HomeScreen's own handler for pushed routes still works.
+            BackHandler(enabled = (!wide && open != null) || searching) {
+                if (!wide && open != null) selectedKey = null else query = ""
+            }
+            LaunchedEffect(shown, wide) {
+                if (wide) return@LaunchedEffect
+                withFrameNanos { }
+                if (shown != null) {
+                    runCatching { pageFocus.requestFocus() }
+                } else returnTo?.let {
+                    runCatching { rowFocus.getValue(it).requestFocus() }
+                    returnTo = null
                 }
             }
-
-            item(key = "appearance") {
-                SectionCard(title = stringResource(R.string.set_appearance)) {
-                    AppearanceContent(
-                        appTheme = appTheme,
-                        dynamicColor = dynamicColor,
-                        mode = theme,
-                        pureBlack = pureBlack,
-                        onSelectTheme = viewModel::selectTheme,
-                        onSelectWallpaper = { viewModel.setDynamicColor(true) },
-                        onMode = viewModel::setThemeMode,
-                        onPureBlack = viewModel::setPureBlack
-                    )
-                    // Per-app language needs Android 13+.
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                        RowDivider()
-                        LanguageRow()
-                    }
-                }
+            val openCategory = { c: SettingsCategory ->
+                returnTo = c
+                query = ""
+                selectedKey = c.key
             }
-
-            item(key = "folder") {
-                // The storage lookup touches the disk: off the main thread.
-                val inAppStorage by produceState(false, dir) {
-                    value = dir.isNotBlank() && !SafPaths.isTreeUri(dir) &&
-                        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { StorageAccess.isAppStorage(context, dir) }
-                }
-                SectionCard(title = stringResource(R.string.set_download_folder)) {
-                    SettingRow(
-                        icon = Icons.Rounded.Folder,
-                        // A friendly name; the full path (which wraps) sits underneath for plain paths.
-                        title = if (dir.isNotBlank() && !SafPaths.isTreeUri(dir) && inAppStorage)
-                            stringResource(R.string.set_folder_app_storage)
-                        else StorageAccess.label(context, dir),
-                        subtitle = dir.takeIf { it.isNotBlank() && !SafPaths.isTreeUri(it) },
-                        onClick = { showFolderDialog = true },
-                        trailing = {
-                            TextButton(onClick = { showFolderDialog = true }) { Text(stringResource(R.string.set_change)) }
-                        }
-                    )
-                    RowDivider()
-                    SwitchSettingRow(
-                        icon = Icons.Rounded.FolderOpen,
-                        title = stringResource(R.string.set_import_local),
-                        subtitle = stringResource(R.string.set_import_local_detail),
-                        checked = importLocal,
-                        onChange = viewModel::setImportLocal
-                    )
-                    RowDivider()
-                    SwitchSettingRow(
-                        icon = Icons.Rounded.CreateNewFolder,
-                        title = stringResource(R.string.set_organise),
-                        subtitle = stringResource(R.string.set_organise_detail),
-                        checked = organize,
-                        onChange = viewModel::setOrganizeLibrary
-                    )
-                    RowDivider()
-                    SwitchSettingRow(
-                        icon = Icons.Rounded.DeleteSweep,
-                        title = stringResource(R.string.set_remove_after),
-                        subtitle = stringResource(R.string.set_remove_after_detail),
-                        checked = removeAfter,
-                        onChange = viewModel::setRemoveAfterDownload
-                    )
-                    storageInfo?.let { info ->
-                        RowDivider()
-                        SettingRow(
-                            icon = Icons.Rounded.Storage,
-                            title = info.freeBytes?.let { stringResource(R.string.set_storage_free, formatSize(it)) }
-                                ?: stringResource(R.string.set_storage_free_unknown),
-                            subtitle = if (info.downloadedFiles > 0) {
-                                pluralRes(
-                                    R.plurals.set_storage_downloaded,
-                                    info.downloadedFiles,
-                                    android.text.format.Formatter.formatShortFileSize(context, info.downloadedBytes),
-                                    info.downloadedFiles
-                                )
-                            } else null
-                        )
-                    }
-                    RowDivider()
-                    AutoDeleteRow(current = autoDeleteDays, onPick = viewModel::pickAutoDeleteDays)
-                    RowDivider()
-                    ExpiryReminderRow(current = expiryReminderDays, onPick = viewModel::setExpiryReminderDays)
-                    RowDivider()
-                    YouTubeQualityRow(current = youTubeQuality, onPick = viewModel::setYouTubeQuality)
-                }
+            val categoryList: @Composable (Modifier) -> Unit = { modifier ->
+                CategoryList(
+                    viewModel = viewModel,
+                    query = query,
+                    onQuery = { query = it },
+                    selected = if (wide) shown else null,
+                    rowFocus = rowFocus,
+                    onOpen = openCategory,
+                    state = categoryListState,
+                    modifier = modifier
+                )
             }
-
-            item(key = "when") {
-                SectionCard(title = stringResource(R.string.set_when)) {
-                    SwitchSettingRow(
-                        icon = Icons.Rounded.Wifi,
-                        title = stringResource(R.string.set_wifi_only),
-                        subtitle = stringResource(R.string.set_wifi_only_detail),
-                        checked = rules.wifiOnly,
-                        onChange = viewModel::setWifiOnly
-                    )
-                    RowDivider()
-                    SwitchSettingRow(
-                        icon = Icons.Rounded.BatteryChargingFull,
-                        title = stringResource(R.string.set_charging_only),
-                        subtitle = null,
-                        checked = rules.chargingOnly,
-                        onChange = viewModel::setChargingOnly
-                    )
-                    RowDivider()
-                    SwitchSettingRow(
-                        icon = Icons.Rounded.Schedule,
-                        title = stringResource(R.string.set_schedule),
-                        subtitle = stringResource(R.string.set_schedule_detail),
-                        checked = rules.scheduleEnabled,
-                        onChange = { viewModel.setSchedule(it, rules.scheduleStartHour, rules.scheduleEndHour) }
-                    )
-                    if (rules.scheduleEnabled) {
-                        ScheduleRow(
-                            start = rules.scheduleStartHour,
-                            end = rules.scheduleEndHour,
-                            onChange = { st, en -> viewModel.setSchedule(true, st, en) }
-                        )
-                        if (!ScheduleAlarm.canBeExact(context)) {
-                            Column(Modifier.padding(start = 68.dp, end = 16.dp, bottom = 8.dp)) {
-                                Text(
-                                    stringResource(R.string.set_alarm_needed),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                                TextButton(onClick = {
-                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                                        context.startActivity(
-                                            Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
-                                                .setData(Uri.parse("package:${context.packageName}"))
-                                        )
-                                    }
-                                }) { Text(stringResource(R.string.action_allow)) }
-                            }
+            val page: @Composable (SettingsCategory, Modifier, Dp) -> Unit = { category, modifier, side ->
+                key(category) {
+                    val state = rememberLazyListState()
+                    LaunchedEffect(pendingScroll) {
+                        pendingScroll?.takeIf { it.first == category }?.let {
+                            state.scrollToItem(it.second)
+                            pendingScroll = null
                         }
                     }
-                    RowDivider()
-                    SpeedLimitRow(current = rules.speedLimitKbps, onPick = viewModel::setSpeedLimit)
-                    RowDivider()
-                    val storageUsed by viewModel.storageUsedBytes.collectAsStateWithLifecycle()
-                    StorageLimitRow(current = rules.storageLimitGb, usedBytes = storageUsed, onPick = viewModel::setStorageLimit)
-                }
-            }
-
-            item(key = "library") {
-                SectionCard(title = stringResource(R.string.tab_library)) {
-                    SortRow(current = sort, onPick = viewModel::setSortDefault)
-                    RowDivider()
-                    PlayerRow(internal = internalPlayer, onPick = viewModel::setInternalPlayer)
-                    RowDivider()
-                    // Only DebForge's player plays the next episode.
-                    if (internalPlayer) {
-                        SwitchSettingRow(
-                            icon = Icons.Rounded.SkipNext,
-                            title = stringResource(R.string.set_autoplay_next),
-                            subtitle = stringResource(R.string.set_autoplay_next_detail),
-                            checked = autoplayNext,
-                            onChange = viewModel::setAutoplayNext
-                        )
-                        RowDivider()
-                        SwitchSettingRow(
-                            icon = Icons.Rounded.FastForward,
-                            title = stringResource(R.string.set_auto_skip_intro),
-                            subtitle = stringResource(R.string.set_auto_skip_intro_detail),
-                            checked = autoSkipIntro,
-                            onChange = viewModel::setAutoSkipIntro
-                        )
-                        RowDivider()
-                        SwitchSettingRow(
-                            icon = Icons.Rounded.FastForward,
-                            title = stringResource(R.string.set_sponsorblock),
-                            subtitle = stringResource(R.string.set_sponsorblock_detail),
-                            checked = sponsorBlock,
-                            onChange = viewModel::setSponsorBlock
-                        )
-                        if (sponsorBlock) {
-                            val cats = listOf(
-                                "sponsor" to R.string.set_sb_sponsor, "selfpromo" to R.string.set_sb_selfpromo,
-                                "interaction" to R.string.set_sb_interaction, "intro" to R.string.set_sb_intro,
-                                "outro" to R.string.set_sb_outro, "preview" to R.string.set_sb_preview,
-                            )
-                            androidx.compose.foundation.layout.FlowRow(
-                                Modifier.padding(start = 16.dp, end = 16.dp, bottom = 12.dp),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            ) {
-                                cats.forEach { (key, label) ->
-                                    val on = key in sponsorCategories
-                                    androidx.compose.material3.FilterChip(
-                                        selected = on,
-                                        onClick = { viewModel.setSponsorCategories(if (on) sponsorCategories - key else sponsorCategories + key) },
-                                        label = { Text(stringResource(label)) },
-                                        modifier = Modifier.heightIn(min = 48.dp),
-                                    )
-                                }
-                            }
-                            if (sponsorCategories.isEmpty()) Text(
-                                stringResource(R.string.set_sb_none_hint),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 12.dp),
-                            )
-                        }
-                        RowDivider()
-                        SwitchSettingRow(
-                            icon = Icons.Rounded.SkipNext,
-                            title = stringResource(R.string.set_yt_autoplay),
-                            subtitle = stringResource(R.string.set_yt_autoplay_detail),
-                            checked = youTubeAutoplay,
-                            onChange = viewModel::setYouTubeAutoplay
-                        )
-                        RowDivider()
-                        SwitchSettingRow(
-                            icon = Icons.Rounded.FastForward,
-                            title = stringResource(R.string.set_even_out_volume),
-                            subtitle = stringResource(R.string.set_even_out_volume_detail),
-                            checked = evenOutVolume,
-                            onChange = viewModel::setEvenOutVolume
-                        )
-                        RowDivider()
-                        SwitchSettingRow(
-                            icon = Icons.Rounded.Image,
-                            title = stringResource(R.string.set_stream_previews),
-                            subtitle = stringResource(R.string.set_stream_previews_detail),
-                            checked = streamPreviews,
-                            onChange = viewModel::setStreamPreviews
-                        )
-                        RowDivider()
-                        SwitchSettingRow(
-                            icon = Icons.Rounded.TouchApp,
-                            title = stringResource(R.string.set_player_gestures),
-                            subtitle = stringResource(R.string.set_player_gestures_detail),
-                            checked = playerGestures,
-                            onChange = viewModel::setPlayerGestures
-                        )
-                        RowDivider()
-                        SwitchSettingRow(
-                            icon = Icons.Rounded.Palette,
-                            title = stringResource(R.string.set_player_art_color),
-                            subtitle = stringResource(R.string.set_player_art_color_detail),
-                            checked = playerArtColor,
-                            onChange = viewModel::setPlayerArtColor
-                        )
-                        RowDivider()
-                        SkipLengthRow(current = audioSkipSeconds, onPick = viewModel::setAudioSkipSeconds)
-                        RowDivider()
-                        LanguageRow(
-                            icon = Icons.Rounded.Audiotrack,
-                            title = stringResource(R.string.set_audio_language),
-                            current = audioLanguage,
-                            offOption = false,
-                            onPick = viewModel::setAudioLanguage
-                        )
-                        RowDivider()
-                        LanguageRow(
-                            icon = Icons.Rounded.ClosedCaption,
-                            title = stringResource(R.string.set_subtitle_language),
-                            current = subtitleLanguage,
-                            offOption = true,
-                            onPick = viewModel::setSubtitleLanguage
-                        )
-                        RowDivider()
-                        SwitchSettingRow(
-                            icon = Icons.Rounded.Fullscreen,
-                            title = stringResource(R.string.set_video_full_screen),
-                            subtitle = stringResource(R.string.set_video_full_screen_detail),
-                            checked = videoFullScreen,
-                            onChange = viewModel::setVideoFullScreen
-                        )
-                        RowDivider()
-                        if (viewModel.pipAvailable) {
-                            SwitchSettingRow(
-                                icon = Icons.Rounded.PictureInPictureAlt,
-                                title = stringResource(R.string.set_pip),
-                                subtitle = stringResource(R.string.set_pip_detail),
-                                checked = pip,
-                                onChange = viewModel::setPip
-                            )
-                            RowDivider()
-                        }
+                    LazyColumn(
+                        state = state,
+                        modifier = modifier.fillMaxSize().focusRequester(pageFocus).focusGroup(),
+                        contentPadding = PaddingValues(start = side, end = side, bottom = 32.dp)
+                    ) {
+                        settingsPage(category, viewModel, actions)
                     }
-                    SwitchSettingRow(
-                        icon = Icons.Rounded.FilterList,
-                        title = stringResource(R.string.set_show_extras),
-                        subtitle = stringResource(R.string.set_show_extras_detail),
-                        checked = showExtras,
-                        onChange = viewModel::setShowExtraFiles
-                    )
-                    RowDivider()
-                    SwitchSettingRow(
-                        icon = Icons.Rounded.ContentPaste,
-                        title = stringResource(R.string.set_clipboard_offer),
-                        subtitle = stringResource(R.string.set_clipboard_offer_detail),
-                        checked = clipboardOffer,
-                        onChange = viewModel::setClipboardOffer
-                    )
-                    RowDivider()
-                    SettingRow(
-                        icon = Icons.Rounded.NotificationsActive,
-                        title = stringResource(R.string.set_following),
-                        subtitle = if (follows.isEmpty() && channels.isEmpty() && podcasts.isEmpty()) stringResource(R.string.set_following_none)
-                        else (follows.map { it.title } + channels.map { it.title } + podcasts.map { it.title }).joinToString(", "),
-                        onClick = if (follows.isEmpty() && channels.isEmpty() && podcasts.isEmpty()) null else ({ followsOpen = true })
-                    )
-                    RowDivider()
-                    TmdbKeyRow(
-                        hasUserKey = tmdbKey.isNotBlank(),
-                        enabled = postersEnabled,
-                        onSetUp = { posterSetupOpen = true },
-                        onRemove = { viewModel.setTmdbKey("") },
-                        onClearCache = viewModel::clearPosterCache
-                    )
                 }
             }
-
-            item(key = "trakt") { TraktSection() }
-            item(key = "opensubtitles") { OpenSubtitlesSection() }
-            item(key = "search_sources") { SearchSourcesSection() }
-            item(key = "usage") { DataUsageSection() }
-            item(key = "backup") { BackupSection() }
-            item(key = "about") { AboutSection() }
-        }
+            when {
+                wide -> Row(Modifier.fillMaxSize()) {
+                    categoryList(Modifier.width(360.dp))
+                    page(shown!!, Modifier.weight(1f), 0.dp)
+                }
+                shown == null -> categoryList(Modifier.fillMaxSize())
+                // A readable width, centred, so a switch stays near its label.
+                else -> page(shown, Modifier, ((maxWidth - 640.dp) / 2).coerceAtLeast(0.dp))
+            }
         }
     }
 
@@ -722,16 +411,168 @@ fun SettingsScreen(onConnect: () -> Unit, onBack: (() -> Unit)? = null, viewMode
     }
 }
 
-/** The Settings sections top to bottom; must match the item keys in [SettingsScreen]. */
-private val SECTION_ORDER = listOf(
-    "service", "appearance", "folder", "when", "library",
-    "trakt", "opensubtitles", SettingsTarget.SEARCH_SOURCES, "usage", "backup", "about"
-)
+@Composable
+private fun CategoryList(
+    viewModel: SettingsViewModel,
+    query: String,
+    onQuery: (String) -> Unit,
+    selected: SettingsCategory?,
+    rowFocus: Map<SettingsCategory, FocusRequester>,
+    onOpen: (SettingsCategory) -> Unit,
+    state: LazyListState,
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+    val results = remember(query) { searchSettings(query) { context.getString(it) } }
+    LazyColumn(state = state, modifier = modifier, contentPadding = PaddingValues(bottom = 32.dp)) {
+        item(key = "search") {
+            OutlinedTextField(
+                value = query,
+                onValueChange = onQuery,
+                singleLine = true,
+                placeholder = { Text(stringResource(R.string.settings_search_hint)) },
+                leadingIcon = { Icon(Icons.Rounded.Search, contentDescription = null) },
+                trailingIcon = {
+                    if (query.isNotEmpty()) {
+                        IconButton(onClick = { onQuery("") }) {
+                            Icon(Icons.Rounded.Close, stringResource(R.string.search_clear_recent))
+                        }
+                    }
+                },
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)
+            )
+        }
+        if (query.isBlank()) {
+            item(key = "categories") {
+                SectionCard {
+                    SettingsCategory.entries.forEachIndexed { i, category ->
+                        if (i > 0) RowDivider()
+                        Box(
+                            Modifier
+                                .focusRequester(rowFocus.getValue(category))
+                                .focusGroup()
+                                .background(
+                                    if (category == selected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent
+                                )
+                        ) {
+                            SettingRow(
+                                icon = category.icon(),
+                                title = stringResource(category.title),
+                                subtitle = categorySummary(category, viewModel),
+                                onClick = { onOpen(category) },
+                                trailing = {
+                                    Icon(Icons.AutoMirrored.Rounded.KeyboardArrowRight, contentDescription = null)
+                                }
+                            )
+                        }
+                    }
+                }
+            }
+        } else {
+            if (results.isEmpty()) {
+                item(key = "none") {
+                    Text(
+                        stringResource(R.string.settings_search_none),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(horizontal = 28.dp, vertical = 16.dp)
+                    )
+                }
+            } else {
+                item(key = "results") {
+                    SectionCard {
+                        results.forEachIndexed { i, entry ->
+                            if (i > 0) RowDivider()
+                            SettingRow(
+                                icon = entry.category.icon(),
+                                title = stringResource(entry.title),
+                                subtitle = stringResource(entry.category.title) +
+                                    (entry.detail?.let { " · " + stringResource(it) } ?: ""),
+                                onClick = { onOpen(entry.category) }
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+private fun SettingsCategory.icon() = when (this) {
+    SettingsCategory.ACCOUNT -> Icons.Rounded.Person
+    SettingsCategory.APPEARANCE -> Icons.Rounded.Palette
+    SettingsCategory.HOME -> Icons.Rounded.Home
+    SettingsCategory.DOWNLOADS -> Icons.Rounded.Download
+    SettingsCategory.VIDEO -> Icons.Rounded.Movie
+    SettingsCategory.AUDIO -> Icons.Rounded.Headphones
+    SettingsCategory.YOUTUBE -> Icons.Rounded.PlayCircle
+    SettingsCategory.CONNECTIONS -> Icons.Rounded.Link
+    SettingsCategory.DATA -> Icons.Rounded.Backup
+    SettingsCategory.ABOUT -> Icons.Rounded.Info
+}
+
+/** The one-line live summary under a category title; null where a static title says enough. */
+@Composable
+private fun categorySummary(category: SettingsCategory, viewModel: SettingsViewModel): String? = when (category) {
+    SettingsCategory.ACCOUNT -> {
+        val providers by viewModel.providers.collectAsStateWithLifecycle()
+        val account by viewModel.account.collectAsStateWithLifecycle()
+        val active = providers.firstOrNull { it.active }
+        val days = account?.daysLeft
+        listOfNotNull(
+            active?.info?.displayName,
+            when {
+                active == null || !active.signedIn -> stringResource(R.string.set_not_signed_in)
+                days == null -> null
+                days < 0 -> stringResource(R.string.acct_expired)
+                days == 0L -> stringResource(R.string.acct_expires_today)
+                else -> pluralRes(R.plurals.acct_days_left, days.toInt(), days.toInt())
+            }
+        ).joinToString(" · ")
+    }
+    SettingsCategory.APPEARANCE -> {
+        val mode by viewModel.themeMode.collectAsStateWithLifecycle()
+        mode.label()
+    }
+    SettingsCategory.HOME -> {
+        val sort by viewModel.sortDefault.collectAsStateWithLifecycle()
+        sort.label()
+    }
+    SettingsCategory.DOWNLOADS -> {
+        val rules by viewModel.rules.collectAsStateWithLifecycle()
+        val info by viewModel.storageInfo.collectAsStateWithLifecycle()
+        listOfNotNull(
+            stringResource(R.string.set_wifi_only).takeIf { rules.wifiOnly },
+            info?.freeBytes?.let { stringResource(R.string.set_storage_free, formatSize(it)) }
+        ).joinToString(" · ").ifEmpty { null }
+    }
+    SettingsCategory.VIDEO -> {
+        val internal by viewModel.internalPlayer.collectAsStateWithLifecycle()
+        stringResource(if (internal) R.string.set_player_internal else R.string.set_player_external)
+    }
+    SettingsCategory.AUDIO -> {
+        val seconds by viewModel.audioSkipSeconds.collectAsStateWithLifecycle()
+        stringResource(R.string.skip_seconds, seconds)
+    }
+    SettingsCategory.YOUTUBE -> {
+        val q by viewModel.youTubeQuality.collectAsStateWithLifecycle()
+        when (q) {
+            DefaultQuality.ASK -> stringResource(R.string.set_yt_quality_ask)
+            DefaultQuality.BEST -> stringResource(R.string.set_yt_quality_best)
+            DefaultQuality.AUDIO -> stringResource(R.string.set_yt_quality_audio)
+            else -> "${q.height}p"
+        }
+    }
+    SettingsCategory.CONNECTIONS -> stringResource(R.string.settings_sum_connections)
+    SettingsCategory.DATA -> stringResource(R.string.settings_sum_data)
+    SettingsCategory.ABOUT -> stringResource(R.string.about_version, BuildConfig.VERSION_NAME)
+}
+
 
 // --- rows --------------------------------------------------------------------
 
 @Composable
-private fun ChoiceRow(label: String, selected: Boolean, onClick: () -> Unit) {
+internal fun ChoiceRow(label: String, selected: Boolean, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -749,7 +590,7 @@ private fun ChoiceRow(label: String, selected: Boolean, onClick: () -> Unit) {
 
 /** A service in the list: radio, name, signed-in pill. */
 @Composable
-private fun ProviderChoiceRow(name: String, signedIn: Boolean, selected: Boolean, onClick: () -> Unit) {
+internal fun ProviderChoiceRow(name: String, signedIn: Boolean, selected: Boolean, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -778,7 +619,7 @@ private fun ProviderChoiceRow(name: String, signedIn: Boolean, selected: Boolean
 // --- folder picker dialog ----------------------------------------------------
 
 @Composable
-private fun FolderPickerDialog(
+internal fun FolderPickerDialog(
     current: String,
     onPickAny: () -> Unit,
     onPick: (String) -> Unit,
@@ -834,7 +675,7 @@ private fun FolderPickerDialog(
 // --- labels ------------------------------------------------------------------
 
 @Composable
-private fun SortOrder.label(): String = stringResource(
+internal fun SortOrder.label(): String = stringResource(
     when (this) {
         SortOrder.DATE_DESC -> R.string.set_sort_newest
         SortOrder.DATE_ASC -> R.string.set_sort_oldest
@@ -852,7 +693,7 @@ private fun SortOrder.label(): String = stringResource(
  */
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
-private fun LanguageRow() {
+internal fun LanguageRow() {
     val context = LocalContext.current
     val lm = remember { context.getSystemService(LocaleManager::class.java) }
     val current = remember { lm.applicationLocales.toLanguageTags() }
@@ -911,7 +752,7 @@ private val LANGUAGES = listOf(
 
 /** Default sort for the Library, picked from a menu. */
 @Composable
-private fun SortRow(current: SortOrder, onPick: (SortOrder) -> Unit) {
+internal fun SortRow(current: SortOrder, onPick: (SortOrder) -> Unit) {
     var open by remember { mutableStateOf(false) }
     Box {
         SettingRow(
@@ -937,7 +778,7 @@ private fun SortRow(current: SortOrder, onPick: (SortOrder) -> Unit) {
  * subtitles) off. The player also remembers what you pick per show.
  */
 @Composable
-private fun LanguageRow(
+internal fun LanguageRow(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     title: String,
     current: String,
@@ -972,7 +813,7 @@ private fun LanguageRow(
 
 /** "Play videos in": DebForge's player or another app (VLC, mpv…). */
 @Composable
-private fun PlayerRow(internal: Boolean, onPick: (Boolean) -> Unit) {
+internal fun PlayerRow(internal: Boolean, onPick: (Boolean) -> Unit) {
     var open by remember { mutableStateOf(false) }
     @Composable
     fun label(v: Boolean) = stringResource(if (v) R.string.set_player_internal else R.string.set_player_external)
@@ -997,7 +838,7 @@ private fun PlayerRow(internal: Boolean, onPick: (Boolean) -> Unit) {
 
 /** YouTube "Default quality": the preview preselects it; the user can still change it. */
 @Composable
-private fun YouTubeQualityRow(current: DefaultQuality, onPick: (DefaultQuality) -> Unit) {
+internal fun YouTubeQualityRow(current: DefaultQuality, onPick: (DefaultQuality) -> Unit) {
     var open by remember { mutableStateOf(false) }
     @Composable
     fun label(q: DefaultQuality): String = when (q) {
@@ -1027,7 +868,7 @@ private fun YouTubeQualityRow(current: DefaultQuality, onPick: (DefaultQuality) 
 
 /** "Delete downloads after": Never / 7 / 14 / 30 / 60 days. */
 @Composable
-private fun AutoDeleteRow(current: Int, onPick: (Int) -> Unit) {
+internal fun AutoDeleteRow(current: Int, onPick: (Int) -> Unit) {
     var open by remember { mutableStateOf(false) }
     @Composable
     fun label(days: Int): String =
@@ -1053,7 +894,7 @@ private fun AutoDeleteRow(current: Int, onPick: (Int) -> Unit) {
 }
 
 @Composable
-private fun ExpiryReminderRow(current: Int, onPick: (Int) -> Unit) {
+internal fun ExpiryReminderRow(current: Int, onPick: (Int) -> Unit) {
     var open by remember { mutableStateOf(false) }
     @Composable
     fun label(days: Int): String =
@@ -1083,7 +924,7 @@ private fun ExpiryReminderRow(current: Int, onPick: (Int) -> Unit) {
  * (steps, link to TMDB, paste, and a check with TMDB before saving).
  */
 @Composable
-private fun TmdbKeyRow(
+internal fun TmdbKeyRow(
     hasUserKey: Boolean,
     enabled: Boolean,
     onSetUp: () -> Unit,
@@ -1113,7 +954,7 @@ private fun TmdbKeyRow(
 
 /** Signed-in account at the top of the Service card, on a soft gradient. */
 @Composable
-private fun AccountHeader(account: AccountInfo?, serviceName: String?, onManage: () -> Unit) {
+internal fun AccountHeader(account: AccountInfo?, serviceName: String?, onManage: () -> Unit) {
     if (account == null) return
     val days = account.daysLeft
     val warn = days != null && days <= 7
@@ -1178,7 +1019,7 @@ private fun AccountHeader(account: AccountInfo?, serviceName: String?, onManage:
 }
 
 @Composable
-private fun ScheduleRow(start: Int, end: Int, onChange: (Int, Int) -> Unit) {
+internal fun ScheduleRow(start: Int, end: Int, onChange: (Int, Int) -> Unit) {
     Row(
         Modifier.fillMaxWidth().padding(start = 68.dp, end = 16.dp, bottom = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -1192,7 +1033,7 @@ private fun ScheduleRow(start: Int, end: Int, onChange: (Int, Int) -> Unit) {
 }
 
 @Composable
-private fun HourPicker(hour: Int, onPick: (Int) -> Unit) {
+internal fun HourPicker(hour: Int, onPick: (Int) -> Unit) {
     var open by remember { mutableStateOf(false) }
     Box {
         OutlinedButton(onClick = { open = true }) { Text("%02d:00".format(hour)) }
@@ -1205,7 +1046,7 @@ private fun HourPicker(hour: Int, onPick: (Int) -> Unit) {
 }
 
 @Composable
-private fun SkipLengthRow(current: Int, onPick: (Int) -> Unit) {
+internal fun SkipLengthRow(current: Int, onPick: (Int) -> Unit) {
     var open by remember { mutableStateOf(false) }
     Box {
         SettingRow(
@@ -1236,15 +1077,15 @@ private fun SkipLengthRow(current: Int, onPick: (Int) -> Unit) {
 private val SPEED_OPTIONS = listOf(0, 1024, 2 * 1024, 5 * 1024, 10 * 1024, 25 * 1024, 50 * 1024)
 
 @Composable
-private fun speedLabel(kbps: Int) =
+internal fun speedLabel(kbps: Int) =
     if (kbps <= 0) stringResource(R.string.speed_unlimited) else stringResource(R.string.speed_mbps, kbps / 1024)
 
 @Composable
-private fun storageLimitLabel(gb: Int) =
+internal fun storageLimitLabel(gb: Int) =
     if (gb <= 0) stringResource(R.string.set_storage_limit_off) else stringResource(R.string.set_storage_limit_gb, gb)
 
 @Composable
-private fun StorageLimitRow(current: Int, usedBytes: Long, onPick: (Int) -> Unit) {
+internal fun StorageLimitRow(current: Int, usedBytes: Long, onPick: (Int) -> Unit) {
     var open by remember { mutableStateOf(false) }
     val context = LocalContext.current
     Box {
@@ -1275,7 +1116,7 @@ private fun StorageLimitRow(current: Int, usedBytes: Long, onPick: (Int) -> Unit
 }
 
 @Composable
-private fun SpeedLimitRow(current: Int, onPick: (Int) -> Unit) {
+internal fun SpeedLimitRow(current: Int, onPick: (Int) -> Unit) {
     var open by remember { mutableStateOf(false) }
     Box {
         SettingRow(
