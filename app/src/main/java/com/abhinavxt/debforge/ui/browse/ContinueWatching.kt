@@ -45,6 +45,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
+import androidx.compose.runtime.produceState
+import androidx.compose.ui.platform.LocalContext
+import com.abhinavxt.debforge.player.ContinueThumbnails
 import com.abhinavxt.debforge.R
 import com.abhinavxt.debforge.data.metadata.MediaMeta
 import com.abhinavxt.debforge.data.playback.PlaybackEntity
@@ -159,6 +163,19 @@ private fun ContinueCard(
                     showTitle = !info.title.equals(entry.title, ignoreCase = true),
                     modifier = Modifier.fillMaxSize()
                 )
+                // A frame from the downloaded file fades in over the art (same box: no layout jump).
+                val context = LocalContext.current
+                val frame by produceState<java.io.File?>(null, entry.itemId, entry.positionMs / 60_000L) {
+                    value = ContinueThumbnails.load(context, entry.itemId, entry.positionMs, entry.durationMs)
+                }
+                frame?.let {
+                    AsyncImage(
+                        model = ImageRequest.Builder(context).data(it).crossfade(true).build(),
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
             }
             LinearProgressIndicator(
                 progress = { entry.progress ?: 0f },
