@@ -43,7 +43,11 @@ class TorBoxFreshListTest {
         }
     } as TorBoxApi
 
-    private val provider = TorBoxProvider(api, TokenStore(RuntimeEnvironment.getApplication()))
+    private val deviceApi = Proxy.newProxyInstance(javaClass.classLoader, arrayOf(TorBoxDeviceApi::class.java)) { _, m, _ ->
+        error(m.name)
+    } as TorBoxDeviceApi
+
+    private val provider = TorBoxProvider(api, deviceApi, TokenStore(RuntimeEnvironment.getApplication()))
 
     private fun item(id: Long) = TbItemDto(
         id, "t$id", 1, "2026-11-25T00:00:00Z", true, true, listOf(TbFileDto(1, "a.mkv", "a.mkv", 1, null))

@@ -5,6 +5,7 @@ import com.abhinavxt.debforge.data.provider.AccountInfo
 import com.abhinavxt.debforge.data.provider.AddResult
 import com.abhinavxt.debforge.data.provider.RemoteJob
 import com.abhinavxt.debforge.data.provider.DebridProvider
+import com.abhinavxt.debforge.data.provider.DeviceLogin
 import com.abhinavxt.debforge.data.provider.ProviderException
 import com.abhinavxt.debforge.data.provider.ProviderInfo
 import com.abhinavxt.debforge.data.provider.ResolvedLink
@@ -48,6 +49,7 @@ import javax.inject.Singleton
 @Singleton
 class TorBoxProvider @Inject constructor(
     private val api: TorBoxApi,
+    deviceApi: TorBoxDeviceApi,
     private val tokenStore: TokenStore
 ) : DebridProvider {
 
@@ -60,6 +62,8 @@ class TorBoxProvider @Inject constructor(
         emptyListHint = "Add a torrent, NZB or link on torbox.app to populate this list.",
         websiteUrl = "https://torbox.app/"
     )
+
+    override val deviceLogin: DeviceLogin = TorBoxDeviceLogin(deviceApi) { validateToken(it) }
 
     override suspend fun validateToken(token: String): AccountInfo {
         return api.validateUser("Bearer $token").unwrap().toAccount()

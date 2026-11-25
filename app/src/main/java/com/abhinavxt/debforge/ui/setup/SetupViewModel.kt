@@ -99,6 +99,7 @@ class SetupViewModel @Inject constructor(
     fun submit() {
         val current = _state.value
         if (!current.canSubmit) return
+        cancelDeviceLogin() // a code still being fetched must not keep polling after this sign-in
         _state.update { it.copy(isValidating = true, error = null) }
         viewModelScope.launch {
             when (val result = auth.saveAndValidate(current.selected, current.token.trim())) {

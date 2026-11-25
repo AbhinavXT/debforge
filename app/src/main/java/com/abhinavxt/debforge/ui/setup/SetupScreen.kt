@@ -153,7 +153,8 @@ fun SetupScreen(viewModel: SetupViewModel = hiltViewModel()) {
                     state = state,
                     onStart = viewModel::startDeviceLogin,
                     onCancel = viewModel::cancelDeviceLogin,
-                    onOpen = { url -> uriHandler.openUri(url) }
+                    // No browser (some TVs): the address and code stay on screen.
+                    onOpen = { url -> runCatching { uriHandler.openUri(url) } }
                 )
                 Text(
                     stringResource(R.string.setup_or_paste, tokenLabel),

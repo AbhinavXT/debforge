@@ -17,6 +17,7 @@ import com.abhinavxt.debforge.data.provider.realdebrid.RealDebridAuthenticator
 import com.abhinavxt.debforge.data.provider.realdebrid.RealDebridOAuthApi
 import com.abhinavxt.debforge.data.provider.realdebrid.RealDebridProvider
 import com.abhinavxt.debforge.data.provider.torbox.TorBoxApi
+import com.abhinavxt.debforge.data.provider.torbox.TorBoxDeviceApi
 import com.abhinavxt.debforge.data.provider.torbox.TorBoxProvider
 import com.abhinavxt.debforge.data.remote.AuthInterceptor
 import com.abhinavxt.debforge.domain.ProviderId
@@ -78,6 +79,19 @@ object ProviderModule {
         tokenStore: TokenStore
     ): TorBoxApi = retrofitFor(base, moshi, tokenStore, ProviderId.TORBOX, TorBoxApi.BASE_URL)
         .create(TorBoxApi::class.java)
+
+    /** Device sign-in must never send the stored token: plain client, no auth. */
+    @Provides
+    @Singleton
+    fun provideTorBoxDeviceApi(
+        @ApiHttpClient base: OkHttpClient,
+        moshi: Moshi
+    ): TorBoxDeviceApi = Retrofit.Builder()
+        .baseUrl(TorBoxApi.BASE_URL)
+        .client(base)
+        .addConverterFactory(MoshiConverterFactory.create(moshi))
+        .build()
+        .create(TorBoxDeviceApi::class.java)
 
     @Provides
     @Singleton
