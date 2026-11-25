@@ -20,6 +20,7 @@
     <string name="action_renew">Renovar</string>
     <string name="action_refresh">Actualizar</string>
     <string name="action_clear">Borrar</string>
+    <string name="action_undo">Deshacer</string>
     <string name="action_done">Listo</string>
     <string name="setup_your_service">tu servicio debrid</string>
     <string name="setup_intro">Elige tu servicio e inicia sesión con tu %2$s de %1$s.</string>
@@ -75,6 +76,11 @@
     <string name="browse_local_empty">Los vídeos que descargues desde la pestaña Navegador o desde un enlace aparecen aquí. Inicia sesión en un servicio debrid en Ajustes para ver también sus archivos.</string>
     <string name="browse_downloaded">Descargados</string>
     <string name="browse_downloaded_empty">Aquí aparecen los archivos guardados en este dispositivo: de tu servicio, de la pestaña Navegador o de un enlace.</string>
+    <string name="filter_movies">Películas</string>
+    <string name="filter_shows">Series</string>
+    <string name="filter_4k">4K</string>
+    <string name="filter_unwatched">Sin ver</string>
+    <string name="filters_no_match">Ningún título coincide con %1$s</string>
     <string name="action_delete_device">Eliminar del dispositivo</string>
     <string name="delete_device_title">¿Eliminar de este dispositivo?</string>
     <string name="delete_device_body">«%1$s» se eliminará del almacenamiento de este dispositivo. No se puede deshacer.</string>

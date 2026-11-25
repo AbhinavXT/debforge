@@ -70,6 +70,8 @@ data class BrowseUiState(
     val query: String = "",
     val sort: SortOrder = SortOrder.DATE_DESC,
     val grouped: Boolean = false,
+    /** Chips under the search field; kept here so they survive rotation. */
+    val quickFilters: Set<QuickFilter> = emptySet(),
     val posterView: Boolean = true,
     /** Loading the rest of the library so a search covers everything. */
     val searchingAll: Boolean = false,
@@ -239,6 +241,10 @@ class BrowseViewModel @Inject constructor(
         }
         refresh()
     }
+
+    fun onToggleQuickFilter(filter: QuickFilter) = _state.update { it.copy(quickFilters = it.quickFilters.toggled(filter)) }
+
+    fun clearQuickFilters() = _state.update { it.copy(quickFilters = emptySet()) }
 
     /** The "Downloaded" chip: the finished downloads on this device instead of the service's files. */
     fun onToggleDownloads() {

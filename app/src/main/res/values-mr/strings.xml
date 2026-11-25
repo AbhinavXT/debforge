@@ -20,6 +20,7 @@
     <string name="action_renew">नूतनीकरण करा</string>
     <string name="action_refresh">रिफ्रेश करा</string>
     <string name="action_clear">साफ करा</string>
+    <string name="action_undo">पूर्ववत करा</string>
     <string name="action_done">झाले</string>
     <string name="setup_your_service">तुमची डेब्रिड सेवा</string>
     <string name="setup_intro">तुमची सेवा निवडा आणि तुमच्या %1$s %2$s ने साइन इन करा.</string>
@@ -75,6 +76,11 @@
     <string name="browse_local_empty">ब्राउझर टॅब किंवा लिंकवरून डाउनलोड केलेले व्हिडिओ इथे दिसतात. debrid सेवेच्या फाइल्सही पाहण्यासाठी सेटिंग्जमध्ये साइन इन करा.</string>
     <string name="browse_downloaded">डाउनलोड केलेले</string>
     <string name="browse_downloaded_empty">या डिव्हाइसवर सेव्ह केलेल्या फाइल्स इथे दिसतात: तुमची सेवा, ब्राउझर टॅब किंवा लिंकवरून.</string>
+    <string name="filter_movies">चित्रपट</string>
+    <string name="filter_shows">मालिका</string>
+    <string name="filter_4k">4K</string>
+    <string name="filter_unwatched">न पाहिलेले</string>
+    <string name="filters_no_match">%1$s शी कोणतेही शीर्षक जुळत नाही</string>
     <string name="action_delete_device">डिव्हाइसवरून हटवा</string>
     <string name="delete_device_title">या डिव्हाइसवरून हटवायचे?</string>
     <string name="delete_device_body">“%1$s” या डिव्हाइसच्या स्टोरेजमधून हटवले जाईल. हे पूर्ववत करता येणार नाही.</string>

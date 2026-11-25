@@ -20,6 +20,7 @@
     <string name="action_renew">Yenile</string>
     <string name="action_refresh">Yenile</string>
     <string name="action_clear">Temizle</string>
+    <string name="action_undo">Geri al</string>
     <string name="action_done">Bitti</string>
     <string name="setup_your_service">debrid hizmetiniz</string>
     <string name="setup_intro">Hizmetinizi seçin ve %1$s %2$s ile giriş yapın.</string>
@@ -75,6 +76,11 @@
     <string name="browse_local_empty">Tarayıcı sekmesinden veya bir bağlantıdan indirdiğin videolar burada görünür. Bir debrid hizmetinin dosyalarını da görmek için Ayarlar\'dan oturum aç.</string>
     <string name="browse_downloaded">İndirilenler</string>
     <string name="browse_downloaded_empty">Bu cihaza kaydedilen dosyalar burada görünür: hizmetinden, Tarayıcı sekmesinden veya bir bağlantıdan.</string>
+    <string name="filter_movies">Filmler</string>
+    <string name="filter_shows">Diziler</string>
+    <string name="filter_4k">4K</string>
+    <string name="filter_unwatched">İzlenmeyenler</string>
+    <string name="filters_no_match">%1$s ile eşleşen başlık yok</string>
     <string name="action_delete_device">Cihazdan sil</string>
     <string name="delete_device_title">Bu cihazdan silinsin mi?</string>
     <string name="delete_device_body">“%1$s” bu cihazın depolama alanından silinecek. Bu işlem geri alınamaz.</string>

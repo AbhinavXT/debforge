@@ -20,6 +20,7 @@
     <string name="action_renew">রিনিউ করুন</string>
     <string name="action_refresh">রিফ্রেশ করুন</string>
     <string name="action_clear">মুছুন</string>
+    <string name="action_undo">পূর্বাবস্থায় ফেরান</string>
     <string name="action_done">হয়ে গেছে</string>
     <string name="setup_your_service">আপনার ডেব্রিড সার্ভিস</string>
     <string name="setup_intro">আপনার সার্ভিস বেছে নিন এবং আপনার %1$s %2$s দিয়ে সাইন ইন করুন।</string>
@@ -75,6 +76,11 @@
     <string name="browse_local_empty">ব্রাউজার ট্যাব বা কোনো লিংক থেকে ডাউনলোড করা ভিডিও এখানে দেখা যায়। কোনো debrid সার্ভিসের ফাইলও দেখতে সেটিংসে সাইন ইন করুন।</string>
     <string name="browse_downloaded">ডাউনলোড হয়েছে</string>
     <string name="browse_downloaded_empty">এই ডিভাইসে সেভ করা ফাইল এখানে দেখা যায়: আপনার সার্ভিস, ব্রাউজার ট্যাব বা লিংক থেকে।</string>
+    <string name="filter_movies">সিনেমা</string>
+    <string name="filter_shows">সিরিজ</string>
+    <string name="filter_4k">4K</string>
+    <string name="filter_unwatched">না দেখা</string>
+    <string name="filters_no_match">%1$s-এর সাথে কোনো শিরোনাম মেলেনি</string>
     <string name="action_delete_device">ডিভাইস থেকে মুছুন</string>
     <string name="delete_device_title">এই ডিভাইস থেকে মুছবেন?</string>
     <string name="delete_device_body">“%1$s” এই ডিভাইসের স্টোরেজ থেকে মুছে ফেলা হবে। এটি আর ফেরানো যাবে না।</string>

@@ -21,6 +21,7 @@
     <string name="action_renew">Renew</string>
     <string name="action_refresh">Refresh</string>
     <string name="action_clear">Clear</string>
+    <string name="action_undo">Undo</string>
     <string name="action_done">Done</string>
     <string name="setup_your_service">your debrid service</string>
     <string name="setup_intro">Choose your service and sign in with your %1$s %2$s.</string>
@@ -76,6 +77,11 @@
     <string name="browse_local_empty">Videos you download from the Browser tab or a link show up here. Sign in to a debrid service in Settings to see its files too.</string>
     <string name="browse_downloaded">Downloaded</string>
     <string name="browse_downloaded_empty">Files saved to this device show up here: from your service, the Browser tab or a link.</string>
+    <string name="filter_movies">Movies</string>
+    <string name="filter_shows">Shows</string>
+    <string name="filter_4k">4K</string>
+    <string name="filter_unwatched">Unwatched</string>
+    <string name="filters_no_match">No titles match %1$s</string>
     <string name="action_delete_device">Delete from device</string>
     <string name="delete_device_title">Delete from this device?</string>
     <string name="delete_device_body">“%1$s” will be deleted from this device\'s storage. This can\'t be undone.</string>

@@ -20,6 +20,7 @@
     <string name="action_renew">Perpanjang</string>
     <string name="action_refresh">Muat ulang</string>
     <string name="action_clear">Bersihkan</string>
+    <string name="action_undo">Urungkan</string>
     <string name="action_done">Selesai</string>
     <string name="setup_your_service">layanan debrid Anda</string>
     <string name="setup_intro">Pilih layanan Anda dan masuk dengan %2$s %1$s Anda.</string>
@@ -75,6 +76,11 @@
     <string name="browse_local_empty">Video yang kamu unduh dari tab Browser atau sebuah tautan muncul di sini. Masuk ke layanan debrid di Setelan untuk melihat file-nya juga.</string>
     <string name="browse_downloaded">Terunduh</string>
     <string name="browse_downloaded_empty">File yang disimpan di perangkat ini muncul di sini: dari layananmu, tab Browser, atau sebuah tautan.</string>
+    <string name="filter_movies">Film</string>
+    <string name="filter_shows">Serial</string>
+    <string name="filter_4k">4K</string>
+    <string name="filter_unwatched">Belum ditonton</string>
+    <string name="filters_no_match">Tidak ada judul yang cocok dengan %1$s</string>
     <string name="action_delete_device">Hapus dari perangkat</string>
     <string name="delete_device_title">Hapus dari perangkat ini?</string>
     <string name="delete_device_body">“%1$s” akan dihapus dari penyimpanan perangkat ini. Tindakan ini tidak bisa dibatalkan.</string>

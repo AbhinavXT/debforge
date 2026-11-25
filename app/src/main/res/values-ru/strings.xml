@@ -20,6 +20,7 @@
     <string name="action_renew">Продлить</string>
     <string name="action_refresh">Обновить</string>
     <string name="action_clear">Очистить</string>
+    <string name="action_undo">Отменить</string>
     <string name="action_done">Готово</string>
     <string name="setup_your_service">ваш debrid-сервис</string>
     <string name="setup_intro">Выберите сервис и войдите в %1$s, используя %2$s.</string>
@@ -75,6 +76,11 @@
     <string name="browse_local_empty">Здесь появляются видео, скачанные во вкладке «Браузер» или по ссылке. Войдите в debrid-сервис в настройках, чтобы видеть и его файлы.</string>
     <string name="browse_downloaded">Скачанные</string>
     <string name="browse_downloaded_empty">Здесь появляются файлы, сохранённые на этом устройстве: из вашего сервиса, вкладки «Браузер» или по ссылке.</string>
+    <string name="filter_movies">Фильмы</string>
+    <string name="filter_shows">Сериалы</string>
+    <string name="filter_4k">4K</string>
+    <string name="filter_unwatched">Непросмотренные</string>
+    <string name="filters_no_match">Нет названий для фильтров: %1$s</string>
     <string name="action_delete_device">Удалить с устройства</string>
     <string name="delete_device_title">Удалить с этого устройства?</string>
     <string name="delete_device_body">«%1$s» будет удалён из памяти этого устройства. Это нельзя отменить.</string>

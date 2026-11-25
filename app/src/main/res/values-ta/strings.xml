@@ -20,6 +20,7 @@
     <string name="action_renew">புதுப்பி</string>
     <string name="action_refresh">ரெஃப்ரெஷ் செய்</string>
     <string name="action_clear">அழி</string>
+    <string name="action_undo">செயல்தவிர்</string>
     <string name="action_done">முடிந்தது</string>
     <string name="setup_your_service">உங்கள் டெப்ரிட் சேவை</string>
     <string name="setup_intro">உங்கள் சேவையைத் தேர்ந்தெடுத்து, உங்கள் %1$s %2$s மூலம் உள்நுழையவும்.</string>
@@ -75,6 +76,11 @@
     <string name="browse_local_empty">உலாவி தாவலிலோ இணைப்பிலிருந்தோ பதிவிறக்கிய வீடியோக்கள் இங்கே தோன்றும். debrid சேவையின் கோப்புகளையும் பார்க்க அமைப்புகளில் உள்நுழையவும்.</string>
     <string name="browse_downloaded">பதிவிறக்கியவை</string>
     <string name="browse_downloaded_empty">இந்தச் சாதனத்தில் சேமித்த கோப்புகள் இங்கே தோன்றும்: உங்கள் சேவை, உலாவி தாவல் அல்லது இணைப்பிலிருந்து.</string>
+    <string name="filter_movies">திரைப்படங்கள்</string>
+    <string name="filter_shows">தொடர்கள்</string>
+    <string name="filter_4k">4K</string>
+    <string name="filter_unwatched">பார்க்காதவை</string>
+    <string name="filters_no_match">%1$s உடன் பொருந்தும் தலைப்புகள் இல்லை</string>
     <string name="action_delete_device">சாதனத்திலிருந்து நீக்கு</string>
     <string name="delete_device_title">இந்தச் சாதனத்திலிருந்து நீக்கவா?</string>
     <string name="delete_device_body">“%1$s” இந்தச் சாதனத்தின் சேமிப்பகத்திலிருந்து நீக்கப்படும். இதைத் திரும்பப் பெற முடியாது.</string>

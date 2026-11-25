@@ -20,6 +20,7 @@
     <string name="action_renew">Verlängern</string>
     <string name="action_refresh">Aktualisieren</string>
     <string name="action_clear">Leeren</string>
+    <string name="action_undo">Rückgängig</string>
     <string name="action_done">Fertig</string>
     <string name="setup_your_service">deinem Debrid-Dienst</string>
     <string name="setup_intro">Wähle deinen Dienst und melde dich bei %1$s an (mit %2$s).</string>
@@ -75,6 +76,11 @@
     <string name="browse_local_empty">Videos, die du im Browser-Tab oder über einen Link herunterlädst, erscheinen hier. Melde dich in den Einstellungen bei einem Debrid-Dienst an, um auch dessen Dateien zu sehen.</string>
     <string name="browse_downloaded">Heruntergeladen</string>
     <string name="browse_downloaded_empty">Hier erscheinen Dateien, die auf diesem Gerät gespeichert sind: von deinem Dienst, aus dem Browser-Tab oder über einen Link.</string>
+    <string name="filter_movies">Filme</string>
+    <string name="filter_shows">Serien</string>
+    <string name="filter_4k">4K</string>
+    <string name="filter_unwatched">Ungesehen</string>
+    <string name="filters_no_match">Keine Titel passen zu %1$s</string>
     <string name="action_delete_device">Vom Gerät löschen</string>
     <string name="delete_device_title">Von diesem Gerät löschen?</string>
     <string name="delete_device_body">„%1$s“ wird aus dem Speicher dieses Geräts gelöscht. Das lässt sich nicht rückgängig machen.</string>

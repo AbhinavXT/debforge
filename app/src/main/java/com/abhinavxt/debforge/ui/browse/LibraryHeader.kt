@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -229,6 +231,9 @@ internal fun ControlBar(
     /** Null: no service signed in, so the list is the downloads already and there's no chip. */
     downloadsView: Boolean?,
     onToggleDownloads: () -> Unit,
+    quickFilters: Set<QuickFilter> = emptySet(),
+    onToggleQuick: (QuickFilter) -> Unit = {},
+    onClearQuick: () -> Unit = {},
     /** D-pad UP from the search field; return true when handled (the title block was collapsed and is being reopened). */
     onSearchUp: () -> Boolean = { false }
 ) {
@@ -285,8 +290,38 @@ internal fun ControlBar(
                 )
             }
         }
+        // One row that scrolls sideways, so a long translation never wraps it.
+        Row(
+            Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            QuickFilter.entries.forEach { f ->
+                val on = f in quickFilters
+                FilterChip(
+                    selected = on,
+                    onClick = { onToggleQuick(f) },
+                    leadingIcon = if (on) {
+                        { Icon(Icons.Rounded.Check, contentDescription = null, modifier = Modifier.size(18.dp)) }
+                    } else null,
+                    label = { Text(f.label()) }
+                )
+            }
+            if (quickFilters.isNotEmpty()) {
+                AssistChip(onClick = onClearQuick, label = { Text(stringResource(R.string.action_clear)) })
+            }
+        }
     }
 }
+
+@Composable
+internal fun QuickFilter.label(): String = stringResource(
+    when (this) {
+        QuickFilter.MOVIES -> R.string.filter_movies
+        QuickFilter.SHOWS -> R.string.filter_shows
+        QuickFilter.UHD -> R.string.filter_4k
+        QuickFilter.UNWATCHED -> R.string.filter_unwatched
+    }
+)
 
 @Composable
 private fun SortPicker(sort: SortOrder, onSort: (SortOrder) -> Unit) {

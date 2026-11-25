@@ -20,6 +20,7 @@
     <string name="action_renew">రెన్యూ చేయి</string>
     <string name="action_refresh">రిఫ్రెష్ చేయి</string>
     <string name="action_clear">క్లియర్ చేయి</string>
+    <string name="action_undo">రద్దు చేయి</string>
     <string name="action_done">పూర్తయింది</string>
     <string name="setup_your_service">మీ డెబ్రిడ్ సర్వీస్</string>
     <string name="setup_intro">మీ సర్వీస్‌ను ఎంచుకుని, మీ %1$s %2$sతో సైన్ ఇన్ చేయండి.</string>
@@ -75,6 +76,11 @@
     <string name="browse_local_empty">బ్రౌజర్ ట్యాబ్ లేదా లింక్ నుండి డౌన్‌లోడ్ చేసిన వీడియోలు ఇక్కడ కనిపిస్తాయి. debrid సర్వీస్ ఫైల్‌లను కూడా చూడటానికి సెట్టింగ్‌లలో సైన్ ఇన్ చేయండి.</string>
     <string name="browse_downloaded">డౌన్‌లోడ్ చేసినవి</string>
     <string name="browse_downloaded_empty">ఈ పరికరంలో సేవ్ చేసిన ఫైల్‌లు ఇక్కడ కనిపిస్తాయి: మీ సర్వీస్, బ్రౌజర్ ట్యాబ్ లేదా లింక్ నుండి.</string>
+    <string name="filter_movies">సినిమాలు</string>
+    <string name="filter_shows">సిరీస్</string>
+    <string name="filter_4k">4K</string>
+    <string name="filter_unwatched">చూడనివి</string>
+    <string name="filters_no_match">%1$sకి సరిపోయే శీర్షికలు లేవు</string>
     <string name="action_delete_device">పరికరం నుండి తొలగించు</string>
     <string name="delete_device_title">ఈ పరికరం నుండి తొలగించాలా?</string>
     <string name="delete_device_body">“%1$s” ఈ పరికరం స్టోరేజ్ నుండి తొలగించబడుతుంది. దీన్ని రద్దు చేయలేరు.</string>

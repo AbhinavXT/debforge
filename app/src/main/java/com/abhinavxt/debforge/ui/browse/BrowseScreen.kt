@@ -260,23 +260,27 @@ fun BrowseScreen(
         val listed = ExtraFiles.hideSubtitles(state.items)
         if (showExtras) listed else ExtraFiles.hide(listed)
     }
-    // When everything loaded so far is hidden, fetch the next page instead of showing the empty state.
-    val allHidden = shown.isEmpty() && state.items.isNotEmpty() && state.canLoadMore
-    LaunchedEffect(allHidden, state.items.size) {
-        if (allHidden) viewModel.loadMore()
-    }
-
     // Parse every filename once per list change (cheap, but not per frame).
     val parsed: Map<String, ReleaseInfo> = remember(shown) {
         shown.associate { it.id to ReleaseNameParser.parse(it.filename) }
+    }
+    val visible: List<DownloadItem> = remember(shown, parsed, state.quickFilters, playback, traktWatched) {
+        applyQuickFilters(shown, parsed, state.quickFilters) { item, info -> isWatched(info, playback[item.id], traktWatched) }
+    }
+    // When everything loaded so far is hidden, or too little is left to fill the screen, fetch the next page.
+    val filtering = state.quickFilters.isNotEmpty()
+    val needsMore = state.items.isNotEmpty() && state.canLoadMore &&
+        (visible.isEmpty() || (filtering && visible.size < FILTER_FILL))
+    LaunchedEffect(needsMore, state.items.size) {
+        if (needsMore) viewModel.loadMore()
     }
 
     val addDescription = stringResource(R.string.browse_add_cd)
 
     // Everything "Select all" picks: what the current view shows (search included).
-    val selectable: List<String> = remember(shown, parsed, state.query, state.sort, state.posterView, state.grouped) {
-        if (state.posterView) buildTitleGroups(shown, parsed, state.query, state.sort).flatMap { g -> g.files.map { it.item.id } }
-        else buildSections(shown, state.query, state.sort, state.grouped).flatMap { sec -> sec.items.map { it.id } }
+    val selectable: List<String> = remember(visible, parsed, state.query, state.sort, state.posterView, state.grouped) {
+        if (state.posterView) buildTitleGroups(visible, parsed, state.query, state.sort).flatMap { g -> g.files.map { it.item.id } }
+        else buildSections(visible, state.query, state.sort, state.grouped).flatMap { sec -> sec.items.map { it.id } }
     }
     val pickedItems = remember(selected, state.items) { state.items.filter { it.id in selected } }
 
@@ -292,7 +296,7 @@ fun BrowseScreen(
     SideEffect { scroll.suspended = selected.isNotEmpty() }
     // A different query, sort, filter, provider or view starts at its top: bring the
     // title and the labelled FAB back. (Skipped on first composition so rotation keeps it.)
-    val viewKey = "${state.query}|${state.sort}|${state.downloadsView}|${state.grouped}|${state.providerName}|${state.posterView}"
+    val viewKey = "${state.quickFilters}|${state.query}|${state.sort}|${state.downloadsView}|${state.grouped}|${state.providerName}|${state.posterView}"
     var lastViewKey by rememberSaveable { mutableStateOf(viewKey) }
     LaunchedEffect(viewKey) {
         if (viewKey != lastViewKey) {
@@ -479,16 +483,16 @@ fun BrowseScreen(
                 onRemove = { job -> confirmRemove = RemoveRequest(job.name, job = job) }
             )
         }
-        val groups = remember(shown, parsed, state.query, state.sort, state.posterView) {
-            if (state.posterView) buildTitleGroups(shown, parsed, state.query, state.sort) else emptyList()
+        val groups = remember(visible, parsed, state.query, state.sort, state.posterView) {
+            if (state.posterView) buildTitleGroups(visible, parsed, state.query, state.sort) else emptyList()
         }
-        val sections = remember(shown, state.query, state.sort, state.grouped, state.posterView) {
-            if (state.posterView) emptyList() else buildSections(shown, state.query, state.sort, state.grouped)
+        val sections = remember(visible, state.query, state.sort, state.grouped, state.posterView) {
+            if (state.posterView) emptyList() else buildSections(visible, state.query, state.sort, state.grouped)
         }
         // True when the poster grid or the list is what fills the screen.
         val contentShown = !state.isInitialLoad &&
             !(state.error != null && shown.isEmpty()) &&
-            shown.isNotEmpty() &&
+            visible.isNotEmpty() &&
             if (state.posterView) groups.isNotEmpty() else sections.sumOf { it.items.size } > 0
         val leading: (@Composable () -> Unit)? =
             if (promptVisible || processing.isNotEmpty()) {
@@ -535,6 +539,9 @@ fun BrowseScreen(
                 onToggleGroup = viewModel::onToggleGroup,
                 downloadsView = state.downloadsView.takeIf { state.hasService },
                 onToggleDownloads = viewModel::onToggleDownloads,
+                quickFilters = state.quickFilters,
+                onToggleQuick = viewModel::onToggleQuickFilter,
+                onClearQuick = viewModel::clearQuickFilters,
                 onSearchUp = {
                     // The title block (downloads, settings) collapses away while scrolling: bring it back so UP can reach it.
                     if (selected.isEmpty() && scroll.collapsed > 0f) {
@@ -639,7 +646,7 @@ fun BrowseScreen(
                 }
                 state.posterView -> {
                     if (groups.isEmpty()) {
-                        PullableFill(scroll) { NoMatches(state.query) }
+                        PullableFill(scroll) { NoMatches(state.query, state.quickFilters, viewModel::clearQuickFilters) }
                     } else {
                         PosterGrid(
                             gridSize = gridSize,
@@ -687,7 +694,7 @@ fun BrowseScreen(
                 }
                 else -> {
                     if (sections.sumOf { it.items.size } == 0) {
-                        PullableFill(scroll) { NoMatches(state.query) }
+                        PullableFill(scroll) { NoMatches(state.query, state.quickFilters, viewModel::clearQuickFilters) }
                     } else {
                         SectionList(
                             sections = sections,
@@ -1081,13 +1088,25 @@ private fun PullableFill(scroll: LibraryScrollState, content: @Composable () -> 
 }
 
 @Composable
-private fun NoMatches(query: String) {
-    MessageState(
-        icon = Icons.Rounded.SearchOff,
-        title = stringResource(R.string.browse_no_matches, query),
-        body = null,
-        tone = MaterialTheme.colorScheme.onSurfaceVariant
-    )
+private fun NoMatches(query: String, filters: Set<QuickFilter>, onClearFilters: () -> Unit) {
+    if (filters.isEmpty()) {
+        MessageState(
+            icon = Icons.Rounded.SearchOff,
+            title = stringResource(R.string.browse_no_matches, query),
+            body = null,
+            tone = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    } else {
+        // Says which chips are hiding everything, and clears them in one tap.
+        val names = filters.sorted().map { it.label() }.joinToString(" + ")
+        MessageState(
+            icon = Icons.Rounded.SearchOff,
+            title = stringResource(R.string.filters_no_match, names),
+            body = null,
+            tone = MaterialTheme.colorScheme.onSurfaceVariant,
+            action = { Button(onClick = onClearFilters) { Text(stringResource(R.string.action_clear)) } }
+        )
+    }
 }
 
 /** First-run friendly: says what goes here and offers the obvious next step. */
@@ -1213,6 +1232,9 @@ private data class RemoveRequest(
     /** Delete the downloaded files from this device instead (the downloads view). */
     val fromDevice: Boolean = false
 )
+
+/** With a quick filter on, keep loading pages until at least this many titles match. */
+private const val FILTER_FILL = 24
 
 /** After the finger lifts, give the pull indicator this long to settle by itself. */
 private const val PULL_SETTLE_MS = 400L
