@@ -71,6 +71,11 @@ class HistoryViewModel @Inject constructor(
         continueWatching(rows, decodeHidden(hidden))
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
+    /** The Home tab's "Continue listening" row. */
+    val continueListeningItems: StateFlow<List<HistoryEntity>> = combine(history.observe(), settings.continueHiddenFlow) { rows, hidden ->
+        continueListening(rows, decodeHidden(hidden))
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
     fun hideContinue(e: HistoryEntity) { viewModelScope.launch { runCatching { settings.hideContinue(encodeHidden(e.itemId, e.playedAt)) } } }
 
     val paused: StateFlow<Boolean> = settings.historyPausedFlow

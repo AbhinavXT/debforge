@@ -1289,4 +1289,14 @@
     <string name="set_grid_small">Small</string>
     <string name="set_grid_medium">Medium</string>
     <string name="set_grid_large">Large</string>
+    <string name="tab_home">Home</string>
+    <string name="home_continue_listening">Continue listening</string>
+    <string name="home_recently_added">Recently added</string>
+    <string name="home_downloading">Downloading</string>
+    <string name="home_shortcuts">Shortcuts</string>
+    <string name="home_more_downloads">and %1$d more</string>
+    <string name="home_empty_title">Nothing here yet</string>
+    <string name="home_empty_body">Add a magnet, link or torrent file. What you watch, listen to and download will show up here.</string>
+    <string name="home_empty_add">Add something</string>
+    <string name="set_home_rows">Home rows</string>
 </resources>

@@ -87,6 +87,7 @@ class SettingsStore @Inject constructor(
     private val keyFetchSubsOnDownload = booleanPreferencesKey("fetch_subs_on_download")
     private val keyAdBlockOffSites = stringPreferencesKey("browser_adblock_off_sites")
     private val keyGridSize = stringPreferencesKey("grid_size")
+    private val keyHomeRowsHidden = stringPreferencesKey("home_rows_hidden")
 
     private val keyImportLocal = booleanPreferencesKey("import_local_files")
 
@@ -137,6 +138,10 @@ class SettingsStore @Inject constructor(
     /** Library poster size. Medium (the original size) by default. */
     val gridSizeFlow: Flow<GridSize> = context.settingsDataStore.data.map { GridSize.fromName(it[keyGridSize]) }
     suspend fun setGridSize(v: GridSize) = context.settingsDataStore.edit { it[keyGridSize] = v.name }
+
+    /** Home tab rows the user turned off ([com.abhinavxt.debforge.ui.homepage.HomeRow.key]s, comma separated). All shown by default. */
+    val homeRowsHiddenFlow: Flow<String> = context.settingsDataStore.data.map { it[keyHomeRowsHidden].orEmpty() }
+    suspend fun setHomeRowsHidden(v: String) = context.settingsDataStore.edit { it[keyHomeRowsHidden] = v }
 
     /** Offer a magnet / .torrent link found on the clipboard when the app opens. On by default. */
     val clipboardOfferFlow: Flow<Boolean> = context.settingsDataStore.data.map { it[keyClipboardOffer] ?: true }
@@ -391,7 +396,7 @@ class SettingsStore @Inject constructor(
     )
     /** May be blank on purpose (nothing avoided, no site left unblocked). */
     private val backupStrings get() = listOf(keyReleaseAvoid, keyReleasePrefer, keyAdBlockOffSites, keyYouTubeQuality,
-        keyAudioLanguage, keySubtitleLanguage, keySubtitleStyle, keySponsorCategories, keyOnlineSubsWhenNone, keyGridSize)
+        keyAudioLanguage, keySubtitleLanguage, keySubtitleStyle, keySponsorCategories, keyOnlineSubsWhenNone, keyGridSize, keyHomeRowsHidden)
     private val backupInts get() = listOf(keySortOrder, keyThemeMode, keyScheduleStart, keyScheduleEnd, keySpeedLimit, keyAutoDeleteDays,
         keyExpiryReminder, keyAudioSkipSeconds, keyStorageLimitGb)
 

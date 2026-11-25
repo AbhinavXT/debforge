@@ -52,6 +52,9 @@ import com.abhinavxt.debforge.download.ScheduleAlarm
 import com.abhinavxt.debforge.download.StorageAccess
 import com.abhinavxt.debforge.ui.browse.formatSize
 import com.abhinavxt.debforge.domain.GridSize
+import com.abhinavxt.debforge.ui.homepage.HomeRow
+import com.abhinavxt.debforge.ui.homepage.icon
+import com.abhinavxt.debforge.ui.homepage.labelRes
 import com.abhinavxt.debforge.ui.components.RowDivider
 import com.abhinavxt.debforge.ui.components.SectionCard
 import com.abhinavxt.debforge.ui.components.SettingRow
@@ -72,7 +75,7 @@ internal fun LazyListScope.settingsPage(category: SettingsCategory, viewModel: S
     when (category) {
         SettingsCategory.ACCOUNT -> accountItems(viewModel, actions)
         SettingsCategory.APPEARANCE -> appearanceItems(viewModel)
-        SettingsCategory.HOME -> homeItems(viewModel, actions)
+        SettingsCategory.HOME -> { homeItems(viewModel, actions); homeRowsItem(viewModel) }
         SettingsCategory.DOWNLOADS -> downloadsItems(viewModel, actions)
         SettingsCategory.VIDEO -> videoItems(viewModel)
         SettingsCategory.AUDIO -> audioItems(viewModel)
@@ -217,6 +220,24 @@ private fun LazyListScope.homeItems(viewModel: SettingsViewModel, actions: Setti
                 checked = clipboardOffer,
                 onChange = viewModel::setClipboardOffer
             )
+        }
+    }
+}
+
+private fun LazyListScope.homeRowsItem(viewModel: SettingsViewModel) {
+    item(key = "home_rows") {
+        val hidden by viewModel.homeRowsHidden.collectAsStateWithLifecycle()
+        SectionCard(title = stringResource(R.string.set_home_rows), modifier = Modifier.padding(top = 20.dp)) {
+            HomeRow.entries.forEachIndexed { i, row ->
+                if (i > 0) RowDivider()
+                SwitchSettingRow(
+                    icon = row.icon(),
+                    title = stringResource(row.labelRes()),
+                    subtitle = null,
+                    checked = row !in hidden,
+                    onChange = { viewModel.setHomeRowShown(row, it) }
+                )
+            }
         }
     }
 }

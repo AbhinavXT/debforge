@@ -17,6 +17,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.filled.PermMedia
 import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material.icons.filled.Public
@@ -82,6 +84,9 @@ import com.abhinavxt.debforge.ui.active.ActiveDownloadsScreen
 import com.abhinavxt.debforge.ui.add.AddDialog
 import com.abhinavxt.debforge.ui.add.AddViewModel
 import com.abhinavxt.debforge.ui.browse.BrowseScreen
+import com.abhinavxt.debforge.ui.browse.BrowseViewModel
+import com.abhinavxt.debforge.ui.homepage.HomePageScreen
+import com.abhinavxt.debforge.ui.homepage.HomeShortcut
 import com.abhinavxt.debforge.ui.browser.BrowserScreen
 import com.abhinavxt.debforge.ui.search.SearchScreen
 import com.abhinavxt.debforge.ui.settings.SettingsScreen
@@ -133,10 +138,11 @@ private enum class HomeTab(
     /** In the phone's bottom bar; the rest are reached from header icons (the rail lists all). */
     val inBar: Boolean = true
 ) {
+    Home("home", R.string.tab_home, Icons.Outlined.Home, Icons.Filled.Home),
     Browse("browse", R.string.tab_library, Icons.Outlined.VideoLibrary, Icons.Filled.VideoLibrary),
     Search("search", R.string.tab_search, Icons.Outlined.Search, Icons.Filled.Search),
     YouTube("youtube", R.string.tab_youtube, Icons.Outlined.PlayCircle, Icons.Filled.PlayCircle),
-    Browser("browser", R.string.tab_browser, Icons.Outlined.Public, Icons.Filled.Public),
+    Browser("browser", R.string.tab_browser, Icons.Outlined.Public, Icons.Filled.Public, inBar = false),
     Media("media", R.string.tab_media, Icons.Outlined.PermMedia, Icons.Filled.PermMedia),
     Active("active", R.string.tab_downloads, Icons.Outlined.Download, Icons.Filled.Download, inBar = false),
     Settings("settings", R.string.tab_settings, Icons.Outlined.Settings, Icons.Filled.Settings, inBar = false)
@@ -325,6 +331,10 @@ fun HomeScreen(signedIn: Boolean) {
 
     // Decided once: signing in later shouldn't yank the user off the tab they're on.
     val startTab = remember { if (signedIn) HomeTab.Browse else HomeTab.Browser }
+    // The Library's view-model is shared with Home (its newest titles, Continue watching and Coming up are
+    // the Library's own data), so the list is read once. Held by the activity: both tabs get the same one.
+    val activity = LocalContext.current as androidx.activity.ComponentActivity
+    @Composable fun libraryViewModel(): BrowseViewModel = hiltViewModel(viewModelStoreOwner = activity)
     // Read inside the movable content below, which is built once.
     val currentSignedIn by rememberUpdatedState(signedIn)
     val currentAudio by rememberUpdatedState(audio)
@@ -343,9 +353,22 @@ fun HomeScreen(signedIn: Boolean) {
                 startDestination = startTab.route,
                 modifier = modifier
             ) {
+                composable(HomeTab.Home.route) {
+                    HomePageScreen(
+                        browse = libraryViewModel(),
+                        shortcuts = HomeTab.entries.filter { !it.inBar && it != HomeTab.Active && it != HomeTab.Settings }
+                            .map { tab -> HomeShortcut(tab.labelRes, tab.icon) { go(tab) } },
+                        onAdd = { addViewModel.open() },
+                        onOpenDownloads = { push(HomeTab.Active) },
+                        onOpenSettings = { push(HomeTab.Settings) },
+                        onOpenLibrary = { go(HomeTab.Browse) },
+                        activeDownloads = activeCount
+                    )
+                }
                 composable(HomeTab.Browse.route) {
                     if (currentSignedIn || !connecting) {
                         BrowseScreen(
+                            viewModel = libraryViewModel(),
                             onAdd = { addViewModel.open() },
                             onAddText = { addViewModel.open(prefillText = it) },
                             onOpenDownloads = { push(HomeTab.Active) },

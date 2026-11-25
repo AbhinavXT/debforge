@@ -21,6 +21,16 @@ fun continueWatching(rows: List<HistoryEntity>, hidden: Map<String, Long>, max: 
         .take(max)
         .toList()
 
+/** The Home tab's "Continue listening": audio played part of the way (5% to 95%), newest first, by the same rules as [continueWatching]. */
+fun continueListening(rows: List<HistoryEntity>, hidden: Map<String, Long>, max: Int = CONTINUE_MAX): List<HistoryEntity> =
+    rows.asSequence()
+        .filter { it.kind == HistoryKind.AUDIO && it.origin != HistoryOrigin.YOUTUBE && it.durationMs > 0 } // YouTube replays open the watch page
+        .filter { it.positionMs * 20 >= it.durationMs && it.positionMs * 20 <= it.durationMs * 19 }
+        .filter { (hidden[it.itemId] ?: Long.MIN_VALUE) < it.playedAt }
+        .sortedByDescending { it.playedAt }
+        .take(max)
+        .toList()
+
 /** A hidden entry as stored in a string set: `playedAt|itemId`. */
 fun encodeHidden(itemId: String, playedAt: Long) = "$playedAt|$itemId"
 

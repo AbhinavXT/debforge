@@ -1287,4 +1287,14 @@
     <string name="set_grid_small">छोटा</string>
     <string name="set_grid_medium">मध्यम</string>
     <string name="set_grid_large">बड़ा</string>
+    <string name="tab_home">होम</string>
+    <string name="home_continue_listening">सुनना जारी रखें</string>
+    <string name="home_recently_added">हाल ही में जोड़े गए</string>
+    <string name="home_downloading">डाउनलोड हो रहे हैं</string>
+    <string name="home_shortcuts">शॉर्टकट</string>
+    <string name="home_more_downloads">और %1$d</string>
+    <string name="home_empty_title">यहाँ अभी कुछ नहीं है</string>
+    <string name="home_empty_body">एक मैग्नेट, लिंक या टोरेंट फ़ाइल जोड़ें। आप जो देखते, सुनते और डाउनलोड करते हैं, वह यहाँ दिखेगा।</string>
+    <string name="home_empty_add">कुछ जोड़ें</string>
+    <string name="set_home_rows">होम की पंक्तियाँ</string>
 </resources>

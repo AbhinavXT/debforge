@@ -1228,4 +1228,14 @@
     <string name="set_grid_small">Kecil</string>
     <string name="set_grid_medium">Sedang</string>
     <string name="set_grid_large">Besar</string>
+    <string name="tab_home">Beranda</string>
+    <string name="home_continue_listening">Lanjutkan mendengarkan</string>
+    <string name="home_recently_added">Baru ditambahkan</string>
+    <string name="home_downloading">Sedang mengunduh</string>
+    <string name="home_shortcuts">Pintasan</string>
+    <string name="home_more_downloads">dan %1$d lagi</string>
+    <string name="home_empty_title">Belum ada apa pun</string>
+    <string name="home_empty_body">Tambahkan tautan magnet, tautan, atau file torrent. Yang Anda tonton, dengarkan, dan unduh akan muncul di sini.</string>
+    <string name="home_empty_add">Tambahkan sesuatu</string>
+    <string name="set_home_rows">Baris di Beranda</string>
 </resources>

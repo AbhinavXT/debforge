@@ -1287,4 +1287,14 @@
     <string name="set_grid_small">చిన్నది</string>
     <string name="set_grid_medium">మధ్యస్థం</string>
     <string name="set_grid_large">పెద్దది</string>
+    <string name="tab_home">హోమ్</string>
+    <string name="home_continue_listening">వినడం కొనసాగించండి</string>
+    <string name="home_recently_added">ఇటీవల జోడించినవి</string>
+    <string name="home_downloading">డౌన్‌లోడ్ అవుతున్నవి</string>
+    <string name="home_shortcuts">షార్ట్‌కట్‌లు</string>
+    <string name="home_more_downloads">ఇంకా %1$d</string>
+    <string name="home_empty_title">ఇక్కడ ఇంకా ఏమీ లేదు</string>
+    <string name="home_empty_body">ఒక మ్యాగ్నెట్, లింక్ లేదా టొరెంట్ ఫైల్‌ను జోడించండి. మీరు చూసేవి, వినేవి, డౌన్‌లోడ్ చేసేవి ఇక్కడ కనిపిస్తాయి.</string>
+    <string name="home_empty_add">ఏదైనా జోడించండి</string>
+    <string name="set_home_rows">హోమ్ వరుసలు</string>
 </resources>

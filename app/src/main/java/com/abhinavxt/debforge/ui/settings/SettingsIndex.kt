@@ -42,6 +42,7 @@ val SETTINGS_INDEX: List<SettingEntry> = run {
         e(HOME, R.string.set_default_sort), e(HOME, R.string.set_show_extras, R.string.set_show_extras_detail),
         e(HOME, R.string.set_following), e(HOME, R.string.set_posters, R.string.set_tmdb_note),
         e(HOME, R.string.set_clipboard_offer, R.string.set_clipboard_offer_detail),
+        e(HOME, R.string.set_home_rows),
         e(DOWNLOADS, R.string.set_download_folder), e(DOWNLOADS, R.string.set_import_local, R.string.set_import_local_detail),
         e(DOWNLOADS, R.string.set_organise, R.string.set_organise_detail),
         e(DOWNLOADS, R.string.set_remove_after, R.string.set_remove_after_detail),

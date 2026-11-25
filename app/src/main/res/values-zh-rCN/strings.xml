@@ -1228,4 +1228,14 @@
     <string name="set_grid_small">小</string>
     <string name="set_grid_medium">中</string>
     <string name="set_grid_large">大</string>
+    <string name="tab_home">主页</string>
+    <string name="home_continue_listening">继续收听</string>
+    <string name="home_recently_added">最近添加</string>
+    <string name="home_downloading">正在下载</string>
+    <string name="home_shortcuts">快捷方式</string>
+    <string name="home_more_downloads">还有 %1$d 个</string>
+    <string name="home_empty_title">这里还没有内容</string>
+    <string name="home_empty_body">添加磁力链接、链接或种子文件。你观看、收听和下载的内容会显示在这里。</string>
+    <string name="home_empty_add">添加内容</string>
+    <string name="set_home_rows">主页内容行</string>
 </resources>

@@ -1287,4 +1287,14 @@
     <string name="set_grid_small">Klein</string>
     <string name="set_grid_medium">Mittel</string>
     <string name="set_grid_large">Groß</string>
+    <string name="tab_home">Start</string>
+    <string name="home_continue_listening">Weiterhören</string>
+    <string name="home_recently_added">Zuletzt hinzugefügt</string>
+    <string name="home_downloading">Wird heruntergeladen</string>
+    <string name="home_shortcuts">Verknüpfungen</string>
+    <string name="home_more_downloads">und %1$d weitere</string>
+    <string name="home_empty_title">Noch nichts hier</string>
+    <string name="home_empty_body">Füge einen Magnet-Link, einen Link oder eine Torrent-Datei hinzu. Was du schaust, hörst und herunterlädst, erscheint hier.</string>
+    <string name="home_empty_add">Etwas hinzufügen</string>
+    <string name="set_home_rows">Zeilen auf Start</string>
 </resources>

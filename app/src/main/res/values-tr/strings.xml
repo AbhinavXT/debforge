@@ -1287,4 +1287,14 @@
     <string name="set_grid_small">Küçük</string>
     <string name="set_grid_medium">Orta</string>
     <string name="set_grid_large">Büyük</string>
+    <string name="tab_home">Ana sayfa</string>
+    <string name="home_continue_listening">Dinlemeye devam et</string>
+    <string name="home_recently_added">Son eklenenler</string>
+    <string name="home_downloading">İndiriliyor</string>
+    <string name="home_shortcuts">Kısayollar</string>
+    <string name="home_more_downloads">ve %1$d tane daha</string>
+    <string name="home_empty_title">Burada henüz bir şey yok</string>
+    <string name="home_empty_body">Bir magnet, bağlantı veya torrent dosyası ekleyin. İzlediğiniz, dinlediğiniz ve indirdiğiniz her şey burada görünecek.</string>
+    <string name="home_empty_add">Bir şey ekle</string>
+    <string name="set_home_rows">Ana sayfa satırları</string>
 </resources>

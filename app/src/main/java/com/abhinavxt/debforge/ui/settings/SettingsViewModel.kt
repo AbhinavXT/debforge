@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import com.abhinavxt.debforge.data.provider.ProviderInfo
 import com.abhinavxt.debforge.data.repository.AuthRepository
 import com.abhinavxt.debforge.domain.GridSize
+import com.abhinavxt.debforge.ui.homepage.HomeRow
 import com.abhinavxt.debforge.domain.ProviderId
 import com.abhinavxt.debforge.domain.SortOrder
 import com.abhinavxt.debforge.domain.ThemeMode
@@ -22,6 +23,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import com.abhinavxt.debforge.ui.theme.AppTheme
 import kotlinx.coroutines.flow.stateIn
@@ -288,6 +290,14 @@ class SettingsViewModel @Inject constructor(
         viewModelScope, SharingStarted.WhileSubscribed(5_000), GridSize.MEDIUM
     )
     fun setGridSize(v: GridSize) = viewModelScope.launch { settingsStore.setGridSize(v) }
+
+    val homeRowsHidden: StateFlow<Set<HomeRow>> = settingsStore.homeRowsHiddenFlow.map(HomeRow::parseHidden).stateIn(
+        viewModelScope, SharingStarted.WhileSubscribed(5_000), emptySet()
+    )
+    fun setHomeRowShown(row: HomeRow, shown: Boolean) = viewModelScope.launch {
+        val hidden = settingsStore.homeRowsHiddenFlow.first().let(HomeRow::parseHidden)
+        settingsStore.setHomeRowsHidden(HomeRow.encodeHidden(if (shown) hidden - row else hidden + row))
+    }
 
     val clipboardOffer: StateFlow<Boolean> = settingsStore.clipboardOfferFlow.stateIn(
         viewModelScope, SharingStarted.WhileSubscribed(5_000), true

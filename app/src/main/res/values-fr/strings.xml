@@ -1347,4 +1347,14 @@
     <string name="set_grid_small">Petit</string>
     <string name="set_grid_medium">Moyen</string>
     <string name="set_grid_large">Grand</string>
+    <string name="tab_home">Accueil</string>
+    <string name="home_continue_listening">Reprendre l’écoute</string>
+    <string name="home_recently_added">Ajoutés récemment</string>
+    <string name="home_downloading">Téléchargement en cours</string>
+    <string name="home_shortcuts">Raccourcis</string>
+    <string name="home_more_downloads">et %1$d de plus</string>
+    <string name="home_empty_title">Rien ici pour l’instant</string>
+    <string name="home_empty_body">Ajoutez un lien magnet, un lien ou un fichier torrent. Ce que vous regardez, écoutez et téléchargez apparaîtra ici.</string>
+    <string name="home_empty_add">Ajouter quelque chose</string>
+    <string name="set_home_rows">Rangées de l’accueil</string>
 </resources>
