@@ -20,6 +20,7 @@ object CrashReporter {
 
     private const val DIR = "crash"
     private const val FILE = "last_crash.txt"
+    private const val SEEN_FILE = "seen"
 
     /** Call once from Application.onCreate, before anything else can crash. */
     fun install(context: Context) {
@@ -36,13 +37,21 @@ object CrashReporter {
     fun pending(context: Context): String? =
         file(context).takeIf { it.exists() }?.let { runCatching { it.readText() }.getOrNull() }
 
+    /** The saved report the first time it is asked for; null once it has been shown (Settings → About keeps it). */
+    fun takeUnseen(context: Context): String? {
+        val report = pending(context) ?: return null
+        return report.takeIf { runCatching { seenFile(context).createNewFile() }.getOrDefault(true) }
+    }
+
     fun clear(context: Context) {
         file(context).delete()
     }
 
     private fun file(context: Context) = File(File(context.filesDir, DIR), FILE)
 
-    private fun write(context: Context, thread: Thread, error: Throwable) {
+    private fun seenFile(context: Context) = File(File(context.filesDir, DIR), SEEN_FILE)
+
+    internal fun write(context: Context, thread: Thread, error: Throwable) {
         val trace = StringWriter().also { error.printStackTrace(PrintWriter(it)) }.toString()
         val report = buildString {
             appendLine("DebForge crash report")
@@ -59,6 +68,7 @@ object CrashReporter {
         val f = file(context)
         f.parentFile?.mkdirs()
         f.writeText(report)
+        seenFile(context).delete() // a new crash is asked about again
     }
 
     private const val MAX_LINES = 120

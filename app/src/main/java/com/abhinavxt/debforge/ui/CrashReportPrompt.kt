@@ -29,9 +29,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 /**
- * Asked once per launch after a crash. Shows exactly what would be shared,
- * so the user can see nothing private is in it. Tapping outside = "later":
- * the report stays and is offered again next launch (and in Settings → About).
+ * Asked once per crash. Shows exactly what would be shared,
+ * so the user can see nothing private is in it. Tapping outside or
+ * closing the app = "later": the report stays in Settings → About.
  */
 @Composable
 fun CrashReportPrompt() {
@@ -40,7 +40,7 @@ fun CrashReportPrompt() {
     var asked by rememberSaveable { mutableStateOf(false) }
     LaunchedEffect(Unit) {
         if (!asked) {
-            report = withContext(Dispatchers.IO) { CrashReporter.pending(context) }
+            report = withContext(Dispatchers.IO) { CrashReporter.takeUnseen(context) }
             asked = true
         }
     }
