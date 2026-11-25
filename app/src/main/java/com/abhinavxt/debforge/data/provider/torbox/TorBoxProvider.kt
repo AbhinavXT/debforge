@@ -222,16 +222,22 @@ class TorBoxProvider @Inject constructor(
         }
     }
 
+    /** Starts anywhere, so reopening the app does not repeat the same queries. */
+    private val queuedReads = java.util.concurrent.atomic.AtomicInteger(kotlin.random.Random.nextInt(QUEUED_LIMITS))
+
     private suspend fun fetchQueued(type: String): List<TbQueuedDto> {
         val out = ArrayList<TbQueuedDto>()
+        // TorBox ignores bypass_cache here and caches each exact query for minutes (measured 2026-11-26): a
+        // page size it has not seen lately is always answered fresh.
+        val limit = FRESH_LIMIT - queuedReads.getAndIncrement() % QUEUED_LIMITS
         var offset = 0
         while (offset < MAX_QUEUED) {
-            val env = api.queued(type, offset, FRESH_LIMIT, true)
+            val env = api.queued(type, offset, limit, true)
             if (!env.success) throw ProviderException("TorBox: ${env.detail ?: env.error ?: "request failed"}")
             val rows = env.data.orEmpty()
             out += rows.filter { it.id != null }.map { it.copy(type = type) }
-            if (rows.size < FRESH_LIMIT) break
-            offset += FRESH_LIMIT
+            if (rows.size < limit) break
+            offset += limit
         }
         return out
     }
@@ -628,7 +634,7 @@ class TorBoxProvider @Inject constructor(
         progress = progress?.toFloat()?.coerceIn(0f, 1f),
         status = if (isReady()) "preparing files" else downloadState?.replace('_', ' ') ?: "processing",
         sizeBytes = size ?: 0L,
-        etaSeconds = eta?.toLong()?.takeIf { it > 0 },
+        etaSeconds = eta?.toLong()?.takeIf { it in 1 until UNKNOWN_ETA_S },
         bytesPerSecond = downloadSpeed?.toLong()?.takeIf { it > 0 },
         hash = hash?.trim()?.lowercase()?.takeIf { it.isNotEmpty() },
         actions = when {
@@ -726,7 +732,11 @@ class TorBoxProvider @Inject constructor(
         const val QUEUED_PREFIX = "queued:"
         val QUEUED_TYPES = listOf("torrent", "usenet", "webdl")
         /** The queue is read at most this often (three requests), unless we just changed it. */
+        /** qBittorrent's "unknown" ETA (100 days), which TorBox passes on. */
+        const val UNKNOWN_ETA_S = 8_640_000L
         const val QUEUED_REUSE_MS = 30_000L
+        /** Page sizes cycled through, see fetchQueued: far more reads than fit in the cache time. */
+        const val QUEUED_LIMITS = 90
         const val QUEUED_TIMEOUT_MS = 10_000L
         /** Longest a caller waits for a queue read before using the last known queue. */
         const val QUEUED_WAIT_MS = 2_500L

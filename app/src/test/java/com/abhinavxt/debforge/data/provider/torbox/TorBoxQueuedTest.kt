@@ -143,6 +143,18 @@ class TorBoxQueuedTest {
         assertEquals("torrent:7", provider.add(AddRequest.Magnet("m")).jobRef)
     }
 
+    @Test fun everyReadAsksForAnotherPageSize() = runBlocking {
+        repeat(5) { provider.listProcessing(); later(31) }
+        assertEquals(queuedPageLimits.size, queuedPageLimits.toSet().size)
+        assertTrue(queuedPageLimits.all { it in 1..100 })
+    }
+
+    @Test fun unknownEtaIsHidden() = runBlocking {
+        torrents += TbItemDto(1, "a", 1, null, false, false, null, eta = 8_640_000.0, downloadState = "checking")
+        torrents += TbItemDto(2, "b", 1, null, false, false, null, eta = 90.0, downloadState = "downloading")
+        assertEquals(listOf(90L, null), provider.listProcessing().sortedByDescending { it.etaSeconds ?: 0 }.map { it.etaSeconds })
+    }
+
     @Test fun startAndRemoveCallControlQueued() = runBlocking {
         queued += q(9); queued += q(10)
         provider.listProcessing()
