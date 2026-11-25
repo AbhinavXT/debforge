@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="tab_library">லைப்ரரி</string>
+    <string name="tab_home">முகப்பு</string>
     <string name="tab_downloads">பதிவிறக்கங்கள்</string>
     <string name="tab_settings">அமைப்புகள்</string>
     <string name="action_cancel">ரத்துசெய்</string>
@@ -502,6 +503,23 @@
     <!-- Resume / Continue watching -->
     <string name="continue_watching">தொடர்ந்து பார்க்க</string>
     <string name="upcoming_title">விரைவில் வருகிறது</string>
+    <string name="home_continue_listening">தொடர்ந்து கேளுங்கள்</string>
+    <string name="home_recently_added">சமீபத்தில் சேர்த்தவை</string>
+    <string name="home_downloading">பதிவிறக்கப்படுபவை</string>
+    <string name="home_shortcuts">குறுக்குவழிகள்</string>
+    <string name="home_more_downloads">மேலும் %1$d</string>
+    <string name="home_empty_title">இங்கு இன்னும் எதுவும் இல்லை</string>
+    <string name="home_empty_body">ஒரு மேக்னெட், இணைப்பு அல்லது டோரண்ட் கோப்பைச் சேர்க்கவும். நீங்கள் பார்ப்பவை, கேட்பவை, பதிவிறக்குபவை இங்கே தோன்றும்.</string>
+    <string name="home_empty_add">ஏதாவது சேர்க்கவும்</string>
+    <string name="set_home_rows">முகப்பின் வரிசைகள்</string>
+    <string name="set_tabs">தாவல்கள்</string>
+    <string name="set_tabs_detail">கீழ் பட்டிக்கு 2 முதல் 5 தாவல்களைத் தேர்ந்தெடுத்து வரிசையை அமைக்கவும்.</string>
+    <string name="set_tabs_min">குறைந்தது 2 தாவல்கள்.</string>
+    <string name="set_tabs_max">அதிகபட்சம் 5 தாவல்கள். மற்றொன்றைச் சேர்க்க ஒன்றை அணைக்கவும்.</string>
+    <string name="set_tab_up">%1$s ஐ மேலே நகர்த்து</string>
+    <string name="set_tab_down">%1$s ஐ கீழே நகர்த்து</string>
+    <string name="set_start_tab">தொடக்கத் தாவல்</string>
+    <string name="set_start_tab_auto">தானியங்கி</string>
     <string name="upcoming_today">இன்று</string>
     <string name="upcoming_tomorrow">நாளை</string>
     <string name="continue_remove">தொடர்ந்து பார்க்க என்பதிலிருந்து நீக்கு</string>
@@ -1104,6 +1122,10 @@
     <string name="yt_stream_failed">YouTube இந்த ஸ்ட்ரீமை நிறுத்திவிட்டது. அதற்குப் பதிலாக பதிவிறக்கவா?</string>
     <string name="yt_stream_download">பதிவிறக்கு</string>
     <string name="set_pure_black_light_only">இருண்ட தீமுக்கு மட்டும். ஆப் இருண்டதாக இருக்கும்போது பொருந்தும்.</string>
+    <string name="set_grid_size">போஸ்டர் அளவு</string>
+    <string name="set_grid_small">சிறியது</string>
+    <string name="set_grid_medium">நடுத்தரம்</string>
+    <string name="set_grid_large">பெரியது</string>
     <string name="set_folder_app_storage">ஆப் சேமிப்பகம்</string>
     <string name="usage_direct">நேரடி இணைப்புகள்</string>
     <string name="usage_tap_bar">அந்த நாளைப் பார்க்க பட்டையைத் தட்டவும்</string>
@@ -1283,24 +1305,4 @@
     <string name="settings_search_none">பொருந்தும் அமைப்புகள் இல்லை</string>
     <string name="settings_sum_connections">Trakt, வசனங்கள், தேடல் மூலங்கள்</string>
     <string name="settings_sum_data">தரவு பயன்பாடு மற்றும் காப்புப்பிரதி</string>
-    <string name="set_grid_size">போஸ்டர் அளவு</string>
-    <string name="set_grid_small">சிறியது</string>
-    <string name="set_grid_medium">நடுத்தரம்</string>
-    <string name="set_grid_large">பெரியது</string>
-    <string name="tab_home">முகப்பு</string>
-    <string name="home_continue_listening">தொடர்ந்து கேளுங்கள்</string>
-    <string name="home_recently_added">சமீபத்தில் சேர்த்தவை</string>
-    <string name="home_downloading">பதிவிறக்கப்படுபவை</string>
-    <string name="home_shortcuts">குறுக்குவழிகள்</string>
-    <string name="home_more_downloads">மேலும் %1$d</string>
-    <string name="home_empty_title">இங்கு இன்னும் எதுவும் இல்லை</string>
-    <string name="home_empty_body">ஒரு மேக்னெட், இணைப்பு அல்லது டோரண்ட் கோப்பைச் சேர்க்கவும். நீங்கள் பார்ப்பவை, கேட்பவை, பதிவிறக்குபவை இங்கே தோன்றும்.</string>
-    <string name="home_empty_add">ஏதாவது சேர்க்கவும்</string>
-    <string name="set_home_rows">முகப்பின் வரிசைகள்</string>
-    <string name="set_tabs">தாவல்கள்</string>
-    <string name="set_tabs_detail">கீழ் பட்டிக்கு 2 முதல் 5 தாவல்களைத் தேர்ந்தெடுத்து வரிசையை அமைக்கவும்.</string>
-    <string name="set_tab_up">%1$s ஐ மேலே நகர்த்து</string>
-    <string name="set_tab_down">%1$s ஐ கீழே நகர்த்து</string>
-    <string name="set_start_tab">தொடக்கத் தாவல்</string>
-    <string name="set_start_tab_auto">தானியங்கி</string>
 </resources>

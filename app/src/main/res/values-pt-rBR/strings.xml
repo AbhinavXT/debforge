@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="tab_library">Biblioteca</string>
+    <string name="tab_home">Início</string>
     <string name="tab_downloads">Downloads</string>
     <string name="tab_settings">Configurações</string>
     <string name="action_cancel">Cancelar</string>
@@ -526,6 +527,23 @@
     <!-- Resume / Continue watching -->
     <string name="continue_watching">Continuar assistindo</string>
     <string name="upcoming_title">Em breve</string>
+    <string name="home_continue_listening">Continuar ouvindo</string>
+    <string name="home_recently_added">Adicionados recentemente</string>
+    <string name="home_downloading">Baixando</string>
+    <string name="home_shortcuts">Atalhos</string>
+    <string name="home_more_downloads">e mais %1$d</string>
+    <string name="home_empty_title">Nada aqui ainda</string>
+    <string name="home_empty_body">Adicione um magnet, link ou arquivo torrent. O que você assistir, ouvir e baixar aparecerá aqui.</string>
+    <string name="home_empty_add">Adicionar algo</string>
+    <string name="set_home_rows">Linhas do Início</string>
+    <string name="set_tabs">Abas</string>
+    <string name="set_tabs_detail">Escolha de 2 a 5 abas para a barra inferior e defina a ordem.</string>
+    <string name="set_tabs_min">Pelo menos 2 abas.</string>
+    <string name="set_tabs_max">Até 5 abas. Desative uma para adicionar outra.</string>
+    <string name="set_tab_up">Mover %1$s para cima</string>
+    <string name="set_tab_down">Mover %1$s para baixo</string>
+    <string name="set_start_tab">Aba inicial</string>
+    <string name="set_start_tab_auto">Automática</string>
     <string name="upcoming_today">Hoje</string>
     <string name="upcoming_tomorrow">Amanhã</string>
     <string name="continue_remove">Remover de Continuar assistindo</string>
@@ -1154,6 +1172,10 @@
     <string name="yt_stream_failed">O YouTube interrompeu esta transmissão. Baixar em vez disso?</string>
     <string name="yt_stream_download">Baixar</string>
     <string name="set_pure_black_light_only">Somente no tema escuro. Vale quando o app está escuro.</string>
+    <string name="set_grid_size">Tamanho dos pôsteres</string>
+    <string name="set_grid_small">Pequeno</string>
+    <string name="set_grid_medium">Médio</string>
+    <string name="set_grid_large">Grande</string>
     <string name="set_folder_app_storage">Armazenamento do app</string>
     <string name="usage_direct">Links diretos</string>
     <string name="usage_tap_bar">Toque em uma barra para ver o dia</string>
@@ -1343,24 +1365,4 @@
     <string name="settings_search_none">Nenhuma configuração encontrada</string>
     <string name="settings_sum_connections">Trakt, legendas, fontes de busca</string>
     <string name="settings_sum_data">Uso de dados e backup</string>
-    <string name="set_grid_size">Tamanho dos pôsteres</string>
-    <string name="set_grid_small">Pequeno</string>
-    <string name="set_grid_medium">Médio</string>
-    <string name="set_grid_large">Grande</string>
-    <string name="tab_home">Início</string>
-    <string name="home_continue_listening">Continuar ouvindo</string>
-    <string name="home_recently_added">Adicionados recentemente</string>
-    <string name="home_downloading">Baixando</string>
-    <string name="home_shortcuts">Atalhos</string>
-    <string name="home_more_downloads">e mais %1$d</string>
-    <string name="home_empty_title">Nada aqui ainda</string>
-    <string name="home_empty_body">Adicione um magnet, link ou arquivo torrent. O que você assistir, ouvir e baixar aparecerá aqui.</string>
-    <string name="home_empty_add">Adicionar algo</string>
-    <string name="set_home_rows">Linhas do Início</string>
-    <string name="set_tabs">Abas</string>
-    <string name="set_tabs_detail">Escolha de 2 a 5 abas para a barra inferior e defina a ordem.</string>
-    <string name="set_tab_up">Mover %1$s para cima</string>
-    <string name="set_tab_down">Mover %1$s para baixo</string>
-    <string name="set_start_tab">Aba inicial</string>
-    <string name="set_start_tab_auto">Automática</string>
 </resources>

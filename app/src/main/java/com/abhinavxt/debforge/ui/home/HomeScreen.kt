@@ -342,7 +342,10 @@ private fun HomeShell(signedIn: Boolean, prefs: NavPrefs) {
     LaunchedEffect(waitingForService) { if (waitingForService != null) connect() }
 
     // Decided once: signing in later shouldn't yank the user off the tab they're on.
-    val startTab = remember { HomeTab.of(TabConfig.startTab(prefs.storedStart, signedIn)) ?: HomeTab.Browse }
+    // Saved too: after process death the restored back stack is rooted at the old start tab, and a start tab
+    // changed meanwhile would leave popUpTo(findStartDestination) nothing to pop, piling up entries.
+    val startRoute = rememberSaveable { TabConfig.startTab(prefs.storedStart, signedIn) }
+    val startTab = HomeTab.of(startRoute) ?: HomeTab.Browse
     // Tabs left out of the bar stay reachable through go(): the bar then just highlights nothing.
     val barTabs = prefs.bar.mapNotNull(HomeTab::of)
     // Read inside the movable content below, which is built once.
@@ -370,14 +373,16 @@ private fun HomeShell(signedIn: Boolean, prefs: NavPrefs) {
                 modifier = modifier
             ) {
                 composable(HomeTab.Home.route) {
+                    val libraryVm = libraryViewModel()
                     HomePageScreen(
-                        browse = libraryViewModel(),
+                        browse = libraryVm,
                         shortcuts = TabConfig.hidden(currentPrefs.bar).filter { it != TabConfig.HOME }.mapNotNull(HomeTab::of)
                             .map { tab -> HomeShortcut(tab.labelRes, tab.icon) { go(tab) } },
                         onAdd = { addViewModel.open() },
+                        onAddText = { addViewModel.open(prefillText = it) },
                         onOpenDownloads = { push(HomeTab.Active) },
                         onOpenSettings = { push(HomeTab.Settings) },
-                        onOpenLibrary = { go(HomeTab.Browse) },
+                        onOpenTitle = { key -> libraryVm.titleToOpen.value = key; go(HomeTab.Browse) },
                         activeDownloads = activeCount
                     )
                 }

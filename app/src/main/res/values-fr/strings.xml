@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="tab_library">Bibliothèque</string>
+    <string name="tab_home">Accueil</string>
     <string name="tab_downloads">Téléchargements</string>
     <string name="tab_settings">Paramètres</string>
     <string name="action_cancel">Annuler</string>
@@ -526,6 +527,23 @@
     <!-- Resume / Continue watching -->
     <string name="continue_watching">Reprendre</string>
     <string name="upcoming_title">Prochainement</string>
+    <string name="home_continue_listening">Reprendre l’écoute</string>
+    <string name="home_recently_added">Ajoutés récemment</string>
+    <string name="home_downloading">Téléchargement en cours</string>
+    <string name="home_shortcuts">Raccourcis</string>
+    <string name="home_more_downloads">et %1$d de plus</string>
+    <string name="home_empty_title">Rien ici pour l’instant</string>
+    <string name="home_empty_body">Ajoutez un lien magnet, un lien ou un fichier torrent. Ce que vous regardez, écoutez et téléchargez apparaîtra ici.</string>
+    <string name="home_empty_add">Ajouter quelque chose</string>
+    <string name="set_home_rows">Rangées de l’accueil</string>
+    <string name="set_tabs">Onglets</string>
+    <string name="set_tabs_detail">Choisissez 2 à 5 onglets pour la barre du bas et leur ordre.</string>
+    <string name="set_tabs_min">2 onglets au minimum.</string>
+    <string name="set_tabs_max">5 onglets au maximum. Désactivez-en un pour en ajouter un autre.</string>
+    <string name="set_tab_up">Monter %1$s</string>
+    <string name="set_tab_down">Descendre %1$s</string>
+    <string name="set_start_tab">Onglet de démarrage</string>
+    <string name="set_start_tab_auto">Automatique</string>
     <string name="upcoming_today">Aujourd\'hui</string>
     <string name="upcoming_tomorrow">Demain</string>
     <string name="continue_remove">Retirer de Reprendre</string>
@@ -1154,6 +1172,10 @@
     <string name="yt_stream_failed">YouTube a interrompu cette diffusion. La télécharger à la place ?</string>
     <string name="yt_stream_download">Télécharger</string>
     <string name="set_pure_black_light_only">Thème sombre uniquement. S\'applique quand l\'app est sombre.</string>
+    <string name="set_grid_size">Taille des affiches</string>
+    <string name="set_grid_small">Petit</string>
+    <string name="set_grid_medium">Moyen</string>
+    <string name="set_grid_large">Grand</string>
     <string name="set_folder_app_storage">Stockage de l\'app</string>
     <string name="usage_direct">Liens directs</string>
     <string name="usage_tap_bar">Touchez une barre pour voir ce jour</string>
@@ -1343,24 +1365,4 @@
     <string name="settings_search_none">Aucun réglage correspondant</string>
     <string name="settings_sum_connections">Trakt, sous-titres, sources de recherche</string>
     <string name="settings_sum_data">Consommation de données et sauvegarde</string>
-    <string name="set_grid_size">Taille des affiches</string>
-    <string name="set_grid_small">Petit</string>
-    <string name="set_grid_medium">Moyen</string>
-    <string name="set_grid_large">Grand</string>
-    <string name="tab_home">Accueil</string>
-    <string name="home_continue_listening">Reprendre l’écoute</string>
-    <string name="home_recently_added">Ajoutés récemment</string>
-    <string name="home_downloading">Téléchargement en cours</string>
-    <string name="home_shortcuts">Raccourcis</string>
-    <string name="home_more_downloads">et %1$d de plus</string>
-    <string name="home_empty_title">Rien ici pour l’instant</string>
-    <string name="home_empty_body">Ajoutez un lien magnet, un lien ou un fichier torrent. Ce que vous regardez, écoutez et téléchargez apparaîtra ici.</string>
-    <string name="home_empty_add">Ajouter quelque chose</string>
-    <string name="set_home_rows">Rangées de l’accueil</string>
-    <string name="set_tabs">Onglets</string>
-    <string name="set_tabs_detail">Choisissez 2 à 5 onglets pour la barre du bas et leur ordre.</string>
-    <string name="set_tab_up">Monter %1$s</string>
-    <string name="set_tab_down">Descendre %1$s</string>
-    <string name="set_start_tab">Onglet de démarrage</string>
-    <string name="set_start_tab_auto">Automatique</string>
 </resources>

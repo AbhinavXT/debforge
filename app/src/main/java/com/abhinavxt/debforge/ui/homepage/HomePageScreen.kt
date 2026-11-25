@@ -51,16 +51,19 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import coil.compose.AsyncImage
 import com.abhinavxt.debforge.R
 import com.abhinavxt.debforge.data.history.HistoryEntity
 import com.abhinavxt.debforge.data.youtube.decodeEntities
 import com.abhinavxt.debforge.domain.DownloadState
-import com.abhinavxt.debforge.domain.ReleaseInfo
 import com.abhinavxt.debforge.ui.active.ActiveDownloadsViewModel
 import com.abhinavxt.debforge.ui.active.ActiveRow
 import com.abhinavxt.debforge.ui.browse.BrowseViewModel
+import com.abhinavxt.debforge.ui.browse.ClipboardOfferEffect
 import com.abhinavxt.debforge.ui.browse.ContinueWatchingRow
+import com.abhinavxt.debforge.ui.browse.TitleGroup
+import kotlinx.coroutines.launch
 import com.abhinavxt.debforge.ui.browse.UpcomingRow
 import com.abhinavxt.debforge.ui.browse.playExternally
 import com.abhinavxt.debforge.ui.components.GeneratedArt
@@ -89,9 +92,10 @@ fun HomePageScreen(
     browse: BrowseViewModel,
     shortcuts: List<HomeShortcut>,
     onAdd: () -> Unit,
+    onAddText: (String) -> Unit,
     onOpenDownloads: () -> Unit,
     onOpenSettings: () -> Unit,
-    onOpenLibrary: () -> Unit,
+    onOpenTitle: (String) -> Unit,
     activeDownloads: Int,
     viewModel: HomePageViewModel = hiltViewModel(),
     history: HistoryViewModel = hiltViewModel(),
@@ -120,11 +124,28 @@ fun HomePageScreen(
             HomeRow.NEW_EPISODES to comingUp.size
         )
     )
+    // As the Library does: poll processing jobs only while the screen is on show.
+    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
+    LaunchedEffect(lifecycleOwner) {
+        lifecycleOwner.repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) { browse.pollWhileVisible() }
+    }
     val showShortcuts = HomeRow.SHORTCUTS !in hidden && shortcuts.isNotEmpty()
 
+    val snackbar = remember { SnackbarHostState() }
+    val clipMessage = stringResource(R.string.clipboard_offer)
+    val clipAction = stringResource(R.string.action_add)
+    val clipScope = androidx.compose.runtime.rememberCoroutineScope()
+    ClipboardOfferEffect(onOffer = { links ->
+        clipScope.launch {
+            val result = snackbar.showSnackbar(
+                message = clipMessage, actionLabel = clipAction, withDismissAction = true,
+                duration = androidx.compose.material3.SnackbarDuration.Long
+            )
+            if (result == androidx.compose.material3.SnackbarResult.ActionPerformed) onAddText(links)
+        }
+    })
     // Same hand-off as the Library: a tapped Continue watching entry opens in the player.
     val context = LocalContext.current
-    val snackbar = remember { SnackbarHostState() }
     val videoLauncher = com.abhinavxt.debforge.player.rememberVideoLauncher()
     val msgNoPlayer = stringResource(R.string.msg_no_player)
     LaunchedEffect(Unit) {
@@ -183,7 +204,7 @@ fun HomePageScreen(
                                     onRemove = browse::forgetPlayback
                                 )
                                 HomeRow.CONTINUE_LISTENING -> ContinueListeningRow(listening, history::replay, history::hideContinue)
-                                HomeRow.RECENT -> RecentRow(recent, meta, browse::requestMeta, onOpenLibrary)
+                                HomeRow.RECENT -> RecentRow(recent, meta, browse::requestMeta, onOpenTitle)
                                 HomeRow.DOWNLOADS -> DownloadingRow(downloading, onOpenDownloads)
                                 HomeRow.NEW_EPISODES -> UpcomingRow(comingUp, meta, browse::requestMeta)
                                 HomeRow.SHORTCUTS -> Unit
@@ -265,31 +286,31 @@ private fun ContinueListeningRow(
 
 @Composable
 private fun RecentRow(
-    titles: List<ReleaseInfo>,
+    titles: List<TitleGroup>,
     meta: Map<String, com.abhinavxt.debforge.data.metadata.MediaMeta?>,
-    onRequestMeta: (ReleaseInfo) -> Unit,
-    onOpen: () -> Unit
+    onRequestMeta: (com.abhinavxt.debforge.domain.ReleaseInfo) -> Unit,
+    onOpen: (String) -> Unit
 ) {
     Column(Modifier.fillMaxWidth()) {
         RowTitle(R.string.home_recently_added)
         LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            items(titles, key = { it.groupKey }) { info ->
-                LaunchedEffect(info.groupKey) { onRequestMeta(info) }
+            items(titles, key = { it.key }) { group ->
+                LaunchedEffect(group.info.groupKey) { onRequestMeta(group.info) }
                 val source = remember { MutableInteractionSource() }
-                val name = if (info.kind == com.abhinavxt.debforge.domain.MediaKind.SHOW) info.title else info.displayTitle
+                val found = meta[group.info.groupKey]
                 Column(
                     Modifier
                         .width(112.dp)
                         .clip(MaterialTheme.shapes.medium)
                         .focusRing(source, MaterialTheme.shapes.medium)
-                        .clickable(interactionSource = source, indication = androidx.compose.foundation.LocalIndication.current, onClick = onOpen)
+                        .clickable(interactionSource = source, indication = androidx.compose.foundation.LocalIndication.current) { onOpen(group.key) }
                 ) {
-                    val poster = meta[info.groupKey]?.posterUrl
                     val art = Modifier.fillMaxWidth().aspectRatio(2f / 3f).clip(MaterialTheme.shapes.medium)
-                    if (poster != null) AsyncImage(poster, null, art, contentScale = ContentScale.Crop)
-                    else GeneratedArt(title = info.title, tag = "", modifier = art, showTitle = false)
+                    if (found?.posterUrl != null) AsyncImage(found.posterUrl, null, art, contentScale = ContentScale.Crop)
+                    else GeneratedArt(title = group.title, tag = "", modifier = art, showTitle = false)
+                    // The Library's caption: the looked-up title, else the parsed one.
                     Text(
-                        name,
+                        found?.title ?: group.title,
                         style = MaterialTheme.typography.bodyMedium,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis,

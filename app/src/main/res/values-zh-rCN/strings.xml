@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="tab_library">媒体库</string>
+    <string name="tab_home">主页</string>
     <string name="tab_downloads">下载</string>
     <string name="tab_settings">设置</string>
     <string name="action_cancel">取消</string>
@@ -478,6 +479,23 @@
     <!-- Resume / Continue watching -->
     <string name="continue_watching">继续观看</string>
     <string name="upcoming_title">即将播出</string>
+    <string name="home_continue_listening">继续收听</string>
+    <string name="home_recently_added">最近添加</string>
+    <string name="home_downloading">正在下载</string>
+    <string name="home_shortcuts">快捷方式</string>
+    <string name="home_more_downloads">还有 %1$d 个</string>
+    <string name="home_empty_title">这里还没有内容</string>
+    <string name="home_empty_body">添加磁力链接、链接或种子文件。你观看、收听和下载的内容会显示在这里。</string>
+    <string name="home_empty_add">添加内容</string>
+    <string name="set_home_rows">主页内容行</string>
+    <string name="set_tabs">标签页</string>
+    <string name="set_tabs_detail">为底部栏选择 2 到 5 个标签页并设置顺序。</string>
+    <string name="set_tabs_min">至少 2 个标签页。</string>
+    <string name="set_tabs_max">最多 5 个标签页。关闭一个才能再添加。</string>
+    <string name="set_tab_up">上移%1$s</string>
+    <string name="set_tab_down">下移%1$s</string>
+    <string name="set_start_tab">启动标签页</string>
+    <string name="set_start_tab_auto">自动</string>
     <string name="upcoming_today">今天</string>
     <string name="upcoming_tomorrow">明天</string>
     <string name="continue_remove">从“继续观看”中移除</string>
@@ -1054,6 +1072,10 @@
     <string name="yt_stream_failed">YouTube 中止了此串流。改为下载吗？</string>
     <string name="yt_stream_download">下载</string>
     <string name="set_pure_black_light_only">仅限深色主题。应用处于深色时生效。</string>
+    <string name="set_grid_size">海报大小</string>
+    <string name="set_grid_small">小</string>
+    <string name="set_grid_medium">中</string>
+    <string name="set_grid_large">大</string>
     <string name="set_folder_app_storage">应用存储</string>
     <string name="usage_direct">直接链接</string>
     <string name="usage_tap_bar">点按柱形可查看当天数据</string>
@@ -1224,24 +1246,4 @@
     <string name="settings_search_none">没有匹配的设置</string>
     <string name="settings_sum_connections">Trakt、字幕、搜索源</string>
     <string name="settings_sum_data">数据用量和备份</string>
-    <string name="set_grid_size">海报大小</string>
-    <string name="set_grid_small">小</string>
-    <string name="set_grid_medium">中</string>
-    <string name="set_grid_large">大</string>
-    <string name="tab_home">主页</string>
-    <string name="home_continue_listening">继续收听</string>
-    <string name="home_recently_added">最近添加</string>
-    <string name="home_downloading">正在下载</string>
-    <string name="home_shortcuts">快捷方式</string>
-    <string name="home_more_downloads">还有 %1$d 个</string>
-    <string name="home_empty_title">这里还没有内容</string>
-    <string name="home_empty_body">添加磁力链接、链接或种子文件。你观看、收听和下载的内容会显示在这里。</string>
-    <string name="home_empty_add">添加内容</string>
-    <string name="set_home_rows">主页内容行</string>
-    <string name="set_tabs">标签页</string>
-    <string name="set_tabs_detail">为底部栏选择 2 到 5 个标签页并设置顺序。</string>
-    <string name="set_tab_up">上移%1$s</string>
-    <string name="set_tab_down">下移%1$s</string>
-    <string name="set_start_tab">启动标签页</string>
-    <string name="set_start_tab_auto">自动</string>
 </resources>

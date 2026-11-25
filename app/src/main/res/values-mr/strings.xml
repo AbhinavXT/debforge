@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="tab_library">लायब्ररी</string>
+    <string name="tab_home">मुख्यपृष्ठ</string>
     <string name="tab_downloads">डाउनलोड</string>
     <string name="tab_settings">सेटिंग्ज</string>
     <string name="action_cancel">रद्द करा</string>
@@ -502,6 +503,23 @@
     <!-- Resume / Continue watching -->
     <string name="continue_watching">पाहणे सुरू ठेवा</string>
     <string name="upcoming_title">लवकरच येत आहे</string>
+    <string name="home_continue_listening">ऐकणे सुरू ठेवा</string>
+    <string name="home_recently_added">अलीकडे जोडलेले</string>
+    <string name="home_downloading">डाउनलोड होत आहे</string>
+    <string name="home_shortcuts">शॉर्टकट</string>
+    <string name="home_more_downloads">आणि आणखी %1$d</string>
+    <string name="home_empty_title">येथे अजून काहीही नाही</string>
+    <string name="home_empty_body">मॅग्नेट, लिंक किंवा टोरेंट फाइल जोडा. तुम्ही जे पाहता, ऐकता आणि डाउनलोड करता ते येथे दिसेल.</string>
+    <string name="home_empty_add">काहीतरी जोडा</string>
+    <string name="set_home_rows">मुख्यपृष्ठावरील ओळी</string>
+    <string name="set_tabs">टॅब</string>
+    <string name="set_tabs_detail">खालच्या बारसाठी 2 ते 5 टॅब निवडा आणि त्यांचा क्रम ठरवा.</string>
+    <string name="set_tabs_min">किमान 2 टॅब.</string>
+    <string name="set_tabs_max">जास्तीत जास्त 5 टॅब. दुसरा जोडण्यासाठी एक बंद करा.</string>
+    <string name="set_tab_up">%1$s वर हलवा</string>
+    <string name="set_tab_down">%1$s खाली हलवा</string>
+    <string name="set_start_tab">सुरुवातीचा टॅब</string>
+    <string name="set_start_tab_auto">स्वयंचलित</string>
     <string name="upcoming_today">आज</string>
     <string name="upcoming_tomorrow">उद्या</string>
     <string name="continue_remove">पाहणे सुरू ठेवा मधून काढा</string>
@@ -1104,6 +1122,10 @@
     <string name="yt_stream_failed">YouTube ने हा स्ट्रीम थांबवला. त्याऐवजी डाउनलोड करायचे?</string>
     <string name="yt_stream_download">डाउनलोड</string>
     <string name="set_pure_black_light_only">फक्त डार्क थीमसाठी. अ‍ॅप डार्क असताना लागू होते.</string>
+    <string name="set_grid_size">पोस्टरचा आकार</string>
+    <string name="set_grid_small">लहान</string>
+    <string name="set_grid_medium">मध्यम</string>
+    <string name="set_grid_large">मोठा</string>
     <string name="set_folder_app_storage">अ‍ॅप स्टोरेज</string>
     <string name="usage_direct">थेट लिंक</string>
     <string name="usage_tap_bar">त्या दिवसासाठी बारवर टॅप करा</string>
@@ -1283,24 +1305,4 @@
     <string name="settings_search_none">कोणतीही सेटिंग जुळली नाही</string>
     <string name="settings_sum_connections">Trakt, उपशीर्षके, शोध स्रोत</string>
     <string name="settings_sum_data">डेटा वापर आणि बॅकअप</string>
-    <string name="set_grid_size">पोस्टरचा आकार</string>
-    <string name="set_grid_small">लहान</string>
-    <string name="set_grid_medium">मध्यम</string>
-    <string name="set_grid_large">मोठा</string>
-    <string name="tab_home">मुख्यपृष्ठ</string>
-    <string name="home_continue_listening">ऐकणे सुरू ठेवा</string>
-    <string name="home_recently_added">अलीकडे जोडलेले</string>
-    <string name="home_downloading">डाउनलोड होत आहे</string>
-    <string name="home_shortcuts">शॉर्टकट</string>
-    <string name="home_more_downloads">आणि आणखी %1$d</string>
-    <string name="home_empty_title">येथे अजून काहीही नाही</string>
-    <string name="home_empty_body">मॅग्नेट, लिंक किंवा टोरेंट फाइल जोडा. तुम्ही जे पाहता, ऐकता आणि डाउनलोड करता ते येथे दिसेल.</string>
-    <string name="home_empty_add">काहीतरी जोडा</string>
-    <string name="set_home_rows">मुख्यपृष्ठावरील ओळी</string>
-    <string name="set_tabs">टॅब</string>
-    <string name="set_tabs_detail">खालच्या बारसाठी 2 ते 5 टॅब निवडा आणि त्यांचा क्रम ठरवा.</string>
-    <string name="set_tab_up">%1$s वर हलवा</string>
-    <string name="set_tab_down">%1$s खाली हलवा</string>
-    <string name="set_start_tab">सुरुवातीचा टॅब</string>
-    <string name="set_start_tab_auto">स्वयंचलित</string>
 </resources>

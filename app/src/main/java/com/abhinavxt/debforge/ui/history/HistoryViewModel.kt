@@ -124,7 +124,7 @@ class HistoryViewModel @Inject constructor(
         val track = withContext(Dispatchers.IO) {
             row?.takeIf { r -> r.finalFilePath?.let(LocalFiles::exists) == true }?.let { audioTrackFor(context, it) }
         }
-        if (track == null) unplayable(e, missing(e)) else audio.play(listOf(track), 0)
+        if (track == null) unplayable(e, missing(e)) else audio.playResuming(track, e.positionMs, e.durationMs)
     }
 
     private suspend fun playVideo(e: HistoryEntity) {

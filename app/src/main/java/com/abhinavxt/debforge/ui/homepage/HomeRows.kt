@@ -1,7 +1,9 @@
 package com.abhinavxt.debforge.ui.homepage
 
 import com.abhinavxt.debforge.domain.DownloadItem
-import com.abhinavxt.debforge.domain.ReleaseInfo
+import com.abhinavxt.debforge.domain.SortOrder
+import com.abhinavxt.debforge.ui.browse.TitleGroup
+import com.abhinavxt.debforge.ui.browse.buildTitleGroups
 import com.abhinavxt.debforge.domain.ReleaseNameParser
 
 /** The rows of the Home tab, in display order. [key] is persisted (as hidden rows): never rename. */
@@ -30,13 +32,12 @@ enum class HomeRow(val key: String) {
 fun visibleHomeRows(hidden: Set<HomeRow>, counts: Map<HomeRow, Int>): List<HomeRow> =
     HomeRow.entries.filter { it != HomeRow.SHORTCUTS && it !in hidden && (counts[it] ?: 0) > 0 }
 
-/** One entry per show or movie among [items] (newest first, as the service lists them), videos only. */
-fun recentTitles(items: List<DownloadItem>, max: Int = RECENT_MAX): List<ReleaseInfo> =
-    items.asSequence()
-        .map { ReleaseNameParser.parse(it.filename) }
-        .filter { it.isVideo }
-        .distinctBy { it.groupKey }
+/** The Library's own title groups (same keys, so a tap opens the same sheet), newest first, with a video in them. */
+fun recentTitles(items: List<DownloadItem>, max: Int = RECENT_MAX): List<TitleGroup> {
+    val parsed = items.associate { it.id to ReleaseNameParser.parse(it.filename) }
+    return buildTitleGroups(items, parsed, "", SortOrder.DATE_DESC)
+        .filter { g -> g.files.any { it.info.isVideo } }
         .take(max)
-        .toList()
+}
 
 const val RECENT_MAX = 12

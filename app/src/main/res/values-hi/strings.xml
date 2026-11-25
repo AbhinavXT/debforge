@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="tab_library">लाइब्रेरी</string>
+    <string name="tab_home">होम</string>
     <string name="tab_downloads">डाउनलोड</string>
     <string name="tab_settings">सेटिंग्स</string>
     <string name="action_cancel">रद्द करें</string>
@@ -502,6 +503,23 @@
     <!-- Resume / Continue watching -->
     <string name="continue_watching">देखना जारी रखें</string>
     <string name="upcoming_title">जल्द आ रहा है</string>
+    <string name="home_continue_listening">सुनना जारी रखें</string>
+    <string name="home_recently_added">हाल ही में जोड़े गए</string>
+    <string name="home_downloading">डाउनलोड हो रहे हैं</string>
+    <string name="home_shortcuts">शॉर्टकट</string>
+    <string name="home_more_downloads">और %1$d</string>
+    <string name="home_empty_title">यहाँ अभी कुछ नहीं है</string>
+    <string name="home_empty_body">एक मैग्नेट, लिंक या टोरेंट फ़ाइल जोड़ें। आप जो देखते, सुनते और डाउनलोड करते हैं, वह यहाँ दिखेगा।</string>
+    <string name="home_empty_add">कुछ जोड़ें</string>
+    <string name="set_home_rows">होम की पंक्तियाँ</string>
+    <string name="set_tabs">टैब</string>
+    <string name="set_tabs_detail">निचले बार के लिए 2 से 5 टैब चुनें और उनका क्रम तय करें।</string>
+    <string name="set_tabs_min">कम से कम 2 टैब।</string>
+    <string name="set_tabs_max">अधिकतम 5 टैब। दूसरा जोड़ने के लिए एक बंद करें।</string>
+    <string name="set_tab_up">%1$s को ऊपर ले जाएँ</string>
+    <string name="set_tab_down">%1$s को नीचे ले जाएँ</string>
+    <string name="set_start_tab">शुरुआती टैब</string>
+    <string name="set_start_tab_auto">स्वचालित</string>
     <string name="upcoming_today">आज</string>
     <string name="upcoming_tomorrow">कल</string>
     <string name="continue_remove">देखना जारी रखें से हटाएँ</string>
@@ -1104,6 +1122,10 @@
     <string name="yt_stream_failed">YouTube ने यह स्ट्रीम रोक दी। इसके बजाय डाउनलोड करें?</string>
     <string name="yt_stream_download">डाउनलोड</string>
     <string name="set_pure_black_light_only">केवल डार्क थीम के लिए। ऐप डार्क होने पर लागू होता है।</string>
+    <string name="set_grid_size">पोस्टर का आकार</string>
+    <string name="set_grid_small">छोटा</string>
+    <string name="set_grid_medium">मध्यम</string>
+    <string name="set_grid_large">बड़ा</string>
     <string name="set_folder_app_storage">ऐप स्टोरेज</string>
     <string name="usage_direct">सीधे लिंक</string>
     <string name="usage_tap_bar">किसी दिन को देखने के लिए बार पर टैप करें</string>
@@ -1283,24 +1305,4 @@
     <string name="settings_search_none">कोई सेटिंग नहीं मिली</string>
     <string name="settings_sum_connections">Trakt, उपशीर्षक, खोज स्रोत</string>
     <string name="settings_sum_data">डेटा उपयोग और बैकअप</string>
-    <string name="set_grid_size">पोस्टर का आकार</string>
-    <string name="set_grid_small">छोटा</string>
-    <string name="set_grid_medium">मध्यम</string>
-    <string name="set_grid_large">बड़ा</string>
-    <string name="tab_home">होम</string>
-    <string name="home_continue_listening">सुनना जारी रखें</string>
-    <string name="home_recently_added">हाल ही में जोड़े गए</string>
-    <string name="home_downloading">डाउनलोड हो रहे हैं</string>
-    <string name="home_shortcuts">शॉर्टकट</string>
-    <string name="home_more_downloads">और %1$d</string>
-    <string name="home_empty_title">यहाँ अभी कुछ नहीं है</string>
-    <string name="home_empty_body">एक मैग्नेट, लिंक या टोरेंट फ़ाइल जोड़ें। आप जो देखते, सुनते और डाउनलोड करते हैं, वह यहाँ दिखेगा।</string>
-    <string name="home_empty_add">कुछ जोड़ें</string>
-    <string name="set_home_rows">होम की पंक्तियाँ</string>
-    <string name="set_tabs">टैब</string>
-    <string name="set_tabs_detail">निचले बार के लिए 2 से 5 टैब चुनें और उनका क्रम तय करें।</string>
-    <string name="set_tab_up">%1$s को ऊपर ले जाएँ</string>
-    <string name="set_tab_down">%1$s को नीचे ले जाएँ</string>
-    <string name="set_start_tab">शुरुआती टैब</string>
-    <string name="set_start_tab_auto">स्वचालित</string>
 </resources>

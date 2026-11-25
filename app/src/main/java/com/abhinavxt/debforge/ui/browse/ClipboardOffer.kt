@@ -1,5 +1,6 @@
 package com.abhinavxt.debforge.ui.browse
 
+import kotlinx.coroutines.sync.withLock
 import android.content.ClipDescription
 import android.content.ClipboardManager
 import android.content.Context
@@ -43,6 +44,8 @@ class ClipboardOfferViewModel @Inject constructor(
     private val settings: SettingsStore
 ) : ViewModel() {
 
+    private companion object { val seenLock = kotlinx.coroutines.sync.Mutex() }
+
     val enabled: StateFlow<Boolean> = settings.clipboardOfferFlow
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
 
@@ -59,8 +62,11 @@ class ClipboardOfferViewModel @Inject constructor(
         ) return
         val stamp = desc.timestamp
         viewModelScope.launch {
-            if (stamp <= settings.clipboardSeenFlow.first()) return@launch
-            settings.setClipboardSeen(stamp)
+            // Library and Home each have a checker: the lock makes the later one see the clip as already offered.
+            val fresh = seenLock.withLock {
+                (stamp > settings.clipboardSeenFlow.first()).also { if (it) settings.setClipboardSeen(stamp) }
+            }
+            if (!fresh) return@launch
             val text = runCatching { cm.primaryClip?.getItemAt(0)?.coerceToText(context)?.toString() }.getOrNull()
             ClipboardLinks.pick(text)?.let(onOffer)
         }

@@ -245,6 +245,16 @@ fun resumePositionMs(savedMs: Long, durationMs: Long): Long = when {
     else -> savedMs
 }
 
+/**
+ * Where "Continue listening" starts a track: where the player remembers it (long tracks), else where the play
+ * history left it, unless that is the very start or the very end.
+ */
+fun audioResumeStart(rememberedMs: Long, historyMs: Long, durationMs: Long): Long = when {
+    rememberedMs > 0 -> rememberedMs
+    historyMs < AUDIO_RESUME_EDGE_MS || durationMs - historyMs <= AUDIO_RESUME_EDGE_MS -> 0L
+    else -> historyMs
+}
+
 /** What a track's position means for its saved spot: keep what is saved (a peek), update it, or drop it (finished). */
 enum class ResumeAction { KEEP, SAVE, FORGET }
 
@@ -879,6 +889,12 @@ class AudioPlayer @Inject constructor(
         if (queue.isEmpty()) return
         playJob?.cancel()
         playJob = scope.launch { start(queue, startIndex, resumeFor(queue[startIndex.coerceIn(queue.indices)].resumeId)) }
+    }
+
+    /** Plays [track] alone, resuming where it was left (see [audioResumeStart]). */
+    fun playResuming(track: AudioTrack, historyMs: Long, durationMs: Long) {
+        playJob?.cancel()
+        playJob = scope.launch { start(listOf(track), 0, audioResumeStart(resumeFor(track.resumeId), historyMs, durationMs)) }
     }
 
     /**

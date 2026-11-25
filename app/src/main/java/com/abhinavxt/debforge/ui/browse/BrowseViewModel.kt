@@ -34,6 +34,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -44,6 +45,8 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -121,12 +124,11 @@ class BrowseViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyMap())
 
     /**
-     * Snackbar pipe. Buffered Channel rather than a StateFlow because StateFlow
-     * conflates — two rapid enqueues within ~200 ms could drop a message. With
-     * a Channel each event is delivered exactly once and they queue in order.
+     * Snackbar pipe. A buffered SharedFlow: rapid messages queue in order, and one sent while no screen
+     * (Library or Home) is showing it is dropped instead of surfacing minutes later.
      */
-    private val _events = Channel<String>(Channel.BUFFERED)
-    val events: Flow<String> = _events.receiveAsFlow()
+    private val _events = kotlinx.coroutines.flow.MutableSharedFlow<String>(extraBufferCapacity = 16)
+    val events: Flow<String> = _events
 
     /**
      * Artwork per title group (ReleaseInfo.groupKey). A key mapped to null
@@ -146,8 +148,24 @@ class BrowseViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptySet())
 
     /** One-shot "open this in a video player" requests for the screen. */
-    private val _playRequests = Channel<PlayRequest>(Channel.BUFFERED)
-    val playRequests: Flow<PlayRequest> = _playRequests.receiveAsFlow()
+    private val _playRequests = object {
+        private val channel = Channel<PlayRequest>(Channel.BUFFERED)
+        private val watchers = java.util.concurrent.atomic.AtomicInteger()
+
+        /** Exactly one collector gets each request (Library and Home may both be composed during a crossfade). */
+        val flow: Flow<PlayRequest> = channel.receiveAsFlow()
+            .onStart { watchers.incrementAndGet() }
+            .onCompletion { watchers.decrementAndGet() }
+
+        /** With no screen collecting, a late request would start a video out of the blue: drop it. */
+        suspend fun send(r: PlayRequest) { if (watchers.get() > 0) channel.send(r) }
+    }
+    val playRequests: Flow<PlayRequest> = _playRequests.flow
+
+    /** Home asks the Library to open this title's sheet ([TitleGroup.key]); the Library clears it once shown. */
+    val titleToOpen = MutableStateFlow<String?>(null)
+
+    private val pollLock = kotlinx.coroutines.sync.Mutex()
 
     private var processingJob: Job? = null
 
@@ -172,7 +190,7 @@ class BrowseViewModel @Inject constructor(
         // cached torrents (ready instantly on TorBox) appear right away.
         viewModelScope.launch {
             providerEvents.listChanged.collect { message ->
-                _events.send(message)
+                _events.emit(message)
                 refresh()
             }
         }
@@ -343,7 +361,7 @@ class BrowseViewModel @Inject constructor(
                         checkFollows(result.data.items)
                     }
                     // The old list stays and keeps paging; just say why.
-                    is DataResult.Error -> _events.send(result.message)
+                    is DataResult.Error -> _events.emit(result.message)
                 }
             } finally {
                 _state.update { it.copy(isRefreshing = false) }
@@ -513,7 +531,7 @@ class BrowseViewModel @Inject constructor(
                 watcher.unwatch(job.provider, job.ref)
             } else {
                 watcher.watch(job.provider, job.ref, job.name)
-                _events.send(str(R.string.msg_will_download_when_ready, job.name))
+                _events.emit(str(R.string.msg_will_download_when_ready, job.name))
             }
         }
     }
@@ -532,7 +550,8 @@ class BrowseViewModel @Inject constructor(
      * The intervals are deliberately not shorter: TorBox's uncached list call
      * is its most expensive endpoint and is rate-limited per key.
      */
-    suspend fun pollWhileVisible() {
+    suspend fun pollWhileVisible(): Unit = pollLock.withLock {
+        // One poller at a time: Home and the Library overlap while the tabs crossfade; the later one waits for the earlier to leave.
         if (lastListLoad != 0L && sinceListLoad() > RESUME_STALE_MS) {
             updateProcessing()
             refreshQuietly()
@@ -548,7 +567,7 @@ class BrowseViewModel @Inject constructor(
             val finished = updateProcessing()
             val ready = if (watchedJobs.value.isNotEmpty()) watcher.checkNow(fromBackground = false) else emptyList()
             if (ready.isNotEmpty()) {
-                _events.send(
+                _events.emit(
                     if (ready.size == 1) str(R.string.msg_ready_one, ready.first())
                     else appContext.resources.getQuantityString(R.plurals.msg_ready_many, ready.size, ready.size)
                 )
@@ -593,7 +612,7 @@ class BrowseViewModel @Inject constructor(
             val failed = ids.count { !downloadController.deleteFromDevice(it) }
             val deleted = ids.size - failed
             val res = appContext.resources
-            _events.send(
+            _events.emit(
                 if (failed > 0) res.getQuantityString(R.plurals.msg_delete_failed_n, failed, failed)
                 else res.getQuantityString(R.plurals.msg_deleted_device_n, deleted, deleted)
             )
@@ -628,7 +647,7 @@ class BrowseViewModel @Inject constructor(
             firstPageCount = (firstPageCount - goneFromFirstPage).coerceAtLeast(0)
             _processing.update { jobs -> jobs.filterNot { it.provider == p && it.ref in removed } }
         }
-        _events.send(error ?: appContext.resources.getQuantityString(
+        _events.emit(error ?: appContext.resources.getQuantityString(
             R.plurals.msg_removed_n, removed.size, removed.size, auth.info(p).displayName
         ))
     }
@@ -644,7 +663,7 @@ class BrowseViewModel @Inject constructor(
             val url = item.downloadUrl ?: when (val r = downloadsRepository.resolveLink(item.provider, item.sourceRef)) {
                 is DataResult.Success -> r.data.url
                 is DataResult.Error -> {
-                    _events.send(r.message)
+                    _events.emit(r.message)
                     return@launch
                 }
             }
@@ -740,7 +759,7 @@ class BrowseViewModel @Inject constructor(
                     )
                 }
                 // Most likely removed from the service; the user can drop it (long-press).
-                is DataResult.Error -> _events.send(str(R.string.continue_unavailable, entry.title, r.message))
+                is DataResult.Error -> _events.emit(str(R.string.continue_unavailable, entry.title, r.message))
             }
         }
     }
@@ -782,7 +801,7 @@ class BrowseViewModel @Inject constructor(
                 if (watched) R.plurals.msg_marked_watched_n else R.plurals.msg_marked_unwatched_n,
                 videos.size, videos.size
             )
-            _events.send(if (synced) appContext.getString(R.string.msg_with_trakt, message) else message)
+            _events.emit(if (synced) appContext.getString(R.string.msg_with_trakt, message) else message)
         }
     }
 
@@ -791,7 +810,7 @@ class BrowseViewModel @Inject constructor(
     }
 
     fun reportNoPlayer() {
-        viewModelScope.launch { _events.send(str(R.string.msg_no_player)) }
+        viewModelScope.launch { _events.emit(str(R.string.msg_no_player)) }
     }
 
     /** Adding/changing the TMDB key: forget misses so cards retry. */
@@ -830,7 +849,7 @@ class BrowseViewModel @Inject constructor(
 
     /** The setup sheet saved a key; artwork loads as cards recompose. */
     fun onPostersEnabled() {
-        viewModelScope.launch { _events.send(str(R.string.poster_setup_done)) }
+        viewModelScope.launch { _events.emit(str(R.string.poster_setup_done)) }
     }
 
     // --- following shows ------------------------------------------------------
@@ -854,7 +873,7 @@ class BrowseViewModel @Inject constructor(
         viewModelScope.launch {
             if (isFollowed(group)) {
                 followStore.unfollow(p, key)
-                _events.send(str(R.string.follow_stopped, group.title))
+                _events.emit(str(R.string.follow_stopped, group.title))
             } else {
                 val resolution = group.files.mapNotNull { it.info.resolution }
                     .groupingBy { it }.eachCount().maxByOrNull { it.value }?.key
@@ -867,7 +886,7 @@ class BrowseViewModel @Inject constructor(
                         resolution = resolution
                     )
                 )
-                _events.send(str(R.string.follow_started, group.title))
+                _events.emit(str(R.string.follow_started, group.title))
             }
             com.abhinavxt.debforge.download.follow.FollowJobService.sync(appContext, followStore.all().isNotEmpty())
         }
@@ -878,7 +897,7 @@ class BrowseViewModel @Inject constructor(
         viewModelScope.launch {
             val queued = runCatching { followChecker.checkLoaded(items) }.getOrDefault(emptyList())
             if (queued.isNotEmpty()) {
-                _events.send(
+                _events.emit(
                     if (queued.size == 1) str(R.string.follow_queued_one, queued.first())
                     else appContext.resources.getQuantityString(R.plurals.follow_queued_many, queued.size, queued.size)
                 )
@@ -933,7 +952,7 @@ class BrowseViewModel @Inject constructor(
     fun useFolder(treeUri: String, pending: List<DownloadItem>) {
         viewModelScope.launch {
             settingsStore.setDownloadDir(treeUri)
-            _events.send(str(R.string.msg_folder_set, StorageAccess.label(appContext, treeUri)))
+            _events.emit(str(R.string.msg_folder_set, StorageAccess.label(appContext, treeUri)))
             enqueueAll(pending)
         }
     }
@@ -941,7 +960,7 @@ class BrowseViewModel @Inject constructor(
     fun useAppStorage(dir: String, pending: List<DownloadItem>) {
         viewModelScope.launch {
             settingsStore.setDownloadDir(dir)
-            _events.send(str(R.string.msg_app_storage))
+            _events.emit(str(R.string.msg_app_storage))
             enqueueAll(pending)
         }
     }
@@ -987,7 +1006,7 @@ class BrowseViewModel @Inject constructor(
         items.forEach { downloadController.enqueue(it, foreground = true) }
         // BUFFERED channel; send() suspends only if the buffer is full, which
         // is effectively never for a snackbar pipe.
-        _events.send(
+        _events.emit(
             if (items.size == 1) str(R.string.msg_added_one, items.first().filename)
             else appContext.resources.getQuantityString(R.plurals.added_n_files, items.size, items.size)
         )

@@ -47,6 +47,18 @@ internal fun TabsCard(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 4.dp)
         )
+        // Why a switch is greyed out: the bar is at its limit.
+        val limit = when (bar.size) {
+            TabConfig.MAX -> R.string.set_tabs_max
+            TabConfig.MIN -> R.string.set_tabs_min
+            else -> null
+        }
+        if (limit != null) Text(
+            stringResource(limit),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 4.dp)
+        )
         TabConfig.rail(bar).mapNotNull(HomeTab::of).forEach { tab ->
             // Keyed so keyboard focus follows a tab as it moves.
             key(tab.route) {

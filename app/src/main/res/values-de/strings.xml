@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="tab_library">Mediathek</string>
+    <string name="tab_home">Start</string>
     <string name="tab_downloads">Downloads</string>
     <string name="tab_settings">Einstellungen</string>
     <string name="action_cancel">Abbrechen</string>
@@ -502,6 +503,23 @@
     <!-- Resume / Continue watching -->
     <string name="continue_watching">Weiterschauen</string>
     <string name="upcoming_title">Demnächst</string>
+    <string name="home_continue_listening">Weiterhören</string>
+    <string name="home_recently_added">Zuletzt hinzugefügt</string>
+    <string name="home_downloading">Wird heruntergeladen</string>
+    <string name="home_shortcuts">Verknüpfungen</string>
+    <string name="home_more_downloads">und %1$d weitere</string>
+    <string name="home_empty_title">Noch nichts hier</string>
+    <string name="home_empty_body">Füge einen Magnet-Link, einen Link oder eine Torrent-Datei hinzu. Was du schaust, hörst und herunterlädst, erscheint hier.</string>
+    <string name="home_empty_add">Etwas hinzufügen</string>
+    <string name="set_home_rows">Zeilen auf Start</string>
+    <string name="set_tabs">Tabs</string>
+    <string name="set_tabs_detail">Wähle 2 bis 5 Tabs für die untere Leiste und lege ihre Reihenfolge fest.</string>
+    <string name="set_tabs_min">Mindestens 2 Tabs.</string>
+    <string name="set_tabs_max">Bis zu 5 Tabs. Schalte einen aus, um einen anderen hinzuzufügen.</string>
+    <string name="set_tab_up">%1$s nach oben</string>
+    <string name="set_tab_down">%1$s nach unten</string>
+    <string name="set_start_tab">Start-Tab</string>
+    <string name="set_start_tab_auto">Automatisch</string>
     <string name="upcoming_today">Heute</string>
     <string name="upcoming_tomorrow">Morgen</string>
     <string name="continue_remove">Aus Weiterschauen entfernen</string>
@@ -1104,6 +1122,10 @@
     <string name="yt_stream_failed">YouTube hat diesen Stream beendet. Stattdessen herunterladen?</string>
     <string name="yt_stream_download">Herunterladen</string>
     <string name="set_pure_black_light_only">Nur für das dunkle Design. Gilt, wenn die App dunkel ist.</string>
+    <string name="set_grid_size">Postergröße</string>
+    <string name="set_grid_small">Klein</string>
+    <string name="set_grid_medium">Mittel</string>
+    <string name="set_grid_large">Groß</string>
     <string name="set_folder_app_storage">App-Speicher</string>
     <string name="usage_direct">Direktlinks</string>
     <string name="usage_tap_bar">Tippe auf einen Balken, um den Tag zu sehen</string>
@@ -1283,24 +1305,4 @@
     <string name="settings_search_none">Keine passenden Einstellungen</string>
     <string name="settings_sum_connections">Trakt, Untertitel, Suchquellen</string>
     <string name="settings_sum_data">Datenverbrauch und Backup</string>
-    <string name="set_grid_size">Postergröße</string>
-    <string name="set_grid_small">Klein</string>
-    <string name="set_grid_medium">Mittel</string>
-    <string name="set_grid_large">Groß</string>
-    <string name="tab_home">Start</string>
-    <string name="home_continue_listening">Weiterhören</string>
-    <string name="home_recently_added">Zuletzt hinzugefügt</string>
-    <string name="home_downloading">Wird heruntergeladen</string>
-    <string name="home_shortcuts">Verknüpfungen</string>
-    <string name="home_more_downloads">und %1$d weitere</string>
-    <string name="home_empty_title">Noch nichts hier</string>
-    <string name="home_empty_body">Füge einen Magnet-Link, einen Link oder eine Torrent-Datei hinzu. Was du schaust, hörst und herunterlädst, erscheint hier.</string>
-    <string name="home_empty_add">Etwas hinzufügen</string>
-    <string name="set_home_rows">Zeilen auf Start</string>
-    <string name="set_tabs">Tabs</string>
-    <string name="set_tabs_detail">Wähle 2 bis 5 Tabs für die untere Leiste und lege ihre Reihenfolge fest.</string>
-    <string name="set_tab_up">%1$s nach oben</string>
-    <string name="set_tab_down">%1$s nach unten</string>
-    <string name="set_start_tab">Start-Tab</string>
-    <string name="set_start_tab_auto">Automatisch</string>
 </resources>

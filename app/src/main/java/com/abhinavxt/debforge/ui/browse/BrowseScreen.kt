@@ -201,6 +201,10 @@ fun BrowseScreen(
             if (result == SnackbarResult.ActionPerformed) onAddText(links)
         }
     })
+    val titleToOpen by viewModel.titleToOpen.collectAsStateWithLifecycle()
+    LaunchedEffect(titleToOpen) {
+        titleToOpen?.let { openGroupKey = it; viewModel.titleToOpen.value = null }
+    }
     val videoLauncher = com.abhinavxt.debforge.player.rememberVideoLauncher()
     LaunchedEffect(Unit) {
         viewModel.playRequests.collect { req ->

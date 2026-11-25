@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="tab_library">Pustaka</string>
+    <string name="tab_home">Beranda</string>
     <string name="tab_downloads">Unduhan</string>
     <string name="tab_settings">Setelan</string>
     <string name="action_cancel">Batal</string>
@@ -478,6 +479,23 @@
     <!-- Resume / Continue watching -->
     <string name="continue_watching">Lanjut menonton</string>
     <string name="upcoming_title">Segera tayang</string>
+    <string name="home_continue_listening">Lanjutkan mendengarkan</string>
+    <string name="home_recently_added">Baru ditambahkan</string>
+    <string name="home_downloading">Sedang mengunduh</string>
+    <string name="home_shortcuts">Pintasan</string>
+    <string name="home_more_downloads">dan %1$d lagi</string>
+    <string name="home_empty_title">Belum ada apa pun</string>
+    <string name="home_empty_body">Tambahkan tautan magnet, tautan, atau file torrent. Yang Anda tonton, dengarkan, dan unduh akan muncul di sini.</string>
+    <string name="home_empty_add">Tambahkan sesuatu</string>
+    <string name="set_home_rows">Baris di Beranda</string>
+    <string name="set_tabs">Tab</string>
+    <string name="set_tabs_detail">Pilih 2 hingga 5 tab untuk bilah bawah dan atur urutannya.</string>
+    <string name="set_tabs_min">Minimal 2 tab.</string>
+    <string name="set_tabs_max">Maksimal 5 tab. Matikan satu untuk menambah yang lain.</string>
+    <string name="set_tab_up">Naikkan %1$s</string>
+    <string name="set_tab_down">Turunkan %1$s</string>
+    <string name="set_start_tab">Tab awal</string>
+    <string name="set_start_tab_auto">Otomatis</string>
     <string name="upcoming_today">Hari ini</string>
     <string name="upcoming_tomorrow">Besok</string>
     <string name="continue_remove">Hapus dari Lanjut menonton</string>
@@ -1054,6 +1072,10 @@
     <string name="yt_stream_failed">YouTube menghentikan streaming ini. Unduh saja?</string>
     <string name="yt_stream_download">Unduh</string>
     <string name="set_pure_black_light_only">Hanya tema gelap. Berlaku saat aplikasi dalam mode gelap.</string>
+    <string name="set_grid_size">Ukuran poster</string>
+    <string name="set_grid_small">Kecil</string>
+    <string name="set_grid_medium">Sedang</string>
+    <string name="set_grid_large">Besar</string>
     <string name="set_folder_app_storage">Penyimpanan aplikasi</string>
     <string name="usage_direct">Tautan langsung</string>
     <string name="usage_tap_bar">Ketuk batang untuk melihat hari itu</string>
@@ -1224,24 +1246,4 @@
     <string name="settings_search_none">Tidak ada pengaturan yang cocok</string>
     <string name="settings_sum_connections">Trakt, subjudul, sumber pencarian</string>
     <string name="settings_sum_data">Penggunaan data dan cadangan</string>
-    <string name="set_grid_size">Ukuran poster</string>
-    <string name="set_grid_small">Kecil</string>
-    <string name="set_grid_medium">Sedang</string>
-    <string name="set_grid_large">Besar</string>
-    <string name="tab_home">Beranda</string>
-    <string name="home_continue_listening">Lanjutkan mendengarkan</string>
-    <string name="home_recently_added">Baru ditambahkan</string>
-    <string name="home_downloading">Sedang mengunduh</string>
-    <string name="home_shortcuts">Pintasan</string>
-    <string name="home_more_downloads">dan %1$d lagi</string>
-    <string name="home_empty_title">Belum ada apa pun</string>
-    <string name="home_empty_body">Tambahkan tautan magnet, tautan, atau file torrent. Yang Anda tonton, dengarkan, dan unduh akan muncul di sini.</string>
-    <string name="home_empty_add">Tambahkan sesuatu</string>
-    <string name="set_home_rows">Baris di Beranda</string>
-    <string name="set_tabs">Tab</string>
-    <string name="set_tabs_detail">Pilih 2 hingga 5 tab untuk bilah bawah dan atur urutannya.</string>
-    <string name="set_tab_up">Naikkan %1$s</string>
-    <string name="set_tab_down">Turunkan %1$s</string>
-    <string name="set_start_tab">Tab awal</string>
-    <string name="set_start_tab_auto">Otomatis</string>
 </resources>

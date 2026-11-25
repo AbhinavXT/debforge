@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="tab_library">లైబ్రరీ</string>
+    <string name="tab_home">హోమ్</string>
     <string name="tab_downloads">డౌన్‌లోడ్‌లు</string>
     <string name="tab_settings">సెట్టింగ్‌లు</string>
     <string name="action_cancel">రద్దు చేయి</string>
@@ -502,6 +503,23 @@
     <!-- Resume / Continue watching -->
     <string name="continue_watching">చూడటం కొనసాగించండి</string>
     <string name="upcoming_title">త్వరలో రాబోతున్నవి</string>
+    <string name="home_continue_listening">వినడం కొనసాగించండి</string>
+    <string name="home_recently_added">ఇటీవల జోడించినవి</string>
+    <string name="home_downloading">డౌన్‌లోడ్ అవుతున్నవి</string>
+    <string name="home_shortcuts">షార్ట్‌కట్‌లు</string>
+    <string name="home_more_downloads">ఇంకా %1$d</string>
+    <string name="home_empty_title">ఇక్కడ ఇంకా ఏమీ లేదు</string>
+    <string name="home_empty_body">ఒక మ్యాగ్నెట్, లింక్ లేదా టొరెంట్ ఫైల్‌ను జోడించండి. మీరు చూసేవి, వినేవి, డౌన్‌లోడ్ చేసేవి ఇక్కడ కనిపిస్తాయి.</string>
+    <string name="home_empty_add">ఏదైనా జోడించండి</string>
+    <string name="set_home_rows">హోమ్ వరుసలు</string>
+    <string name="set_tabs">ట్యాబ్‌లు</string>
+    <string name="set_tabs_detail">దిగువ బార్ కోసం 2 నుండి 5 ట్యాబ్‌లను ఎంచుకుని వాటి క్రమాన్ని సెట్ చేయండి.</string>
+    <string name="set_tabs_min">కనీసం 2 ట్యాబ్‌లు.</string>
+    <string name="set_tabs_max">గరిష్ఠంగా 5 ట్యాబ్‌లు. మరొకటి జోడించడానికి ఒకటి ఆఫ్ చేయండి.</string>
+    <string name="set_tab_up">%1$s ను పైకి జరపండి</string>
+    <string name="set_tab_down">%1$s ను క్రిందికి జరపండి</string>
+    <string name="set_start_tab">ప్రారంభ ట్యాబ్</string>
+    <string name="set_start_tab_auto">స్వయంచాలకం</string>
     <string name="upcoming_today">ఈరోజు</string>
     <string name="upcoming_tomorrow">రేపు</string>
     <string name="continue_remove">చూడటం కొనసాగించండి నుండి తీసివేయండి</string>
@@ -1104,6 +1122,10 @@
     <string name="yt_stream_failed">YouTube ఈ స్ట్రీమ్‌ను ఆపేసింది. బదులుగా డౌన్‌లోడ్ చేయాలా?</string>
     <string name="yt_stream_download">డౌన్‌లోడ్</string>
     <string name="set_pure_black_light_only">డార్క్ థీమ్‌కు మాత్రమే. యాప్ డార్క్‌లో ఉన్నప్పుడు వర్తిస్తుంది.</string>
+    <string name="set_grid_size">పోస్టర్ పరిమాణం</string>
+    <string name="set_grid_small">చిన్నది</string>
+    <string name="set_grid_medium">మధ్యస్థం</string>
+    <string name="set_grid_large">పెద్దది</string>
     <string name="set_folder_app_storage">యాప్ నిల్వ</string>
     <string name="usage_direct">డైరెక్ట్ లింకులు</string>
     <string name="usage_tap_bar">ఆ రోజును చూడటానికి బార్‌ను తాకండి</string>
@@ -1283,24 +1305,4 @@
     <string name="settings_search_none">సరిపోలే సెట్టింగ్‌లు లేవు</string>
     <string name="settings_sum_connections">Trakt, ఉపశీర్షికలు, శోధన మూలాలు</string>
     <string name="settings_sum_data">డేటా వినియోగం మరియు బ్యాకప్</string>
-    <string name="set_grid_size">పోస్టర్ పరిమాణం</string>
-    <string name="set_grid_small">చిన్నది</string>
-    <string name="set_grid_medium">మధ్యస్థం</string>
-    <string name="set_grid_large">పెద్దది</string>
-    <string name="tab_home">హోమ్</string>
-    <string name="home_continue_listening">వినడం కొనసాగించండి</string>
-    <string name="home_recently_added">ఇటీవల జోడించినవి</string>
-    <string name="home_downloading">డౌన్‌లోడ్ అవుతున్నవి</string>
-    <string name="home_shortcuts">షార్ట్‌కట్‌లు</string>
-    <string name="home_more_downloads">ఇంకా %1$d</string>
-    <string name="home_empty_title">ఇక్కడ ఇంకా ఏమీ లేదు</string>
-    <string name="home_empty_body">ఒక మ్యాగ్నెట్, లింక్ లేదా టొరెంట్ ఫైల్‌ను జోడించండి. మీరు చూసేవి, వినేవి, డౌన్‌లోడ్ చేసేవి ఇక్కడ కనిపిస్తాయి.</string>
-    <string name="home_empty_add">ఏదైనా జోడించండి</string>
-    <string name="set_home_rows">హోమ్ వరుసలు</string>
-    <string name="set_tabs">ట్యాబ్‌లు</string>
-    <string name="set_tabs_detail">దిగువ బార్ కోసం 2 నుండి 5 ట్యాబ్‌లను ఎంచుకుని వాటి క్రమాన్ని సెట్ చేయండి.</string>
-    <string name="set_tab_up">%1$s ను పైకి జరపండి</string>
-    <string name="set_tab_down">%1$s ను క్రిందికి జరపండి</string>
-    <string name="set_start_tab">ప్రారంభ ట్యాబ్</string>
-    <string name="set_start_tab_auto">స్వయంచాలకం</string>
 </resources>
