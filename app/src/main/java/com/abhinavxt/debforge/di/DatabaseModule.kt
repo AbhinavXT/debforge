@@ -51,6 +51,9 @@ object DatabaseModule {
     fun provideHistoryDao(db: DebForgeDatabase): com.abhinavxt.debforge.data.history.HistoryDao = db.historyDao()
 
     @Provides
+    fun provideBookmarkDao(db: DebForgeDatabase): com.abhinavxt.debforge.data.bookmarks.BookmarkDao = db.bookmarkDao()
+
+    @Provides
     fun provideSubscriptionDao(db: DebForgeDatabase): com.abhinavxt.debforge.data.subscriptions.SubscriptionDao = db.subscriptionDao()
 
     @Provides

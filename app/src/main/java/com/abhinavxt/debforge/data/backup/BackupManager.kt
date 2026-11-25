@@ -18,7 +18,7 @@ import javax.inject.Singleton
  *     {"app":"DebForge","format":1,"created":"…","version":"1.1.2",
  *      "settings":{"wifi_only":true,…},
  *      "follows":[{"provider":"TORBOX","showKey":"show:the bear",…}],
- *      "audioLists":{…},"history":{…},"searches":{…},   <- optional sections, each "v":1
+ *      "audioLists":{…},"history":{…},"bookmarks":{…},"searches":{…},   <- optional sections, each "v":1
  *      "secrets":{"kdf":"PBKDF2WithHmacSHA256","iterations":310000,
  *                 "salt":"…","iv":"…","data":"…"}}      <- only if opted in
  *
@@ -34,6 +34,7 @@ class BackupManager @Inject constructor(
     private val follows: com.abhinavxt.debforge.data.follow.FollowStore,
     private val audioLists: com.abhinavxt.debforge.data.playback.AudioLists,
     private val history: com.abhinavxt.debforge.data.history.PlayHistory,
+    private val bookmarks: com.abhinavxt.debforge.data.bookmarks.BookmarkDao,
     private val searchStore: com.abhinavxt.debforge.data.search.SearchHistoryStore,
     private val youtubeSearchStore: com.abhinavxt.debforge.data.search.YouTubeSearchHistoryStore,
     private val subscriptions: com.abhinavxt.debforge.data.subscriptions.SubscriptionDao,
@@ -60,6 +61,7 @@ class BackupManager @Inject constructor(
         // Optional sections (each "v":1); older versions ignore them. A failing one is left out.
         runCatching { AudioListsBackup.toJson(audioLists.snapshot()) }.getOrNull()?.let { root["audioLists"] = it }
         runCatching { HistoryBackup.toJson(history.all()) }.getOrNull()?.let { root["history"] = it }
+        runCatching { BookmarksBackup.toJson(bookmarks.all()) }.getOrNull()?.let { root["bookmarks"] = it }
         runCatching {
             SearchesBackup.toJson(SearchesBackup.Model(searchStore.all(), youtubeSearchStore.all()))
         }.getOrNull()?.let { root["searches"] = it }
@@ -163,6 +165,7 @@ class BackupManager @Inject constructor(
         // Each section on its own, so a broken one cannot stop the others. Merge only, never delete.
         val lists = runCatching { audioLists.mergeFromBackup(AudioListsBackup.fromJson(root["audioLists"])) }.getOrNull()
         val historyAdded = runCatching { history.mergeFromBackup(HistoryBackup.fromJson(root["history"])) }.getOrDefault(0)
+        runCatching { bookmarks.mergeFromBackup(BookmarksBackup.fromJson(root["bookmarks"])) }
         val searches = SearchesBackup.fromJson(root["searches"])
         val searchesAdded = runCatching { searchStore.mergeFromBackup(searches.search) }.getOrDefault(0) +
             runCatching { youtubeSearchStore.mergeFromBackup(searches.youtube) }.getOrDefault(0)

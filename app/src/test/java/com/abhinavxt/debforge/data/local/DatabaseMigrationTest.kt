@@ -267,6 +267,31 @@ class DatabaseMigrationTest {
     }
 
     @Test
+    fun v14DataSurvivesAndBookmarksWork() {
+        val name = create(14) { db ->
+            db.execSQL(
+                "INSERT INTO downloads (rdId, provider, filename, originalLink, downloadUrl, host, filesize, chunksAllowed, state, " +
+                    "bytesDownloaded, createdAt, updatedAt) VALUES ('a', 'LOCAL', 'a.mp3', 'p', '', '', 1, 1, 'COMPLETED', 1, 1, 2)"
+            )
+        }
+        val room = openWithRoom(name)
+        try {
+            runBlocking {
+                assertNotNull(room.downloadDao().getById("a"))
+                val dao = room.bookmarkDao()
+                dao.insert("a", 9000, null, 1)
+                val id = dao.insert("a", 3000, "Intro", 2)
+                dao.rename(id, null)
+                assertEquals(listOf(3000L, 9000L), dao.observe("a").first().map { it.positionMs })
+                dao.delete(id)
+                assertEquals(1, dao.count())
+            }
+        } finally {
+            room.close()
+        }
+    }
+
+    @Test
     fun refreshingAndTrimmingFeedItemsKeepsNewAndQueuedState() {
         val room = openWithRoom(create(13) {})
         try {

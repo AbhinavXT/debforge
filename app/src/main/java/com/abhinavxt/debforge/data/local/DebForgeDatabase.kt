@@ -39,9 +39,10 @@ class Converters {
         com.abhinavxt.debforge.data.history.HistoryEntity::class,
         com.abhinavxt.debforge.data.subscriptions.SubscriptionEntity::class,
         com.abhinavxt.debforge.data.subscriptions.FeedItemEntity::class,
-        com.abhinavxt.debforge.data.sponsor.SponsorSegmentEntity::class
+        com.abhinavxt.debforge.data.sponsor.SponsorSegmentEntity::class,
+        com.abhinavxt.debforge.data.bookmarks.BookmarkEntity::class
     ],
-    version = 14,
+    version = 15,
     // Schemas land in app/schemas (commit them): DatabaseMigrationTest checks
     // every migration against them. v1–v7 were rebuilt from the migrations.
     exportSchema = true
@@ -57,13 +58,14 @@ abstract class DebForgeDatabase : RoomDatabase() {
     abstract fun historyDao(): com.abhinavxt.debforge.data.history.HistoryDao
     abstract fun subscriptionDao(): com.abhinavxt.debforge.data.subscriptions.SubscriptionDao
     abstract fun sponsorSegmentDao(): com.abhinavxt.debforge.data.sponsor.SponsorSegmentDao
+    abstract fun bookmarkDao(): com.abhinavxt.debforge.data.bookmarks.BookmarkDao
 
     companion object {
         const val NAME = "debforge.db"
 
         /** Every migration, oldest first. A new one goes here (and DatabaseMigrationTest checks it). Lazy: they are declared below. */
         val ALL_MIGRATIONS: Array<Migration> by lazy {
-            arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14)
+            arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15)
         }
 
         /**
@@ -198,6 +200,17 @@ abstract class DebForgeDatabase : RoomDatabase() {
                 db.execSQL("ALTER TABLE `downloads` ADD COLUMN `album` TEXT")
                 db.execSQL("ALTER TABLE `downloads` ADD COLUMN `albumArtist` TEXT")
                 db.execSQL("ALTER TABLE `downloads` ADD COLUMN `trackNo` INTEGER")
+            }
+        }
+
+        /** v14 -> v15: bookmarks in long audio and video. */
+        val MIGRATION_14_15 = object : Migration(14, 15) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `bookmarks` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                        "`itemId` TEXT NOT NULL, `positionMs` INTEGER NOT NULL, `name` TEXT, `createdAt` INTEGER NOT NULL)"
+                )
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_bookmarks_itemId` ON `bookmarks` (`itemId`)")
             }
         }
 
