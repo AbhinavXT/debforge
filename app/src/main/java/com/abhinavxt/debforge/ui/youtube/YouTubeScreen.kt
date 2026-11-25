@@ -839,7 +839,9 @@ private fun EmptyState(
     LaunchedEffect(Unit) { onLoadTrending() }
     val keyboard = LocalSoftwareKeyboardController.current
     val focus = remember { FocusRequester() }
-    LaunchedEffect(Unit) { runCatching { focus.requestFocus() } } // TV: land on the field
+    // TV: land on the field. Not on touch: focusing the field raised the keyboard over the tab on every open.
+    val keys = androidx.compose.ui.platform.LocalInputModeManager.current.inputMode == androidx.compose.ui.input.InputMode.Keyboard
+    LaunchedEffect(Unit) { if (keys) runCatching { focus.requestFocus() } }
     Column(
         Modifier.fillMaxSize()
             // D-pad: RIGHT at the end of a row (the last remove button) stays put instead of jumping to the header buttons.
