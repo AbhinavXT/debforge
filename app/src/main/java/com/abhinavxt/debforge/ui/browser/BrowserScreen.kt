@@ -113,8 +113,6 @@ import androidx.compose.ui.unit.dp
 import java.io.ByteArrayInputStream
 import java.text.NumberFormat
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import com.abhinavxt.debforge.ui.youtube.LocalDiscoverTopBar
 import com.abhinavxt.debforge.ui.youtube.slideAway
 import androidx.core.view.WindowInsetsCompat
@@ -275,7 +273,7 @@ fun BrowserScreen(onMagnet: (String) -> Unit, onOpenDownloads: () -> Unit, onOpe
             Box(Modifier.weight(1f)) {
                 AndroidView(
                     // The page scrolls with the arrows; at its ends they leave it instead of being swallowed.
-                    modifier = Modifier.fillMaxSize().nestedScroll(rememberNestedScrollInteropConnection()).onPreviewKeyEvent { e ->
+                    modifier = Modifier.fillMaxSize().onPreviewKeyEvent { e ->
                         val w = webView
                         val dir = when (e.key) {
                             Key.DirectionDown -> if (w != null && !w.canScrollVertically(1)) FocusDirection.Down else null
@@ -290,7 +288,15 @@ fun BrowserScreen(onMagnet: (String) -> Unit, onOpenDownloads: () -> Unit, onOpe
                     factory = { ctx ->
                         WebView(ctx).apply {
                             layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
-                            isNestedScrollingEnabled = true
+                            // Page scroll drives the Discover bar directly (nested-scroll interop did not deliver).
+                            if (topBar != null) {
+                                var lastHeight = 0
+                                setOnScrollChangeListener { v, _, y, _, oldY ->
+                                    // The page resizes as the bar slides: that relayout is not the user scrolling.
+                                    if (v.height == lastHeight) topBar.onPageScroll(oldY - y, atTop = y == 0)
+                                    lastHeight = v.height
+                                }
+                            }
                             settings.javaScriptEnabled = true
                             settings.domStorageEnabled = true
                             viewModel.userAgent = settings.userAgentString

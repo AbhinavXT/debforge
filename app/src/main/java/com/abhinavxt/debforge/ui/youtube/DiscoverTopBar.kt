@@ -33,6 +33,11 @@ class DiscoverTopBar {
     fun reset() { hidden = 0f }
     internal fun extraHeightReset() { extraHeight = 0f; hidden = 0f }
 
+    /** A page that is not a Compose scroller reports its scroll: [dy] like a nested scroll delta (negative = page moves up). */
+    fun onPageScroll(dy: Int, atTop: Boolean) {
+        if (atTop) reset() else if (enabled) hidden = hiddenAfterScroll(hidden, blockHeight + extraHeight, dy.toFloat())
+    }
+
     val connection = object : NestedScrollConnection {
         override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
             if (enabled) hidden = hiddenAfterScroll(hidden, blockHeight + extraHeight, available.y)
