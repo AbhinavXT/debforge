@@ -64,16 +64,22 @@ class DiscoverTopBar {
         if (acc < -snapPx && hidden < limit) snapTo(limit) else if (acc > snapPx && hidden > 0f) snapTo(0f)
     }
 
+    // Direction of the last list scroll: >0 up (reveal), <0 down (hide).
+    private var lastDy = 0f
+
     val connection = object : NestedScrollConnection {
         override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
-            if (enabled) hidden = hiddenAfterScroll(hidden, blockHeight + extraHeight, available.y)
+            if (enabled) {
+                hidden = hiddenAfterScroll(hidden, blockHeight + extraHeight, available.y)
+                if (available.y != 0f) lastDy = available.y
+            }
             return Offset.Zero
         }
 
-        // Settle on whichever end is nearer once the gesture or fling is over.
+        // Settle in the direction the user last scrolled (up shows, down hides), so a short scroll up is never undone.
         override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
             val limit = blockHeight + extraHeight
-            if (enabled && hidden > 0f && hidden < limit) snapTo(if (hidden > limit / 2) limit else 0f)
+            if (enabled && hidden > 0f && hidden < limit) snapTo(if (lastDy < 0f) limit else 0f)
             return Velocity.Zero
         }
     }
