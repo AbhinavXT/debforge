@@ -1,0 +1,4 @@
+• The Library tab is now named after your debrid service (e.g. TorBox); signed out, it shows a sign-in button
+• Discover now has YouTube | Podcasts | Web: the in-app browser lives there, keeping your page and history. Browser can still be its own tab
+• Downloaded podcast episodes now show their cover in the player, notification and Media
+• Fixes for Home shortcuts
