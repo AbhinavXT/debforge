@@ -1,0 +1,5 @@
+• Switch services from the service tab: tap its name (e.g. "TorBox ▾") or long-press the tab
+• Cache checks now say "Couldn't check" with Retry when a service doesn't answer, instead of looking not cached
+• Discover's top bars slide away while you scroll and come back when you scroll up
+• No white flash when the app opens; dark start screen in dark mode
+• The service tab no longer shows "Library" for a moment at start
