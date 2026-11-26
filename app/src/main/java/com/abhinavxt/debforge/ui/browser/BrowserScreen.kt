@@ -288,14 +288,8 @@ fun BrowserScreen(onMagnet: (String) -> Unit, onOpenDownloads: () -> Unit, onOpe
                     factory = { ctx ->
                         WebView(ctx).apply {
                             layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
-                            // Page scroll drives the Discover bar directly (nested-scroll interop did not deliver).
-                            if (topBar != null) {
-                                var lastHeight = 0
-                                setOnScrollChangeListener { v, _, y, _, oldY ->
-                                    if (v.height != lastHeight) { lastHeight = v.height; topBar.pageResized() }
-                                    else topBar.onPageScroll(oldY - y, atTop = y == 0)
-                                }
-                            }
+                            // The Discover bar follows the finger on the page (never consumed here).
+                            if (topBar != null) setOnScrollChangeListener { _, _, y, _, _ -> if (y == 0) topBar.pageAtTop() }
                             settings.javaScriptEnabled = true
                             settings.domStorageEnabled = true
                             viewModel.userAgent = settings.userAgentString
@@ -308,6 +302,10 @@ fun BrowserScreen(onMagnet: (String) -> Unit, onOpenDownloads: () -> Unit, onOpe
                             isFocusableInTouchMode = false
                             setOnTouchListener { v, ev ->
                                 if (ev.action == MotionEvent.ACTION_DOWN) { v.isFocusable = true; v.isFocusableInTouchMode = true }
+                                if (topBar != null) when (ev.actionMasked) {
+                                    MotionEvent.ACTION_DOWN -> topBar.touchDown(ev.rawY)
+                                    MotionEvent.ACTION_MOVE -> topBar.touchMove(ev.rawY, v.canScrollVertically(1))
+                                }
                                 false
                             }
                             webViewClient = object : WebViewClient() {

@@ -42,30 +42,33 @@ class DiscoverTopBar {
     internal var snapPx = 0f
     private var animating = false
     private var acc = 0f
-    // The page relayouts after a snap and shifts its own scroll: those events are not the user.
-    private var quietUntil = 0L
-    internal fun pageResized() { acc = 0f }
+    private var lastY = 0f
 
     private fun snapTo(target: Float) {
         val sc = scope ?: return
         animating = true
         sc.launch {
             try { animate(hidden, target, animationSpec = tween(200)) { v, _ -> hidden = v } }
-            finally { animating = false; acc = 0f; quietUntil = System.nanoTime() + 250_000_000L }
+            finally { animating = false; acc = 0f }
         }
     }
 
+    /** The page scrolled to its very top: bar fully shown. */
+    fun pageAtTop() { if (enabled && !animating && hidden > 0f) snapTo(0f) }
+
+    fun touchDown(rawY: Float) { lastY = rawY; acc = 0f }
+
     /**
-     * A page that is not a Compose scroller reports its scroll: [dy] like a nested scroll delta (negative = page moves up).
-     * The bar snaps fully out or in once a direction has gone [snapPx]; events during the animation (the page resizing) are ignored.
+     * Finger movement on a page that is not a Compose scroller (screen coordinates, so the page resizing as the bar slides
+     * cannot disturb it). Finger up past [snapPx] hides the bar (if the page can scroll on), finger down shows it.
      */
-    fun onPageScroll(dy: Int, atTop: Boolean) {
+    fun touchMove(rawY: Float, canScrollDown: Boolean) {
+        val dy = lastY - rawY
+        lastY = rawY
         if (animating || !enabled) return
-        if (System.nanoTime() < quietUntil) { acc = 0f; return }
-        if (atTop) { acc = 0f; if (hidden > 0f) snapTo(0f); return }
-        acc = if (acc * dy < 0f) dy.toFloat() else acc + dy
+        acc = if (acc * dy < 0f) dy else acc + dy
         val limit = blockHeight + extraHeight
-        if (acc < -snapPx && hidden < limit) snapTo(limit) else if (acc > snapPx && hidden > 0f) snapTo(0f)
+        if (acc > snapPx && canScrollDown && hidden < limit) snapTo(limit) else if (acc < -snapPx && hidden > 0f) snapTo(0f)
     }
 
     // Direction of the last list scroll: >0 up (reveal), <0 down (hide).
