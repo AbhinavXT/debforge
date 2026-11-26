@@ -188,8 +188,13 @@ fun HomeScreen(signedIn: Boolean) {
     // The start tab is decided once from what is stored, so the shell waits for the (fast) settings read.
     val prefs by shell.navPrefs.collectAsStateWithLifecycle()
     // The Library tab is named for the signed-in service; wait for that (fast) read too.
-    shell.libraryName.collectAsStateWithLifecycle().value ?: return
-    HomeShell(signedIn, prefs ?: return)
+    val libraryName = shell.libraryName.collectAsStateWithLifecycle().value
+    if (libraryName == null || prefs == null) {
+        // Not drawing anything would show the (light) window background for a frame or two.
+        Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background))
+        return
+    }
+    HomeShell(signedIn, prefs!!)
 }
 
 @OptIn(ExperimentalLayoutApi::class, ExperimentalSharedTransitionApi::class)
