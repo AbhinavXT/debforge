@@ -87,6 +87,9 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -152,6 +155,9 @@ import com.abhinavxt.debforge.ui.components.ScreenHeader
 private val FieldShape = CircleShape
 
 const val SEG_YOUTUBE = 0
+/** Set while the browser sits under Discover's top block, so its address bar slides away with it. */
+internal val LocalDiscoverTopBar = androidx.compose.runtime.staticCompositionLocalOf<DiscoverTopBar?> { null }
+
 const val SEG_PODCASTS = 1
 const val SEG_WEB = 2
 
@@ -275,7 +281,12 @@ fun YouTubeScreen(
     }
     androidx.compose.runtime.CompositionLocalProvider(LocalAddToPlaylist provides openAdd) {
     Box(modifier.fillMaxSize()) {
-        Column(Modifier.fillMaxSize()) {
+        val bar = remember { DiscoverTopBar() }
+        bar.enabled = androidx.compose.ui.platform.LocalInputModeManager.current.inputMode == androidx.compose.ui.input.InputMode.Touch
+        // Fully shown again after a segment or screen change.
+        LaunchedEffect(segment, ui::class) { bar.reset() }
+        Column(Modifier.fillMaxSize().nestedScroll(bar.connection)) {
+            Column(Modifier.slideAway(bar).onFocusChanged { if (it.hasFocus) bar.reset() }) {
             ScreenHeader(stringResource(R.string.yt_title), subtitle = stringResource(R.string.yt_subtitle)) {
                 HeaderNavActions(onOpenSettings, onOpenDownloads = onOpenDownloads, activeCount = activeDownloads)
             }
@@ -289,7 +300,8 @@ fun YouTubeScreen(
                     ) { Text(label, maxLines = 1) }
                 }
             }
-            if (segment == SEG_WEB) Box(Modifier.weight(1f).fillMaxWidth()) { web() }
+            }
+            if (segment == SEG_WEB) Box(Modifier.weight(1f).fillMaxWidth()) { CompositionLocalProvider(LocalDiscoverTopBar provides bar) { web() } }
             else if (podcasts) Box(Modifier.weight(1f).fillMaxWidth()) {
                 com.abhinavxt.debforge.ui.media.PodcastsPane(playingId, tell = { m -> scope.launch { snackbar.currentSnackbarData?.dismiss(); snackbar.showSnackbar(m) } })
             } else Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.TopCenter) {

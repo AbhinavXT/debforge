@@ -113,6 +113,10 @@ import androidx.compose.ui.unit.dp
 import java.io.ByteArrayInputStream
 import java.text.NumberFormat
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
+import com.abhinavxt.debforge.ui.youtube.LocalDiscoverTopBar
+import com.abhinavxt.debforge.ui.youtube.slideAway
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -151,6 +155,9 @@ fun BrowserScreen(onMagnet: (String) -> Unit, onOpenDownloads: () -> Unit, onOpe
     var webView by remember { mutableStateOf<WebView?>(null) }
     var fullscreen by remember { mutableStateOf<Pair<View, WebChromeClient.CustomViewCallback>?>(null) }
     val activity = LocalContext.current as Activity
+    // Under Discover's header the address bar slides away with it (the page feeds it through nested scroll).
+    val topBar = if (embedded) LocalDiscoverTopBar.current else null
+    DisposableEffect(topBar) { onDispose { topBar?.let { it.extraHeightReset() } } }
 
     LaunchedEffect(Unit) { viewModel.messages.collect { snackbar.showSnackbar(it) } }
     BackHandler(enabled = canGoBack) { webView?.goBack() }
@@ -216,7 +223,8 @@ fun BrowserScreen(onMagnet: (String) -> Unit, onOpenDownloads: () -> Unit, onOpe
     ) { padding ->
         Column(Modifier.padding(padding).fillMaxSize()) {
             Row(
-                Modifier.fillMaxWidth().padding(horizontal = 4.dp).onPreviewKeyEvent { e ->
+                Modifier.then(if (topBar != null) Modifier.slideAway(topBar, extra = true) else Modifier)
+                .fillMaxWidth().padding(horizontal = 4.dp).onPreviewKeyEvent { e ->
                     // D-pad down from the bar enters the page; the page is not a focus target until then.
                     if (e.key == Key.DirectionDown) {
                         if (e.type == KeyEventType.KeyDown) webView?.let { w ->
@@ -267,7 +275,7 @@ fun BrowserScreen(onMagnet: (String) -> Unit, onOpenDownloads: () -> Unit, onOpe
             Box(Modifier.weight(1f)) {
                 AndroidView(
                     // The page scrolls with the arrows; at its ends they leave it instead of being swallowed.
-                    modifier = Modifier.fillMaxSize().onPreviewKeyEvent { e ->
+                    modifier = Modifier.fillMaxSize().nestedScroll(rememberNestedScrollInteropConnection()).onPreviewKeyEvent { e ->
                         val w = webView
                         val dir = when (e.key) {
                             Key.DirectionDown -> if (w != null && !w.canScrollVertically(1)) FocusDirection.Down else null
@@ -282,6 +290,7 @@ fun BrowserScreen(onMagnet: (String) -> Unit, onOpenDownloads: () -> Unit, onOpe
                     factory = { ctx ->
                         WebView(ctx).apply {
                             layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+                            isNestedScrollingEnabled = true
                             settings.javaScriptEnabled = true
                             settings.domStorageEnabled = true
                             viewModel.userAgent = settings.userAgentString
