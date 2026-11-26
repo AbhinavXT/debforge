@@ -87,6 +87,10 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.focus.onFocusChanged
@@ -285,7 +289,8 @@ fun YouTubeScreen(
         bar.enabled = androidx.compose.ui.platform.LocalInputModeManager.current.inputMode == androidx.compose.ui.input.InputMode.Touch
         // Fully shown again after a segment or screen change.
         LaunchedEffect(segment, ui::class) { bar.reset() }
-        Column(Modifier.fillMaxSize().nestedScroll(bar.connection)) {
+        // The status-bar inset stays outside the sliding block (and is consumed here, so the header adds none of its own).
+        Column(Modifier.fillMaxSize().windowInsetsPadding(androidx.compose.foundation.layout.WindowInsets.Companion.systemBars.only(androidx.compose.foundation.layout.WindowInsetsSides.Top + androidx.compose.foundation.layout.WindowInsetsSides.Horizontal)).clipToBounds().nestedScroll(bar.connection)) {
             Column(Modifier.slideAway(bar).onFocusChanged { if (it.hasFocus) bar.reset() }) {
             ScreenHeader(stringResource(R.string.yt_title), subtitle = stringResource(R.string.yt_subtitle)) {
                 HeaderNavActions(onOpenSettings, onOpenDownloads = onOpenDownloads, activeCount = activeDownloads)
