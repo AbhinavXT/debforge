@@ -286,6 +286,8 @@ fun YouTubeScreen(
     androidx.compose.runtime.CompositionLocalProvider(LocalAddToPlaylist provides openAdd) {
     Box(modifier.fillMaxSize()) {
         val bar = remember { DiscoverTopBar() }
+        bar.scope = androidx.compose.runtime.rememberCoroutineScope()
+        bar.snapPx = with(androidx.compose.ui.platform.LocalDensity.current) { 24.dp.toPx() }
         bar.enabled = androidx.compose.ui.platform.LocalInputModeManager.current.inputMode == androidx.compose.ui.input.InputMode.Touch
         // Fully shown again after a segment or screen change.
         LaunchedEffect(segment, ui::class) { bar.reset() }

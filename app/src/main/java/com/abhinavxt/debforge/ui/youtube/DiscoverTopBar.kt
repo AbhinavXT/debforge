@@ -1,6 +1,11 @@
 package com.abhinavxt.debforge.ui.youtube
 
+import androidx.compose.animation.core.animate
+import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Stable
+import androidx.compose.ui.unit.Velocity
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.setValue
@@ -33,15 +38,43 @@ class DiscoverTopBar {
     fun reset() { hidden = 0f }
     internal fun extraHeightReset() { extraHeight = 0f; hidden = 0f }
 
-    /** A page that is not a Compose scroller reports its scroll: [dy] like a nested scroll delta (negative = page moves up). */
+    internal var scope: CoroutineScope? = null
+    internal var snapPx = 0f
+    private var animating = false
+    private var acc = 0f
+
+    private fun snapTo(target: Float) {
+        val sc = scope ?: return
+        animating = true
+        sc.launch {
+            try { animate(hidden, target, animationSpec = tween(200)) { v, _ -> hidden = v } }
+            finally { animating = false; acc = 0f }
+        }
+    }
+
+    /**
+     * A page that is not a Compose scroller reports its scroll: [dy] like a nested scroll delta (negative = page moves up).
+     * The bar snaps fully out or in once a direction has gone [snapPx]; events during the animation (the page resizing) are ignored.
+     */
     fun onPageScroll(dy: Int, atTop: Boolean) {
-        if (atTop) reset() else if (enabled) hidden = hiddenAfterScroll(hidden, blockHeight + extraHeight, dy.toFloat())
+        if (animating || !enabled) return
+        if (atTop) { acc = 0f; if (hidden > 0f) snapTo(0f); return }
+        acc = if (acc * dy < 0f) dy.toFloat() else acc + dy
+        val limit = blockHeight + extraHeight
+        if (acc < -snapPx && hidden < limit) snapTo(limit) else if (acc > snapPx && hidden > 0f) snapTo(0f)
     }
 
     val connection = object : NestedScrollConnection {
         override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
             if (enabled) hidden = hiddenAfterScroll(hidden, blockHeight + extraHeight, available.y)
             return Offset.Zero
+        }
+
+        // Settle on whichever end is nearer once the gesture or fling is over.
+        override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
+            val limit = blockHeight + extraHeight
+            if (enabled && hidden > 0f && hidden < limit) snapTo(if (hidden > limit / 2) limit else 0f)
+            return Velocity.Zero
         }
     }
 }
