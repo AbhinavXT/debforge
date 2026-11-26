@@ -15,7 +15,7 @@ fun youTubeThumbnailUrl(videoId: String) = "https://i.ytimg.com/vi/$videoId/hqde
 suspend fun saveYouTubeThumbnail(context: Context, http: OkHttpClient, url: String?, id: String) {
     if (url == null) return
     withContext(Dispatchers.IO) {
-        runCatching {
+        try {
             http.newCall(Request.Builder().url(url).build()).execute().use { r ->
                 if (!r.isSuccessful) return@use
                 val file = artworkFile(context, id).also { it.parentFile?.mkdirs() }
@@ -27,6 +27,9 @@ suspend fun saveYouTubeThumbnail(context: Context, http: OkHttpClient, url: Stri
                     tmp.delete() // no-op after a successful rename
                 }
             }
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
+        } catch (_: Exception) {
         }
     }
 }

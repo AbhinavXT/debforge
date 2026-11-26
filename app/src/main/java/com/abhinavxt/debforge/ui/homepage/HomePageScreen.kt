@@ -81,7 +81,7 @@ import com.abhinavxt.debforge.ui.history.HistoryViewModel
 import com.abhinavxt.debforge.ui.player.focusRing
 
 /** A chip on Home that jumps to a tab which is not in the bottom bar. */
-class HomeShortcut(@StringRes val label: Int, val icon: ImageVector, val onClick: () -> Unit)
+class HomeShortcut(val label: String, val icon: ImageVector, val onClick: () -> Unit)
 
 /** Active downloads shown on Home before "and N more". */
 private const val ACTIVE_SHOWN = 3
@@ -196,7 +196,7 @@ fun HomePageScreen(
                             items(shortcuts, key = { it.label }) { s ->
                                 AssistChip(
                                     onClick = s.onClick,
-                                    label = { Text(stringResource(s.label)) },
+                                    label = { Text(s.label) },
                                     leadingIcon = { Icon(s.icon, contentDescription = null) }
                                 )
                             }

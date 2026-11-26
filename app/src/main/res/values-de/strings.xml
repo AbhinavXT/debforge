@@ -964,7 +964,7 @@
 
     <!-- YouTube -->
     <string name="yt_title">Entdecken</string>
-    <string name="yt_subtitle">YouTube und Podcasts</string>
+    <string name="yt_subtitle">YouTube, Podcasts und das Web</string>
     <string name="yt_field_hint">Link einfügen oder YouTube durchsuchen</string>
     <string name="yt_paste">Einfügen</string>
     <string name="yt_paste_chip">%1$s-Link einfügen</string>

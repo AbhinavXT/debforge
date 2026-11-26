@@ -382,6 +382,11 @@ private fun HomeShell(signedIn: Boolean, prefs: NavPrefs) {
         mutableIntStateOf(if (TabConfig.opensWeb(TabConfig.startTab(prefs.storedStart, signedIn), prefs.bar)) SEG_WEB else SEG_YOUTUBE)
     }
     val startTab = HomeTab.of(startRoute) ?: HomeTab.Browse
+    // A Browser request with no Browser in the bar lands on Discover's Web segment (same rule as the start tab).
+    fun openKey(key: String) {
+        if (TabConfig.opensWeb(key, prefs.bar)) discoverSegment = SEG_WEB
+        go(HomeTab.of(if (key == TabConfig.BROWSER) TabConfig.browserTab(prefs.bar) else key) ?: return)
+    }
     // Tabs left out of the bar stay reachable through go(): the bar then just highlights nothing.
     val barTabs = prefs.bar.mapNotNull(HomeTab::of)
     // Read inside the movable content below, which is built once.
@@ -419,7 +424,7 @@ private fun HomeShell(signedIn: Boolean, prefs: NavPrefs) {
                     HomePageScreen(
                         browse = libraryVm,
                         shortcuts = TabConfig.hidden(currentPrefs.bar).filter { it != TabConfig.HOME }.mapNotNull(HomeTab::of)
-                            .map { tab -> HomeShortcut(tab.labelRes, tab.icon) { go(tab) } },
+                            .map { tab -> HomeShortcut(tab.label(libraryName), tab.icon) { openKey(tab.route) } },
                         onAdd = { addViewModel.open() },
                         onAddText = { addViewModel.open(prefillText = it) },
                         onOpenDownloads = { push(HomeTab.Active) },

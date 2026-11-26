@@ -964,7 +964,7 @@
 
     <!-- YouTube -->
     <string name="yt_title">అన్వేషించు</string>
-    <string name="yt_subtitle">YouTube మరియు పాడ్‌కాస్ట్‌లు</string>
+    <string name="yt_subtitle">YouTube, పాడ్‌కాస్ట్‌లు మరియు వెబ్</string>
     <string name="yt_field_hint">లింక్ అతికించండి లేదా YouTubeలో వెతకండి</string>
     <string name="yt_paste">పేస్ట్</string>
     <string name="yt_paste_chip">%1$s లింక్‌ను పేస్ట్ చేయి</string>

@@ -966,7 +966,7 @@
 
     <!-- YouTube -->
     <string name="yt_title">Discover</string>
-    <string name="yt_subtitle">YouTube and podcasts</string>
+    <string name="yt_subtitle">YouTube, podcasts and the web</string>
     <string name="yt_field_hint">Paste a link or search YouTube</string>
     <string name="yt_paste">Paste</string>
     <string name="yt_paste_chip">Paste %1$s link</string>

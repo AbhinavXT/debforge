@@ -964,7 +964,7 @@
 
     <!-- YouTube -->
     <string name="yt_title">Keşfet</string>
-    <string name="yt_subtitle">YouTube ve podcast\'ler</string>
+    <string name="yt_subtitle">YouTube, podcast\'ler ve web</string>
     <string name="yt_field_hint">Bağlantı yapıştırın veya YouTube\'da arayın</string>
     <string name="yt_paste">Yapıştır</string>
     <string name="yt_paste_chip">%1$s bağlantısını yapıştır</string>

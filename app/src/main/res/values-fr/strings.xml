@@ -1005,7 +1005,7 @@
 
     <!-- YouTube -->
     <string name="yt_title">Découvrir</string>
-    <string name="yt_subtitle">YouTube et podcasts</string>
+    <string name="yt_subtitle">YouTube, podcasts et le web</string>
     <string name="yt_field_hint">Collez un lien ou cherchez sur YouTube</string>
     <string name="yt_paste">Coller</string>
     <string name="yt_paste_chip">Coller le lien %1$s</string>

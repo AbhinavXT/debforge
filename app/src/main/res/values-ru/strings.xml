@@ -1046,7 +1046,7 @@
 
     <!-- YouTube -->
     <string name="yt_title">Обзор</string>
-    <string name="yt_subtitle">YouTube и подкасты</string>
+    <string name="yt_subtitle">YouTube, подкасты и веб</string>
     <string name="yt_field_hint">Вставьте ссылку или найдите на YouTube</string>
     <string name="yt_paste">Вставить</string>
     <string name="yt_paste_chip">Вставить ссылку %1$s</string>

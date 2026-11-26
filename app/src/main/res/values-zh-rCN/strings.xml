@@ -923,7 +923,7 @@
 
     <!-- YouTube -->
     <string name="yt_title">发现</string>
-    <string name="yt_subtitle">YouTube 和播客</string>
+    <string name="yt_subtitle">YouTube、播客和网页</string>
     <string name="yt_field_hint">粘贴链接或搜索 YouTube</string>
     <string name="yt_paste">粘贴</string>
     <string name="yt_paste_chip">粘贴 %1$s 链接</string>

@@ -923,7 +923,7 @@
 
     <!-- YouTube -->
     <string name="yt_title">Jelajahi</string>
-    <string name="yt_subtitle">YouTube dan podcast</string>
+    <string name="yt_subtitle">YouTube, podcast, dan web</string>
     <string name="yt_field_hint">Tempel tautan atau cari di YouTube</string>
     <string name="yt_paste">Tempel</string>
     <string name="yt_paste_chip">Tempel tautan %1$s</string>

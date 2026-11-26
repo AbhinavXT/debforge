@@ -964,7 +964,7 @@
 
     <!-- YouTube -->
     <string name="yt_title">கண்டறி</string>
-    <string name="yt_subtitle">YouTube மற்றும் பாட்காஸ்ட்கள்</string>
+    <string name="yt_subtitle">YouTube, பாட்காஸ்ட்கள் மற்றும் வலை</string>
     <string name="yt_field_hint">இணைப்பை ஒட்டவும் அல்லது YouTube-இல் தேடவும்</string>
     <string name="yt_paste">ஒட்டு</string>
     <string name="yt_paste_chip">%1$s இணைப்பை ஒட்டு</string>

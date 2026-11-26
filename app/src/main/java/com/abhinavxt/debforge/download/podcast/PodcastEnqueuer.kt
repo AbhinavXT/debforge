@@ -15,6 +15,7 @@ import com.abhinavxt.debforge.domain.ProviderId
 import com.abhinavxt.debforge.download.DownloadController
 import com.abhinavxt.debforge.download.youtube.EnqueueResult
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.withTimeoutOrNull
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -89,7 +90,8 @@ class PodcastEnqueuer @Inject constructor(
             return EnqueueResult.FAILED
         }
         // Best effort (never throws): gives the player, notification and Media list a cover for the downloaded file.
-        saveYouTubeThumbnail(context, http, item.thumbUrl ?: sub.artworkUrl, dlItem.id)
+        // Bounded: a slow image host must not hold up the queue.
+        withTimeoutOrNull(10_000) { saveYouTubeThumbnail(context, http, item.thumbUrl ?: sub.artworkUrl, dlItem.id) }
         return EnqueueResult.QUEUED
     }
 
