@@ -1435,5 +1435,7 @@
     <string name="settings_sum_data">Uso de datos y copia de seguridad</string>
     <string name="browse_signin_prompt">Inicia sesión en un servicio debrid para ver aquí sus archivos. Estos son los archivos de este dispositivo.</string>
     <string name="browse_signin_button">Iniciar sesión</string>
+    <string name="service_add">Añadir un servicio</string>
+    <string name="service_switch_desc">Cambiar de servicio, actual: %1$s</string>
     <string name="discover_web">Web</string>
 </resources>

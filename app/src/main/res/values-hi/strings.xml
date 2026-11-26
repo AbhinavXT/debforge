@@ -1374,5 +1374,7 @@
     <string name="settings_sum_data">डेटा उपयोग और बैकअप</string>
     <string name="browse_signin_prompt">यहाँ किसी डेब्रिड सेवा की फ़ाइलें देखने के लिए साइन इन करें। ये इस डिवाइस की फ़ाइलें हैं।</string>
     <string name="browse_signin_button">साइन इन</string>
+    <string name="service_add">सेवा जोड़ें</string>
+    <string name="service_switch_desc">सेवा बदलें, वर्तमान %1$s</string>
     <string name="discover_web">वेब</string>
 </resources>

@@ -1374,5 +1374,7 @@
     <string name="settings_sum_data">Datenverbrauch und Backup</string>
     <string name="browse_signin_prompt">Melde dich bei einem Debrid-Dienst an, um dessen Dateien hier zu sehen. Das sind die Dateien auf diesem Gerät.</string>
     <string name="browse_signin_button">Anmelden</string>
+    <string name="service_add">Dienst hinzufügen</string>
+    <string name="service_switch_desc">Dienst wechseln, aktuell %1$s</string>
     <string name="discover_web">Web</string>
 </resources>

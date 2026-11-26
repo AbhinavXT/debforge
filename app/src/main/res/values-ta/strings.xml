@@ -1374,5 +1374,7 @@
     <string name="settings_sum_data">தரவு பயன்பாடு மற்றும் காப்புப்பிரதி</string>
     <string name="browse_signin_prompt">இங்கே டெப்ரிட் சேவையின் கோப்புகளைக் காண உள்நுழையவும். இவை இந்தச் சாதனத்தில் உள்ள கோப்புகள்.</string>
     <string name="browse_signin_button">உள்நுழை</string>
+    <string name="service_add">சேவையைச் சேர்</string>
+    <string name="service_switch_desc">சேவையை மாற்று, தற்போது %1$s</string>
     <string name="discover_web">வலை</string>
 </resources>

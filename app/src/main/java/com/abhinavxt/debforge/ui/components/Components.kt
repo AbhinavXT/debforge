@@ -28,6 +28,9 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.material.icons.rounded.ArrowDropDown
 import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.Badge
@@ -88,6 +91,10 @@ fun ScreenHeader(
     title: String,
     modifier: Modifier = Modifier,
     subtitle: String? = null,
+    /** Makes the title a button with a drop-down arrow ([titleDescription] is what a screen reader says). */
+    onTitleClick: (() -> Unit)? = null,
+    titleDescription: String? = null,
+    titleMenu: @Composable () -> Unit = {},
     actions: @Composable RowScope.() -> Unit = {}
 ) {
     Row(
@@ -100,7 +107,23 @@ fun ScreenHeader(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(Modifier.weight(1f)) {
-            Text(title, style = MaterialTheme.typography.headlineMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            if (onTitleClick == null) {
+                Text(title, style = MaterialTheme.typography.headlineMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            } else {
+                // Clickable is also what makes it focusable and OK-able on a TV remote.
+                Box {
+                    Row(
+                        Modifier.clip(RoundedCornerShape(8.dp))
+                            .clickable(role = Role.Button, onClick = onTitleClick)
+                            .semantics(mergeDescendants = true) { titleDescription?.let { contentDescription = it } },
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(title, style = MaterialTheme.typography.headlineMedium, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
+                        Icon(Icons.Rounded.ArrowDropDown, contentDescription = null)
+                    }
+                    titleMenu()
+                }
+            }
             if (subtitle != null) {
                 Text(
                     subtitle,

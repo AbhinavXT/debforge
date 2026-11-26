@@ -569,9 +569,13 @@ fun BrowseScreen(
             if (selected.isEmpty()) {
                 // The title block scrolls away; the search field and controls below stay.
                 CollapsingHeader(scroll) {
+                    var serviceMenu by remember { mutableStateOf(false) }
                     ScreenHeader(
                         title = TabConfig.libraryLabel(serviceName ?: state.providerName, stringResource(R.string.tab_library)),
-                        subtitle = if ((serviceName ?: state.providerName).isEmpty()) null else stringResource(R.string.tab_library)
+                        subtitle = if ((serviceName ?: state.providerName).isEmpty()) null else stringResource(R.string.tab_library),
+                        onTitleClick = if ((serviceName ?: state.providerName).isNotEmpty()) ({ serviceMenu = true }) else null,
+                        titleDescription = stringResource(R.string.service_switch_desc, serviceName ?: state.providerName),
+                        titleMenu = { ServiceMenu(serviceMenu, { serviceMenu = false }, onConnect) }
                     ) {
                         // Pull down to refresh everywhere else; a TV remote can't
                         // pull, so it keeps the button.

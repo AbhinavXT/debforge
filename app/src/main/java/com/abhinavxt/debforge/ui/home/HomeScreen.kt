@@ -75,6 +75,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.abhinavxt.debforge.ui.browse.ServiceMenu
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -650,12 +652,20 @@ private fun HomeShell(signedIn: Boolean, prefs: NavPrefs) {
                         val selected = current?.hierarchy?.any { it.route == tab.route } == true ||
                             (tab == HomeTab.Media && current?.route == HISTORY_ROUTE)
                         val railSource = remember { MutableInteractionSource() }
+                        var serviceMenu by remember { mutableStateOf(false) }
+                        var longPressed by remember { mutableStateOf(false) }
                         NavigationRailItem(
                             selected = selected,
-                            onClick = { go(tab) },
+                            onClick = { if (longPressed) longPressed = false else go(tab) },
                             interactionSource = railSource,
-                            modifier = Modifier.focusRing(railSource, RoundedCornerShape(16.dp)),
-                            icon = { Icon(if (selected) tab.selectedIcon else tab.icon, contentDescription = null) },
+                            modifier = Modifier.focusRing(railSource, RoundedCornerShape(16.dp))
+                                .serviceLongPress(tab == HomeTab.Browse) { longPressed = true; serviceMenu = true },
+                            icon = {
+                                Box {
+                                    Icon(if (selected) tab.selectedIcon else tab.icon, contentDescription = null)
+                                    if (tab == HomeTab.Browse) ServiceMenu(serviceMenu, { serviceMenu = false }, ::connect)
+                                }
+                            },
                             label = { Text(tab.label(libraryName), maxLines = 1, overflow = TextOverflow.Ellipsis) }
                         )
                     }
@@ -677,12 +687,20 @@ private fun HomeShell(signedIn: Boolean, prefs: NavPrefs) {
                             barTabs.forEach { tab ->
                                 val selected = barRoute == tab.route
                                 val barSource = remember { MutableInteractionSource() }
+                                var serviceMenu by remember { mutableStateOf(false) }
+                                var longPressed by remember { mutableStateOf(false) }
                                 NavigationBarItem(
                                     selected = selected,
-                                    onClick = { go(tab) },
+                                    onClick = { if (longPressed) longPressed = false else go(tab) },
                                     interactionSource = barSource,
-                                    modifier = Modifier.focusRing(barSource, RoundedCornerShape(16.dp)),
-                                    icon = { Icon(if (selected) tab.selectedIcon else tab.icon, contentDescription = null) },
+                                    modifier = Modifier.focusRing(barSource, RoundedCornerShape(16.dp))
+                                        .serviceLongPress(tab == HomeTab.Browse) { longPressed = true; serviceMenu = true },
+                                    icon = {
+                                        Box {
+                                            Icon(if (selected) tab.selectedIcon else tab.icon, contentDescription = null)
+                                            if (tab == HomeTab.Browse) ServiceMenu(serviceMenu, { serviceMenu = false }, ::connect)
+                                        }
+                                    },
                                     label = { Text(tab.label(libraryName), maxLines = 1, overflow = TextOverflow.Ellipsis) }
                                 )
                             }
@@ -792,3 +810,7 @@ private fun NotificationPermissionRequest() {
         if (!granted) launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
     }
 }
+
+/** Long-press on the Library tab opens the service menu; the release after it must not also count as a tap. */
+private fun Modifier.serviceLongPress(enabled: Boolean, onLongPress: () -> Unit): Modifier =
+    if (!enabled) this else pointerInput(Unit) { detectTapGestures(onLongPress = { onLongPress() }) }

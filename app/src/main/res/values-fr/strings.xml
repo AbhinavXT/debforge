@@ -1435,5 +1435,7 @@
     <string name="settings_sum_data">Consommation de données et sauvegarde</string>
     <string name="browse_signin_prompt">Connectez-vous à un service debrid pour voir ses fichiers ici. Voici les fichiers de cet appareil.</string>
     <string name="browse_signin_button">Se connecter</string>
+    <string name="service_add">Ajouter un service</string>
+    <string name="service_switch_desc">Changer de service, actuel : %1$s</string>
     <string name="discover_web">Web</string>
 </resources>
