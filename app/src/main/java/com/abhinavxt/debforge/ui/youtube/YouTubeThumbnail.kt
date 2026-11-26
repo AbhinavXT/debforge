@@ -7,6 +7,7 @@ import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.File
+import java.util.concurrent.TimeUnit
 
 /** The thumbnail YouTube serves for any video id; used when only the id is known. */
 fun youTubeThumbnailUrl(videoId: String) = "https://i.ytimg.com/vi/$videoId/hqdefault.jpg"
@@ -16,7 +17,9 @@ suspend fun saveYouTubeThumbnail(context: Context, http: OkHttpClient, url: Stri
     if (url == null) return
     withContext(Dispatchers.IO) {
         try {
-            http.newCall(Request.Builder().url(url).build()).execute().use { r ->
+            http.newCall(Request.Builder().url(url).build())
+                // A slow image host must not hold up callers (podcast queueing waits on this).
+                .apply { timeout().timeout(10, TimeUnit.SECONDS) }.execute().use { r ->
                 if (!r.isSuccessful) return@use
                 val file = artworkFile(context, id).also { it.parentFile?.mkdirs() }
                 val tmp = File(file.path + ".tmp")
