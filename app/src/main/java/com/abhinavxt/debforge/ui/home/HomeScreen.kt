@@ -90,6 +90,10 @@ import com.abhinavxt.debforge.ui.browse.BrowseViewModel
 import com.abhinavxt.debforge.ui.homepage.HomePageScreen
 import com.abhinavxt.debforge.ui.homepage.HomeShortcut
 import com.abhinavxt.debforge.ui.browser.BrowserScreen
+import com.abhinavxt.debforge.ui.browser.BrowserViewModel
+import com.abhinavxt.debforge.ui.youtube.SEG_WEB
+import com.abhinavxt.debforge.ui.youtube.SEG_YOUTUBE
+import androidx.compose.runtime.mutableIntStateOf
 import com.abhinavxt.debforge.ui.search.SearchScreen
 import com.abhinavxt.debforge.ui.settings.SettingsScreen
 import com.abhinavxt.debforge.ui.setup.SetupScreen
@@ -370,7 +374,13 @@ private fun HomeShell(signedIn: Boolean, prefs: NavPrefs) {
     // Decided once: signing in later shouldn't yank the user off the tab they're on.
     // Saved too: after process death the restored back stack is rooted at the old start tab, and a start tab
     // changed meanwhile would leave popUpTo(findStartDestination) nothing to pop, piling up entries.
-    val startRoute = rememberSaveable { TabConfig.startTab(prefs.storedStart, signedIn) }
+    // A Browser start (stored, or automatic when signed out) goes to Discover's Web segment when the bar has no Browser.
+    val startRoute = rememberSaveable {
+        TabConfig.startTab(prefs.storedStart, signedIn).let { if (it == TabConfig.BROWSER) TabConfig.browserTab(prefs.bar) else it }
+    }
+    var discoverSegment by rememberSaveable {
+        mutableIntStateOf(if (TabConfig.opensWeb(TabConfig.startTab(prefs.storedStart, signedIn), prefs.bar)) SEG_WEB else SEG_YOUTUBE)
+    }
     val startTab = HomeTab.of(startRoute) ?: HomeTab.Browse
     // Tabs left out of the bar stay reachable through go(): the bar then just highlights nothing.
     val barTabs = prefs.bar.mapNotNull(HomeTab::of)
@@ -380,6 +390,8 @@ private fun HomeShell(signedIn: Boolean, prefs: NavPrefs) {
     // the Library's own data), so the list is read once. Held by the activity: both tabs get the same one.
     val activity = LocalContext.current as androidx.activity.ComponentActivity
     @Composable fun libraryViewModel(): BrowseViewModel = hiltViewModel(viewModelStoreOwner = activity)
+    // One browser (page and history) for the Browser tab and Discover's Web segment, kept across tab switches.
+    @Composable fun browserViewModel(): BrowserViewModel = hiltViewModel(viewModelStoreOwner = activity)
     // Only the name is observed, so list updates do not recompose the shell.
     val libraryVm = libraryViewModel()
     val libraryName by remember(libraryVm) { libraryVm.state.map { it.providerName }.distinctUntilChanged() }
@@ -446,6 +458,18 @@ private fun HomeShell(signedIn: Boolean, prefs: NavPrefs) {
                         onOpenSettings = { push(HomeTab.Settings) },
                         activeDownloads = activeCount,
                         playingId = currentAudio.track?.id,
+                        segment = discoverSegment,
+                        onSegment = { discoverSegment = it },
+                        web = {
+                            BrowserScreen(
+                                onMagnet = addViewModel::offer,
+                                onOpenDownloads = { push(HomeTab.Active) },
+                                onOpenSettings = { push(HomeTab.Settings) },
+                                activeDownloads = activeCount,
+                                embedded = true,
+                                viewModel = browserViewModel()
+                            )
+                        },
                         viewModel = youtubeViewModel)
                 }
                 composable(HomeTab.Media.route) {
@@ -473,7 +497,8 @@ private fun HomeShell(signedIn: Boolean, prefs: NavPrefs) {
                     onMagnet = addViewModel::offer,
                     onOpenDownloads = { push(HomeTab.Active) },
                     onOpenSettings = { push(HomeTab.Settings) },
-                    activeDownloads = activeCount
+                    activeDownloads = activeCount,
+                    viewModel = browserViewModel()
                 ) }
                 composable(HomeTab.Settings.route) {
                     // Settings draws its own collapsing bar with the back arrow in it on a phone.

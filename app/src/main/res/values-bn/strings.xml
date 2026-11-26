@@ -1374,4 +1374,5 @@
     <string name="settings_sum_data">ডেটা ব্যবহার ও ব্যাকআপ</string>
     <string name="browse_signin_prompt">এখানে ডেব্রিড সার্ভিসের ফাইল দেখতে সাইন ইন করুন। এগুলো এই ডিভাইসের ফাইল।</string>
     <string name="browse_signin_button">সাইন ইন</string>
+    <string name="discover_web">ওয়েব</string>
 </resources>

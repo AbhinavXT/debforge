@@ -76,6 +76,8 @@ import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScaffoldDefaults
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Switch
@@ -130,7 +132,7 @@ import com.abhinavxt.debforge.ui.browse.formatSize
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
-fun BrowserScreen(onMagnet: (String) -> Unit, onOpenDownloads: () -> Unit, onOpenSettings: () -> Unit, activeDownloads: Int, viewModel: BrowserViewModel = hiltViewModel()) {
+fun BrowserScreen(onMagnet: (String) -> Unit, onOpenDownloads: () -> Unit, onOpenSettings: () -> Unit, activeDownloads: Int, embedded: Boolean = false, viewModel: BrowserViewModel = hiltViewModel()) {
     val videos by viewModel.videos.collectAsStateWithLifecycle()
     val adBlock by viewModel.adBlock.collectAsStateWithLifecycle()
     val ytBusy by viewModel.ytBusy.collectAsStateWithLifecycle()
@@ -178,9 +180,16 @@ fun BrowserScreen(onMagnet: (String) -> Unit, onOpenDownloads: () -> Unit, onOpe
             activity.requestedOrientation = orientation
         }
     }
-    DisposableEffect(Unit) { onDispose { webView?.destroy() } }
+    DisposableEffect(Unit) {
+        onDispose {
+            webView?.let { w -> viewModel.webState = android.os.Bundle().also { w.saveState(it) } }
+            webView?.destroy()
+        }
+    }
 
     Scaffold(
+        // Embedded under another screen's header, which already clears the system bars.
+        contentWindowInsets = if (embedded) WindowInsets(0) else ScaffoldDefaults.contentWindowInsets,
         snackbarHost = { SnackbarHost(snackbar) },
         floatingActionButton = {
             Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -348,7 +357,11 @@ fun BrowserScreen(onMagnet: (String) -> Unit, onOpenDownloads: () -> Unit, onOpe
                                 committed = this.url ?: committed
                                 viewModel.onDownload(url, contentDisposition, mimeType, contentLength)
                             }
-                            loadUrl(viewModel.url)
+                            val saved = viewModel.webState
+                            if (saved != null && restoreState(saved) != null) {
+                                canGoBack = canGoBack()
+                                committed = url ?: committed
+                            } else loadUrl(viewModel.url)
                             webView = this
                         }
                     }

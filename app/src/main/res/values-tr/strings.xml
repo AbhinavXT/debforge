@@ -1374,4 +1374,5 @@
     <string name="settings_sum_data">Veri kullanımı ve yedekleme</string>
     <string name="browse_signin_prompt">Dosyalarını burada görmek için bir debrid hizmetinde oturum açın. Bunlar bu cihazdaki dosyalar.</string>
     <string name="browse_signin_button">Oturum aç</string>
+    <string name="discover_web">Web</string>
 </resources>

@@ -1376,4 +1376,5 @@
     <string name="settings_sum_data">Data usage and backup</string>
     <string name="browse_signin_prompt">Sign in to a debrid service to see its files here. These are the files on this device.</string>
     <string name="browse_signin_button">Sign in</string>
+    <string name="discover_web">Web</string>
 </resources>

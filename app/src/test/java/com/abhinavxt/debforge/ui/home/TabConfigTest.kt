@@ -91,4 +91,14 @@ class TabConfigTest {
         assertEquals("Library", TabConfig.libraryLabel("", "Library"))
         assertEquals("Library", TabConfig.libraryLabel(null, "Library"))
     }
+
+    @Test fun browserRequestsGoToTheTabOrToDiscoverWeb() {
+        val withBrowser = listOf(HOME, BROWSER, MEDIA)
+        val without = listOf(HOME, LIBRARY, DISCOVER)
+        assertEquals(BROWSER, TabConfig.browserTab(withBrowser))
+        assertEquals(DISCOVER, TabConfig.browserTab(without))
+        assertTrue(!TabConfig.opensWeb(BROWSER, withBrowser))
+        assertTrue(TabConfig.opensWeb(BROWSER, without))
+        assertTrue(!TabConfig.opensWeb(LIBRARY, without))
+    }
 }

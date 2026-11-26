@@ -151,6 +151,10 @@ import com.abhinavxt.debforge.ui.components.ScreenHeader
 
 private val FieldShape = CircleShape
 
+const val SEG_YOUTUBE = 0
+const val SEG_PODCASTS = 1
+const val SEG_WEB = 2
+
 @Composable
 fun YouTubeScreen(
     onOpenDownloads: () -> Unit,
@@ -158,12 +162,17 @@ fun YouTubeScreen(
     activeDownloads: Int,
     modifier: Modifier = Modifier,
     playingId: String? = null,
+    /** Which part is showing: [SEG_YOUTUBE], [SEG_PODCASTS] or [SEG_WEB]; held by the caller so it can be opened on Web. */
+    segment: Int = SEG_YOUTUBE,
+    onSegment: (Int) -> Unit = {},
+    /** The in-app browser, shown in the Web segment. */
+    web: @Composable () -> Unit = {},
     viewModel: YouTubeViewModel = hiltViewModel()
 ) {
     val ui by viewModel.ui.collectAsStateWithLifecycle()
-    var podcasts by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(false) }
+    val podcasts = segment == SEG_PODCASTS
     // Back steps out of a preview (to its search results, if any) or a search before it leaves the tab.
-    androidx.activity.compose.BackHandler(!podcasts && ui !is YouTubeUi.Empty, viewModel::reset)
+    androidx.activity.compose.BackHandler(segment == SEG_YOUTUBE && ui !is YouTubeUi.Empty, viewModel::reset)
     val input by viewModel.input.collectAsStateWithLifecycle()
     val trending by viewModel.trending.collectAsStateWithLifecycle()
     val recent by viewModel.recent.collectAsStateWithLifecycle()
@@ -271,16 +280,17 @@ fun YouTubeScreen(
                 HeaderNavActions(onOpenSettings, onOpenDownloads = onOpenDownloads, activeCount = activeDownloads)
             }
             SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)) {
-                listOf("YouTube", stringResource(R.string.podcasts_chip)).forEachIndexed { i, label ->
+                listOf("YouTube", stringResource(R.string.podcasts_chip), stringResource(R.string.discover_web)).forEachIndexed { i, label ->
                     SegmentedButton(
-                        selected = podcasts == (i == 1),
-                        onClick = { podcasts = i == 1 },
-                        shape = SegmentedButtonDefaults.itemShape(i, 2),
+                        selected = segment == i,
+                        onClick = { onSegment(i) },
+                        shape = SegmentedButtonDefaults.itemShape(i, 3),
                         modifier = Modifier.heightIn(min = 48.dp)
                     ) { Text(label, maxLines = 1) }
                 }
             }
-            if (podcasts) Box(Modifier.weight(1f).fillMaxWidth()) {
+            if (segment == SEG_WEB) Box(Modifier.weight(1f).fillMaxWidth()) { web() }
+            else if (podcasts) Box(Modifier.weight(1f).fillMaxWidth()) {
                 com.abhinavxt.debforge.ui.media.PodcastsPane(playingId, tell = { m -> scope.launch { snackbar.currentSnackbarData?.dismiss(); snackbar.showSnackbar(m) } })
             } else Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
                 YouTubeContent(

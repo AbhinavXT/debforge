@@ -49,7 +49,7 @@ import javax.inject.Inject
  * Ads and trackers are blocked with uBlock Origin's lists ([FilterLists]);
  * until those are on the phone, with the short built-in [AdHosts].
  *
- * Kept across tab switches; the WebView itself is not, it reloads [url].
+ * Kept across tab switches; the WebView itself is not, it comes back from [webState] (page and back history).
  */
 @HiltViewModel
 class BrowserViewModel @Inject constructor(
@@ -63,6 +63,9 @@ class BrowserViewModel @Inject constructor(
 
     var url: String = HOME
         private set
+
+    /** The WebView's page and back history, saved when it leaves the screen and restored when it returns. */
+    var webState: android.os.Bundle? = null
 
     /** The WebView's own, sent with this tab's downloads: some hosts refuse other clients. */
     var userAgent: String? = null

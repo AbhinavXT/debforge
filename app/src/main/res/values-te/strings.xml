@@ -1374,4 +1374,5 @@
     <string name="settings_sum_data">డేటా వినియోగం మరియు బ్యాకప్</string>
     <string name="browse_signin_prompt">ఇక్కడ డెబ్రిడ్ సేవ ఫైళ్లను చూడటానికి సైన్ ఇన్ చేయండి. ఇవి ఈ పరికరంలోని ఫైళ్లు.</string>
     <string name="browse_signin_button">సైన్ ఇన్</string>
+    <string name="discover_web">వెబ్</string>
 </resources>

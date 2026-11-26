@@ -1314,4 +1314,5 @@
     <string name="settings_sum_data">数据用量和备份</string>
     <string name="browse_signin_prompt">登录 debrid 服务即可在此查看其文件。以下是此设备上的文件。</string>
     <string name="browse_signin_button">登录</string>
+    <string name="discover_web">网页</string>
 </resources>

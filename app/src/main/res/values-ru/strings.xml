@@ -1496,4 +1496,5 @@
     <string name="settings_sum_data">Расход трафика и резервная копия</string>
     <string name="browse_signin_prompt">Войдите в debrid-сервис, чтобы видеть здесь его файлы. Это файлы на этом устройстве.</string>
     <string name="browse_signin_button">Войти</string>
+    <string name="discover_web">Веб</string>
 </resources>

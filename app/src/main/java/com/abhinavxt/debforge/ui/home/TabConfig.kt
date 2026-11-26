@@ -54,6 +54,15 @@ object TabConfig {
     /** The Library tab is named for the signed-in service; [fallback] ("Library") when there is none. */
     fun libraryLabel(providerName: String?, fallback: String): String = providerName?.takeIf { it.isNotBlank() } ?: fallback
 
+    /**
+     * Where something that opens "the browser" goes: the Browser tab when it is on the [bar], otherwise Discover,
+     * whose Web segment hosts the same browser.
+     */
+    fun browserTab(bar: List<String>): String = if (BROWSER in bar) BROWSER else DISCOVER
+
+    /** Whether opening the [tab] key lands on Discover's Web segment: a Browser request that [browserTab] sent to Discover. */
+    fun opensWeb(tab: String, bar: List<String>): Boolean = tab == BROWSER && browserTab(bar) == DISCOVER
+
     /** Turns [key] on or off in the bar; null when that would break the [MIN] or [MAX] limit. */
     fun toggled(bar: List<String>, key: String): List<String>? = when {
         key in bar -> if (bar.size > MIN) bar - key else null
