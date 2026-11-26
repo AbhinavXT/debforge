@@ -338,7 +338,8 @@ private fun TargetPicker(state: AddUiState, onPick: (ProviderId) -> Unit) {
 @Composable
 private fun CacheLine(cache: CacheSummary, service: String, onRetry: () -> Unit) {
     val text = when {
-        cache.failure != null -> stringResource(R.string.add_cache_failed, service, cache.failure)
+        // The reason sits in brackets: keep its first sentence, without its full stop.
+        cache.failure != null -> stringResource(R.string.add_cache_failed, service, cache.failure.substringBefore(". ").trimEnd('.'))
         cache.checking -> stringResource(R.string.add_cache_checking, service)
         cache.total == 1 && cache.cached == 1 -> stringResource(R.string.add_cache_one_yes, service)
         cache.total == 1 -> stringResource(R.string.add_cache_one_no, service)

@@ -659,7 +659,7 @@ private fun HomeShell(signedIn: Boolean, prefs: NavPrefs) {
                             onClick = { if (longPressed) longPressed = false else go(tab) },
                             interactionSource = railSource,
                             modifier = Modifier.focusRing(railSource, RoundedCornerShape(16.dp))
-                                .serviceLongPress(tab == HomeTab.Browse) { longPressed = true; serviceMenu = true },
+                                .serviceLongPress(currentSignedIn && tab == HomeTab.Browse, onPress = { longPressed = false }) { longPressed = true; serviceMenu = true },
                             icon = {
                                 Box {
                                     Icon(if (selected) tab.selectedIcon else tab.icon, contentDescription = null)
@@ -694,7 +694,7 @@ private fun HomeShell(signedIn: Boolean, prefs: NavPrefs) {
                                     onClick = { if (longPressed) longPressed = false else go(tab) },
                                     interactionSource = barSource,
                                     modifier = Modifier.focusRing(barSource, RoundedCornerShape(16.dp))
-                                        .serviceLongPress(tab == HomeTab.Browse) { longPressed = true; serviceMenu = true },
+                                        .serviceLongPress(currentSignedIn && tab == HomeTab.Browse, onPress = { longPressed = false }) { longPressed = true; serviceMenu = true },
                                     icon = {
                                         Box {
                                             Icon(if (selected) tab.selectedIcon else tab.icon, contentDescription = null)
@@ -812,5 +812,7 @@ private fun NotificationPermissionRequest() {
 }
 
 /** Long-press on the Library tab opens the service menu; the release after it must not also count as a tap. */
-private fun Modifier.serviceLongPress(enabled: Boolean, onLongPress: () -> Unit): Modifier =
-    if (!enabled) this else pointerInput(Unit) { detectTapGestures(onLongPress = { onLongPress() }) }
+// onPress clears the caller's "this release ends a long-press" flag on every new touch, so a long-press that is
+// dragged off the tab (no click follows) can't swallow the next real tap.
+private fun Modifier.serviceLongPress(enabled: Boolean, onPress: () -> Unit, onLongPress: () -> Unit): Modifier =
+    if (!enabled) this else pointerInput(Unit) { detectTapGestures(onPress = { onPress() }, onLongPress = { onLongPress() }) }
