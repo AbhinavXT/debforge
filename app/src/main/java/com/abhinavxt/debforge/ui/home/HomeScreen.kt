@@ -152,9 +152,9 @@ internal enum class HomeTab(
     Active("active", R.string.tab_downloads, Icons.Outlined.Download, Icons.Filled.Download),
     Settings("settings", R.string.tab_settings, Icons.Outlined.Settings, Icons.Filled.Settings);
 
-    /** The label shown for this tab: the Library is named for the signed-in service ([libraryName], "" when none). */
+    /** The label shown for this tab: the Library is named for the signed-in service ([libraryName], "" or null when none). */
     @Composable
-    fun label(libraryName: String): String =
+    fun label(libraryName: String?): String =
         if (this == Browse) TabConfig.libraryLabel(libraryName, stringResource(labelRes)) else stringResource(labelRes)
 
     companion object {
@@ -187,6 +187,8 @@ fun HomeScreen(signedIn: Boolean) {
     val shell: ShellViewModel = hiltViewModel()
     // The start tab is decided once from what is stored, so the shell waits for the (fast) settings read.
     val prefs by shell.navPrefs.collectAsStateWithLifecycle()
+    // The Library tab is named for the signed-in service; wait for that (fast) read too.
+    shell.libraryName.collectAsStateWithLifecycle().value ?: return
     HomeShell(signedIn, prefs ?: return)
 }
 
@@ -399,10 +401,8 @@ private fun HomeShell(signedIn: Boolean, prefs: NavPrefs) {
     @Composable fun libraryViewModel(): BrowseViewModel = hiltViewModel(viewModelStoreOwner = activity)
     // One browser (page and history) for the Browser tab and Discover's Web segment, kept across tab switches.
     @Composable fun browserViewModel(): BrowserViewModel = hiltViewModel(viewModelStoreOwner = activity)
-    // Only the name is observed, so list updates do not recompose the shell.
-    val libraryVm = libraryViewModel()
-    val libraryName by remember(libraryVm) { libraryVm.state.map { it.providerName }.distinctUntilChanged() }
-        .collectAsStateWithLifecycle("")
+    // Read where used (not captured), so content built once still sees a service switch.
+    val libraryName by shell.libraryName.collectAsStateWithLifecycle()
     // Read inside the movable content below, which is built once.
     val currentSignedIn by rememberUpdatedState(signedIn)
     val currentAudio by rememberUpdatedState(audio)
@@ -439,6 +439,7 @@ private fun HomeShell(signedIn: Boolean, prefs: NavPrefs) {
                     if (currentSignedIn || !connecting) {
                         BrowseScreen(
                             viewModel = libraryViewModel(),
+                            serviceName = libraryName,
                             onAdd = { addViewModel.open() },
                             onAddText = { addViewModel.open(prefillText = it) },
                             onOpenDownloads = { push(HomeTab.Active) },

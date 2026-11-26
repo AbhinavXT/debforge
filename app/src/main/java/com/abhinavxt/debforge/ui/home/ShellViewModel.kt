@@ -52,12 +52,17 @@ class ShellViewModel @Inject constructor(
     private val lyricsRepo: com.abhinavxt.debforge.data.lyrics.LyricsRepository,
     dao: DownloadDao,
     settings: SettingsStore,
+    auth: com.abhinavxt.debforge.data.repository.AuthRepository,
     searchSources: com.abhinavxt.debforge.data.search.SearchSourceStore
 ) : ViewModel() {
     /** Null until the first read of the tab settings. */
     val navPrefs: StateFlow<NavPrefs?> = combine(
         settings.tabsFlow, settings.startTabFlow, searchSources.sources.map { it.isNotEmpty() }
     ) { bar, start, hasSource -> NavPrefs(bar, start, hasSource) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
+    /** The signed-in service's name ("" when none); null until first read, so the Library tab never flashes "Library". */
+    val libraryName: StateFlow<String?> = auth.signedInProvider.map { id -> id?.let { auth.info(it).displayName }.orEmpty() }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     suspend fun lyrics(title: String, artist: String?, durationMs: Long) = lyricsRepo.load(title, artist, durationMs)

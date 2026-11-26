@@ -161,6 +161,8 @@ fun BrowseScreen(
     /** Opens the sign-in (Setup) screen; offered while no service is signed in. */
     onConnect: () -> Unit = {},
     activeDownloads: Int = 0,
+    /** The signed-in service's name from the shell, known before the list loads (null: use the list's own). */
+    serviceName: String? = null,
     viewModel: BrowseViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -568,8 +570,8 @@ fun BrowseScreen(
                 // The title block scrolls away; the search field and controls below stay.
                 CollapsingHeader(scroll) {
                     ScreenHeader(
-                        title = TabConfig.libraryLabel(state.providerName, stringResource(R.string.tab_library)),
-                        subtitle = if (state.providerName.isEmpty()) null else stringResource(R.string.tab_library)
+                        title = TabConfig.libraryLabel(serviceName ?: state.providerName, stringResource(R.string.tab_library)),
+                        subtitle = if ((serviceName ?: state.providerName).isEmpty()) null else stringResource(R.string.tab_library)
                     ) {
                         // Pull down to refresh everywhere else; a TV remote can't
                         // pull, so it keeps the button.
