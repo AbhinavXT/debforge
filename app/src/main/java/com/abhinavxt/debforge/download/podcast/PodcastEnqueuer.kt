@@ -1,6 +1,11 @@
 package com.abhinavxt.debforge.download.podcast
 
+import android.content.Context
 import com.abhinavxt.debforge.data.local.DownloadDao
+import com.abhinavxt.debforge.di.ApiHttpClient
+import com.abhinavxt.debforge.ui.youtube.saveYouTubeThumbnail
+import dagger.hilt.android.qualifiers.ApplicationContext
+import okhttp3.OkHttpClient
 import com.abhinavxt.debforge.data.subscriptions.FeedItemEntity
 import com.abhinavxt.debforge.data.subscriptions.SubscriptionEntity
 import com.abhinavxt.debforge.domain.DirectLinkParser
@@ -68,20 +73,24 @@ object PodcastFiles {
 class PodcastEnqueuer @Inject constructor(
     private val downloads: DownloadController,
     private val dao: DownloadDao,
+    @ApplicationContext private val context: Context,
+    @ApiHttpClient private val http: OkHttpClient,
 ) {
     /** QUEUED, ALREADY_QUEUED, FAILED (retry later) or NO_FORMAT (no usable enclosure url; retrying cannot help). */
     suspend fun enqueue(sub: SubscriptionEntity, item: FeedItemEntity, mimeType: String? = null): EnqueueResult {
         val url = item.mediaUrl?.takeIf { it.toHttpUrlOrNull() != null } ?: return EnqueueResult.NO_FORMAT
         val dlItem = itemFor(sub, item, url, mimeType)
-        return try {
+        try {
             if (dao.getById(dlItem.id) != null) return EnqueueResult.ALREADY_QUEUED
             downloads.enqueue(dlItem, foreground = false)
-            EnqueueResult.QUEUED
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            EnqueueResult.FAILED
+            return EnqueueResult.FAILED
         }
+        // Best effort (never throws): gives the player, notification and Media list a cover for the downloaded file.
+        saveYouTubeThumbnail(context, http, item.thumbUrl ?: sub.artworkUrl, dlItem.id)
+        return EnqueueResult.QUEUED
     }
 
     /** Re-queues [item]'s download when it exists and FAILED (the downloads screen's retry). True when it did. */

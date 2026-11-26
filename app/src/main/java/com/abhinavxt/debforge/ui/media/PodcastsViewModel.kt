@@ -150,6 +150,8 @@ class PodcastsViewModel @Inject constructor(
         downloadDao.getById(DirectLinkParser.itemId(url))
             ?.takeIf { it.state == DownloadState.COMPLETED }
             ?.let { withContext(Dispatchers.IO) { audioTrackFor(context, it) } }
+            // Episodes downloaded before covers were saved have no artwork file; fall back to the feed's image.
+            ?.let { t -> if (t.artworkFile == null) t.copy(artworkUrl = item.thumbUrl ?: sub.artworkUrl) else t }
             ?.let { return it }
         val uri = Uri.parse(url).takeIf { it.scheme == "http" || it.scheme == "https" } ?: return null
         return AudioTrack(
