@@ -68,6 +68,7 @@ import androidx.compose.material.icons.rounded.VideoLibrary
 import androidx.compose.material.icons.rounded.WarningAmber
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import com.abhinavxt.debforge.ui.home.TabConfig
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
@@ -157,6 +158,8 @@ fun BrowseScreen(
     onAddText: (String) -> Unit = {},
     onOpenDownloads: () -> Unit = {},
     onOpenSettings: () -> Unit = {},
+    /** Opens the sign-in (Setup) screen; offered while no service is signed in. */
+    onConnect: () -> Unit = {},
     activeDownloads: Int = 0,
     viewModel: BrowseViewModel = hiltViewModel()
 ) {
@@ -543,6 +546,8 @@ fun BrowseScreen(
             !(state.error != null && shown.isEmpty()) &&
             visible.isNotEmpty() &&
             if (state.posterView) groups.isNotEmpty() else sections.sumOf { it.items.size } > 0
+        // Signed out the list is this device's files: say so, and offer the way in.
+        val signInPrompt = !state.hasService
         val leading: (@Composable () -> Unit)? =
             if (promptVisible || processing.isNotEmpty()) {
                 {
@@ -563,8 +568,8 @@ fun BrowseScreen(
                 // The title block scrolls away; the search field and controls below stay.
                 CollapsingHeader(scroll) {
                     ScreenHeader(
-                        title = stringResource(R.string.tab_library),
-                        subtitle = state.providerName.ifEmpty { null }
+                        title = TabConfig.libraryLabel(state.providerName, stringResource(R.string.tab_library)),
+                        subtitle = if (state.providerName.isEmpty()) null else stringResource(R.string.tab_library)
                     ) {
                         // Pull down to refresh everywhere else; a TV remote can't
                         // pull, so it keeps the button.
@@ -629,6 +634,8 @@ fun BrowseScreen(
             }
 
             UpdateBanner()
+
+            if (signInPrompt) SignInPrompt(onConnect)
 
             // In the empty, error and loading states these stay pinned; with content they
             // are the first items of the grid / list and scroll away with it.
@@ -1375,4 +1382,12 @@ private const val PULL_SETTLE_MS = 400L
 internal fun withoutOwnFilename(host: String, filename: String): String {
     val parts = host.split(" · ")
     return if (parts.last() == filename) parts.dropLast(1).joinToString(" · ") else host
+}
+
+@Composable
+private fun SignInPrompt(onConnect: () -> Unit) {
+    Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(stringResource(R.string.browse_signin_prompt), style = MaterialTheme.typography.bodyMedium)
+        Button(onClick = onConnect) { Text(stringResource(R.string.browse_signin_button)) }
+    }
 }

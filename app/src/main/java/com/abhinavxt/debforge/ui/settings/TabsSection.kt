@@ -36,6 +36,7 @@ import com.abhinavxt.debforge.ui.home.TabConfig
 internal fun TabsCard(
     bar: List<String>,
     start: String,
+    libraryName: String,
     onBar: (List<String>) -> Unit,
     onStart: (String) -> Unit,
     modifier: Modifier = Modifier
@@ -62,7 +63,7 @@ internal fun TabsCard(
         TabConfig.rail(bar).mapNotNull(HomeTab::of).forEach { tab ->
             // Keyed so keyboard focus follows a tab as it moves.
             key(tab.route) {
-                val label = stringResource(tab.labelRes)
+                val label = tab.label(libraryName)
                 val index = bar.indexOf(tab.route)
                 val inBar = index >= 0
                 Row(
@@ -104,7 +105,7 @@ internal fun TabsCard(
             title = stringResource(R.string.set_start_tab),
             current = start,
             options = listOf(TabConfig.AUTO) + TabConfig.ALL,
-            label = { k -> stringResource(HomeTab.of(k)?.labelRes ?: R.string.set_start_tab_auto) },
+            label = { k -> HomeTab.of(k)?.label(libraryName) ?: stringResource(R.string.set_start_tab_auto) },
             onPick = onStart
         )
     }

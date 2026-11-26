@@ -51,6 +51,9 @@ object TabConfig {
     fun startTab(stored: String?, signedIn: Boolean): String =
         stored?.takeIf { it in ALL } ?: if (signedIn) LIBRARY else BROWSER
 
+    /** The Library tab is named for the signed-in service; [fallback] ("Library") when there is none. */
+    fun libraryLabel(providerName: String?, fallback: String): String = providerName?.takeIf { it.isNotBlank() } ?: fallback
+
     /** Turns [key] on or off in the bar; null when that would break the [MIN] or [MAX] limit. */
     fun toggled(bar: List<String>, key: String): List<String>? = when {
         key in bar -> if (bar.size > MIN) bar - key else null

@@ -85,4 +85,10 @@ class TabConfigTest {
         TabConfig.ALL.forEach { assertEquals(it, HomeTab.of(it)?.route) }
         assertNull(HomeTab.of("auto"))
     }
+
+    @Test fun libraryIsNamedForTheSignedInService() {
+        assertEquals("TorBox", TabConfig.libraryLabel("TorBox", "Library"))
+        assertEquals("Library", TabConfig.libraryLabel("", "Library"))
+        assertEquals("Library", TabConfig.libraryLabel(null, "Library"))
+    }
 }

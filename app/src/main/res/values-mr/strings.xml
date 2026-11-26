@@ -1372,4 +1372,6 @@
     <string name="settings_search_none">कोणतीही सेटिंग जुळली नाही</string>
     <string name="settings_sum_connections">Trakt, उपशीर्षके, शोध स्रोत</string>
     <string name="settings_sum_data">डेटा वापर आणि बॅकअप</string>
+    <string name="browse_signin_prompt">येथे डेब्रिड सेवेच्या फाइल पाहण्यासाठी साइन इन करा. ह्या डिव्हाइसवरील फाइल आहेत.</string>
+    <string name="browse_signin_button">साइन इन</string>
 </resources>

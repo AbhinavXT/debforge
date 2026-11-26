@@ -66,6 +66,8 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.shape.RoundedCornerShape
 import com.abhinavxt.debforge.ui.player.focusRing
 import androidx.compose.runtime.rememberUpdatedState
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.style.TextOverflow
@@ -145,6 +147,11 @@ internal enum class HomeTab(
     Media("media", R.string.tab_media, Icons.Outlined.PermMedia, Icons.Filled.PermMedia),
     Active("active", R.string.tab_downloads, Icons.Outlined.Download, Icons.Filled.Download),
     Settings("settings", R.string.tab_settings, Icons.Outlined.Settings, Icons.Filled.Settings);
+
+    /** The label shown for this tab: the Library is named for the signed-in service ([libraryName], "" when none). */
+    @Composable
+    fun label(libraryName: String): String =
+        if (this == Browse) TabConfig.libraryLabel(libraryName, stringResource(labelRes)) else stringResource(labelRes)
 
     companion object {
         /** The tab with this [TabConfig] key; null for an unknown one. */
@@ -373,6 +380,10 @@ private fun HomeShell(signedIn: Boolean, prefs: NavPrefs) {
     // the Library's own data), so the list is read once. Held by the activity: both tabs get the same one.
     val activity = LocalContext.current as androidx.activity.ComponentActivity
     @Composable fun libraryViewModel(): BrowseViewModel = hiltViewModel(viewModelStoreOwner = activity)
+    // Only the name is observed, so list updates do not recompose the shell.
+    val libraryVm = libraryViewModel()
+    val libraryName by remember(libraryVm) { libraryVm.state.map { it.providerName }.distinctUntilChanged() }
+        .collectAsStateWithLifecycle("")
     // Read inside the movable content below, which is built once.
     val currentSignedIn by rememberUpdatedState(signedIn)
     val currentAudio by rememberUpdatedState(audio)
@@ -413,6 +424,7 @@ private fun HomeShell(signedIn: Boolean, prefs: NavPrefs) {
                             onAddText = { addViewModel.open(prefillText = it) },
                             onOpenDownloads = { push(HomeTab.Active) },
                             onOpenSettings = { push(HomeTab.Settings) },
+                            onConnect = ::connect,
                             activeDownloads = activeCount
                         )
                     } else {
@@ -606,7 +618,7 @@ private fun HomeShell(signedIn: Boolean, prefs: NavPrefs) {
                             interactionSource = railSource,
                             modifier = Modifier.focusRing(railSource, RoundedCornerShape(16.dp)),
                             icon = { Icon(if (selected) tab.selectedIcon else tab.icon, contentDescription = null) },
-                            label = { Text(stringResource(tab.labelRes), maxLines = 1, overflow = TextOverflow.Ellipsis) }
+                            label = { Text(tab.label(libraryName), maxLines = 1, overflow = TextOverflow.Ellipsis) }
                         )
                     }
                     }
@@ -633,7 +645,7 @@ private fun HomeShell(signedIn: Boolean, prefs: NavPrefs) {
                                     interactionSource = barSource,
                                     modifier = Modifier.focusRing(barSource, RoundedCornerShape(16.dp)),
                                     icon = { Icon(if (selected) tab.selectedIcon else tab.icon, contentDescription = null) },
-                                    label = { Text(stringResource(tab.labelRes), maxLines = 1, overflow = TextOverflow.Ellipsis) }
+                                    label = { Text(tab.label(libraryName), maxLines = 1, overflow = TextOverflow.Ellipsis) }
                                 )
                             }
                         }

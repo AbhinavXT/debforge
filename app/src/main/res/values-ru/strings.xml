@@ -1494,4 +1494,6 @@
     <string name="settings_search_none">Нет подходящих настроек</string>
     <string name="settings_sum_connections">Trakt, субтитры, источники поиска</string>
     <string name="settings_sum_data">Расход трафика и резервная копия</string>
+    <string name="browse_signin_prompt">Войдите в debrid-сервис, чтобы видеть здесь его файлы. Это файлы на этом устройстве.</string>
+    <string name="browse_signin_button">Войти</string>
 </resources>

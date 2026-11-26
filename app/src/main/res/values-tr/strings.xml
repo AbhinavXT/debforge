@@ -1372,4 +1372,6 @@
     <string name="settings_search_none">Eşleşen ayar yok</string>
     <string name="settings_sum_connections">Trakt, altyazılar, arama kaynakları</string>
     <string name="settings_sum_data">Veri kullanımı ve yedekleme</string>
+    <string name="browse_signin_prompt">Dosyalarını burada görmek için bir debrid hizmetinde oturum açın. Bunlar bu cihazdaki dosyalar.</string>
+    <string name="browse_signin_button">Oturum aç</string>
 </resources>

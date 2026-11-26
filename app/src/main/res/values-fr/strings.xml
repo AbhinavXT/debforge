@@ -1433,4 +1433,6 @@
     <string name="settings_search_none">Aucun réglage correspondant</string>
     <string name="settings_sum_connections">Trakt, sous-titres, sources de recherche</string>
     <string name="settings_sum_data">Consommation de données et sauvegarde</string>
+    <string name="browse_signin_prompt">Connectez-vous à un service debrid pour voir ses fichiers ici. Voici les fichiers de cet appareil.</string>
+    <string name="browse_signin_button">Se connecter</string>
 </resources>

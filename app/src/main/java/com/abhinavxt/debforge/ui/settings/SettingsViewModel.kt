@@ -78,6 +78,10 @@ class SettingsViewModel @Inject constructor(
         viewModelScope, SharingStarted.WhileSubscribed(5_000), ""
     )
 
+    /** The signed-in service's name ("" when none), which names the Library tab. */
+    val libraryName: StateFlow<String> = auth.signedInProvider.map { id -> id?.let { auth.info(it).displayName }.orEmpty() }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), "")
+
     /** Account card for the active service; null while loading / on error. */
     @OptIn(ExperimentalCoroutinesApi::class)
     val account: StateFlow<AccountInfo?> = auth.signedInProvider

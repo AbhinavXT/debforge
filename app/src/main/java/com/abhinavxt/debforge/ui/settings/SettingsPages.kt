@@ -230,9 +230,11 @@ private fun LazyListScope.tabsItem(viewModel: SettingsViewModel) {
         val stored by viewModel.tabsStored.collectAsStateWithLifecycle()
         val hasSource by viewModel.hasSearchSource.collectAsStateWithLifecycle()
         val start by viewModel.startTab.collectAsStateWithLifecycle()
+        val libraryName by viewModel.libraryName.collectAsStateWithLifecycle()
         TabsCard(
             bar = TabConfig.bar(stored, hasSource),
             start = start,
+            libraryName = libraryName,
             onBar = viewModel::setTabs,
             onStart = viewModel::setStartTab,
             modifier = Modifier.padding(top = 20.dp)

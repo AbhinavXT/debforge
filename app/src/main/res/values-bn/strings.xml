@@ -1372,4 +1372,6 @@
     <string name="settings_search_none">কোনো সেটিং মেলেনি</string>
     <string name="settings_sum_connections">Trakt, সাবটাইটেল, সার্চ সোর্স</string>
     <string name="settings_sum_data">ডেটা ব্যবহার ও ব্যাকআপ</string>
+    <string name="browse_signin_prompt">এখানে ডেব্রিড সার্ভিসের ফাইল দেখতে সাইন ইন করুন। এগুলো এই ডিভাইসের ফাইল।</string>
+    <string name="browse_signin_button">সাইন ইন</string>
 </resources>
