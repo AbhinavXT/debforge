@@ -1,5 +1,9 @@
 package com.abhinavxt.debforge.ui.home
 
+import kotlinx.coroutines.withTimeoutOrNull
+import androidx.compose.foundation.gestures.waitForUpOrCancellation
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.annotation.StringRes
 import androidx.compose.ui.res.stringResource
 import com.abhinavxt.debforge.R
@@ -653,13 +657,12 @@ private fun HomeShell(signedIn: Boolean, prefs: NavPrefs) {
                             (tab == HomeTab.Media && current?.route == HISTORY_ROUTE)
                         val railSource = remember { MutableInteractionSource() }
                         var serviceMenu by remember { mutableStateOf(false) }
-                        var longPressed by remember { mutableStateOf(false) }
                         NavigationRailItem(
                             selected = selected,
-                            onClick = { if (longPressed) longPressed = false else go(tab) },
+                            onClick = { go(tab) },
                             interactionSource = railSource,
                             modifier = Modifier.focusRing(railSource, RoundedCornerShape(16.dp))
-                                .serviceLongPress(currentSignedIn && tab == HomeTab.Browse, onPress = { longPressed = false }) { longPressed = true; serviceMenu = true },
+                                .serviceLongPress(currentSignedIn && tab == HomeTab.Browse) { serviceMenu = true },
                             icon = {
                                 Box {
                                     Icon(if (selected) tab.selectedIcon else tab.icon, contentDescription = null)
@@ -688,13 +691,12 @@ private fun HomeShell(signedIn: Boolean, prefs: NavPrefs) {
                                 val selected = barRoute == tab.route
                                 val barSource = remember { MutableInteractionSource() }
                                 var serviceMenu by remember { mutableStateOf(false) }
-                                var longPressed by remember { mutableStateOf(false) }
-                                NavigationBarItem(
+                                        NavigationBarItem(
                                     selected = selected,
-                                    onClick = { if (longPressed) longPressed = false else go(tab) },
+                                    onClick = { go(tab) },
                                     interactionSource = barSource,
                                     modifier = Modifier.focusRing(barSource, RoundedCornerShape(16.dp))
-                                        .serviceLongPress(currentSignedIn && tab == HomeTab.Browse, onPress = { longPressed = false }) { longPressed = true; serviceMenu = true },
+                                        .serviceLongPress(currentSignedIn && tab == HomeTab.Browse) { serviceMenu = true },
                                     icon = {
                                         Box {
                                             Icon(if (selected) tab.selectedIcon else tab.icon, contentDescription = null)
@@ -811,8 +813,24 @@ private fun NotificationPermissionRequest() {
     }
 }
 
-/** Long-press on the Library tab opens the service menu; the release after it must not also count as a tap. */
-// onPress clears the caller's "this release ends a long-press" flag on every new touch, so a long-press that is
-// dragged off the tab (no click follows) can't swallow the next real tap.
-private fun Modifier.serviceLongPress(enabled: Boolean, onPress: () -> Unit, onLongPress: () -> Unit): Modifier =
-    if (!enabled) this else pointerInput(Unit) { detectTapGestures(onPress = { onPress() }, onLongPress = { onLongPress() }) }
+/**
+ * Long-press on the Library tab opens the service menu. Watched in the Initial pass, because the tab's own
+ * click handler (inside this modifier) claims the touch first. After a long-press the rest of the gesture is
+ * consumed, so the release does not also count as a tap.
+ */
+private fun Modifier.serviceLongPress(enabled: Boolean, onLongPress: () -> Unit): Modifier =
+    if (!enabled) this else pointerInput(Unit) {
+        awaitEachGesture {
+            awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
+            val released = withTimeoutOrNull(viewConfiguration.longPressTimeoutMillis) {
+                waitForUpOrCancellation(PointerEventPass.Initial)
+            }
+            if (released != null) return@awaitEachGesture
+            onLongPress()
+            // Swallow the rest (the release) so the tab's click doesn't fire too.
+            do {
+                val event = awaitPointerEvent(PointerEventPass.Initial)
+                event.changes.forEach { it.consume() }
+            } while (event.changes.any { it.pressed })
+        }
+    }
