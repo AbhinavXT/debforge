@@ -357,6 +357,7 @@
     <string name="add_cache_one_no">अजून कॅश केलेले नाही. %1$s आधी ते डाउनलोड करेल.</string>
     <string name="add_cache_all_yes">सर्व %1$d कॅश केलेले आहेत. लगेच तयार.</string>
     <string name="add_cache_some">%2$d पैकी %1$d कॅश केलेले. ते लगेच तयार आहेत.</string>
+    <string name="add_cache_failed">%1$s तपासता आले नाही (%2$s).</string>
     <!-- Data usage -->
     <string name="usage_title">डेटा वापर</string>
     <string name="usage_this_month">या महिन्यात %1$s</string>
@@ -919,6 +920,7 @@
     <string name="search_open_settings">सेटिंग्ज उघडा</string>
     <string name="search_start_body">नावाने शोधा, उदा. “The Bear S02” किंवा “Oppenheimer 2023”. तुमच्या सेवेत आधीच कॅश असलेले निकाल आधी दिसतात.</string>
     <string name="search_checking_cache">कोणते कॅश आहेत ते तपासत आहे…</string>
+    <string name="search_cache_failed">%1$s ने कॅश तपासणीला उत्तर दिले नाही.</string>
     <string name="search_err_bad_url">फीडची लिंक टाका, http:// किंवा https:// ने सुरू होणारी</string>
     <string name="search_err_key">%1$s ने API की नाकारली</string>
     <string name="search_err_said">%1$s: %2$s</string>

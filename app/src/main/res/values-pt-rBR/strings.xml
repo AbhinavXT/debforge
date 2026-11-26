@@ -371,6 +371,7 @@
     <string name="add_cache_one_no">Ainda não está em cache. O %1$s vai baixá-lo primeiro.</string>
     <string name="add_cache_all_yes">Todos os %1$d estão em cache. Prontos na hora.</string>
     <string name="add_cache_some">%1$d de %2$d em cache. Esses ficam prontos na hora.</string>
+    <string name="add_cache_failed">Não foi possível verificar %1$s (%2$s).</string>
     <!-- Data usage -->
     <string name="usage_title">Uso de dados</string>
     <string name="usage_this_month">%1$s neste mês</string>
@@ -959,6 +960,7 @@
     <string name="search_open_settings">Abrir Configurações</string>
     <string name="search_start_body">Busque pelo título, como “The Bear S02” ou “Oppenheimer 2023”. Os resultados que seu serviço já tem em cache aparecem primeiro.</string>
     <string name="search_checking_cache">Verificando quais estão em cache…</string>
+    <string name="search_cache_failed">%1$s não respondeu à verificação de cache.</string>
     <string name="search_err_bad_url">Digite o link do feed, começando com http:// ou https://</string>
     <string name="search_err_key">%1$s recusou a chave de API</string>
     <string name="search_err_said">%1$s: %2$s</string>

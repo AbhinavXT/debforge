@@ -60,7 +60,18 @@ enum class SearchQuality { ANY, UHD, FULL_HD, HD, SD }
 /** What the Search tab looks for: Torznab's plain, movie or TV search. */
 enum class SearchKind { ALL, MOVIE, SHOW }
 
+/** What the services said about a set of hashes: [unknown] = not cached on those that answered, but a service didn't answer. */
+data class CacheOutcome(val cached: Set<String>, val unknown: Set<String>, val failedServices: List<String>)
+
 object SearchResults {
+
+    /** Merges per-service answers (name to result): cached anywhere, else unknown if any service failed, else not cached. */
+    fun combineCache(hashes: List<String>, answers: List<Pair<String, DataResult<Set<String>>>>): CacheOutcome {
+        val cached = answers.flatMapTo(HashSet()) { (it.second as? DataResult.Success)?.data.orEmpty() }
+        val failed = answers.filter { it.second is DataResult.Error }.map { it.first }
+        return CacheOutcome(cached, if (failed.isEmpty()) emptySet() else hashes.filterTo(HashSet()) { it !in cached }, failed)
+    }
+
 
     /**
      * Cached first (one tap to watch), then the most preferred words, then

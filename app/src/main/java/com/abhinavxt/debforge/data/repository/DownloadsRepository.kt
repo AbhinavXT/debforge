@@ -118,10 +118,12 @@ class DownloadsRepository @Inject constructor(
 
     suspend fun cachedHashes(provider: ProviderId, hashes: List<String>): DataResult<Set<String>> {
         val p = registry[provider]
-        return ProviderCalls.run(p.info, "checking the cache") { p.cachedHashes(hashes) }
+        return ProviderCalls.run(p.info, "checking the cache", CACHE_CHECK_TIMEOUT_MS) { p.cachedHashes(hashes) }
     }
 
     companion object {
         const val DEFAULT_PAGE_SIZE = 50
+        /** Per service: a cache check is a hint, so a slow one counts as failed rather than keeping the user waiting. */
+        const val CACHE_CHECK_TIMEOUT_MS = 10_000L
     }
 }

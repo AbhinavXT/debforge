@@ -357,6 +357,7 @@
     <string name="add_cache_one_no">এখনও ক্যাশ হয়নি। %1$s আগে এটি ডাউনলোড করবে।</string>
     <string name="add_cache_all_yes">%1$dটিই ক্যাশ করা আছে। সঙ্গে সঙ্গে তৈরি।</string>
     <string name="add_cache_some">%2$dটির মধ্যে %1$dটি ক্যাশ করা আছে। সেগুলো সঙ্গে সঙ্গে তৈরি।</string>
+    <string name="add_cache_failed">%1$s চেক করা যায়নি (%2$s)।</string>
     <!-- Data usage -->
     <string name="usage_title">ডেটা ব্যবহার</string>
     <string name="usage_this_month">এই মাসে %1$s</string>
@@ -919,6 +920,7 @@
     <string name="search_open_settings">সেটিংস খুলুন</string>
     <string name="search_start_body">নাম দিয়ে খুঁজুন, যেমন “The Bear S02” বা “Oppenheimer 2023”। আপনার সার্ভিসে আগে থেকে ক্যাশ করা ফলাফল আগে দেখায়।</string>
     <string name="search_checking_cache">কোনগুলো ক্যাশ করা আছে দেখা হচ্ছে…</string>
+    <string name="search_cache_failed">%1$s ক্যাশ চেকের উত্তর দেয়নি।</string>
     <string name="search_err_bad_url">ফিডের লিংক দিন, http:// বা https:// দিয়ে শুরু</string>
     <string name="search_err_key">%1$s API কী গ্রহণ করেনি</string>
     <string name="search_err_said">%1$s: %2$s</string>

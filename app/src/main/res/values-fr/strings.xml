@@ -371,6 +371,7 @@
     <string name="add_cache_one_no">Pas encore en cache. %1$s va d\'abord le télécharger.</string>
     <string name="add_cache_all_yes">Les %1$d sont en cache. Prêts immédiatement.</string>
     <string name="add_cache_some">%1$d sur %2$d en cache. Ceux-ci sont prêts immédiatement.</string>
+    <string name="add_cache_failed">Impossible de vérifier %1$s (%2$s).</string>
     <!-- Data usage -->
     <string name="usage_title">Consommation des données</string>
     <string name="usage_this_month">%1$s ce mois-ci</string>
@@ -959,6 +960,7 @@
     <string name="search_open_settings">Ouvrir les Paramètres</string>
     <string name="search_start_body">Recherchez par titre, par exemple « The Bear S02 » ou « Oppenheimer 2023 ». Les résultats déjà en cache sur votre service apparaissent en premier.</string>
     <string name="search_checking_cache">Vérification de ceux en cache…</string>
+    <string name="search_cache_failed">%1$s n\'a pas répondu à la vérification du cache.</string>
     <string name="search_err_bad_url">Saisissez le lien du flux, commençant par http:// ou https://</string>
     <string name="search_err_key">%1$s a refusé la clé API</string>
     <string name="search_err_said">%1$s : %2$s</string>

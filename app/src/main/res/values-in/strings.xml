@@ -343,6 +343,7 @@
     <string name="add_cache_one_no">Belum di-cache. %1$s akan mengunduhnya terlebih dahulu.</string>
     <string name="add_cache_all_yes">Semua %1$d sudah di-cache. Langsung siap.</string>
     <string name="add_cache_some">%1$d dari %2$d sudah di-cache. Yang itu langsung siap.</string>
+    <string name="add_cache_failed">Tidak bisa memeriksa %1$s (%2$s).</string>
     <!-- Data usage -->
     <string name="usage_title">Penggunaan data</string>
     <string name="usage_this_month">%1$s bulan ini</string>
@@ -879,6 +880,7 @@
     <string name="search_open_settings">Buka Setelan</string>
     <string name="search_start_body">Cari berdasarkan judul, misalnya “The Bear S02” atau “Oppenheimer 2023”. Hasil yang sudah di-cache layananmu muncul lebih dulu.</string>
     <string name="search_checking_cache">Memeriksa mana yang di-cache…</string>
+    <string name="search_cache_failed">%1$s tidak menjawab pemeriksaan cache.</string>
     <string name="search_err_bad_url">Masukkan tautan feed, diawali http:// atau https://</string>
     <string name="search_err_key">%1$s menolak kunci API</string>
     <string name="search_err_said">%1$s: %2$s</string>

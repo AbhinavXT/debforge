@@ -357,6 +357,7 @@
     <string name="add_cache_one_no">ఇంకా కాష్ కాలేదు. %1$s ముందుగా దీన్ని డౌన్‌లోడ్ చేస్తుంది.</string>
     <string name="add_cache_all_yes">మొత్తం %1$d కాష్ అయి ఉన్నాయి. వెంటనే సిద్ధం.</string>
     <string name="add_cache_some">%2$dలో %1$d కాష్ అయి ఉన్నాయి. అవి వెంటనే సిద్ధం.</string>
+    <string name="add_cache_failed">%1$s ని తనిఖీ చేయలేకపోయాం (%2$s).</string>
     <!-- Data usage -->
     <string name="usage_title">డేటా వినియోగం</string>
     <string name="usage_this_month">ఈ నెల %1$s</string>
@@ -919,6 +920,7 @@
     <string name="search_open_settings">సెట్టింగ్‌లు తెరవండి</string>
     <string name="search_start_body">పేరుతో వెతకండి, ఉదా. “The Bear S02” లేదా “Oppenheimer 2023”. మీ సర్వీస్‌లో ఇప్పటికే కాష్ అయిన ఫలితాలు ముందు వస్తాయి.</string>
     <string name="search_checking_cache">ఏవి కాష్ అయ్యాయో చూస్తోంది…</string>
+    <string name="search_cache_failed">%1$s కాష్ తనిఖీకి స్పందించలేదు.</string>
     <string name="search_err_bad_url">http:// లేదా https://తో మొదలయ్యే ఫీడ్ లింక్ ఇవ్వండి</string>
     <string name="search_err_key">%1$s API కీని అంగీకరించలేదు</string>
     <string name="search_err_said">%1$s: %2$s</string>

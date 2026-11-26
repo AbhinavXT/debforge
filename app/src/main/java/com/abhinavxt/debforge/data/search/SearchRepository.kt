@@ -7,6 +7,7 @@ import com.abhinavxt.debforge.data.repository.DownloadsRepository
 import com.abhinavxt.debforge.di.ApiHttpClient
 import com.abhinavxt.debforge.data.metadata.MetadataRepository
 import com.abhinavxt.debforge.data.prefs.SettingsStore
+import com.abhinavxt.debforge.domain.CacheOutcome
 import com.abhinavxt.debforge.domain.DataResult
 import com.abhinavxt.debforge.domain.MediaKind
 import com.abhinavxt.debforge.domain.SearchKind
@@ -101,13 +102,13 @@ class SearchRepository @Inject constructor(
     /**
      * Which of [hashes] are cached, on any signed-in service that can check;
      * null when none can (the results then show no badge rather than "not cached").
+     * A service that fails leaves the hashes it could have had as unknown.
      */
-    suspend fun cachedAmong(hashes: List<String>): Set<String>? = coroutineScope {
+    suspend fun cachedAmong(hashes: List<String>): CacheOutcome? = coroutineScope {
         val checkers = auth.signedInProviders.first().filter { downloads.supportsCacheCheck(it) }
         if (checkers.isEmpty() || hashes.isEmpty()) return@coroutineScope null
-        val answers = checkers.map { p -> async { downloads.cachedHashes(p, hashes) } }.awaitAll()
-        val ok = answers.filterIsInstance<DataResult.Success<Set<String>>>()
-        if (ok.isEmpty()) null else ok.flatMapTo(HashSet()) { it.data }
+        val answers = checkers.map { p -> async { auth.info(p).displayName to downloads.cachedHashes(p, hashes) } }.awaitAll()
+        SearchResults.combineCache(hashes, answers)
     }
 
     private suspend fun <T> fetch(source: SearchSource, params: Map<String, String>, read: (String) -> T): DataResult<T> =

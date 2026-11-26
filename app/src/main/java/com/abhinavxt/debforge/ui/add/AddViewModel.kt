@@ -42,9 +42,20 @@ import java.io.IOException
 import javax.inject.Inject
 
 /** How many of the torrents in the dialog the service already has cached. */
-data class CacheSummary(val checking: Boolean, val total: Int, val cached: Int) {
+data class CacheSummary(val checking: Boolean, val total: Int, val cached: Int, val failure: String? = null) {
     val allCached: Boolean get() = !checking && total > 0 && cached == total
-    val noneCached: Boolean get() = !checking && cached == 0
+    val noneCached: Boolean get() = !checking && failure == null && cached == 0
+
+    companion object {
+        /** Summary from what's known per torrent ([known], null = not asked yet); null = nothing to show. */
+        fun of(total: Int, checking: Boolean, failure: String?, known: List<Boolean?>): CacheSummary? = when {
+            total == 0 -> null
+            checking -> CacheSummary(true, total, 0)
+            failure != null -> CacheSummary(false, total, 0, failure)
+            known.any { it == null } -> null
+            else -> CacheSummary(false, total, known.count { it == true })
+        }
+    }
 }
 
 /** A signed-in service the dialog can send to (shown when there are two or more). */
@@ -53,7 +64,7 @@ data class AddTarget(
     val name: String,
     /** Can take everything currently in the dialog. */
     val supportsInput: Boolean,
-    /** Cache status there; null = not checked or can't be checked. */
+    /** Cache status there; null = not checked or can't be checked (a failed check is [CacheSummary.failure]). */
     val cache: CacheSummary?
 )
 
@@ -194,8 +205,8 @@ class AddViewModel @Inject constructor(
     private val cacheResults = java.util.concurrent.ConcurrentHashMap<String, Boolean>()
     /** Services whose cache check is in flight. */
     private val checking = java.util.Collections.synchronizedSet(HashSet<ProviderId>())
-    /** Services whose check failed for the current input (shown as "unknown"). */
-    private val checkFailed = java.util.Collections.synchronizedSet(HashSet<ProviderId>())
+    /** Services whose check failed for the current input, with why ("Couldn't check ..." + Retry in the dialog). */
+    private val checkFailed = java.util.concurrent.ConcurrentHashMap<ProviderId, String>()
 
     /**
      * Debounced: waits for typing to pause, then asks every signed-in service
@@ -224,7 +235,7 @@ class AddViewModel @Inject constructor(
                     when (val r = repository.cachedHashes(p, hashes)) {
                         is DataResult.Success -> hashes.forEach { h -> cacheResults["$p|$h"] = h in r.data }
                         // Informational only: never block adding because the check failed.
-                        is DataResult.Error -> checkFailed += p
+                        is DataResult.Error -> checkFailed[p] = r.message
                     }
                     checking -= p
                     refreshTargets()
@@ -233,13 +244,13 @@ class AddViewModel @Inject constructor(
         }
     }
 
+    /** The "Retry" in the dialog: asks again only the services whose check failed (answers already in are kept). */
+    fun retryCacheCheck() = scheduleCacheCheck()
+
     /** Cache status of the current input on [p]; null = can't tell. */
     private fun cacheOn(p: ProviderId, hashes: List<String>): CacheSummary? {
-        if (hashes.isEmpty() || !repository.supportsCacheCheck(p) || p in checkFailed) return null
-        if (p in checking) return CacheSummary(true, hashes.size, 0)
-        val known = hashes.mapNotNull { h -> cacheResults["$p|$h"] }
-        if (known.size < hashes.size) return null
-        return CacheSummary(false, hashes.size, known.count { it })
+        if (!repository.supportsCacheCheck(p)) return null
+        return CacheSummary.of(hashes.size, p in checking, checkFailed[p], hashes.map { h -> cacheResults["$p|$h"] })
     }
 
     /** Kinds of item in the dialog right now (magnet, link, .torrent file). */

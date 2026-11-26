@@ -44,6 +44,8 @@ data class SearchUiState(
     val loading: Boolean = false,
     /** Asking the services which results they have cached; results show meanwhile. */
     val checkingCache: Boolean = false,
+    /** Services that didn't answer the cache check; their results show neither cached nor not cached. */
+    val cacheFailed: List<String> = emptyList(),
     val results: List<SearchResult> = emptyList(),
     /** One message per source that didn't answer. All of them failing = nothing to show. */
     val failures: List<String> = emptyList(),
@@ -129,7 +131,7 @@ class SearchViewModel @Inject constructor(
         val q = _state.value.query.trim()
         if (q.isEmpty()) return
         job?.cancel()
-        _state.update { it.copy(searched = q, loading = true, failures = emptyList(), results = emptyList()) }
+        _state.update { it.copy(searched = q, loading = true, failures = emptyList(), cacheFailed = emptyList(), results = emptyList()) }
         viewModelScope.launch { history.add(q) }
         val s = _state.value
         job = viewModelScope.launch {
@@ -137,16 +139,33 @@ class SearchViewModel @Inject constructor(
             _state.update {
                 it.copy(loading = false, results = outcome.results, failures = outcome.failures, checkingCache = outcome.results.isNotEmpty())
             }
-            if (outcome.results.isEmpty()) return@launch
-            val hashes = outcome.results.take(CACHE_CHECK_MAX).map { it.hash }
-            val cached = repository.cachedAmong(hashes)
-            _state.update { st ->
-                val marked = if (cached == null) st.results else st.results.map { r ->
-                    if (r.hash in hashes) r.copy(cached = r.hash in cached) else r
-                }
-                st.copy(results = SearchResults.rank(marked), checkingCache = false)
-            }
+            checkCache()
         }
+    }
+
+    /** Asks the services which results are cached; a service that fails leaves those results unmarked, with a note. */
+    private suspend fun checkCache() {
+        val hashes = _state.value.results.take(CACHE_CHECK_MAX).map { it.hash }
+        if (hashes.isEmpty()) return
+        val outcome = repository.cachedAmong(hashes)
+        _state.update { st ->
+            val marked = if (outcome == null) st.results else st.results.map { r ->
+                when {
+                    r.hash !in hashes -> r
+                    r.hash in outcome.cached -> r.copy(cached = true)
+                    r.hash in outcome.unknown -> r.copy(cached = null)
+                    else -> r.copy(cached = false)
+                }
+            }
+            st.copy(results = SearchResults.rank(marked), checkingCache = false, cacheFailed = outcome?.failedServices.orEmpty())
+        }
+    }
+
+    /** The "Retry" on the cache note: asks again, nothing else is searched. */
+    fun retryCacheCheck() {
+        job?.cancel()
+        _state.update { it.copy(checkingCache = true, cacheFailed = emptyList()) }
+        job = viewModelScope.launch { checkCache() }
     }
 
     /** A recent search: fills the box and runs it. */

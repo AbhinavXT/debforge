@@ -357,6 +357,7 @@
     <string name="add_cache_one_no">अभी कैश नहीं है। %1$s पहले इसे डाउनलोड करेगा।</string>
     <string name="add_cache_all_yes">सभी %1$d कैश हैं। तुरंत तैयार।</string>
     <string name="add_cache_some">%2$d में से %1$d कैश हैं। वे तुरंत तैयार हैं।</string>
+    <string name="add_cache_failed">%1$s की जाँच नहीं हो सकी (%2$s)।</string>
     <!-- Data usage -->
     <string name="usage_title">डेटा उपयोग</string>
     <string name="usage_this_month">इस महीने %1$s</string>
@@ -919,6 +920,7 @@
     <string name="search_open_settings">सेटिंग्स खोलें</string>
     <string name="search_start_body">नाम से खोजें, जैसे “The Bear S02” या “Oppenheimer 2023”। जो नतीजे आपकी सेवा में पहले से कैश हैं, वे सबसे ऊपर आते हैं।</string>
     <string name="search_checking_cache">देख रहे हैं कि कौन-से कैश में हैं…</string>
+    <string name="search_cache_failed">%1$s ने कैश जाँच का जवाब नहीं दिया।</string>
     <string name="search_err_bad_url">फ़ीड का लिंक डालें, जो http:// या https:// से शुरू हो</string>
     <string name="search_err_key">%1$s ने API कुंजी नहीं मानी</string>
     <string name="search_err_said">%1$s: %2$s</string>

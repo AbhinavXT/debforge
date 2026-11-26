@@ -357,6 +357,7 @@
     <string name="add_cache_one_no">Henüz önbellekte değil. Önce %1$s tarafından indirilecek.</string>
     <string name="add_cache_all_yes">%1$d öğenin tümü önbellekte. Hemen hazır.</string>
     <string name="add_cache_some">%2$d öğeden %1$d tanesi önbellekte. Bunlar hemen hazır.</string>
+    <string name="add_cache_failed">%1$s kontrol edilemedi (%2$s).</string>
     <!-- Data usage -->
     <string name="usage_title">Veri kullanımı</string>
     <string name="usage_this_month">Bu ay %1$s</string>
@@ -919,6 +920,7 @@
     <string name="search_open_settings">Ayarları aç</string>
     <string name="search_start_body">Ada göre ara, örneğin “The Bear S02” veya “Oppenheimer 2023”. Hizmetinin önbelleğinde olan sonuçlar önce gelir.</string>
     <string name="search_checking_cache">Hangilerinin önbellekte olduğu kontrol ediliyor…</string>
+    <string name="search_cache_failed">%1$s önbellek kontrolüne yanıt vermedi.</string>
     <string name="search_err_bad_url">http:// veya https:// ile başlayan akış bağlantısını gir</string>
     <string name="search_err_key">%1$s API anahtarını reddetti</string>
     <string name="search_err_said">%1$s: %2$s</string>

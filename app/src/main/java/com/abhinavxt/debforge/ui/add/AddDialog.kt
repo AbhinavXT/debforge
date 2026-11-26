@@ -208,7 +208,11 @@ fun AddDialog(viewModel: AddViewModel) {
                     TargetPicker(state, onPick = viewModel::selectTarget)
                 }
 
-                state.cache?.let { CacheLine(it, state.providerName) }
+                state.cache?.let { CacheLine(it, state.providerName, viewModel::retryCacheCheck) }
+                // A service we couldn't ask is a different fact from "not cached" (also for services not selected).
+                state.targets.filter { it.id != state.target && it.cache?.failure != null }.forEach {
+                    CacheLine(it.cache!!, it.name, viewModel::retryCacheCheck)
+                }
 
                 if (state.canOnlyIfCached) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -332,8 +336,9 @@ private fun TargetPicker(state: AddUiState, onPick: (ProviderId) -> Unit) {
 
 /** "Cached on TorBox. Ready instantly." / "Not cached. ..." / "2 of 3 cached." — with a bolt when cached. */
 @Composable
-private fun CacheLine(cache: CacheSummary, service: String) {
+private fun CacheLine(cache: CacheSummary, service: String, onRetry: () -> Unit) {
     val text = when {
+        cache.failure != null -> stringResource(R.string.add_cache_failed, service, cache.failure)
         cache.checking -> stringResource(R.string.add_cache_checking, service)
         cache.total == 1 && cache.cached == 1 -> stringResource(R.string.add_cache_one_yes, service)
         cache.total == 1 -> stringResource(R.string.add_cache_one_no, service)
@@ -363,9 +368,11 @@ private fun CacheLine(cache: CacheSummary, service: String) {
         Spacer(Modifier.width(10.dp))
         Text(
             text,
+            modifier = Modifier.weight(1f),
             style = MaterialTheme.typography.bodyMedium,
             color = if (hit) cs.onPrimaryContainer else cs.onSurfaceVariant
         )
+        if (cache.failure != null) TextButton(onClick = onRetry) { Text(stringResource(R.string.action_retry)) }
     }
 }
 

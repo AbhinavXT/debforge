@@ -357,6 +357,7 @@
     <string name="add_cache_one_no">Noch nicht im Cache. %1$s lädt es zuerst herunter.</string>
     <string name="add_cache_all_yes">Alle %1$d sind im Cache. Sofort bereit.</string>
     <string name="add_cache_some">%1$d von %2$d im Cache. Diese sind sofort bereit.</string>
+    <string name="add_cache_failed">%1$s konnte nicht geprüft werden (%2$s).</string>
     <!-- Data usage -->
     <string name="usage_title">Datennutzung</string>
     <string name="usage_this_month">%1$s diesen Monat</string>
@@ -919,6 +920,7 @@
     <string name="search_open_settings">Einstellungen öffnen</string>
     <string name="search_start_body">Suche nach Titel, z. B. „The Bear S02“ oder „Oppenheimer 2023“. Ergebnisse, die dein Dienst bereits zwischengespeichert hat, stehen oben.</string>
     <string name="search_checking_cache">Prüfe, welche zwischengespeichert sind…</string>
+    <string name="search_cache_failed">%1$s hat die Cache-Prüfung nicht beantwortet.</string>
     <string name="search_err_bad_url">Gib den Feed-Link ein, beginnend mit http:// oder https://</string>
     <string name="search_err_key">%1$s hat den API-Schlüssel abgelehnt</string>
     <string name="search_err_said">%1$s: %2$s</string>

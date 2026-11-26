@@ -131,8 +131,8 @@ fun SearchScreen(
         )
         val showRecent = state.query.isBlank() && recent.isNotEmpty() && !state.loading
         if (state.results.isNotEmpty() && !showRecent) {
-            if (state.checkingCache || state.failures.isNotEmpty()) {
-                Notes(state.checkingCache, state.failures)
+            if (state.checkingCache || state.failures.isNotEmpty() || state.cacheFailed.isNotEmpty()) {
+                Notes(state.checkingCache, state.failures, state.cacheFailed, viewModel::retryCacheCheck)
             }
             Filters(
                 quality = state.quality,
@@ -345,7 +345,7 @@ private fun FollowCard(offer: FollowOffer, onToggle: () -> Unit) {
 
 /** "Checking cache" while the services answer; a line per source that failed. */
 @Composable
-private fun Notes(checkingCache: Boolean, failures: List<String>) {
+private fun Notes(checkingCache: Boolean, failures: List<String>, cacheFailed: List<String>, onRetry: () -> Unit) {
     Column(Modifier.padding(horizontal = 20.dp, vertical = 4.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
         if (checkingCache) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -360,6 +360,17 @@ private fun Notes(checkingCache: Boolean, failures: List<String>) {
         }
         failures.forEach {
             Text(it, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.error)
+        }
+        if (cacheFailed.isNotEmpty()) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    stringResource(R.string.search_cache_failed, cacheFailed.joinToString(", ")),
+                    modifier = Modifier.weight(1f),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                TextButton(onClick = onRetry) { Text(stringResource(R.string.action_retry)) }
+            }
         }
     }
 }

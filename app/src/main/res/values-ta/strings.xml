@@ -357,6 +357,7 @@
     <string name="add_cache_one_no">இன்னும் கேஷ் ஆகவில்லை. %1$s முதலில் இதைப் பதிவிறக்கும்.</string>
     <string name="add_cache_all_yes">%1$d-உம் கேஷ் செய்யப்பட்டுள்ளன. உடனடியாகத் தயார்.</string>
     <string name="add_cache_some">%2$d-இல் %1$d கேஷ் செய்யப்பட்டுள்ளன. அவை உடனடியாகத் தயார்.</string>
+    <string name="add_cache_failed">%1$s-ஐ சரிபார்க்க முடியவில்லை (%2$s).</string>
     <!-- Data usage -->
     <string name="usage_title">டேட்டா பயன்பாடு</string>
     <string name="usage_this_month">இந்த மாதம் %1$s</string>
@@ -919,6 +920,7 @@
     <string name="search_open_settings">அமைப்புகளைத் திற</string>
     <string name="search_start_body">தலைப்பைக் கொண்டு தேடுங்கள், எ.கா. “The Bear S02” அல்லது “Oppenheimer 2023”. உங்கள் சேவையில் ஏற்கெனவே கேஷ் செய்யப்பட்ட முடிவுகள் முதலில் வரும்.</string>
     <string name="search_checking_cache">எவை கேஷ் செய்யப்பட்டுள்ளன எனப் பார்க்கிறது…</string>
+    <string name="search_cache_failed">%1$s கேஷ் சரிபார்ப்புக்கு பதிலளிக்கவில்லை.</string>
     <string name="search_err_bad_url">http:// அல்லது https:// இல் தொடங்கும் ஃபீட் இணைப்பை உள்ளிடவும்</string>
     <string name="search_err_key">%1$s API விசையை ஏற்கவில்லை</string>
     <string name="search_err_said">%1$s: %2$s</string>

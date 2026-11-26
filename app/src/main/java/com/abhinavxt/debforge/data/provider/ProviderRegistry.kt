@@ -63,10 +63,15 @@ object ProviderCalls {
     suspend fun <T> run(
         info: ProviderInfo,
         what: String,
+        /** Gives up after this long (reported as a network error); null = no limit beyond the HTTP client's. */
+        timeoutMs: Long? = null,
         block: suspend () -> T
     ): DataResult<T> = withContext(Dispatchers.IO) {
         try {
-            DataResult.Success(block())
+            DataResult.Success(if (timeoutMs == null) block() else kotlinx.coroutines.withTimeout(timeoutMs) { block() })
+        } catch (e: kotlinx.coroutines.TimeoutCancellationException) {
+            // Before CancellationException: ours (the limit), not the caller being cancelled.
+            DataResult.Error(msg("Network error", R.string.err_network), e)
         } catch (ce: CancellationException) {
             throw ce
         } catch (e: ProviderException) {

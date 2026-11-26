@@ -343,6 +343,7 @@
     <string name="add_cache_one_no">尚未缓存，%1$s 需要先下载。</string>
     <string name="add_cache_all_yes">全部 %1$d 项均已缓存，可立即使用。</string>
     <string name="add_cache_some">%2$d 项中有 %1$d 项已缓存，这些可立即使用。</string>
+    <string name="add_cache_failed">无法检查 %1$s（%2$s）。</string>
     <!-- Data usage -->
     <string name="usage_title">流量使用情况</string>
     <string name="usage_this_month">本月 %1$s</string>
@@ -879,6 +880,7 @@
     <string name="search_open_settings">打开设置</string>
     <string name="search_start_body">按标题搜索，例如“The Bear S02”或“Oppenheimer 2023”。你的服务已缓存的结果排在前面。</string>
     <string name="search_checking_cache">正在检查哪些已缓存…</string>
+    <string name="search_cache_failed">%1$s 未响应缓存检查。</string>
     <string name="search_err_bad_url">请输入以 http:// 或 https:// 开头的 feed 链接</string>
     <string name="search_err_key">%1$s 拒绝了 API 密钥</string>
     <string name="search_err_said">%1$s：%2$s</string>
