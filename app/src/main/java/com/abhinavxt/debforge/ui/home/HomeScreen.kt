@@ -382,15 +382,17 @@ private fun HomeShell(signedIn: Boolean, prefs: NavPrefs) {
         mutableIntStateOf(if (TabConfig.opensWeb(TabConfig.startTab(prefs.storedStart, signedIn), prefs.bar)) SEG_WEB else SEG_YOUTUBE)
     }
     val startTab = HomeTab.of(startRoute) ?: HomeTab.Browse
+    // Read inside the movable content below, which is built once.
+    val currentPrefs by rememberUpdatedState(prefs)
     // A Browser request with no Browser in the bar lands on Discover's Web segment (same rule as the start tab).
     fun openKey(key: String) {
-        if (TabConfig.opensWeb(key, prefs.bar)) discoverSegment = SEG_WEB
-        go(HomeTab.of(if (key == TabConfig.BROWSER) TabConfig.browserTab(prefs.bar) else key) ?: return)
+        // currentPrefs, not prefs: the chips calling this live in content built once, so prefs would be stale.
+        val bar = currentPrefs.bar
+        if (TabConfig.opensWeb(key, bar)) discoverSegment = SEG_WEB
+        go(HomeTab.of(if (key == TabConfig.BROWSER) TabConfig.browserTab(bar) else key) ?: return)
     }
     // Tabs left out of the bar stay reachable through go(): the bar then just highlights nothing.
     val barTabs = prefs.bar.mapNotNull(HomeTab::of)
-    // Read inside the movable content below, which is built once.
-    val currentPrefs by rememberUpdatedState(prefs)
     // The Library's view-model is shared with Home (its newest titles, Continue watching and Coming up are
     // the Library's own data), so the list is read once. Held by the activity: both tabs get the same one.
     val activity = LocalContext.current as androidx.activity.ComponentActivity
