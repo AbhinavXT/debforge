@@ -42,13 +42,16 @@ class DiscoverTopBar {
     internal var snapPx = 0f
     private var animating = false
     private var acc = 0f
+    // The page relayouts after a snap and shifts its own scroll: those events are not the user.
+    private var quietUntil = 0L
+    internal fun pageResized() { acc = 0f }
 
     private fun snapTo(target: Float) {
         val sc = scope ?: return
         animating = true
         sc.launch {
             try { animate(hidden, target, animationSpec = tween(200)) { v, _ -> hidden = v } }
-            finally { animating = false; acc = 0f }
+            finally { animating = false; acc = 0f; quietUntil = System.nanoTime() + 250_000_000L }
         }
     }
 
@@ -58,6 +61,7 @@ class DiscoverTopBar {
      */
     fun onPageScroll(dy: Int, atTop: Boolean) {
         if (animating || !enabled) return
+        if (System.nanoTime() < quietUntil) { acc = 0f; return }
         if (atTop) { acc = 0f; if (hidden > 0f) snapTo(0f); return }
         acc = if (acc * dy < 0f) dy.toFloat() else acc + dy
         val limit = blockHeight + extraHeight

@@ -290,7 +290,11 @@ fun BrowserScreen(onMagnet: (String) -> Unit, onOpenDownloads: () -> Unit, onOpe
                             layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
                             // Page scroll drives the Discover bar directly (nested-scroll interop did not deliver).
                             if (topBar != null) {
-                                setOnScrollChangeListener { _, _, y, _, oldY -> topBar.onPageScroll(oldY - y, atTop = y == 0) }
+                                var lastHeight = 0
+                                setOnScrollChangeListener { v, _, y, _, oldY ->
+                                    if (v.height != lastHeight) { lastHeight = v.height; topBar.pageResized() }
+                                    else topBar.onPageScroll(oldY - y, atTop = y == 0)
+                                }
                             }
                             settings.javaScriptEnabled = true
                             settings.domStorageEnabled = true
