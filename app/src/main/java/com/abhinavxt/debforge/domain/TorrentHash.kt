@@ -2,6 +2,9 @@ package com.abhinavxt.debforge.domain
 
 import java.security.MessageDigest
 
+/** One file inside a torrent: slash-joined [path] and its [size] in bytes. */
+data class TorrentEntry(val path: String, val size: Long)
+
 /**
  * BitTorrent v1 info-hashes (40 lowercase hex chars), used to ask a service
  * whether a torrent is already cached before adding it.
@@ -51,6 +54,70 @@ object TorrentHash {
             }
         }
         return out.toList()
+    }
+
+    /**
+     * Files listed in a .torrent's info dict (single- or multi-file), without
+     * BEP-47 padding. Never throws: malformed input yields an empty list.
+     */
+    fun filesFromTorrentFile(bytes: ByteArray): List<TorrentEntry> = runCatching {
+        val (start, _) = infoSpan(bytes) ?: return emptyList()
+        val info = parseValue(bytes, start, 0)?.first as? Map<*, *> ?: return emptyList()
+        fun utf8(latin1: String) = String(latin1.toByteArray(Charsets.ISO_8859_1), Charsets.UTF_8)
+        val name = ((info["name.utf-8"] ?: info["name"]) as? String)?.let(::utf8) ?: ""
+        val files = info["files"] as? List<*>
+        if (files == null) {
+            val len = info["length"] as? Long ?: return emptyList()
+            return if (name.isEmpty() || len < 0) emptyList() else listOf(TorrentEntry(name, len))
+        }
+        val out = ArrayList<TorrentEntry>()
+        for (f in files) {
+            if (out.size >= MAX_FILES) break
+            val m = f as? Map<*, *> ?: continue
+            val len = m["length"] as? Long ?: continue
+            val parts = ((m["path.utf-8"] ?: m["path"]) as? List<*>)?.map { (it as? String)?.let(::utf8) }
+            if (len < 0 || parts.isNullOrEmpty() || parts.any { it.isNullOrEmpty() }) continue
+            if ((m["attr"] as? String)?.contains('p') == true || parts[0] == ".pad") continue
+            out += TorrentEntry((listOfNotNull(name.ifEmpty { null }) + parts.filterNotNull()).joinToString("/"), len)
+        }
+        out
+    }.getOrDefault(emptyList())
+
+    private const val MAX_FILES = 10_000
+    private const val MAX_DEPTH = 16
+
+    /** Bencode value at [i] as String (latin-1), Long, List or Map, with the index after it. */
+    private fun parseValue(b: ByteArray, i: Int, depth: Int): Pair<Any, Int>? {
+        if (i >= b.size || depth > MAX_DEPTH) return null
+        when (b[i].toInt().toChar()) {
+            'i' -> {
+                val e = (i + 1 until b.size).firstOrNull { b[it] == 'e'.code.toByte() } ?: return null
+                val n = String(b, i + 1, e - i - 1, Charsets.ISO_8859_1).toLongOrNull() ?: return null
+                return n to e + 1
+            }
+            'l' -> {
+                val list = ArrayList<Any>()
+                var j = i + 1
+                while (j < b.size && b[j] != 'e'.code.toByte()) {
+                    val (v, n) = parseValue(b, j, depth + 1) ?: return null
+                    list += v
+                    j = n
+                }
+                return if (j < b.size) list to j + 1 else null
+            }
+            'd' -> {
+                val map = HashMap<String, Any>()
+                var j = i + 1
+                while (j < b.size && b[j] != 'e'.code.toByte()) {
+                    val (k, afterKey) = readString(b, j) ?: return null
+                    val (v, n) = parseValue(b, afterKey, depth + 1) ?: return null
+                    map[k] = v
+                    j = n
+                }
+                return if (j < b.size) map to j + 1 else null
+            }
+            else -> return readString(b, i)
+        }
     }
 
     /** Feeds every string of a list-of-lists at [i] to [add]; stops quietly at bad data. */

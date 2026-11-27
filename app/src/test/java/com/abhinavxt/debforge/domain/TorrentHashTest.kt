@@ -66,4 +66,37 @@ class TorrentHashTest {
             TorrentHash.trackersFromTorrentFile(bytes("d8:announce10:http://t/a4:infoi1"))
         )
     }
+
+    private fun files(info: String) = TorrentHash.filesFromTorrentFile(bytes("d4:info${info}e"))
+
+    @Test fun filesSingle() = assertEquals(
+        listOf(TorrentEntry("file.mkv", 12345)),
+        files("d6:lengthi12345e4:name8:file.mkve")
+    )
+
+    @Test fun filesMultiNestedAndPaddingSkipped() = assertEquals(
+        listOf(TorrentEntry("Show/a.mkv", 10), TorrentEntry("Show/sub/dir/b.srt", 5)),
+        files(
+            "d5:filesld6:lengthi10e4:pathl5:a.mkveed4:attr1:p6:lengthi6e4:pathl1:xeed" +
+                "6:lengthi3e4:pathl4:.pad1:3eed6:lengthi5e4:pathl3:sub3:dir5:b.srteee4:name4:Showe"
+        )
+    )
+
+    @Test fun filesPreferUtf8Keys() = assertEquals(
+        listOf(TorrentEntry("Dir/é.txt", 1)),
+        files("d5:filesld6:lengthi1e4:pathl1:xe10:path.utf-8l6:Ã©.txteee4:name3:Xxx10:name.utf-83:Dire")
+    )
+
+    @Test fun filesMalformedIsEmpty() {
+        assertEquals(emptyList<TorrentEntry>(), TorrentHash.filesFromTorrentFile(ByteArray(0)))
+        assertEquals(emptyList<TorrentEntry>(), TorrentHash.filesFromTorrentFile(bytes("garbage")))
+        assertEquals(emptyList<TorrentEntry>(), files("d6:lengthi12345e4:name8:file.mk"))
+        assertEquals(emptyList<TorrentEntry>(), files("d6:lengthi99999999999999999999e4:name1:xe"))
+        assertEquals(emptyList<TorrentEntry>(), files("d5:files" + "l".repeat(5000)))
+    }
+
+    @Test fun filesCapped() {
+        val one = "d6:lengthi1e4:pathl1:aee"
+        assertEquals(10_000, files("d5:filesl" + one.repeat(10_500) + "e4:name1:Te").size)
+    }
 }
