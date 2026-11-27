@@ -249,6 +249,8 @@
     </plurals>
     <string name="notif_paused_all_body">Toca Reanudar para continuar.</string>
     <string name="notif_ready_one">Listo: %1$s</string>
+    <string name="cloud_ready_title">Terminado en el servicio: %1$s</string>
+    <string name="cloud_ready_body">Toca para abrir DebForge.</string>
     <string name="notif_ready_body">En cola para descargar. Toca para empezar.</string>
     <string name="notif_downloaded">Descargado</string>
     <string name="chooser_play_with">Reproducir con</string>

@@ -246,6 +246,8 @@
     </plurals>
     <string name="notif_paused_all_body">চালিয়ে যেতে আবার শুরু ট্যাপ করুন।</string>
     <string name="notif_ready_one">তৈরি: %1$s</string>
+    <string name="cloud_ready_title">সার্ভিসে সম্পন্ন: %1$s</string>
+    <string name="cloud_ready_body">DebForge খুলতে ট্যাপ করুন।</string>
     <string name="notif_ready_body">ডাউনলোডের সারিতে আছে। শুরু করতে ট্যাপ করুন।</string>
     <string name="notif_downloaded">ডাউনলোড হয়েছে</string>
     <string name="chooser_play_with">এটি দিয়ে চালান</string>

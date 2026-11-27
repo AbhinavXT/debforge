@@ -246,6 +246,8 @@
     </plurals>
     <string name="notif_paused_all_body">जारी रखने के लिए फिर शुरू करें पर टैप करें।</string>
     <string name="notif_ready_one">तैयार: %1$s</string>
+    <string name="cloud_ready_title">सेवा पर पूरा हुआ: %1$s</string>
+    <string name="cloud_ready_body">DebForge खोलने के लिए टैप करें।</string>
     <string name="notif_ready_body">डाउनलोड कतार में है। शुरू करने के लिए टैप करें।</string>
     <string name="notif_downloaded">डाउनलोड हो गया</string>
     <string name="chooser_play_with">इससे चलाएँ</string>

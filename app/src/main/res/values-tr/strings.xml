@@ -246,6 +246,8 @@
     </plurals>
     <string name="notif_paused_all_body">Devam etmek için Devam et düğmesine dokunun.</string>
     <string name="notif_ready_one">Hazır: %1$s</string>
+    <string name="cloud_ready_title">Serviste tamamlandı: %1$s</string>
+    <string name="cloud_ready_body">DebForge\'u açmak için dokunun.</string>
     <string name="notif_ready_body">İndirme sırasına eklendi. Başlatmak için dokunun.</string>
     <string name="notif_downloaded">İndirildi</string>
     <string name="chooser_play_with">Şununla oynat</string>

@@ -247,6 +247,8 @@
     </plurals>
     <string name="notif_paused_all_body">Tap Resume to continue.</string>
     <string name="notif_ready_one">Ready: %1$s</string>
+    <string name="cloud_ready_title">Finished on the service: %1$s</string>
+    <string name="cloud_ready_body">Tap to open DebForge.</string>
     <string name="notif_ready_body">Queued for download. Tap to start.</string>
     <string name="notif_downloaded">Downloaded</string>
     <string name="chooser_play_with">Play with</string>

@@ -243,6 +243,8 @@
     </plurals>
     <string name="notif_paused_all_body">点按“继续”即可恢复。</string>
     <string name="notif_ready_one">已就绪：%1$s</string>
+    <string name="cloud_ready_title">服务端已完成：%1$s</string>
+    <string name="cloud_ready_body">点按打开 DebForge。</string>
     <string name="notif_ready_body">已加入下载队列。点按即可开始。</string>
     <string name="notif_downloaded">已下载</string>
     <string name="chooser_play_with">播放方式</string>

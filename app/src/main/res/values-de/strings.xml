@@ -246,6 +246,8 @@
     </plurals>
     <string name="notif_paused_all_body">Tippe auf Fortsetzen, um weiterzumachen.</string>
     <string name="notif_ready_one">Bereit: %1$s</string>
+    <string name="cloud_ready_title">Beim Dienst fertig: %1$s</string>
+    <string name="cloud_ready_body">Tippe, um DebForge zu öffnen.</string>
     <string name="notif_ready_body">Zum Download eingereiht. Tippe zum Starten.</string>
     <string name="notif_downloaded">Heruntergeladen</string>
     <string name="chooser_play_with">Abspielen mit</string>

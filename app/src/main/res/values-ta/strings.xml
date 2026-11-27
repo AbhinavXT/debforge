@@ -246,6 +246,8 @@
     </plurals>
     <string name="notif_paused_all_body">தொடர தொடர் என்பதைத் தட்டவும்.</string>
     <string name="notif_ready_one">தயார்: %1$s</string>
+    <string name="cloud_ready_title">சேவையில் முடிந்தது: %1$s</string>
+    <string name="cloud_ready_body">DebForge ஐத் திறக்க தட்டவும்.</string>
     <string name="notif_ready_body">பதிவிறக்க வரிசையில் உள்ளது. தொடங்க தட்டவும்.</string>
     <string name="notif_downloaded">பதிவிறக்கப்பட்டது</string>
     <string name="chooser_play_with">இதன் மூலம் இயக்கு</string>

@@ -7,6 +7,7 @@ import android.app.job.JobService
 import android.content.ComponentName
 import android.content.Context
 import com.abhinavxt.debforge.data.provider.JobFailedException
+import com.abhinavxt.debforge.data.repository.AuthRepository
 import com.abhinavxt.debforge.data.repository.DownloadsRepository
 import com.abhinavxt.debforge.data.prefs.SettingsStore
 import com.abhinavxt.debforge.domain.DataResult
@@ -49,7 +50,8 @@ class ReadyWatcher @Inject constructor(
     private val dao: WatchDao,
     private val repository: DownloadsRepository,
     private val controller: DownloadController,
-    private val settings: SettingsStore
+    private val settings: SettingsStore,
+    private val auth: AuthRepository
 ) {
     private val mutex = Mutex()
 
@@ -72,13 +74,24 @@ class ReadyWatcher @Inject constructor(
     suspend fun checkNow(fromBackground: Boolean): List<String> = mutex.withLock {
         val ready = mutableListOf<String>()
         val now = System.currentTimeMillis()
+        val signedIn = auth.signedInProviders.first()
         for (w in dao.getAll()) {
+            if (watchStep(w, signedIn, ready = false) == WatchStep.DROP) {
+                dao.delete(w.provider, w.jobRef)
+                continue
+            }
             when (val r = repository.filesForJob(w.provider, w.jobRef)) {
                 is DataResult.Success -> {
                     val files = r.data ?: continue // still processing
                     // Skip the release group's .txt, covers and samples unless
                     // the user asked to see them.
-                    val wanted = if (settings.showExtraFilesFlow.first()) files else ExtraFiles.hideInTorrent(files)
+                    if (watchStep(w, signedIn, ready = true) == WatchStep.NOTIFY) {
+                        DownloadNotifications.notifyCloudReady(context, w.name, w.provider, w.jobRef)
+                        dao.delete(w.provider, w.jobRef)
+                        continue
+                    }
+                    val shown = filterSelected(files, w.selected)
+                    val wanted = if (settings.showExtraFilesFlow.first()) shown else ExtraFiles.hideInTorrent(shown)
                     wanted.forEach { controller.enqueue(it) }
                     dao.delete(w.provider, w.jobRef)
                     ready += w.name
@@ -93,6 +106,7 @@ class ReadyWatcher @Inject constructor(
             }
         }
         if (dao.count() == 0) ReadyWatchJobService.cancel(context)
+        else dao.newestCreatedAt()?.let { ReadyWatchJobService.ensurePeriod(context, watchPeriodMinutes(it, now)) }
         if (fromBackground && ready.isNotEmpty()) DownloadNotifications.notifyReady(context, ready)
         ready
     }
@@ -135,11 +149,15 @@ class ReadyWatchJobService : JobService() {
     companion object {
         private const val JOB_ID = 4202
 
-        fun schedule(context: Context) {
+        fun schedule(context: Context) = ensurePeriod(context, 15, replace = false)
+
+        /** Reschedules only when the pending job's period differs from [minutes]. */
+        fun ensurePeriod(context: Context, minutes: Long, replace: Boolean = true) {
             val js = context.getSystemService(JobScheduler::class.java) ?: return
-            if (js.getPendingJob(JOB_ID) != null) return
+            val pending = js.getPendingJob(JOB_ID)
+            if (pending != null && (!replace || pending.intervalMillis == TimeUnit.MINUTES.toMillis(minutes))) return
             val job = JobInfo.Builder(JOB_ID, ComponentName(context, ReadyWatchJobService::class.java))
-                .setPeriodic(TimeUnit.MINUTES.toMillis(15))
+                .setPeriodic(TimeUnit.MINUTES.toMillis(minutes))
                 .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
                 .setPersisted(true) // survives reboot (RECEIVE_BOOT_COMPLETED)
                 .build()

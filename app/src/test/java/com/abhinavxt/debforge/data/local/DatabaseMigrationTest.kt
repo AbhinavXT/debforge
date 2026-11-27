@@ -119,6 +119,21 @@ class DatabaseMigrationTest {
     }
 
     @Test
+    fun watchesFromV15BecomeDownloadAllWatches() {
+        val name = create(15) { db ->
+            db.execSQL("INSERT INTO watches (provider, jobRef, name, createdAt) VALUES ('TORBOX', 'j1', 'Show', 5)")
+        }
+        val room = openWithRoom(name)
+        try {
+            val w = runBlocking { room.watchDao().getAll() }.single()
+            assertEquals(false, w.notifyOnly)
+            assertNull(w.selected)
+        } finally {
+            room.close()
+        }
+    }
+
+    @Test
     fun watchPositionsSavedBeforeV8KeepTheirPlace() {
         val name = create(7) { db ->
             db.execSQL(

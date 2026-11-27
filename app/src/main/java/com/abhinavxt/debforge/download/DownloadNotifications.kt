@@ -14,6 +14,7 @@ import com.abhinavxt.debforge.MainActivity
 import com.abhinavxt.debforge.R
 import com.abhinavxt.debforge.domain.DownloadProgress
 import com.abhinavxt.debforge.domain.DownloadState
+import com.abhinavxt.debforge.domain.ProviderId
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -33,6 +34,8 @@ object DownloadNotifications {
 
     const val CHANNEL_ID = "debforge_downloads"
     const val ONGOING_ID = 1001
+    const val EXTRA_PROVIDER = "com.abhinavxt.debforge.extra.PROVIDER"
+    const val EXTRA_JOB_REF = "com.abhinavxt.debforge.extra.JOB_REF"
     private const val INFO_ID = 1002
     private const val READY_ID = 1003
     private const val FOLLOW_ID = 1004
@@ -260,6 +263,26 @@ object DownloadNotifications {
             .setContentIntent(openAppIntent(context))
             .build()
         runCatching { context.getSystemService(NotificationManager::class.java).notify(READY_ID, n) }
+    }
+
+    /** A cloud download finished on the service (notify-only watch). The tap carries the job; routing is up to the UI. */
+    fun notifyCloudReady(context: Context, name: String, provider: ProviderId, jobRef: String) {
+        val nm = context.getSystemService(NotificationManager::class.java)
+        if (!nm.areNotificationsEnabled()) return
+        ensureChannel(context)
+        val open = Intent(context, MainActivity::class.java)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+            .putExtra(EXTRA_PROVIDER, provider.name)
+            .putExtra(EXTRA_JOB_REF, jobRef)
+        val id = "${provider.name}/$jobRef".hashCode()
+        val n = NotificationCompat.Builder(context, CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_notification_download)
+            .setContentTitle(context.getString(R.string.cloud_ready_title, name))
+            .setContentText(context.getString(R.string.cloud_ready_body))
+            .setAutoCancel(true)
+            .setContentIntent(PendingIntent.getActivity(context, id, open, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT))
+            .build()
+        runCatching { nm.notify(id, n) }
     }
 
     /** New episodes of followed shows were queued in the background. */
