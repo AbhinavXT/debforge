@@ -26,11 +26,28 @@ data class WatchEntity(
     val selected: String? = null
 )
 
-/** What a check does with one watch. */
-enum class WatchStep { DROP, WAIT, NOTIFY, ENQUEUE }
+/** What a check does with one watch. SKIP leaves it for a later run (signed out may just be a Keystore hiccup). */
+enum class WatchStep { DROP, SKIP, WAIT, NOTIFY, ENQUEUE }
 
-fun watchStep(w: WatchEntity, signedIn: Set<ProviderId>, ready: Boolean): WatchStep = when {
-    w.provider !in signedIn -> WatchStep.DROP
+const val GIVE_UP_AFTER_MS = 3L * 24 * 60 * 60 * 1000
+const val PURGE_AFTER_MS = 14L * 24 * 60 * 60 * 1000
+
+/**
+ * A notify-only row older than [GIVE_UP_AFTER_MS] is kept as a marker (so Browse does not re-add
+ * the stuck job with a fresh date) but no longer polled; it is purged after [PURGE_AFTER_MS].
+ * shortcut: a job still stuck after 14 days is re-added once, fine.
+ */
+fun watchStep(w: WatchEntity, signedIn: Set<ProviderId>, ready: Boolean, now: Long = System.currentTimeMillis()): WatchStep {
+    val age = now - w.createdAt
+    return when {
+        (w.notifyOnly || w.provider !in signedIn) && age > PURGE_AFTER_MS -> WatchStep.DROP
+        w.provider !in signedIn -> WatchStep.SKIP
+        w.notifyOnly && age > GIVE_UP_AFTER_MS -> WatchStep.SKIP
+        else -> watchReadyStep(w, ready)
+    }
+}
+
+private fun watchReadyStep(w: WatchEntity, ready: Boolean): WatchStep = when {
     !ready -> WatchStep.WAIT
     w.notifyOnly -> WatchStep.NOTIFY
     else -> WatchStep.ENQUEUE
@@ -71,12 +88,16 @@ interface WatchDao {
     @Query("SELECT COUNT(*) FROM watches")
     suspend fun count(): Int
 
+    /** Rows still worth polling: not a notify-only row older than [cutoff]. */
+    @Query("SELECT COUNT(*) FROM watches WHERE notifyOnly = 0 OR createdAt > :cutoff")
+    suspend fun countActive(cutoff: Long): Int
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(watch: WatchEntity)
 
-    /** Never overwrites: an auto-download watch for the same job stays as it is. */
+    /** Never overwrites: an auto-download watch for the same job stays as it is. Returns -1 when ignored. */
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertIgnore(watch: WatchEntity)
+    suspend fun insertIgnore(watch: WatchEntity): Long
 
     @Query("DELETE FROM watches WHERE notifyOnly = 1")
     suspend fun deleteNotifyOnly()

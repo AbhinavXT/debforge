@@ -13,9 +13,24 @@ class WatchLogicTest {
     @Test fun notifyOnlyReadyNotifies() = assertEquals(WatchStep.NOTIFY, watchStep(watch(notifyOnly = true), setOf(tb), ready = true))
     @Test fun normalReadyEnqueues() = assertEquals(WatchStep.ENQUEUE, watchStep(watch(), setOf(tb), ready = true))
     @Test fun notReadyWaits() = assertEquals(WatchStep.WAIT, watchStep(watch(notifyOnly = true), setOf(tb), ready = false))
-    @Test fun signedOutProviderIsDropped() {
-        assertEquals(WatchStep.DROP, watchStep(watch(), emptySet(), ready = true))
-        assertEquals(WatchStep.DROP, watchStep(watch(), emptySet(), ready = false))
+    @Test fun signedOutProviderIsSkippedNotDropped() {
+        assertEquals(WatchStep.SKIP, watchStep(watch(), emptySet(), ready = true))
+        assertEquals(WatchStep.SKIP, watchStep(watch(), emptySet(), ready = false))
+    }
+
+    @Test fun staleNotifyOnlyIsKeptButNotPolledThenPurged() {
+        val w = watch(notifyOnly = true)
+        assertEquals(WatchStep.WAIT, watchStep(w, setOf(tb), false, w.createdAt + GIVE_UP_AFTER_MS))
+        assertEquals(WatchStep.SKIP, watchStep(w, setOf(tb), false, w.createdAt + GIVE_UP_AFTER_MS + 1))
+        assertEquals(WatchStep.DROP, watchStep(w, setOf(tb), false, w.createdAt + PURGE_AFTER_MS + 1))
+    }
+
+    @Test fun oldAutoDownloadWatchIsStillPolled() =
+        assertEquals(WatchStep.WAIT, watchStep(watch(), setOf(tb), false, System.currentTimeMillis() + PURGE_AFTER_MS * 2))
+
+    @Test fun staleSignedOutAutoWatchIsPurged() {
+        val w = watch()
+        assertEquals(WatchStep.DROP, watchStep(w, emptySet(), false, w.createdAt + PURGE_AFTER_MS + 1))
     }
 
     @Test fun nullSelectionKeepsAll() {

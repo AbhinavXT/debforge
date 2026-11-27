@@ -65,19 +65,22 @@ class ReadyWatcher @Inject constructor(
     /** Tells the user when the job finishes; no-op when the setting is off or a watch for it exists. */
     suspend fun watchNotifyOnly(provider: ProviderId, jobRef: String, name: String) {
         if (!settings.notifyCloudReadyFlow.first()) return
-        dao.insertIgnore(WatchEntity(provider, jobRef, name, notifyOnly = true))
-        ReadyWatchJobService.schedule(context)
+        if (dao.insertIgnore(WatchEntity(provider, jobRef, name, notifyOnly = true)) != -1L) ReadyWatchJobService.schedule(context)
     }
 
     /** The setting was turned off: drop the notify-only watches (and the job, if nothing else is watched). */
     suspend fun clearNotifyOnly() {
         dao.deleteNotifyOnly()
-        if (dao.count() == 0) ReadyWatchJobService.cancel(context)
+        cancelIfIdle()
     }
 
     suspend fun unwatch(provider: ProviderId, jobRef: String) {
         dao.delete(provider, jobRef)
-        if (dao.count() == 0) ReadyWatchJobService.cancel(context)
+        cancelIfIdle()
+    }
+
+    private suspend fun cancelIfIdle() {
+        if (dao.countActive(System.currentTimeMillis() - GIVE_UP_AFTER_MS) == 0) ReadyWatchJobService.cancel(context)
     }
 
     /**
@@ -89,9 +92,10 @@ class ReadyWatcher @Inject constructor(
         val now = System.currentTimeMillis()
         val signedIn = auth.signedInProviders.first()
         for (w in dao.getAll()) {
-            if (watchStep(w, signedIn, ready = false) == WatchStep.DROP) {
-                dao.delete(w.provider, w.jobRef)
-                continue
+            when (watchStep(w, signedIn, ready = false, now = now)) {
+                WatchStep.DROP -> { dao.delete(w.provider, w.jobRef); continue }
+                WatchStep.SKIP -> continue
+                else -> {}
             }
             when (val r = repository.filesForJob(w.provider, w.jobRef)) {
                 is DataResult.Success -> {
@@ -118,15 +122,12 @@ class ReadyWatcher @Inject constructor(
                 }
             }
         }
-        if (dao.count() == 0) ReadyWatchJobService.cancel(context)
+        if (dao.countActive(now - GIVE_UP_AFTER_MS) == 0) ReadyWatchJobService.cancel(context)
         else dao.newestCreatedAt()?.let { ReadyWatchJobService.ensurePeriod(context, watchPeriodMinutes(it, now)) }
         if (fromBackground && ready.isNotEmpty()) DownloadNotifications.notifyReady(context, ready)
         ready
     }
 
-    private companion object {
-        const val GIVE_UP_AFTER_MS = 3L * 24 * 60 * 60 * 1000
-    }
 }
 
 /** Periodic background check for [ReadyWatcher]. Scheduled only while watches exist. */
@@ -162,7 +163,8 @@ class ReadyWatchJobService : JobService() {
     companion object {
         private const val JOB_ID = 4202
 
-        fun schedule(context: Context) = ensurePeriod(context, 15, replace = false)
+        /** Back to the 15 min period (a new watch must not wait out a 60 min back-off). */
+        fun schedule(context: Context) = ensurePeriod(context, 15)
 
         /** Reschedules only when the pending job's period differs from [minutes]. */
         fun ensurePeriod(context: Context, minutes: Long, replace: Boolean = true) {

@@ -43,4 +43,25 @@ class WatchDaoTest {
         dao.deleteNotifyOnly()
         assertEquals(listOf("a"), dao.getAll().map { it.jobRef })
     }
+
+    @Test
+    fun watchUpgradesANotifyOnlyRowToAutoDownload() = runBlocking {
+        dao.insertIgnore(WatchEntity(ProviderId.TORBOX, "j", "n", notifyOnly = true))
+        dao.upsert(WatchEntity(ProviderId.TORBOX, "j", "n"))
+        assertEquals(listOf(false), dao.getAll().map { it.notifyOnly })
+    }
+
+    @Test
+    fun insertIgnoreReportsWhetherItInserted() = runBlocking {
+        assertEquals(true, dao.insertIgnore(WatchEntity(ProviderId.TORBOX, "j", "n", notifyOnly = true)) != -1L)
+        assertEquals(-1L, dao.insertIgnore(WatchEntity(ProviderId.TORBOX, "j", "n", notifyOnly = true)))
+    }
+
+    @Test
+    fun staleNotifyOnlyRowsDoNotCountAsActive() = runBlocking {
+        dao.insertIgnore(WatchEntity(ProviderId.TORBOX, "old", "n", createdAt = 100, notifyOnly = true))
+        assertEquals(0, dao.countActive(cutoff = 200))
+        dao.upsert(WatchEntity(ProviderId.TORBOX, "auto", "a", createdAt = 100))
+        assertEquals(1, dao.countActive(cutoff = 200))
+    }
 }

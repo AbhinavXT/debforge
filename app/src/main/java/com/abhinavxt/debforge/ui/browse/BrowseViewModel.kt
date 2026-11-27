@@ -147,6 +147,11 @@ class BrowseViewModel @Inject constructor(
 
     /** "provider|jobRef" of every job set to auto-download. */
     val watchedJobs: StateFlow<Set<String>> = watcher.watches
+        .map { list -> list.filter { !it.notifyOnly }.map { "${it.provider.name}|${it.jobRef}" }.toSet() }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptySet())
+
+    /** Every watch row, notify-only included, so a job is not given a second row. */
+    private val anyWatchKeys: StateFlow<Set<String>> = watcher.watches
         .map { list -> list.map { "${it.provider.name}|${it.jobRef}" }.toSet() }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptySet())
 
@@ -529,13 +534,13 @@ class BrowseViewModel @Inject constructor(
         val before = _processing.value.mapTo(HashSet()) { it.ref }
         _processing.value = r.data
         // Unwatched jobs still processing: tell the user when they finish.
-        r.data.filter { it.canWatch && !isWatched(it) }.forEach { watcher.watchNotifyOnly(it.provider, it.ref, it.name) }
+        r.data.filter { it.canWatch && watchesOf(it, anyWatchKeys.value).isEmpty() }.forEach { watcher.watchNotifyOnly(it.provider, it.ref, it.name) }
         val after = r.data.mapTo(HashSet()) { it.ref }
         return (before - after).isNotEmpty()
     }
 
     /** Refs of the saved watches that are for [job] (it may have been watched while still queued). */
-    private fun watchesOf(job: RemoteJob): List<String> = watchedJobs.value.mapNotNull { w ->
+    private fun watchesOf(job: RemoteJob, keys: Set<String> = watchedJobs.value): List<String> = keys.mapNotNull { w ->
         val ref = w.substringAfter('|')
         ref.takeIf { w.substringBefore('|') == job.provider.name && downloadsRepository.sameJob(job.provider, ref, job) }
     }
@@ -546,7 +551,9 @@ class BrowseViewModel @Inject constructor(
         if (!job.canWatch) return
         viewModelScope.launch {
             if (isWatched(job)) {
+                // Back to notify-only (no-op when that setting is off), not gone and re-added by the next poll.
                 watchesOf(job).forEach { watcher.unwatch(job.provider, it) }
+                watcher.watchNotifyOnly(job.provider, job.ref, job.name)
             } else {
                 watcher.watch(job.provider, job.ref, job.name)
                 _events.emit(str(R.string.msg_will_download_when_ready, job.name))
