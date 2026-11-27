@@ -60,7 +60,12 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @Composable
-fun SetupScreen(viewModel: SetupViewModel = hiltViewModel()) {
+fun SetupScreen(adding: Boolean = false, onDone: () -> Unit = {}, viewModel: SetupViewModel = hiltViewModel()) {
+    viewModel.adding = adding
+    val currentOnDone by androidx.compose.runtime.rememberUpdatedState(onDone)
+    val done by viewModel.done.collectAsStateWithLifecycle()
+    androidx.compose.runtime.LaunchedEffect(done) { if (done) { viewModel.doneHandled(); currentOnDone() } }
+    androidx.compose.runtime.DisposableEffect(viewModel) { onDispose { viewModel.onLeave() } }
     val state by viewModel.state.collectAsStateWithLifecycle()
     val uriHandler = LocalUriHandler.current
     val context = LocalContext.current

@@ -447,7 +447,7 @@ private fun HomeShell(signedIn: Boolean, prefs: NavPrefs) {
                     )
                 }
                 composable(HomeTab.Browse.route) {
-                    if (currentSignedIn || !connecting) {
+                    if (!connecting) {
                         BrowseScreen(
                             viewModel = libraryViewModel(),
                             serviceName = libraryName,
@@ -460,7 +460,7 @@ private fun HomeShell(signedIn: Boolean, prefs: NavPrefs) {
                         )
                     } else {
                         BackHandler { connecting = false }
-                        SetupScreen()
+                        SetupScreen(adding = currentSignedIn, onDone = { connecting = false })
                     }
                 }
                 composable(HomeTab.Search.route) {

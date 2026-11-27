@@ -11,6 +11,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.filterNotNull
@@ -60,6 +61,31 @@ class SetupViewModel @Inject constructor(
 
     private var deviceJob: Job? = null
 
+    /**
+     * True when the user is already signed in and opened this screen to add another service: picking a
+     * service must not change the active one until a sign-in succeeds.
+     */
+    var adding = false
+
+    private val _done = MutableStateFlow(false)
+    /** True (only while [adding]) once the screen has done its job and should close; survives rotation until [doneHandled]. */
+    val done: StateFlow<Boolean> = _done.asStateFlow()
+
+    fun doneHandled() { _done.value = false }
+
+    /** The screen is leaving: stop any device-login poll and make the next "add a service" start clean. */
+    fun onLeave() {
+        cancelDeviceLogin()
+        _done.value = false
+        if (!adding) return
+        _state.update { it.copy(token = "", error = null) }
+        viewModelScope.launch {
+            auth.activeProvider.first()?.let { a ->
+                _state.update { it.copy(selected = a, deviceLoginAvailable = auth.supportsDeviceLogin(a)) }
+            }
+        }
+    }
+
     init {
         // Follow the provider the user last chose (e.g. they switched to a
         // service they aren't signed in to yet from Settings): this screen
@@ -76,7 +102,12 @@ class SetupViewModel @Inject constructor(
     }
 
     fun onProviderSelected(id: ProviderId) {
-        if (id == _state.value.selected || _state.value.isValidating) return
+        if (_state.value.isValidating) return
+        if (id == _state.value.selected) {
+            // Adding: the pre-selected service is the active one; tapping it just goes back.
+            if (adding) viewModelScope.launch { if (id in auth.signedInProviders.first()) _done.value = true }
+            return
+        }
         cancelDeviceLogin()
         _state.update {
             it.copy(
@@ -86,9 +117,16 @@ class SetupViewModel @Inject constructor(
                 deviceLoginAvailable = auth.supportsDeviceLogin(id)
             )
         }
-        // Persist the choice. If the user already has a token for this
-        // provider, the auth gate flips straight to Home — a quick way back.
-        viewModelScope.launch { auth.setActiveProvider(id) }
+        viewModelScope.launch {
+            if (!adding) {
+                // Persist the choice. If the user already has a token for this
+                // provider, the auth gate flips straight to Home — a quick way back.
+                auth.setActiveProvider(id)
+            } else if (id in auth.signedInProviders.first()) {
+                auth.setActiveProvider(id) // quick way back to a service that's already signed in
+                _done.value = true
+            }
+        }
     }
 
     fun onTokenChanged(value: String) {
@@ -103,7 +141,10 @@ class SetupViewModel @Inject constructor(
         _state.update { it.copy(isValidating = true, error = null) }
         viewModelScope.launch {
             when (val result = auth.saveAndValidate(current.selected, current.token.trim())) {
-                is DataResult.Success -> _state.update { it.copy(isValidating = false) }
+                is DataResult.Success -> {
+                    _state.update { it.copy(isValidating = false) }
+                    if (adding) _done.value = true // saveAndValidate already made it active
+                }
                 is DataResult.Error -> _state.update { it.copy(isValidating = false, error = result.message) }
             }
         }
@@ -137,6 +178,7 @@ class SetupViewModel @Inject constructor(
                 when (val r = auth.pollDeviceLogin(provider, code)) {
                     is DataResult.Success -> if (r.data != null) {
                         _state.update { it.copy(deviceCode = null) }
+                        if (adding) _done.value = true
                         return@launch // gate flips to Home
                     }
                     is DataResult.Error -> {
