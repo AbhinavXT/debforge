@@ -348,6 +348,9 @@
     <string name="add_cache_all_yes">全部 %1$d 项均已缓存，可立即使用。</string>
     <string name="add_cache_some">%2$d 项中有 %1$d 项已缓存，这些可立即使用。</string>
     <string name="add_cache_failed">无法检查 %1$s（%2$s）。</string>
+    <string name="add_files_title">文件（%1$d · %2$s）</string>
+    <string name="add_files_caption">%1$s 会获取所有文件；DebForge 只下载已勾选的文件。</string>
+    <string name="add_files_select_all">全选</string>
     <!-- Data usage -->
     <string name="usage_title">流量使用情况</string>
     <string name="usage_this_month">本月 %1$s</string>

@@ -362,6 +362,9 @@
     <string name="add_cache_all_yes">%1$d-உம் கேஷ் செய்யப்பட்டுள்ளன. உடனடியாகத் தயார்.</string>
     <string name="add_cache_some">%2$d-இல் %1$d கேஷ் செய்யப்பட்டுள்ளன. அவை உடனடியாகத் தயார்.</string>
     <string name="add_cache_failed">%1$s-ஐ சரிபார்க்க முடியவில்லை (%2$s).</string>
+    <string name="add_files_title">கோப்புகள் (%1$d · %2$s)</string>
+    <string name="add_files_caption">%1$s எல்லா கோப்புகளையும் பெறுகிறது; DebForge குறிக்கப்பட்டவற்றை பதிவிறக்குகிறது.</string>
+    <string name="add_files_select_all">அனைத்தையும் தேர்ந்தெடு</string>
     <!-- Data usage -->
     <string name="usage_title">டேட்டா பயன்பாடு</string>
     <string name="usage_this_month">இந்த மாதம் %1$s</string>

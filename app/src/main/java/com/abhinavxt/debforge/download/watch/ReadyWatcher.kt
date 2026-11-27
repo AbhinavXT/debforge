@@ -57,8 +57,8 @@ class ReadyWatcher @Inject constructor(
 
     val watches: Flow<List<WatchEntity>> = dao.observeAll()
 
-    suspend fun watch(provider: ProviderId, jobRef: String, name: String) {
-        dao.upsert(WatchEntity(provider, jobRef, name))
+    suspend fun watch(provider: ProviderId, jobRef: String, name: String, selected: String? = null) {
+        dao.upsert(WatchEntity(provider, jobRef, name, selected = selected))
         ReadyWatchJobService.schedule(context)
     }
 

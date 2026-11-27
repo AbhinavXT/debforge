@@ -129,6 +129,11 @@ interface DebridProvider {
     /** The subset of [infoHashes] (lowercase hex) the service has cached. */
     suspend fun cachedHashes(infoHashes: List<String>): Set<String> = emptySet()
 
+    // --- optional: list a torrent's files before adding it ---------------------
+
+    /** The files of the torrent with [hash] if the service can tell without adding it; null = no preview. Never throws. */
+    suspend fun previewFiles(hash: String): List<com.abhinavxt.debforge.domain.TorrentEntry>? = null
+
     // --- optional: sign in by approving a code in the browser ---------------
 
     /** Non-null if the service supports device-code sign-in. */

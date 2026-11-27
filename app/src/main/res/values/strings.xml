@@ -363,6 +363,9 @@
     <string name="add_cache_all_yes">All %1$d are cached. Ready instantly.</string>
     <string name="add_cache_some">%1$d of %2$d cached. Those are ready instantly.</string>
     <string name="add_cache_failed">Couldn\'t check %1$s (%2$s).</string>
+    <string name="add_files_title">Files (%1$d · %2$s)</string>
+    <string name="add_files_caption">%1$s fetches every file; DebForge downloads the ticked ones.</string>
+    <string name="add_files_select_all">Select all</string>
     <!-- Data usage -->
     <string name="usage_title">Data usage</string>
     <string name="usage_this_month">%1$s this month</string>

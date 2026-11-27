@@ -390,6 +390,9 @@
     <string name="add_cache_all_yes">Все (%1$d) в кеше. Доступны сразу.</string>
     <string name="add_cache_some">В кеше %1$d из %2$d. Они доступны сразу.</string>
     <string name="add_cache_failed">Не удалось проверить %1$s (%2$s).</string>
+    <string name="add_files_title">Файлы (%1$d · %2$s)</string>
+    <string name="add_files_caption">%1$s получает все файлы; DebForge скачивает отмеченные.</string>
+    <string name="add_files_select_all">Выбрать все</string>
     <!-- Data usage -->
     <string name="usage_title">Передача данных</string>
     <string name="usage_this_month">%1$s за этот месяц</string>

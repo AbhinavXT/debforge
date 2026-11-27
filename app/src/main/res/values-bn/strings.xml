@@ -362,6 +362,9 @@
     <string name="add_cache_all_yes">%1$dটিই ক্যাশ করা আছে। সঙ্গে সঙ্গে তৈরি।</string>
     <string name="add_cache_some">%2$dটির মধ্যে %1$dটি ক্যাশ করা আছে। সেগুলো সঙ্গে সঙ্গে তৈরি।</string>
     <string name="add_cache_failed">%1$s চেক করা যায়নি (%2$s)।</string>
+    <string name="add_files_title">ফাইল (%1$d · %2$s)</string>
+    <string name="add_files_caption">%1$s সব ফাইল আনে; DebForge টিক দেওয়া ফাইলগুলো ডাউনলোড করে।</string>
+    <string name="add_files_select_all">সব বাছুন</string>
     <!-- Data usage -->
     <string name="usage_title">ডেটা ব্যবহার</string>
     <string name="usage_this_month">এই মাসে %1$s</string>

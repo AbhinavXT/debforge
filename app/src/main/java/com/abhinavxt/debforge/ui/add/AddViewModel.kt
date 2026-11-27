@@ -24,6 +24,7 @@ import com.abhinavxt.debforge.domain.ExtraFiles
 import com.abhinavxt.debforge.domain.Nzb
 import com.abhinavxt.debforge.domain.ProviderId
 import com.abhinavxt.debforge.domain.ServicePicker
+import com.abhinavxt.debforge.domain.TorrentEntry
 import com.abhinavxt.debforge.download.DownloadController
 import com.abhinavxt.debforge.download.watch.ReadyWatcher
 import com.abhinavxt.debforge.download.watch.shouldWatchNotifyOnly
@@ -57,6 +58,12 @@ data class CacheSummary(val checking: Boolean, val total: Int, val cached: Int, 
             else -> CacheSummary(false, total, known.count { it == true })
         }
     }
+}
+
+/** What the watch stores: null when every file is ticked, else the ticked paths joined by newlines. */
+fun selectedValue(files: List<TorrentEntry>?, unticked: Set<String>): String? {
+    if (files == null || unticked.none { u -> files.any { it.path == u } }) return null
+    return files.filter { it.path !in unticked }.joinToString("\n") { it.path }
 }
 
 /** A signed-in service the dialog can send to (shown when there are two or more). */
@@ -111,7 +118,11 @@ data class AddUiState(
     val pageVideos: List<DownloadItem>? = null,
     val pageTitle: String? = null,
     /** Ids of the [pageVideos] ticked for download. */
-    val pickedVideos: Set<String> = emptySet()
+    val pickedVideos: Set<String> = emptySet(),
+    /** Files of the single torrent in the dialog; null = unknown (nothing to show). */
+    val files: List<TorrentEntry>? = null,
+    /** Paths of [files] the user unticked. */
+    val unticked: Set<String> = emptySet()
 ) {
     val acceptsText: Boolean get() = AddKind.MAGNET in capabilities || AddKind.LINK in capabilities
     val acceptsTorrentFile: Boolean get() = AddKind.TORRENT_FILE in capabilities || AddKind.NZB_FILE in capabilities
@@ -216,6 +227,7 @@ class AddViewModel @Inject constructor(
      * decide which service is suggested ([refreshTargets]).
      */
     private fun scheduleCacheCheck() {
+        loadPreview()
         cacheJob?.cancel()
         checking.clear()
         checkFailed.clear()
@@ -242,6 +254,30 @@ class AddViewModel @Inject constructor(
                     refreshTargets()
                 }
             }
+        }
+    }
+
+    private var torrentEntries: List<TorrentEntry>? = null
+    private var previewJob: kotlinx.coroutines.Job? = null
+    private var previewKey: String? = null
+
+    /** The file list of the one torrent in the dialog: from the .torrent itself, or the service for a magnet. Background; never blocks adding. */
+    private fun loadPreview() {
+        val hashes = currentHashes()
+        val key = hashes.singleOrNull()
+        if (key == previewKey) return
+        previewKey = key
+        previewJob?.cancel()
+        _state.update { it.copy(files = null, unticked = emptySet()) }
+        if (key == null) return
+        val local = if (torrentHash == key) torrentEntries else null
+        previewJob = viewModelScope.launch {
+            val files = if (local != null) local else {
+                val p = target ?: provider ?: return@launch
+                kotlinx.coroutines.delay(600)
+                repository.previewFiles(p, key)
+            }
+            _state.update { it.copy(files = files?.takeIf { f -> f.isNotEmpty() }) }
         }
     }
 
@@ -418,8 +454,19 @@ class AddViewModel @Inject constructor(
             torrentHash = if (nzb) null else (readTorrent(uri, name, false) as? DataResult.Success)?.data
                 ?.let { it as? AddRequest.TorrentFile }
                 ?.let { com.abhinavxt.debforge.domain.TorrentHash.fromTorrentFile(it.bytes) }
+            torrentEntries = if (nzb) null else (readTorrent(uri, name, false) as? DataResult.Success)?.data
+                ?.let { it as? AddRequest.TorrentFile }
+                ?.let { com.abhinavxt.debforge.domain.TorrentHash.filesFromTorrentFile(it.bytes) }
             scheduleCacheCheck()
         }
+    }
+
+    fun toggleFile(path: String) = _state.update {
+        it.copy(unticked = if (path in it.unticked) it.unticked - path else it.unticked + path)
+    }
+
+    fun toggleAllFiles() = _state.update {
+        it.copy(unticked = if (it.unticked.isEmpty()) it.files.orEmpty().map { f -> f.path }.toSet() else emptySet())
     }
 
     fun onAutoDownloadChange(value: Boolean) = _state.update { it.copy(autoDownload = value) }
@@ -429,6 +476,7 @@ class AddViewModel @Inject constructor(
     }
 
     fun clearTorrent() {
+        torrentEntries = null
         _state.update { it.copy(torrentUri = null, torrentName = null, torrentIsNzb = false) }
         torrentHash = null
         scheduleCacheCheck()
@@ -593,7 +641,7 @@ class AddViewModel @Inject constructor(
                             val ready = r.data.readyFiles
                             (if (keepExtras) ready else ExtraFiles.hide(ready)).forEach { controller.enqueue(it, foreground = true) }
                             // Still fetching (TorBox torrent): watch it.
-                            r.data.jobRef?.let { ref -> watcher.watch(p, ref, displayNameFor(req)) }
+                            r.data.jobRef?.let { ref -> watcher.watch(p, ref, displayNameFor(req), if (requests.size == 1) selectedValue(s.files, s.unticked) else null) }
                         } else r.data.jobRef?.let { ref ->
                             if (shouldWatchNotifyOnly(settings.notifyCloudReadyFlow.first(), false, ref, r.data.readyFiles.isNotEmpty())) watcher.watchNotifyOnly(p, ref, displayNameFor(req))
                         }

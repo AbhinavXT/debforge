@@ -362,6 +362,9 @@
     <string name="add_cache_all_yes">Alle %1$d sind im Cache. Sofort bereit.</string>
     <string name="add_cache_some">%1$d von %2$d im Cache. Diese sind sofort bereit.</string>
     <string name="add_cache_failed">%1$s konnte nicht geprüft werden (%2$s).</string>
+    <string name="add_files_title">Dateien (%1$d · %2$s)</string>
+    <string name="add_files_caption">%1$s holt alle Dateien; DebForge lädt die angehakten herunter.</string>
+    <string name="add_files_select_all">Alle auswählen</string>
     <!-- Data usage -->
     <string name="usage_title">Datennutzung</string>
     <string name="usage_this_month">%1$s diesen Monat</string>

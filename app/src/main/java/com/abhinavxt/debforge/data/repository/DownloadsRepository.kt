@@ -1,5 +1,6 @@
 package com.abhinavxt.debforge.data.repository
 
+import com.abhinavxt.debforge.domain.TorrentEntry
 import com.abhinavxt.debforge.data.provider.AddResult
 import com.abhinavxt.debforge.data.provider.JobAction
 import com.abhinavxt.debforge.data.provider.ProviderCalls
@@ -119,6 +120,12 @@ class DownloadsRepository @Inject constructor(
     suspend fun cachedHashes(provider: ProviderId, hashes: List<String>): DataResult<Set<String>> {
         val p = registry[provider]
         return ProviderCalls.run(p.info, "checking the cache", CACHE_CHECK_TIMEOUT_MS) { p.cachedHashes(hashes) }
+    }
+
+    /** Null when the service can't say (or took over 10 s): a preview is a hint, never required. */
+    suspend fun previewFiles(provider: ProviderId, hash: String): List<TorrentEntry>? {
+        val p = registry[provider]
+        return (ProviderCalls.run(p.info, "listing files", CACHE_CHECK_TIMEOUT_MS) { p.previewFiles(hash) } as? DataResult.Success)?.data
     }
 
     companion object {

@@ -29,9 +29,12 @@ import androidx.compose.material.icons.rounded.AddLink
 import androidx.compose.material.icons.rounded.Bolt
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.ExpandLess
+import androidx.compose.material.icons.rounded.ExpandMore
 import androidx.compose.material.icons.rounded.Description
 import androidx.compose.material.icons.rounded.HourglassEmpty
 import androidx.compose.material.icons.rounded.VideoLibrary
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.ui.semantics.Role
 import com.abhinavxt.debforge.domain.DownloadItem
@@ -66,6 +69,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
@@ -212,6 +216,11 @@ fun AddDialog(viewModel: AddViewModel) {
                 // A service we couldn't ask is a different fact from "not cached" (also for services not selected).
                 state.targets.filter { it.id != state.target && it.cache?.failure != null }.forEach {
                     CacheLine(it.cache!!, it.name, viewModel::retryCacheCheck)
+                }
+
+                state.files?.let { files ->
+                    val pick = state.autoDownload && state.canWriteStorage && !state.isDirect && !state.submitting
+                    FileList(files, state.unticked, pick, state.providerName, viewModel::toggleFile, viewModel::toggleAllFiles)
                 }
 
                 if (state.canOnlyIfCached) {
@@ -418,6 +427,71 @@ private fun PageVideoList(state: AddUiState, videos: List<DownloadItem>, onToggl
         }
         state.error?.let {
             Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+        }
+    }
+}
+
+/** The torrent's files: collapsed when long; checkboxes only when ticking matters (auto-download on). */
+@Composable
+private fun FileList(
+    files: List<com.abhinavxt.debforge.domain.TorrentEntry>,
+    unticked: Set<String>,
+    pick: Boolean,
+    service: String,
+    onToggle: (String) -> Unit,
+    onToggleAll: () -> Unit
+) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    var open by androidx.compose.runtime.saveable.rememberSaveable(files.size) { androidx.compose.runtime.mutableStateOf(files.size <= 8) }
+    val total = android.text.format.Formatter.formatShortFileSize(context, files.sumOf { it.size })
+    Column {
+        Row(
+            Modifier.fillMaxWidth().clickable { open = !open },
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                stringResource(R.string.add_files_title, files.size, total),
+                modifier = Modifier.weight(1f),
+                style = MaterialTheme.typography.titleSmall
+            )
+            Icon(if (open) Icons.Rounded.ExpandLess else Icons.Rounded.ExpandMore, contentDescription = null)
+        }
+        if (open) {
+            if (pick) {
+                Row(
+                    Modifier.fillMaxWidth().toggleable(unticked.isEmpty(), onValueChange = { onToggleAll() }, role = Role.Checkbox),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Checkbox(checked = unticked.isEmpty(), onCheckedChange = null)
+                    Text(stringResource(R.string.add_files_select_all), style = MaterialTheme.typography.bodyMedium)
+                }
+            }
+            Column(Modifier.heightIn(max = 240.dp).verticalScroll(rememberScrollState())) {
+                files.forEach { f ->
+                    Row(
+                        Modifier.fillMaxWidth().let {
+                            if (pick) it.toggleable(f.path !in unticked, onValueChange = { onToggle(f.path) }, role = Role.Checkbox) else it
+                        },
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        if (pick) Checkbox(checked = f.path !in unticked, onCheckedChange = null)
+                        Text(f.path, modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodySmall, maxLines = 2, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                        Text(
+                            android.text.format.Formatter.formatShortFileSize(context, f.size),
+                            modifier = Modifier.padding(start = 8.dp),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+            if (pick) {
+                Text(
+                    stringResource(R.string.add_files_caption, service),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
     }
 }

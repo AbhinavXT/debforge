@@ -348,6 +348,9 @@
     <string name="add_cache_all_yes">Semua %1$d sudah di-cache. Langsung siap.</string>
     <string name="add_cache_some">%1$d dari %2$d sudah di-cache. Yang itu langsung siap.</string>
     <string name="add_cache_failed">Tidak bisa memeriksa %1$s (%2$s).</string>
+    <string name="add_files_title">File (%1$d · %2$s)</string>
+    <string name="add_files_caption">%1$s mengambil semua file; DebForge mengunduh yang dicentang.</string>
+    <string name="add_files_select_all">Pilih semua</string>
     <!-- Data usage -->
     <string name="usage_title">Penggunaan data</string>
     <string name="usage_this_month">%1$s bulan ini</string>

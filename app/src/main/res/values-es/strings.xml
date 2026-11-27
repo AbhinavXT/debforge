@@ -376,6 +376,9 @@
     <string name="add_cache_all_yes">Los %1$d están en caché. Listos al instante.</string>
     <string name="add_cache_some">%1$d de %2$d en caché. Esos están listos al instante.</string>
     <string name="add_cache_failed">No se pudo comprobar %1$s (%2$s).</string>
+    <string name="add_files_title">Archivos (%1$d · %2$s)</string>
+    <string name="add_files_caption">%1$s obtiene todos los archivos; DebForge descarga los marcados.</string>
+    <string name="add_files_select_all">Seleccionar todo</string>
     <!-- Data usage -->
     <string name="usage_title">Uso de datos</string>
     <string name="usage_this_month">%1$s este mes</string>

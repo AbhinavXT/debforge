@@ -362,6 +362,9 @@
     <string name="add_cache_all_yes">%1$d öğenin tümü önbellekte. Hemen hazır.</string>
     <string name="add_cache_some">%2$d öğeden %1$d tanesi önbellekte. Bunlar hemen hazır.</string>
     <string name="add_cache_failed">%1$s kontrol edilemedi (%2$s).</string>
+    <string name="add_files_title">Dosyalar (%1$d · %2$s)</string>
+    <string name="add_files_caption">%1$s tüm dosyaları getirir; DebForge işaretlenenleri indirir.</string>
+    <string name="add_files_select_all">Tümünü seç</string>
     <!-- Data usage -->
     <string name="usage_title">Veri kullanımı</string>
     <string name="usage_this_month">Bu ay %1$s</string>

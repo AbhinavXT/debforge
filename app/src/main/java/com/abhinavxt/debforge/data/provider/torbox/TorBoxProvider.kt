@@ -1,5 +1,6 @@
 package com.abhinavxt.debforge.data.provider.torbox
 
+import com.abhinavxt.debforge.domain.TorrentEntry
 import com.abhinavxt.debforge.data.prefs.TokenStore
 import com.abhinavxt.debforge.data.provider.AccountInfo
 import com.abhinavxt.debforge.data.provider.AddResult
@@ -658,6 +659,31 @@ class TorBoxProvider @Inject constructor(
             cachedFrom(envelope.data)
         }.toSet()
     }
+
+    /** Cached torrents only; the file shape is undocumented, so read it leniently and give up (null) on anything odd. */
+    override suspend fun previewFiles(hash: String): List<TorrentEntry>? = try {
+        val data = api.checkCached(hash, listFiles = true).data
+        val items = when (data) {
+            is List<*> -> data
+            is Map<*, *> -> data.entries.map { (k, v) -> (v as? Map<*, *>)?.let { mapOf("hash" to k) + it } }
+            else -> emptyList()
+        }
+        items.filterIsInstance<Map<*, *>>()
+            .firstOrNull { (it["hash"] as? String)?.equals(hash, ignoreCase = true) != false }
+            ?.let { filesOf(it) }
+    } catch (e: kotlinx.coroutines.CancellationException) {
+        throw e
+    } catch (e: Exception) {
+        null
+    }
+
+    private fun filesOf(item: Map<*, *>): List<TorrentEntry>? =
+        (item["files"] as? List<*>)?.mapNotNull { f ->
+            val m = f as? Map<*, *> ?: return@mapNotNull null
+            val path = listOf("name", "path", "short_name").firstNotNullOfOrNull { (m[it] as? String)?.trim()?.takeIf(String::isNotEmpty) }
+                ?: return@mapNotNull null
+            TorrentEntry(path, (m["size"] as? Number)?.toLong() ?: 0L)
+        }?.takeIf { it.isNotEmpty() }
 
     /** list format: [{hash, size, ...}]; object format: {hash: {...}}. */
     private fun cachedFrom(data: Any?): List<String> = when (data) {

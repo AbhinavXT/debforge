@@ -362,6 +362,9 @@
     <string name="add_cache_all_yes">सभी %1$d कैश हैं। तुरंत तैयार।</string>
     <string name="add_cache_some">%2$d में से %1$d कैश हैं। वे तुरंत तैयार हैं।</string>
     <string name="add_cache_failed">%1$s की जाँच नहीं हो सकी (%2$s)।</string>
+    <string name="add_files_title">फ़ाइलें (%1$d · %2$s)</string>
+    <string name="add_files_caption">%1$s सभी फ़ाइलें लाता है; DebForge चुनी हुई फ़ाइलें डाउनलोड करता है।</string>
+    <string name="add_files_select_all">सभी चुनें</string>
     <!-- Data usage -->
     <string name="usage_title">डेटा उपयोग</string>
     <string name="usage_this_month">इस महीने %1$s</string>
