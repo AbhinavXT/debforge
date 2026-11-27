@@ -39,8 +39,13 @@ data class RangeWindow(val start: Long, val endExclusive: Long) {
     val length: Long get() = endExclusive - start
 }
 
-/** A row of the Quality list: [current] when it is what is playing. */
-data class QualityOption(val choice: FormatChoice, val current: Boolean)
+/** A row of the Quality list: [current] when it is what is playing. Exactly one of [choice] (YouTube) or [stream] (debrid) is set. */
+data class QualityOption(
+    val label: String,
+    val current: Boolean,
+    val choice: FormatChoice? = null,
+    val stream: com.abhinavxt.debforge.data.provider.StreamQuality? = null,
+)
 
 object YouTubeStreaming {
     /** Same size as the downloader's pieces: whole-file requests get throttled, ranged ones do not. */
@@ -75,7 +80,14 @@ object YouTubeStreaming {
 
     /** The video choices offered by the player's Quality entry, [ref]'s own one marked current. */
     fun qualityOptions(ref: YouTubeLinks.Ref, choices: List<FormatChoice>): List<QualityOption> =
-        choices.filter { it.videoItag != null }.map { QualityOption(it, sameChoice(ref, it)) }
+        choices.filter { it.videoItag != null }.map { QualityOption(com.abhinavxt.debforge.ui.youtube.choiceLabel(it), sameChoice(ref, it), choice = it) }
+
+    /** A debrid file's stream qualities as rows: "Original" first, [current] (null = Original) marked. */
+    fun streamOptions(qualities: List<com.abhinavxt.debforge.data.provider.StreamQuality>, current: com.abhinavxt.debforge.data.provider.StreamQuality?): List<QualityOption> {
+        val currentId = current?.id ?: com.abhinavxt.debforge.data.provider.StreamQuality.ORIGINAL
+        return qualities.sortedBy { it.id != com.abhinavxt.debforge.data.provider.StreamQuality.ORIGINAL }
+            .map { QualityOption(it.label, it.id == currentId, stream = it) }
+    }
 
     fun sameChoice(ref: YouTubeLinks.Ref, c: FormatChoice) = c.videoItag == ref.videoItag && c.audioItag == ref.audioItag
 

@@ -68,6 +68,7 @@ internal class VideoRefresh(private val s: VideoSession) {
                     return@launch
                 }
                 s.uri = Uri.parse(fresh)
+                s.streamQuality = null
                 s.subtitles = s.subtitleResolver.refresh(s.subtitles)
                 s.reloadMediaItem(position, play = true)
             } finally {
@@ -164,6 +165,48 @@ internal class VideoRefresh(private val s: VideoSession) {
                     choices.firstOrNull { it.videoItag == target.videoItag && it.audioItag == target.audioItag }
                 }, play)
                 if (result != YtRefresh.OK && id == s.identity) failed()
+            } finally {
+                refreshing = false
+            }
+        }
+    }
+
+    /** Quality entry of a debrid file: its provider's stream qualities, looked up only now (it may start transcoding); null when none. */
+    suspend fun streamQualityOptions(): List<com.abhinavxt.debforge.player.youtube.QualityOption>? {
+        val id = s.identity ?: return null
+        return try {
+            val list = s.registry[id.provider].streamQualities(id.sourceRef)
+            if (list.isEmpty()) null else com.abhinavxt.debforge.player.youtube.YouTubeStreaming.streamOptions(list, s.streamQuality)
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    /** Quality entry of a debrid file: carry on in [target] at the same second, keeping play or pause; Original is the direct link. */
+    fun changeStreamQuality(target: com.abhinavxt.debforge.data.provider.StreamQuality, failed: () -> Unit) {
+        val id = s.identity ?: return
+        val original = target.id == com.abhinavxt.debforge.data.provider.StreamQuality.ORIGINAL
+        if (refreshing || target.id == (s.streamQuality?.id ?: com.abhinavxt.debforge.data.provider.StreamQuality.ORIGINAL)) return
+        val play = s.player?.playWhenReady ?: true
+        val position = s.player?.currentPosition ?: s.resumePosition
+        refreshing = true
+        s.scope.launch {
+            try {
+                val url = try {
+                    if (original) (s.repository.resolveLink(id.provider, id.sourceRef) as? DataResult.Success)?.data?.url
+                    else s.registry[id.provider].streamUrl(id.sourceRef, target)
+                } catch (e: kotlinx.coroutines.CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    null
+                }
+                if (id != s.identity) return@launch
+                if (url == null) { failed(); return@launch }
+                s.uri = Uri.parse(url)
+                s.streamQuality = target.takeUnless { original }
+                s.reloadMediaItem(position, play)
             } finally {
                 refreshing = false
             }

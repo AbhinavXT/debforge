@@ -167,12 +167,12 @@ interface ControlsActions {
     fun playAsAudio()
     /** Play on a TV on the same network (DLNA). */
     fun cast()
-    /** Height of the streamed YouTube video's picture, for the More → Quality entry; 0 = no such entry (local files, downloads). */
-    fun qualityHeight(): Int = 0
+    /** Current quality ("1080p", "Original") for the More → Quality entry; null = no such entry (local files, downloads). */
+    fun qualityValue(): String? = null
     /** Looks up the choices into [ControlsState.qualityOptions]. */
     fun loadQuality() {}
     /** Plays [choice] from the same second; the same one does nothing. */
-    fun selectQuality(choice: com.abhinavxt.debforge.domain.FormatChoice) {}
+    fun selectQuality(option: com.abhinavxt.debforge.player.youtube.QualityOption) {}
     fun rotate()
     /** More → Rotate: turns the screen the other way and stays in full screen (where [rotate] is "exit full screen"). */
     fun rotateScreen() {}
@@ -945,9 +945,9 @@ private fun SidePanel(panel: Panel, state: ControlsState, actions: ControlsActio
                     androidx.compose.material3.CircularProgressIndicator(Modifier.padding(20.dp).size(24.dp), strokeWidth = 2.dp)
                 } else LazyColumn {
                     items(options) { o ->
-                        ChoiceRow(com.abhinavxt.debforge.ui.youtube.choiceLabel(o.choice), o.current) {
+                        ChoiceRow(o.label, o.current) {
                             state.panel = null
-                            actions.selectQuality(o.choice)
+                            actions.selectQuality(o)
                         }
                     }
                 }
@@ -1200,10 +1200,10 @@ private fun MorePanel(state: ControlsState, actions: ControlsActions) {
                 MoreRow(Icons.AutoMirrored.Rounded.List, stringResource(R.string.player_chapters)) { state.panel = Panel.CHAPTERS }
             }
         }
-        val qualityHeight = actions.qualityHeight()
-        if (qualityHeight > 0) {
+        val qualityValue = actions.qualityValue()
+        if (qualityValue != null) {
             item {
-                MoreRow(Icons.Rounded.HighQuality, stringResource(R.string.player_quality), "${qualityHeight}p") {
+                MoreRow(Icons.Rounded.HighQuality, stringResource(R.string.player_quality), qualityValue) {
                     state.qualityOptions = null
                     state.panel = Panel.QUALITY
                     actions.loadQuality()

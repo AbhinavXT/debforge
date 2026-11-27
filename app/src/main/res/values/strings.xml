@@ -999,6 +999,7 @@
     <string name="yt_up_next">Up next</string>
     <string name="player_quality">Quality</string>
     <string name="player_quality_failed">Couldn\'t change the quality. Playing on as before.</string>
+    <string name="player_quality_original">Original</string>
     <string name="yt_add_to_queue_cd">Add to queue</string>
     <string name="yt_pl_added">Added to %1$s</string>
     <string name="yt_pl_already">Already in %1$s</string>

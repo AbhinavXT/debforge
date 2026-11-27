@@ -1079,6 +1079,7 @@
     <string name="yt_up_next">Далее</string>
     <string name="player_quality">Качество</string>
     <string name="player_quality_failed">Не удалось сменить качество. Воспроизведение продолжается как раньше.</string>
+    <string name="player_quality_original">Оригинал</string>
     <string name="yt_add_to_queue_cd">Добавить в очередь</string>
     <string name="yt_pl_added">Добавлено в %1$s</string>
     <string name="yt_pl_already">Уже в %1$s</string>

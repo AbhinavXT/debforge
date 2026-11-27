@@ -94,6 +94,7 @@ class VideoSession @Inject constructor(
     internal val networkMonitor: com.abhinavxt.debforge.download.NetworkMonitor,
     internal val subtitleImporter: com.abhinavxt.debforge.download.SubtitleImporter,
     private val timingStore: com.abhinavxt.debforge.player.subtitles.SubtitleTimingStore,
+    internal val registry: com.abhinavxt.debforge.data.provider.ProviderRegistry,
 ) {
     private val lifecycle = VideoLifecycle(Steps())
 
@@ -164,6 +165,15 @@ class VideoSession @Inject constructor(
         internal set
     var uri: Uri = Uri.EMPTY
         internal set
+    /** The transcoded HLS quality of a debrid file in [uri]; null = the direct (Original) link. Identity, resume and history never see it. */
+    internal var streamQuality: com.abhinavxt.debforge.data.provider.StreamQuality? = null
+
+    /** More → Quality value for a debrid file whose provider offers stream qualities; null = no entry. */
+    internal fun streamQualityLabel(): String? {
+        val id = identity ?: return null
+        if (isLocalFile() || !registry[id.provider].supportsStreamQualities) return null
+        return streamQuality?.label ?: context.getString(com.abhinavxt.debforge.R.string.player_quality_original)
+    }
     var title: String = ""
         private set
     var subtitles: List<SubtitleLink> = emptyList()
@@ -254,6 +264,7 @@ class VideoSession @Inject constructor(
     ): Long {
         val token = lifecycle.open() // the audio queue waits, paused, in the mini player
         uri = target.uri
+        streamQuality = null
         title = target.title
         youtube = target.youtube
         // A stream is saved under DIRECT with no filename: Trakt (which needs a name) skips it.
@@ -743,6 +754,7 @@ class VideoSession @Inject constructor(
         val item = episode.item
         identity = VideoIdentity(item.id, item.provider, item.sourceRef, item.filename, episode.showKey, item.parentRef)
         uri = Uri.parse(url)
+        streamQuality = null
         title = episode.title
         this.subtitles = subtitles
         host?.titleChanged(title)
@@ -987,6 +999,7 @@ class VideoSession @Inject constructor(
     internal fun buildMediaItem(): MediaItem =
         MediaItem.Builder()
             .setUri(uri)
+            .apply { if (streamQuality != null) setMimeType(androidx.media3.common.MimeTypes.APPLICATION_M3U8) }
             .apply { youtube?.let { setTag(com.abhinavxt.debforge.player.youtube.YouTubeStreamTag(it.audioUrl)) } }
             .setMediaMetadata(MediaMetadata.Builder().setTitle(title).build())
             .setSubtitleConfigurations(subtitles.map { sub ->

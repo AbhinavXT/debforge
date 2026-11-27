@@ -1038,6 +1038,7 @@
     <string name="yt_up_next">A continuación</string>
     <string name="player_quality">Calidad</string>
     <string name="player_quality_failed">No se pudo cambiar la calidad. Sigue con la anterior.</string>
+    <string name="player_quality_original">Original</string>
     <string name="yt_add_to_queue_cd">Añadir a la cola</string>
     <string name="yt_pl_added">Añadido a %1$s</string>
     <string name="yt_pl_already">Ya está en %1$s</string>

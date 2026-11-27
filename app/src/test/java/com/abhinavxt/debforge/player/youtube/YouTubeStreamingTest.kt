@@ -2,6 +2,7 @@ package com.abhinavxt.debforge.player.youtube
 
 import com.abhinavxt.debforge.domain.Container
 import com.abhinavxt.debforge.domain.DefaultQuality
+import com.abhinavxt.debforge.data.provider.StreamQuality
 import com.abhinavxt.debforge.domain.FormatChoice
 import com.abhinavxt.debforge.domain.YouTubeLinks
 import com.abhinavxt.debforge.domain.pickDefaultChoice
@@ -40,9 +41,28 @@ class YouTubeStreamingTest {
     @Test fun qualityOptionsListVideoChoicesOnlyAndMarkCurrent() {
         val ref = YouTubeLinks.Ref("x", 137, 140)
         val o = YouTubeStreaming.qualityOptions(ref, choices)
-        assertEquals(listOf(2160, 1080, 480), o.map { it.choice.height })
+        assertEquals(listOf(2160, 1080, 480), o.map { it.choice!!.height })
         assertEquals(listOf(false, true, false), o.map { it.current })
     }
+
+    private val original = StreamQuality(StreamQuality.ORIGINAL, "Original", null)
+    private val q720 = StreamQuality("720", "720p", 720)
+    private val q480 = StreamQuality("480", "480p", 480)
+
+    @Test fun streamOptionsPutOriginalFirstAndCurrentByDefault() {
+        val o = YouTubeStreaming.streamOptions(listOf(q720, original, q480), null)
+        assertEquals(listOf(original, q720, q480), o.map { it.stream })
+        assertEquals(listOf(true, false, false), o.map { it.current })
+    }
+
+    @Test fun streamOptionsMarkTheChosenQualityCurrent() {
+        val o = YouTubeStreaming.streamOptions(listOf(original, q720, q480), q480)
+        assertEquals(listOf(false, false, true), o.map { it.current })
+        assertEquals(q720, o[1].stream) // selecting a row hands back its own StreamQuality
+        assertEquals(null, o[1].choice)
+    }
+
+    @Test fun noStreamQualitiesNoRows() = assertEquals(emptyList<QualityOption>(), YouTubeStreaming.streamOptions(emptyList(), null))
 
     @Test fun sameChoiceNeedsBothItags() {
         assertEquals(true, YouTubeStreaming.sameChoice(YouTubeLinks.Ref("x", 137, 140), choices[1]))

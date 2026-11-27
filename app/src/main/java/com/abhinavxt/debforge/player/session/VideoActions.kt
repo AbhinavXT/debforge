@@ -112,7 +112,7 @@ class VideoActions internal constructor(private val s: VideoSession) : ControlsA
     override fun setSoftwareDecoding(on: Boolean) = s.setSoftwareDecoding(on, save = true)
     override fun playAsAudio() = s.handOffToAudio()
 
-    override fun qualityHeight() = s.youtube?.height ?: 0
+    override fun qualityValue() = s.youtube?.let { "${it.height}p" } ?: s.streamQualityLabel()
 
     private var qualityJob: kotlinx.coroutines.Job? = null
 
@@ -120,7 +120,7 @@ class VideoActions internal constructor(private val s: VideoSession) : ControlsA
         val id = s.identity
         qualityJob?.cancel()
         qualityJob = s.scope.launch {
-            val options = s.refresher.qualityOptions()
+            val options = if (s.youtube != null) s.refresher.qualityOptions() else s.refresher.streamQualityOptions()
             // The video changed or the panel was closed meanwhile: nothing of this belongs to what is on screen now.
             if (id != s.identity || controls.panel != com.abhinavxt.debforge.player.controls.Panel.QUALITY) return@launch
             if (options == null) {
@@ -130,7 +130,10 @@ class VideoActions internal constructor(private val s: VideoSession) : ControlsA
         }
     }
 
-    override fun selectQuality(choice: com.abhinavxt.debforge.domain.FormatChoice) = s.refresher.changeQuality(choice, ::qualityFailed)
+    override fun selectQuality(option: com.abhinavxt.debforge.player.youtube.QualityOption) {
+        option.choice?.let { s.refresher.changeQuality(it, ::qualityFailed) }
+        option.stream?.let { s.refresher.changeStreamQuality(it, ::qualityFailed) }
+    }
 
     private fun qualityFailed() =
         android.widget.Toast.makeText(s.context, s.string(com.abhinavxt.debforge.R.string.player_quality_failed), android.widget.Toast.LENGTH_SHORT).show()
