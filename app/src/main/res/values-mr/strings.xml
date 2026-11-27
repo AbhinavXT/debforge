@@ -365,6 +365,9 @@
     <string name="add_files_title">फाइल्स (%1$d · %2$s)</string>
     <string name="add_files_caption">%1$s सर्व फाइल्स आणते; DebForge निवडलेल्या फाइल्स डाउनलोड करते.</string>
     <string name="add_files_select_all">सर्व निवडा</string>
+    <string name="add_files_expanded">विस्तारित</string>
+    <string name="add_files_collapsed">संक्षिप्त</string>
+    <string name="add_files_more">…आणि आणखी %1$d फाइल्स</string>
     <!-- Data usage -->
     <string name="usage_title">डेटा वापर</string>
     <string name="usage_this_month">या महिन्यात %1$s</string>

@@ -379,6 +379,9 @@
     <string name="add_files_title">Fichiers (%1$d · %2$s)</string>
     <string name="add_files_caption">%1$s récupère tous les fichiers ; DebForge télécharge ceux qui sont cochés.</string>
     <string name="add_files_select_all">Tout sélectionner</string>
+    <string name="add_files_expanded">Développé</string>
+    <string name="add_files_collapsed">Réduit</string>
+    <string name="add_files_more">…et %1$d fichiers de plus</string>
     <!-- Data usage -->
     <string name="usage_title">Consommation des données</string>
     <string name="usage_this_month">%1$s ce mois-ci</string>

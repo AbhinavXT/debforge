@@ -37,6 +37,9 @@ import androidx.compose.material.icons.rounded.VideoLibrary
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.foundation.focusable
 import com.abhinavxt.debforge.domain.DownloadItem
 import com.abhinavxt.debforge.ui.browse.formatSize
 import androidx.compose.material.icons.rounded.UploadFile
@@ -431,6 +434,8 @@ private fun PageVideoList(state: AddUiState, videos: List<DownloadItem>, onToggl
     }
 }
 
+private const val MAX_FILE_ROWS = 200
+
 /** The torrent's files: collapsed when long; checkboxes only when ticking matters (auto-download on). */
 @Composable
 private fun FileList(
@@ -444,9 +449,10 @@ private fun FileList(
     val context = androidx.compose.ui.platform.LocalContext.current
     var open by androidx.compose.runtime.saveable.rememberSaveable(files.size) { androidx.compose.runtime.mutableStateOf(files.size <= 8) }
     val total = android.text.format.Formatter.formatShortFileSize(context, files.sumOf { it.size })
+    val expandedText = stringResource(if (open) R.string.add_files_expanded else R.string.add_files_collapsed)
     Column {
         Row(
-            Modifier.fillMaxWidth().clickable { open = !open },
+            Modifier.fillMaxWidth().clickable(role = Role.Button, onClick = { open = !open }).semantics { stateDescription = expandedText },
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
@@ -467,10 +473,10 @@ private fun FileList(
                 }
             }
             Column(Modifier.heightIn(max = 240.dp).verticalScroll(rememberScrollState())) {
-                files.forEach { f ->
+                files.take(MAX_FILE_ROWS).forEach { f ->
                     Row(
                         Modifier.fillMaxWidth().let {
-                            if (pick) it.toggleable(f.path !in unticked, onValueChange = { onToggle(f.path) }, role = Role.Checkbox) else it
+                            if (pick) it.toggleable(f.path !in unticked, onValueChange = { onToggle(f.path) }, role = Role.Checkbox) else it.focusable()
                         },
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -484,6 +490,13 @@ private fun FileList(
                         )
                     }
                 }
+            }
+            if (files.size > MAX_FILE_ROWS) {
+                Text(
+                    stringResource(R.string.add_files_more, files.size - MAX_FILE_ROWS),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
             if (pick) {
                 Text(

@@ -365,6 +365,9 @@
     <string name="add_files_title">ఫైళ్లు (%1$d · %2$s)</string>
     <string name="add_files_caption">%1$s అన్ని ఫైళ్లను తెస్తుంది; DebForge టిక్ చేసినవాటిని డౌన్‌లోడ్ చేస్తుంది.</string>
     <string name="add_files_select_all">అన్నీ ఎంచుకోండి</string>
+    <string name="add_files_expanded">విస్తరించబడింది</string>
+    <string name="add_files_collapsed">కుదించబడింది</string>
+    <string name="add_files_more">…ఇంకా %1$d ఫైళ్లు</string>
     <!-- Data usage -->
     <string name="usage_title">డేటా వినియోగం</string>
     <string name="usage_this_month">ఈ నెల %1$s</string>

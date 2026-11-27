@@ -366,6 +366,9 @@
     <string name="add_files_title">Files (%1$d · %2$s)</string>
     <string name="add_files_caption">%1$s fetches every file; DebForge downloads the ticked ones.</string>
     <string name="add_files_select_all">Select all</string>
+    <string name="add_files_expanded">Expanded</string>
+    <string name="add_files_collapsed">Collapsed</string>
+    <string name="add_files_more">…and %1$d more files</string>
     <!-- Data usage -->
     <string name="usage_title">Data usage</string>
     <string name="usage_this_month">%1$s this month</string>

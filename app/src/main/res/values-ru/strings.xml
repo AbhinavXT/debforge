@@ -393,6 +393,9 @@
     <string name="add_files_title">Файлы (%1$d · %2$s)</string>
     <string name="add_files_caption">%1$s получает все файлы; DebForge скачивает отмеченные.</string>
     <string name="add_files_select_all">Выбрать все</string>
+    <string name="add_files_expanded">Развёрнуто</string>
+    <string name="add_files_collapsed">Свёрнуто</string>
+    <string name="add_files_more">…и ещё файлов: %1$d</string>
     <!-- Data usage -->
     <string name="usage_title">Передача данных</string>
     <string name="usage_this_month">%1$s за этот месяц</string>

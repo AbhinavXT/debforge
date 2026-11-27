@@ -351,6 +351,9 @@
     <string name="add_files_title">文件（%1$d · %2$s）</string>
     <string name="add_files_caption">%1$s 会获取所有文件；DebForge 只下载已勾选的文件。</string>
     <string name="add_files_select_all">全选</string>
+    <string name="add_files_expanded">已展开</string>
+    <string name="add_files_collapsed">已折叠</string>
+    <string name="add_files_more">…以及另外 %1$d 个文件</string>
     <!-- Data usage -->
     <string name="usage_title">流量使用情况</string>
     <string name="usage_this_month">本月 %1$s</string>

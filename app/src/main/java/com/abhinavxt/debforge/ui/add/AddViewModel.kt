@@ -27,6 +27,7 @@ import com.abhinavxt.debforge.domain.ServicePicker
 import com.abhinavxt.debforge.domain.TorrentEntry
 import com.abhinavxt.debforge.download.DownloadController
 import com.abhinavxt.debforge.download.watch.ReadyWatcher
+import com.abhinavxt.debforge.download.watch.filterSelected
 import com.abhinavxt.debforge.download.watch.shouldWatchNotifyOnly
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -128,7 +129,9 @@ data class AddUiState(
     val acceptsTorrentFile: Boolean get() = AddKind.TORRENT_FILE in capabilities || AddKind.NZB_FILE in capabilities
     val canSubmit: Boolean
         get() = !submitting && !scanning &&
-            if (pageVideos != null) pickedVideos.isNotEmpty() else text.isNotBlank() || torrentUri != null
+            if (pageVideos != null) pickedVideos.isNotEmpty() else (text.isNotBlank() || torrentUri != null) && !noneTicked
+    /** Auto-download with every listed file unticked would download nothing. */
+    private val noneTicked: Boolean get() = autoDownload && files != null && files.all { it.path in unticked }
 
     /**
      * One web link that isn't a file (and nothing else): offer to look for
@@ -266,16 +269,18 @@ class AddViewModel @Inject constructor(
         val hashes = currentHashes()
         val key = hashes.singleOrNull()
         if (key == previewKey) return
-        previewKey = key
         previewJob?.cancel()
+        previewKey = null
         _state.update { it.copy(files = null, unticked = emptySet()) }
         if (key == null) return
         val local = if (torrentHash == key) torrentEntries else null
+        val p = target ?: provider
+        if (local == null && p == null) return // no service yet: the key stays unset so the next call retries
+        previewKey = key
         previewJob = viewModelScope.launch {
             val files = if (local != null) local else {
-                val p = target ?: provider ?: return@launch
                 kotlinx.coroutines.delay(600)
-                repository.previewFiles(p, key)
+                repository.previewFiles(p!!, key)
             }
             _state.update { it.copy(files = files?.takeIf { f -> f.isNotEmpty() }) }
         }
@@ -431,6 +436,10 @@ class AddViewModel @Inject constructor(
 
     /** Empty dialog, sending to the active service again next time. */
     private fun resetForm() {
+        previewJob?.cancel()
+        previewKey = null
+        torrentEntries = null
+        pickJob?.cancel()
         userPickedTarget = false
         target = null
         _state.value = AddUiState(onlyIfCached = onlyIfCached)
@@ -442,21 +451,21 @@ class AddViewModel @Inject constructor(
         scheduleCacheCheck()
     }
 
+    private var pickJob: kotlinx.coroutines.Job? = null
+
     fun onTorrentPicked(uri: Uri?) {
         if (uri == null) return
-        viewModelScope.launch {
+        pickJob?.cancel()
+        pickJob = viewModelScope.launch {
             val name = withContext(Dispatchers.IO) { displayName(uri) } ?: "file.torrent"
             // Some apps hand over an .nzb without the extension: the MIME type tells.
             val nzb = Nzb.isNzbName(name) ||
                 withContext(Dispatchers.IO) { runCatching { context.contentResolver.getType(uri) }.getOrNull() } == "application/x-nzb"
             _state.update { it.copy(torrentUri = uri, torrentName = name, torrentIsNzb = nzb, error = null) }
-            // Hash the file now (it's small) so the cache line can show before submitting.
-            torrentHash = if (nzb) null else (readTorrent(uri, name, false) as? DataResult.Success)?.data
-                ?.let { it as? AddRequest.TorrentFile }
-                ?.let { com.abhinavxt.debforge.domain.TorrentHash.fromTorrentFile(it.bytes) }
-            torrentEntries = if (nzb) null else (readTorrent(uri, name, false) as? DataResult.Success)?.data
-                ?.let { it as? AddRequest.TorrentFile }
-                ?.let { com.abhinavxt.debforge.domain.TorrentHash.filesFromTorrentFile(it.bytes) }
+            // Hash the file now (it's small) so the cache line can show before submitting; one read gives hash and files.
+            val bytes = if (nzb) null else ((readTorrent(uri, name, false) as? DataResult.Success)?.data as? AddRequest.TorrentFile)?.bytes
+            torrentHash = bytes?.let { com.abhinavxt.debforge.domain.TorrentHash.fromTorrentFile(it) }
+            torrentEntries = bytes?.let { com.abhinavxt.debforge.domain.TorrentHash.filesFromTorrentFile(it) }
             scheduleCacheCheck()
         }
     }
@@ -638,7 +647,7 @@ class AddViewModel @Inject constructor(
                         if (auto) {
                             // Ready now (e.g. RD link): queue immediately.
                             // Minus the torrent's .txt/covers/samples unless wanted.
-                            val ready = r.data.readyFiles
+                            val ready = filterSelected(r.data.readyFiles, if (requests.size == 1) selectedValue(s.files, s.unticked) else null)
                             (if (keepExtras) ready else ExtraFiles.hide(ready)).forEach { controller.enqueue(it, foreground = true) }
                             // Still fetching (TorBox torrent): watch it.
                             r.data.jobRef?.let { ref -> watcher.watch(p, ref, displayNameFor(req), if (requests.size == 1) selectedValue(s.files, s.unticked) else null) }

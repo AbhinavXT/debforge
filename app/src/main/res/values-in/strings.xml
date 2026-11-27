@@ -351,6 +351,9 @@
     <string name="add_files_title">File (%1$d · %2$s)</string>
     <string name="add_files_caption">%1$s mengambil semua file; DebForge mengunduh yang dicentang.</string>
     <string name="add_files_select_all">Pilih semua</string>
+    <string name="add_files_expanded">Diperluas</string>
+    <string name="add_files_collapsed">Diciutkan</string>
+    <string name="add_files_more">…dan %1$d file lainnya</string>
     <!-- Data usage -->
     <string name="usage_title">Penggunaan data</string>
     <string name="usage_this_month">%1$s bulan ini</string>

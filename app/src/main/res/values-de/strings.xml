@@ -365,6 +365,9 @@
     <string name="add_files_title">Dateien (%1$d · %2$s)</string>
     <string name="add_files_caption">%1$s holt alle Dateien; DebForge lädt die angehakten herunter.</string>
     <string name="add_files_select_all">Alle auswählen</string>
+    <string name="add_files_expanded">Ausgeklappt</string>
+    <string name="add_files_collapsed">Eingeklappt</string>
+    <string name="add_files_more">…und %1$d weitere Dateien</string>
     <!-- Data usage -->
     <string name="usage_title">Datennutzung</string>
     <string name="usage_this_month">%1$s diesen Monat</string>

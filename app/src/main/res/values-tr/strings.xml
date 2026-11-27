@@ -365,6 +365,9 @@
     <string name="add_files_title">Dosyalar (%1$d · %2$s)</string>
     <string name="add_files_caption">%1$s tüm dosyaları getirir; DebForge işaretlenenleri indirir.</string>
     <string name="add_files_select_all">Tümünü seç</string>
+    <string name="add_files_expanded">Genişletildi</string>
+    <string name="add_files_collapsed">Daraltıldı</string>
+    <string name="add_files_more">…ve %1$d dosya daha</string>
     <!-- Data usage -->
     <string name="usage_title">Veri kullanımı</string>
     <string name="usage_this_month">Bu ay %1$s</string>

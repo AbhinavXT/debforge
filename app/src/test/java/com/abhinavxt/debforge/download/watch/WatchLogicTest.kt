@@ -41,7 +41,28 @@ class WatchLogicTest {
     @Test fun selectionMatchesByPathSuffix() {
         val files = listOf(item("Folder/S01/a.mkv"), item("Folder/S01/b.mkv"), item("xa.mkv"), item("c.mkv"))
         assertEquals(listOf("Folder/S01/a.mkv", "c.mkv"), filterSelected(files, "S01/a.mkv\nc.mkv").map { it.filename })
-        assertEquals(emptyList<DownloadItem>(), filterSelected(files, ""))
+    }
+
+    @Test fun torrentPathWithFolderMatchesServiceName() {
+        val files = listOf(item("a.mkv"), item("b.mkv"))
+        assertEquals(listOf("a.mkv"), filterSelected(files, "Folder/a.mkv").map { it.filename })
+    }
+
+    @Test fun suffixNeedsSlashBoundary() {
+        val files = listOf(item("xa.mkv"), item("b.mkv"))
+        assertEquals(listOf("b.mkv"), filterSelected(files, "Folder/b.mkv\nFolder/xb.mkv").map { it.filename })
+        assertEquals(listOf("xa.mkv"), filterSelected(files, "a.mkv\nxa.mkv").map { it.filename })
+    }
+
+    @Test fun noMatchOrEmptySelectionFallsBackToAll() {
+        val files = listOf(item("a.mkv"), item("b.mkv"))
+        assertEquals(files, filterSelected(files, "zzz.mkv"))
+        assertEquals(files, filterSelected(files, ""))
+    }
+
+    @Test fun readyFilesAreNarrowedToTheTicked() {
+        val ready = listOf(item("Show/a.mkv"), item("Show/b.mkv"))
+        assertEquals(listOf("Show/b.mkv"), filterSelected(ready, "Show/b.mkv").map { it.filename })
     }
 
     @Test fun periodBacksOffAfterSixHours() {

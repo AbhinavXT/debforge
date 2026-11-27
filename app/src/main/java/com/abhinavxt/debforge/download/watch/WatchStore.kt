@@ -63,11 +63,12 @@ fun cloudReadyTarget(provider: String?, jobRef: String?, signedIn: Set<ProviderI
     return signedIn.firstOrNull { it.name == provider }
 }
 
-/** Keeps all [files] when [selected] is null; else those whose path ends with a selected path (the service may prefix the torrent folder). */
+/** Keeps all [files] when [selected] is null; else those where either path is a suffix of the other on a "/" boundary (the service or the .torrent may prefix a folder). No match at all falls back to all files, never to nothing. */
 fun filterSelected(files: List<DownloadItem>, selected: String?): List<DownloadItem> {
     if (selected == null) return files
     val paths = selected.split('\n').filter { it.isNotEmpty() }
-    return files.filter { f -> paths.any { f.filename == it || f.filename.endsWith("/$it") } }
+    val hits = files.filter { f -> paths.any { f.filename == it || f.filename.endsWith("/$it") || it.endsWith("/${f.filename}") } }
+    return hits.ifEmpty { files }
 }
 
 /** Background check period: 15 min, or 60 once the newest watch is over 6 h old. */
