@@ -1,0 +1,6 @@
+• Torrent file list in the Add dialog: see the files and tick which ones DebForge downloads
+• Get notified when your service finishes a download (Settings > Downloads)
+• TorBox: choose a stream quality in the player (TorBox Pro)
+• "Add a service" now opens sign-in while you're signed in
+• Update notice on the Home tab too
+• Switching off a processing item's watch now sticks
