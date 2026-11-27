@@ -175,7 +175,9 @@ internal class VideoRefresh(private val s: VideoSession) {
     suspend fun streamQualityOptions(): List<com.abhinavxt.debforge.player.youtube.QualityOption>? {
         val id = s.identity ?: return null
         return try {
+            val original = s.context.getString(com.abhinavxt.debforge.R.string.player_quality_original)
             val list = s.registry[id.provider].streamQualities(id.sourceRef)
+                .map { if (it.id == com.abhinavxt.debforge.data.provider.StreamQuality.ORIGINAL) it.copy(label = original) else it }
             if (list.isEmpty()) null else com.abhinavxt.debforge.player.youtube.YouTubeStreaming.streamOptions(list, s.streamQuality)
         } catch (e: kotlinx.coroutines.CancellationException) {
             throw e

@@ -828,7 +828,7 @@ class TorBoxProvider @Inject constructor(
 
         /** createstream's chosen_resolution_index is the list position; the first is the height (the quality id). */
         val RESOLUTIONS = listOf(144 to "144p", 240 to "240p", 360 to "360p", 480 to "480p", 720 to "720p", 1080 to "1080p", 1440 to "1440p", 2160 to "2160p")
-        val REFUSED_CODES = setOf(401, 402, 403)
+        val REFUSED_CODES = setOf(402, 403) // 401 is an expired key: let it surface like other calls
 
         /** "Original" plus every fixed resolution below [sourceHeight]; unknown height offers 480p to 1080p. */
         fun buildQualities(sourceHeight: Int?): List<StreamQuality> {
