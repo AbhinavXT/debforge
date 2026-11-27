@@ -64,4 +64,21 @@ class WatchDaoTest {
         dao.upsert(WatchEntity(ProviderId.TORBOX, "auto", "a", createdAt = 100))
         assertEquals(1, dao.countActive(cutoff = 200))
     }
+
+    @Test
+    fun mutedMarkerIsNotCountedAndNotOverwrittenByNotifyOnly() = runBlocking {
+        dao.upsert(WatchEntity(ProviderId.TORBOX, "j", "m", muted = true))
+        assertEquals(0, dao.countActive(cutoff = 0))
+        assertEquals(-1L, dao.insertIgnore(WatchEntity(ProviderId.TORBOX, "j", "m", notifyOnly = true)))
+        dao.deleteNotifyOnly()
+        assertEquals(listOf(true), dao.getAll().map { it.muted })
+    }
+
+    @Test
+    fun watchingAgainReplacesTheMutedMarker() = runBlocking {
+        dao.upsert(WatchEntity(ProviderId.TORBOX, "j", "m", muted = true))
+        dao.upsert(WatchEntity(ProviderId.TORBOX, "j", "m"))
+        assertEquals(listOf(false), dao.getAll().map { it.muted })
+        assertEquals(1, dao.countActive(cutoff = 0))
+    }
 }

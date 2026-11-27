@@ -23,7 +23,9 @@ data class WatchEntity(
     /** Only tell the user when it is ready; don't queue the files. */
     @ColumnInfo(defaultValue = "0") val notifyOnly: Boolean = false,
     /** Newline-joined file paths to download; null = all. */
-    val selected: String? = null
+    val selected: String? = null,
+    /** The user switched watching off: a marker only, never polled, so Browse does not re-add the job. */
+    @ColumnInfo(defaultValue = "0") val muted: Boolean = false
 )
 
 /** What a check does with one watch. SKIP leaves it for a later run (signed out may just be a Keystore hiccup). */
@@ -40,8 +42,8 @@ const val PURGE_AFTER_MS = 14L * 24 * 60 * 60 * 1000
 fun watchStep(w: WatchEntity, signedIn: Set<ProviderId>, ready: Boolean, now: Long = System.currentTimeMillis()): WatchStep {
     val age = now - w.createdAt
     return when {
-        (w.notifyOnly || w.provider !in signedIn) && age > PURGE_AFTER_MS -> WatchStep.DROP
-        w.provider !in signedIn -> WatchStep.SKIP
+        (w.notifyOnly || w.muted || w.provider !in signedIn) && age > PURGE_AFTER_MS -> WatchStep.DROP
+        w.muted || w.provider !in signedIn -> WatchStep.SKIP
         w.notifyOnly && age > GIVE_UP_AFTER_MS -> WatchStep.SKIP
         else -> watchReadyStep(w, ready)
     }
@@ -89,8 +91,8 @@ interface WatchDao {
     @Query("SELECT COUNT(*) FROM watches")
     suspend fun count(): Int
 
-    /** Rows still worth polling: not a notify-only row older than [cutoff]. */
-    @Query("SELECT COUNT(*) FROM watches WHERE notifyOnly = 0 OR createdAt > :cutoff")
+    /** Rows still worth polling: not a muted marker or a notify-only row older than [cutoff]. */
+    @Query("SELECT COUNT(*) FROM watches WHERE muted = 0 AND (notifyOnly = 0 OR createdAt > :cutoff)")
     suspend fun countActive(cutoff: Long): Int
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -100,6 +102,7 @@ interface WatchDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertIgnore(watch: WatchEntity): Long
 
+    /** Muted markers have notifyOnly = 0, so they survive this. */
     @Query("DELETE FROM watches WHERE notifyOnly = 1")
     suspend fun deleteNotifyOnly()
 

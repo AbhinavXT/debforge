@@ -74,6 +74,12 @@ class ReadyWatcher @Inject constructor(
         cancelIfIdle()
     }
 
+    /** The user switched watching off: leave a marker so nothing watches the job again until they switch it on. */
+    suspend fun mute(provider: ProviderId, jobRef: String, name: String) {
+        dao.upsert(WatchEntity(provider, jobRef, name, muted = true))
+        cancelIfIdle()
+    }
+
     suspend fun unwatch(provider: ProviderId, jobRef: String) {
         dao.delete(provider, jobRef)
         cancelIfIdle()

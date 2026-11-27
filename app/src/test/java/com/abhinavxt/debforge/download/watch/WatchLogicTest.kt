@@ -12,6 +12,9 @@ class WatchLogicTest {
 
     @Test fun notifyOnlyReadyNotifies() = assertEquals(WatchStep.NOTIFY, watchStep(watch(notifyOnly = true), setOf(tb), ready = true))
     @Test fun normalReadyEnqueues() = assertEquals(WatchStep.ENQUEUE, watchStep(watch(), setOf(tb), ready = true))
+    @Test fun mutedIsSkippedEvenWhenReady() = assertEquals(WatchStep.SKIP, watchStep(WatchEntity(tb, "j", "n", muted = true), setOf(tb), ready = true))
+    @Test fun mutedIsPurgedAfterFourteenDays() =
+        assertEquals(WatchStep.DROP, watchStep(WatchEntity(tb, "j", "n", createdAt = 0, muted = true), setOf(tb), ready = true, now = PURGE_AFTER_MS + 1))
     @Test fun notReadyWaits() = assertEquals(WatchStep.WAIT, watchStep(watch(notifyOnly = true), setOf(tb), ready = false))
     @Test fun signedOutProviderIsSkippedNotDropped() {
         assertEquals(WatchStep.SKIP, watchStep(watch(), emptySet(), ready = true))

@@ -147,7 +147,7 @@ class BrowseViewModel @Inject constructor(
 
     /** "provider|jobRef" of every job set to auto-download. */
     val watchedJobs: StateFlow<Set<String>> = watcher.watches
-        .map { list -> list.filter { !it.notifyOnly }.map { "${it.provider.name}|${it.jobRef}" }.toSet() }
+        .map { list -> list.filter { !it.notifyOnly && !it.muted }.map { "${it.provider.name}|${it.jobRef}" }.toSet() }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptySet())
 
     /** Every watch row, notify-only included, so a job is not given a second row. */
@@ -551,9 +551,9 @@ class BrowseViewModel @Inject constructor(
         if (!job.canWatch) return
         viewModelScope.launch {
             if (isWatched(job)) {
-                // Back to notify-only (no-op when that setting is off), not gone and re-added by the next poll.
+                // A muted marker, so the next poll does not re-add a notify-only watch.
                 watchesOf(job).forEach { watcher.unwatch(job.provider, it) }
-                watcher.watchNotifyOnly(job.provider, job.ref, job.name)
+                watcher.mute(job.provider, job.ref, job.name)
             } else {
                 watcher.watch(job.provider, job.ref, job.name)
                 _events.emit(str(R.string.msg_will_download_when_ready, job.name))
