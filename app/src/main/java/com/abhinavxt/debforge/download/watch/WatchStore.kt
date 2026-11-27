@@ -36,6 +36,16 @@ fun watchStep(w: WatchEntity, signedIn: Set<ProviderId>, ready: Boolean): WatchS
     else -> WatchStep.ENQUEUE
 }
 
+/** Whether a job the user did not ask to auto-download gets a notify-only watch. */
+fun shouldWatchNotifyOnly(setting: Boolean, autoDownload: Boolean, jobRef: String?, ready: Boolean): Boolean =
+    setting && !autoDownload && jobRef != null && !ready
+
+/** The provider a "finished on the service" tap should switch to; null when the extras are missing or it is signed out. */
+fun cloudReadyTarget(provider: String?, jobRef: String?, signedIn: Set<ProviderId>): ProviderId? {
+    if (jobRef.isNullOrEmpty()) return null
+    return signedIn.firstOrNull { it.name == provider }
+}
+
 /** Keeps all [files] when [selected] is null; else those whose path ends with a selected path (the service may prefix the torrent folder). */
 fun filterSelected(files: List<DownloadItem>, selected: String?): List<DownloadItem> {
     if (selected == null) return files
@@ -63,6 +73,13 @@ interface WatchDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(watch: WatchEntity)
+
+    /** Never overwrites: an auto-download watch for the same job stays as it is. */
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertIgnore(watch: WatchEntity)
+
+    @Query("DELETE FROM watches WHERE notifyOnly = 1")
+    suspend fun deleteNotifyOnly()
 
     @Query("DELETE FROM watches WHERE provider = :provider AND jobRef = :jobRef")
     suspend fun delete(provider: ProviderId, jobRef: String)

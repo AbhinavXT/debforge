@@ -34,4 +34,20 @@ class WatchLogicTest {
         assertEquals(15L, watchPeriodMinutes(now - 6 * 3_600_000, now))
         assertEquals(60L, watchPeriodMinutes(now - 6 * 3_600_000 - 1, now))
     }
+
+    @Test fun notifyOnlyWatchDecision() {
+        assertEquals(true, shouldWatchNotifyOnly(setting = true, autoDownload = false, jobRef = "j", ready = false))
+        assertEquals(false, shouldWatchNotifyOnly(setting = false, autoDownload = false, jobRef = "j", ready = false))
+        assertEquals(false, shouldWatchNotifyOnly(setting = true, autoDownload = true, jobRef = "j", ready = false))
+        assertEquals(false, shouldWatchNotifyOnly(setting = true, autoDownload = false, jobRef = null, ready = false))
+        assertEquals(false, shouldWatchNotifyOnly(setting = true, autoDownload = false, jobRef = "j", ready = true))
+    }
+
+    @Test fun cloudReadyTapGoesToSignedInProvider() {
+        assertEquals(tb, cloudReadyTarget("TORBOX", "j", setOf(tb)))
+        assertEquals(null, cloudReadyTarget("TORBOX", "j", emptySet()))
+        assertEquals(null, cloudReadyTarget("TORBOX", null, setOf(tb)))
+        assertEquals(null, cloudReadyTarget("NOPE", "j", setOf(tb)))
+        assertEquals(null, cloudReadyTarget(null, "j", setOf(tb)))
+    }
 }

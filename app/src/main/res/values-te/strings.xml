@@ -248,6 +248,8 @@
     <string name="notif_ready_one">సిద్ధం: %1$s</string>
     <string name="cloud_ready_title">సేవలో పూర్తైంది: %1$s</string>
     <string name="cloud_ready_body">DebForge తెరవడానికి నొక్కండి.</string>
+    <string name="set_notify_cloud_ready">డౌన్‌లోడ్ పూర్తయినప్పుడు తెలియజేయి</string>
+    <string name="set_notify_cloud_ready_detail">ఈ ఫోన్‌కు డౌన్‌లోడ్ చేయడానికి సెట్ చేయని డౌన్‌లోడ్‌ను సర్వీస్ పూర్తి చేసినప్పుడు నోటిఫికేషన్ వస్తుంది.</string>
     <string name="notif_ready_body">డౌన్‌లోడ్ క్యూలో ఉంది. మొదలుపెట్టడానికి నొక్కండి.</string>
     <string name="notif_downloaded">డౌన్‌లోడ్ అయింది</string>
     <string name="chooser_play_with">దీనితో ప్లే చేయి</string>

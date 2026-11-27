@@ -48,6 +48,7 @@ data class SettingsUiState(
 class SettingsViewModel @Inject constructor(
     private val settingsStore: SettingsStore,
     private val auth: AuthRepository,
+    private val readyWatcher: com.abhinavxt.debforge.download.watch.ReadyWatcher,
     private val metadata: MetadataRepository,
     private val downloadScheduler: DownloadScheduler,
     private val downloadDao: com.abhinavxt.debforge.data.local.DownloadDao,
@@ -108,6 +109,14 @@ class SettingsViewModel @Inject constructor(
         viewModelScope, SharingStarted.WhileSubscribed(5_000), false
     )
     fun setRemoveAfterDownload(v: Boolean) = viewModelScope.launch { settingsStore.setRemoveAfterDownload(v) }
+
+    val notifyCloudReady: StateFlow<Boolean> = settingsStore.notifyCloudReadyFlow.stateIn(
+        viewModelScope, SharingStarted.WhileSubscribed(5_000), true
+    )
+    fun setNotifyCloudReady(v: Boolean) = viewModelScope.launch {
+        settingsStore.setNotifyCloudReady(v)
+        if (!v) readyWatcher.clearNotifyOnly()
+    }
 
     fun setOrganizeLibrary(v: Boolean) = viewModelScope.launch { settingsStore.setOrganizeLibrary(v) }
 

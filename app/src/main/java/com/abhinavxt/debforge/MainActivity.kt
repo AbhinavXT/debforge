@@ -25,6 +25,7 @@ import com.abhinavxt.debforge.ui.add.PendingAdd
 import com.abhinavxt.debforge.ui.add.PendingAddStore
 import com.abhinavxt.debforge.ui.theme.DebforgeTheme
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -36,6 +37,7 @@ class MainActivity : ComponentActivity() {
     @Inject lateinit var downloadController: DownloadController
     @Inject lateinit var housekeeper: com.abhinavxt.debforge.download.Housekeeper
     @Inject lateinit var localImporter: com.abhinavxt.debforge.download.LocalImporter
+    @Inject lateinit var auth: com.abhinavxt.debforge.data.repository.AuthRepository
     @Inject lateinit var settingsStore: com.abhinavxt.debforge.data.prefs.SettingsStore
     @Inject lateinit var audioPlayer: com.abhinavxt.debforge.player.AudioPlayer
     @Inject lateinit var videoLauncher: com.abhinavxt.debforge.player.VideoLauncher
@@ -61,6 +63,7 @@ class MainActivity : ComponentActivity() {
         if (savedInstanceState == null) {
             pendingAdds.offerFromIntent(intent)
             handleAppAction(intent)
+            takeCloudReady(intent)
             // Reopened from recents (even after the process died), the launch intent comes back with the
             // widget's request in it: only a real tap plays.
             if (intent.flags and Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY == 0) takePlayRestored(intent)
@@ -151,12 +154,29 @@ class MainActivity : ComponentActivity() {
             removeExtra(com.abhinavxt.debforge.widget.PlayerWidget.EXTRA_PLAY_RESTORED)
             // Taken below; a copy that kept it would expand the mini bar again when the activity is recreated.
             removeExtra(com.abhinavxt.debforge.player.VideoLauncher.EXTRA_OPEN_VIDEO)
+            removeExtra(DownloadNotifications.EXTRA_JOB_REF)
         })
         pendingAdds.offerFromIntent(intent)
         handleAppAction(intent)
+        takeCloudReady(intent)
         takeExpandRequest(intent)
         takeOpenVideo(intent)
         takePlayRestored(intent)
+    }
+
+    /** "Finished on the service" notification: switch to that service and show its Library (not the exact title: the job's ref is not a title key). */
+    private fun takeCloudReady(intent: Intent?) {
+        val provider = intent?.getStringExtra(DownloadNotifications.EXTRA_PROVIDER)
+        val ref = intent?.getStringExtra(DownloadNotifications.EXTRA_JOB_REF)
+        if (provider == null && ref == null) return
+        intent.removeExtra(DownloadNotifications.EXTRA_PROVIDER)
+        intent.removeExtra(DownloadNotifications.EXTRA_JOB_REF)
+        if (intent.flags and Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY != 0) return
+        lifecycleScope.launch {
+            val target = com.abhinavxt.debforge.download.watch.cloudReadyTarget(provider, ref, auth.signedInProviders.first()) ?: return@launch
+            auth.setActiveProvider(target)
+            com.abhinavxt.debforge.ui.home.NowPlayingRequest.openLibrary.value = true
+        }
     }
 
     /** The video's notification: show the watch page of the video playing (nothing when it has ended). */

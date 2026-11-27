@@ -248,6 +248,8 @@
     <string name="notif_ready_one">Hazır: %1$s</string>
     <string name="cloud_ready_title">Serviste tamamlandı: %1$s</string>
     <string name="cloud_ready_body">DebForge\'u açmak için dokunun.</string>
+    <string name="set_notify_cloud_ready">İndirme bittiğinde bildir</string>
+    <string name="set_notify_cloud_ready_detail">Hizmet, bu telefona indirilmek üzere ayarlanmamış bir indirmeyi bitirdiğinde bildirim gelir.</string>
     <string name="notif_ready_body">İndirme sırasına eklendi. Başlatmak için dokunun.</string>
     <string name="notif_downloaded">İndirildi</string>
     <string name="chooser_play_with">Şununla oynat</string>

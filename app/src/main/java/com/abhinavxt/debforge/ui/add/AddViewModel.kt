@@ -26,6 +26,7 @@ import com.abhinavxt.debforge.domain.ProviderId
 import com.abhinavxt.debforge.domain.ServicePicker
 import com.abhinavxt.debforge.download.DownloadController
 import com.abhinavxt.debforge.download.watch.ReadyWatcher
+import com.abhinavxt.debforge.download.watch.shouldWatchNotifyOnly
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -593,6 +594,8 @@ class AddViewModel @Inject constructor(
                             (if (keepExtras) ready else ExtraFiles.hide(ready)).forEach { controller.enqueue(it, foreground = true) }
                             // Still fetching (TorBox torrent): watch it.
                             r.data.jobRef?.let { ref -> watcher.watch(p, ref, displayNameFor(req)) }
+                        } else r.data.jobRef?.let { ref ->
+                            if (shouldWatchNotifyOnly(settings.notifyCloudReadyFlow.first(), false, ref, r.data.readyFiles.isNotEmpty())) watcher.watchNotifyOnly(p, ref, displayNameFor(req))
                         }
                     }
                     is DataResult.Error -> if (r.cause is NotCachedException) notCached++ else failures += r.message

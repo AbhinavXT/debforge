@@ -245,6 +245,8 @@
     <string name="notif_ready_one">Siap: %1$s</string>
     <string name="cloud_ready_title">Selesai di layanan: %1$s</string>
     <string name="cloud_ready_body">Ketuk untuk membuka DebForge.</string>
+    <string name="set_notify_cloud_ready">Beri tahu saat unduhan selesai</string>
+    <string name="set_notify_cloud_ready_detail">Notifikasi saat layanan menyelesaikan unduhan yang tidak diatur untuk diunduh ke ponsel ini.</string>
     <string name="notif_ready_body">Masuk antrean unduhan. Ketuk untuk memulai.</string>
     <string name="notif_downloaded">Terunduh</string>
     <string name="chooser_play_with">Putar dengan</string>

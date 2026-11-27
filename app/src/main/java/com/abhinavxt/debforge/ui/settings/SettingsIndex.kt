@@ -47,6 +47,7 @@ val SETTINGS_INDEX: List<SettingEntry> = run {
         e(DOWNLOADS, R.string.set_download_folder), e(DOWNLOADS, R.string.set_import_local, R.string.set_import_local_detail),
         e(DOWNLOADS, R.string.set_organise, R.string.set_organise_detail),
         e(DOWNLOADS, R.string.set_remove_after, R.string.set_remove_after_detail),
+        e(DOWNLOADS, R.string.set_notify_cloud_ready, R.string.set_notify_cloud_ready_detail),
         e(DOWNLOADS, R.string.set_auto_delete, R.string.set_auto_delete_detail),
         e(DOWNLOADS, R.string.set_wifi_only, R.string.set_wifi_only_detail), e(DOWNLOADS, R.string.set_charging_only),
         e(DOWNLOADS, R.string.set_schedule, R.string.set_schedule_detail),

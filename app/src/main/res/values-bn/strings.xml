@@ -248,6 +248,8 @@
     <string name="notif_ready_one">তৈরি: %1$s</string>
     <string name="cloud_ready_title">সার্ভিসে সম্পন্ন: %1$s</string>
     <string name="cloud_ready_body">DebForge খুলতে ট্যাপ করুন।</string>
+    <string name="set_notify_cloud_ready">ডাউনলোড শেষ হলে জানান</string>
+    <string name="set_notify_cloud_ready_detail">সার্ভিস কোনো ডাউনলোড শেষ করলে নোটিফিকেশন দেখায়, যদি সেটি এই ফোনে ডাউনলোডের জন্য সেট করা না থাকে।</string>
     <string name="notif_ready_body">ডাউনলোডের সারিতে আছে। শুরু করতে ট্যাপ করুন।</string>
     <string name="notif_downloaded">ডাউনলোড হয়েছে</string>
     <string name="chooser_play_with">এটি দিয়ে চালান</string>

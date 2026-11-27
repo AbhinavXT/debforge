@@ -245,6 +245,8 @@
     <string name="notif_ready_one">已就绪：%1$s</string>
     <string name="cloud_ready_title">服务端已完成：%1$s</string>
     <string name="cloud_ready_body">点按打开 DebForge。</string>
+    <string name="set_notify_cloud_ready">下载完成时通知</string>
+    <string name="set_notify_cloud_ready_detail">当服务完成了未设置下载到本机的下载时，发送一条通知。</string>
     <string name="notif_ready_body">已加入下载队列。点按即可开始。</string>
     <string name="notif_downloaded">已下载</string>
     <string name="chooser_play_with">播放方式</string>

@@ -248,6 +248,8 @@
     <string name="notif_ready_one">तयार: %1$s</string>
     <string name="cloud_ready_title">सेवेवर पूर्ण झाले: %1$s</string>
     <string name="cloud_ready_body">DebForge उघडण्यासाठी टॅप करा.</string>
+    <string name="set_notify_cloud_ready">डाउनलोड पूर्ण झाल्यावर सूचित करा</string>
+    <string name="set_notify_cloud_ready_detail">सेवेने एखादे डाउनलोड पूर्ण केल्यावर, जे या फोनवर डाउनलोड करण्यासाठी सेट केलेले नाही, सूचना मिळते.</string>
     <string name="notif_ready_body">डाउनलोडसाठी रांगेत. सुरू करण्यासाठी टॅप करा.</string>
     <string name="notif_downloaded">डाउनलोड झाले</string>
     <string name="chooser_play_with">यासह प्ले करा</string>

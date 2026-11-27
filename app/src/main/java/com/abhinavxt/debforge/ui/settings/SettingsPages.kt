@@ -267,6 +267,7 @@ private fun LazyListScope.downloadsItems(viewModel: SettingsViewModel, actions: 
         val importLocal by viewModel.importLocal.collectAsStateWithLifecycle()
         val organize by viewModel.organizeLibrary.collectAsStateWithLifecycle()
         val removeAfter by viewModel.removeAfterDownload.collectAsStateWithLifecycle()
+        val notifyCloudReady by viewModel.notifyCloudReady.collectAsStateWithLifecycle()
         val storageInfo by viewModel.storageInfo.collectAsStateWithLifecycle()
         val autoDeleteDays by viewModel.autoDeleteDays.collectAsStateWithLifecycle()
         // The storage lookup touches the disk: off the main thread.
@@ -310,6 +311,14 @@ private fun LazyListScope.downloadsItems(viewModel: SettingsViewModel, actions: 
                 subtitle = stringResource(R.string.set_remove_after_detail),
                 checked = removeAfter,
                 onChange = viewModel::setRemoveAfterDownload
+            )
+            RowDivider()
+            SwitchSettingRow(
+                icon = Icons.Rounded.NotificationsActive,
+                title = stringResource(R.string.set_notify_cloud_ready),
+                subtitle = stringResource(R.string.set_notify_cloud_ready_detail),
+                checked = notifyCloudReady,
+                onChange = viewModel::setNotifyCloudReady
             )
             storageInfo?.let { info ->
                 RowDivider()

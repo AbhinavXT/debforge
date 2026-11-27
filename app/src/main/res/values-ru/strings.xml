@@ -254,6 +254,8 @@
     <string name="notif_ready_one">Готово: %1$s</string>
     <string name="cloud_ready_title">Завершено на сервисе: %1$s</string>
     <string name="cloud_ready_body">Нажмите, чтобы открыть DebForge.</string>
+    <string name="set_notify_cloud_ready">Уведомлять о завершении загрузки</string>
+    <string name="set_notify_cloud_ready_detail">Уведомление, когда сервис завершает загрузку, которая не настроена на скачивание на этот телефон.</string>
     <string name="notif_ready_body">Добавлено в очередь загрузок. Нажмите, чтобы начать.</string>
     <string name="notif_downloaded">Скачано</string>
     <string name="chooser_play_with">Воспроизвести с помощью</string>

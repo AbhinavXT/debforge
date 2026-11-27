@@ -528,6 +528,8 @@ class BrowseViewModel @Inject constructor(
         if (r !is DataResult.Success || p != provider) return false
         val before = _processing.value.mapTo(HashSet()) { it.ref }
         _processing.value = r.data
+        // Unwatched jobs still processing: tell the user when they finish.
+        r.data.filter { it.canWatch && !isWatched(it) }.forEach { watcher.watchNotifyOnly(it.provider, it.ref, it.name) }
         val after = r.data.mapTo(HashSet()) { it.ref }
         return (before - after).isNotEmpty()
     }

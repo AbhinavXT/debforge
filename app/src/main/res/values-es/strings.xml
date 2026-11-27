@@ -251,6 +251,8 @@
     <string name="notif_ready_one">Listo: %1$s</string>
     <string name="cloud_ready_title">Terminado en el servicio: %1$s</string>
     <string name="cloud_ready_body">Toca para abrir DebForge.</string>
+    <string name="set_notify_cloud_ready">Avisar cuando termine una descarga</string>
+    <string name="set_notify_cloud_ready_detail">Una notificación cuando el servicio termina una descarga que no está configurada para bajarse a este teléfono.</string>
     <string name="notif_ready_body">En cola para descargar. Toca para empezar.</string>
     <string name="notif_downloaded">Descargado</string>
     <string name="chooser_play_with">Reproducir con</string>

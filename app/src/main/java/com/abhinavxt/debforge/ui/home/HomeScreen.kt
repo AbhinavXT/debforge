@@ -351,6 +351,15 @@ private fun HomeShell(signedIn: Boolean, prefs: NavPrefs) {
             NowPlayingRequest.openSearch.value = false
         }
     }
+    val libraryRequested by NowPlayingRequest.openLibrary.collectAsStateWithLifecycle()
+    LaunchedEffect(libraryRequested) {
+        if (libraryRequested) {
+            nowPlaying = false
+            if (videoExpanded) videoLauncher.dispatch(VideoModeEvent.Minimise)
+            go(HomeTab.Browse)
+            NowPlayingRequest.openLibrary.value = false
+        }
+    }
     val settingsRequested by NowPlayingRequest.openSettings.collectAsStateWithLifecycle()
     LaunchedEffect(settingsRequested) {
         if (settingsRequested) {

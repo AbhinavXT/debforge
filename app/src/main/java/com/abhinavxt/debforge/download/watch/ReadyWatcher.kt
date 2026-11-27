@@ -62,6 +62,19 @@ class ReadyWatcher @Inject constructor(
         ReadyWatchJobService.schedule(context)
     }
 
+    /** Tells the user when the job finishes; no-op when the setting is off or a watch for it exists. */
+    suspend fun watchNotifyOnly(provider: ProviderId, jobRef: String, name: String) {
+        if (!settings.notifyCloudReadyFlow.first()) return
+        dao.insertIgnore(WatchEntity(provider, jobRef, name, notifyOnly = true))
+        ReadyWatchJobService.schedule(context)
+    }
+
+    /** The setting was turned off: drop the notify-only watches (and the job, if nothing else is watched). */
+    suspend fun clearNotifyOnly() {
+        dao.deleteNotifyOnly()
+        if (dao.count() == 0) ReadyWatchJobService.cancel(context)
+    }
+
     suspend fun unwatch(provider: ProviderId, jobRef: String) {
         dao.delete(provider, jobRef)
         if (dao.count() == 0) ReadyWatchJobService.cancel(context)

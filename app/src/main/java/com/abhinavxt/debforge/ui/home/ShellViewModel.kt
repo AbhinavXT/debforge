@@ -32,6 +32,9 @@ object NowPlayingRequest {
     /** The "Search" launcher shortcut: HomeScreen switches to the Search tab and clears it. */
     val openSearch = MutableStateFlow(false)
 
+    /** A "finished on the service" notification: HomeScreen switches to the Library tab and clears it. */
+    val openLibrary = MutableStateFlow(false)
+
     /** Open Settings (at [com.abhinavxt.debforge.ui.settings.SettingsTarget]). */
     val openSettings = MutableStateFlow(false)
 }

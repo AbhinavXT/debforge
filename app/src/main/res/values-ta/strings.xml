@@ -248,6 +248,8 @@
     <string name="notif_ready_one">தயார்: %1$s</string>
     <string name="cloud_ready_title">சேவையில் முடிந்தது: %1$s</string>
     <string name="cloud_ready_body">DebForge ஐத் திறக்க தட்டவும்.</string>
+    <string name="set_notify_cloud_ready">பதிவிறக்கம் முடிந்ததும் அறிவி</string>
+    <string name="set_notify_cloud_ready_detail">இந்த ஃபோனில் பதிவிறக்க அமைக்கப்படாத ஒரு பதிவிறக்கத்தை சேவை முடித்ததும் அறிவிப்பு வரும்.</string>
     <string name="notif_ready_body">பதிவிறக்க வரிசையில் உள்ளது. தொடங்க தட்டவும்.</string>
     <string name="notif_downloaded">பதிவிறக்கப்பட்டது</string>
     <string name="chooser_play_with">இதன் மூலம் இயக்கு</string>

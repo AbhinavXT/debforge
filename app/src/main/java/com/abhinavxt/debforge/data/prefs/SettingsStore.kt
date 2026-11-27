@@ -53,6 +53,7 @@ class SettingsStore @Inject constructor(
     private val keyAppTheme = stringPreferencesKey("app_theme")
     private val keyPureBlack = booleanPreferencesKey("pure_black")
     private val keyShowExtras = booleanPreferencesKey("show_extra_files")
+    private val keyNotifyCloudReady = booleanPreferencesKey("notify_cloud_ready")
     private val keyAutoDeleteDays = intPreferencesKey("auto_delete_days")
     private val keyExpiryReminder = intPreferencesKey("expiry_reminder_days")
     private val keyInternalPlayer = booleanPreferencesKey("internal_player")
@@ -141,6 +142,10 @@ class SettingsStore @Inject constructor(
      * library and include them in auto-downloads. Off by default.
      */
     val showExtraFilesFlow: Flow<Boolean> = context.settingsDataStore.data.map { it[keyShowExtras] ?: false }
+
+    /** Notify when the service finishes a download that is not set to auto-download. On by default. */
+    val notifyCloudReadyFlow: Flow<Boolean> = context.settingsDataStore.data.map { it[keyNotifyCloudReady] ?: true }
+    suspend fun setNotifyCloudReady(v: Boolean) = context.settingsDataStore.edit { it[keyNotifyCloudReady] = v }
 
     /** Add dialog: on TorBox, add only what is already cached. Off by default. */
     val addOnlyIfCachedFlow: Flow<Boolean> = context.settingsDataStore.data.map { it[keyAddOnlyIfCached] ?: false }
