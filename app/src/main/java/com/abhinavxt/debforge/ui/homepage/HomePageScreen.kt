@@ -59,6 +59,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import coil.compose.AsyncImage
 import com.abhinavxt.debforge.R
+import com.abhinavxt.debforge.ui.update.UpdateBanner
 import com.abhinavxt.debforge.data.history.HistoryEntity
 import com.abhinavxt.debforge.data.youtube.decodeEntities
 import com.abhinavxt.debforge.domain.DownloadState
@@ -180,6 +181,7 @@ fun HomePageScreen(
         ScreenHeader(title = stringResource(R.string.tab_home)) {
             HeaderNavActions(onOpenSettings, onOpenDownloads = onOpenDownloads, activeCount = activeDownloads)
         }
+        UpdateBanner()
         Box(Modifier.weight(1f).fillMaxWidth()) {
             PullToRefreshBox(
                 isRefreshing = state.isRefreshing,

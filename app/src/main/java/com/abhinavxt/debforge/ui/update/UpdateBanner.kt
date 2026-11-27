@@ -26,7 +26,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.abhinavxt.debforge.R
 
-/** "DebForge 1.5.0 is available  [Update] [x]" at the top of the Library. */
+/** "DebForge 1.5.0 is available  [Update] [x]" at the top of Home and the Library. */
 @Composable
 fun UpdateBanner(viewModel: UpdateViewModel = hiltViewModel()) {
     val info by viewModel.banner.collectAsStateWithLifecycle()
