@@ -120,7 +120,13 @@ class VideoActions internal constructor(private val s: VideoSession) : ControlsA
         val id = s.identity
         qualityJob?.cancel()
         qualityJob = s.scope.launch {
-            val options = if (s.youtube != null) s.refresher.qualityOptions() else s.refresher.streamQualityOptions()
+            val options = try {
+                if (s.youtube != null) s.refresher.qualityOptions() else s.refresher.streamQualityOptions()
+            } catch (e: com.abhinavxt.debforge.data.provider.PlanRestrictedException) {
+                if (id == s.identity) controls.panel = null
+                android.widget.Toast.makeText(s.context, s.string(com.abhinavxt.debforge.R.string.player_quality_needs_plan), android.widget.Toast.LENGTH_SHORT).show()
+                return@launch
+            }
             // The video changed or the panel was closed meanwhile: nothing of this belongs to what is on screen now.
             if (id != s.identity || controls.panel != com.abhinavxt.debforge.player.controls.Panel.QUALITY) return@launch
             if (options == null) {

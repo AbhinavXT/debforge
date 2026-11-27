@@ -1000,6 +1000,7 @@
     <string name="yt_up_next">Sıradaki</string>
     <string name="player_quality">Kalite</string>
     <string name="player_quality_failed">Kalite değiştirilemedi. Oynatma eskisi gibi sürüyor.</string>
+    <string name="player_quality_needs_plan">Kalite seçmek için TorBox Pro gerekir</string>
     <string name="player_quality_original">Orijinal</string>
     <string name="yt_add_to_queue_cd">Kuyruğa ekle</string>
     <string name="yt_pl_added">%1$s listesine eklendi</string>

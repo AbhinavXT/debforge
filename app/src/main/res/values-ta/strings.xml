@@ -1000,6 +1000,7 @@
     <string name="yt_up_next">அடுத்து</string>
     <string name="player_quality">தரம்</string>
     <string name="player_quality_failed">தரத்தை மாற்ற முடியவில்லை. முன்பு போலவே இயங்குகிறது.</string>
+    <string name="player_quality_needs_plan">தரத்தைத் தேர்ந்தெடுக்க TorBox Pro தேவை</string>
     <string name="player_quality_original">அசல்</string>
     <string name="yt_add_to_queue_cd">வரிசையில் சேர்</string>
     <string name="yt_pl_added">%1$s இல் சேர்க்கப்பட்டது</string>

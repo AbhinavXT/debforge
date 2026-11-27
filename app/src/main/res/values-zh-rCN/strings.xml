@@ -959,6 +959,7 @@
     <string name="yt_up_next">接下来</string>
     <string name="player_quality">画质</string>
     <string name="player_quality_failed">无法更改画质，继续以原画质播放。</string>
+    <string name="player_quality_needs_plan">选择画质需要 TorBox Pro</string>
     <string name="player_quality_original">原始</string>
     <string name="yt_add_to_queue_cd">添加到队列</string>
     <string name="yt_pl_added">已添加到%1$s</string>

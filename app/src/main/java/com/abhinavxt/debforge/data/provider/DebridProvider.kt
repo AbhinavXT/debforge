@@ -279,6 +279,9 @@ data class ResolvedLink(
 /** An API-level failure with a message that is safe to show the user. */
 open class ProviderException(message: String, cause: Throwable? = null) : Exception(message, cause)
 
+/** The service refused a feature the account's plan doesn't include. */
+class PlanRestrictedException(message: String) : ProviderException(message)
+
 /** "Add only if cached" found nothing cached: the service added nothing. */
 class NotCachedException(message: String) : ProviderException(message)
 

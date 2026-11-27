@@ -1041,6 +1041,7 @@
     <string name="yt_up_next">A seguir</string>
     <string name="player_quality">Qualidade</string>
     <string name="player_quality_failed">Não foi possível mudar a qualidade. A reprodução continua como antes.</string>
+    <string name="player_quality_needs_plan">Escolher a qualidade exige o TorBox Pro</string>
     <string name="player_quality_original">Original</string>
     <string name="yt_add_to_queue_cd">Adicionar à fila</string>
     <string name="yt_pl_added">Adicionado a %1$s</string>

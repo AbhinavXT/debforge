@@ -85,11 +85,10 @@ class TorBoxStreamQualitiesTest {
         assertNull(q.first().height)
     }
 
-    @Test fun refusalHidesQualities() = runBlocking {
-        response = { TbEnvelope(false, "PLAN_RESTRICTED_FEATURE", "Pro only", null) }
-        assertEquals(emptyList<StreamQuality>(), provider.streamQualities(ref))
+    @Test fun refusalSaysThePlanNeedsUpgrade() = runBlocking {
+        // real TorBox answer: HTTP 403, {"success":false,"error":"PLAN_RESTRICTED_FEATURE",...}
         response = { throw http(403) }
-        assertEquals(emptyList<StreamQuality>(), provider.streamQualities(ref))
+        assertThrows(com.abhinavxt.debforge.data.provider.PlanRestrictedException::class.java) { runBlocking { provider.streamQualities(ref) } }
         response = { throw http(500) }
         assertThrows(retrofit2.HttpException::class.java) { runBlocking { provider.streamQualities(ref) } }
         Unit

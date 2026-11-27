@@ -1000,6 +1000,7 @@
     <string name="yt_up_next">पुढे</string>
     <string name="player_quality">गुणवत्ता</string>
     <string name="player_quality_failed">गुणवत्ता बदलता आली नाही. आधीप्रमाणेच प्ले होत आहे.</string>
+    <string name="player_quality_needs_plan">गुणवत्ता निवडण्यासाठी TorBox Pro लागते</string>
     <string name="player_quality_original">मूळ</string>
     <string name="yt_add_to_queue_cd">रांगेत जोडा</string>
     <string name="yt_pl_added">%1$s मध्ये जोडले</string>

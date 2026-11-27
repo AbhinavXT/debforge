@@ -9,6 +9,7 @@ import com.abhinavxt.debforge.data.provider.RemoteJob
 import com.abhinavxt.debforge.data.provider.DebridProvider
 import com.abhinavxt.debforge.data.provider.DeviceLogin
 import com.abhinavxt.debforge.data.provider.NotCachedException
+import com.abhinavxt.debforge.data.provider.PlanRestrictedException
 import com.abhinavxt.debforge.data.provider.ProviderException
 import com.abhinavxt.debforge.data.provider.ProviderInfo
 import com.abhinavxt.debforge.data.provider.ResolvedLink
@@ -382,10 +383,9 @@ class TorBoxProvider @Inject constructor(
             api.createStream(ref.itemId, ref.fileId, ref.kind.streamType).unwrap()
         } catch (ce: CancellationException) {
             throw ce
-        } catch (e: ProviderException) {
-            return emptyList() // refused, typically not Pro: the UI hides the choice
         } catch (e: HttpException) {
-            if (e.code() in REFUSED_CODES) return emptyList() else throw e
+            // TorBox answers 403 PLAN_RESTRICTED_FEATURE when the plan has no web streaming
+            if (e.code() in REFUSED_CODES) throw PlanRestrictedException("TorBox plan has no stream qualities") else throw e
         }
         return buildQualities(stream.videoHeight)
     }

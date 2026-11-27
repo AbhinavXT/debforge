@@ -181,6 +181,8 @@ internal class VideoRefresh(private val s: VideoSession) {
             if (list.isEmpty()) null else com.abhinavxt.debforge.player.youtube.YouTubeStreaming.streamOptions(list, s.streamQuality)
         } catch (e: kotlinx.coroutines.CancellationException) {
             throw e
+        } catch (e: com.abhinavxt.debforge.data.provider.PlanRestrictedException) {
+            throw e
         } catch (e: Exception) {
             null
         }
