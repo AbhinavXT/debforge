@@ -89,4 +89,14 @@ class WatchLogicTest {
         assertEquals(null, cloudReadyTarget("NOPE", "j", setOf(tb)))
         assertEquals(null, cloudReadyTarget(null, "j", setOf(tb)))
     }
+
+    @Test
+    fun freshRowDecidesAfterTheNetworkCall() {
+        val s = setOf(ProviderId.TORBOX)
+        val w = WatchEntity(ProviderId.TORBOX, "j", "n")
+        assertEquals(WatchStep.ENQUEUE, freshWatchStep(w, s))
+        assertEquals(WatchStep.NOTIFY, freshWatchStep(w.copy(notifyOnly = true), s))
+        assertEquals(WatchStep.SKIP, freshWatchStep(w.copy(muted = true), s))
+        assertEquals(WatchStep.SKIP, freshWatchStep(null, s))
+    }
 }

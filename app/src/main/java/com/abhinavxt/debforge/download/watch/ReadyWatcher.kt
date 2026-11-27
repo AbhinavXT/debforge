@@ -86,7 +86,9 @@ class ReadyWatcher @Inject constructor(
     }
 
     private suspend fun cancelIfIdle() {
-        if (dao.countActive(System.currentTimeMillis() - GIVE_UP_AFTER_MS) == 0) ReadyWatchJobService.cancel(context)
+        val now = System.currentTimeMillis()
+        dao.purgeMarkersBefore(now - PURGE_AFTER_MS)
+        if (dao.countActive(now - GIVE_UP_AFTER_MS) == 0) ReadyWatchJobService.cancel(context)
     }
 
     /**
@@ -106,14 +108,18 @@ class ReadyWatcher @Inject constructor(
             when (val r = repository.filesForJob(w.provider, w.jobRef)) {
                 is DataResult.Success -> {
                     val files = r.data ?: continue // still processing
-                    // Skip the release group's .txt, covers and samples unless
-                    // the user asked to see them.
-                    if (watchStep(w, signedIn, ready = true) == WatchStep.NOTIFY) {
+                    // The user may have muted or changed it during the network call: act on the fresh row.
+                    val cur = dao.get(w.provider, w.jobRef)
+                    val step = freshWatchStep(cur, signedIn)
+                    if (step == WatchStep.NOTIFY) {
                         DownloadNotifications.notifyCloudReady(context, w.name, w.provider, w.jobRef)
                         dao.delete(w.provider, w.jobRef)
                         continue
                     }
-                    val shown = filterSelected(files, w.selected)
+                    if (step != WatchStep.ENQUEUE || cur == null) continue
+                    // Skip the release group's .txt, covers and samples unless
+                    // the user asked to see them.
+                    val shown = filterSelected(files, cur.selected)
                     val wanted = if (settings.showExtraFilesFlow.first()) shown else ExtraFiles.hideInTorrent(shown)
                     wanted.forEach { controller.enqueue(it) }
                     dao.delete(w.provider, w.jobRef)
@@ -129,7 +135,7 @@ class ReadyWatcher @Inject constructor(
             }
         }
         if (dao.countActive(now - GIVE_UP_AFTER_MS) == 0) ReadyWatchJobService.cancel(context)
-        else dao.newestCreatedAt()?.let { ReadyWatchJobService.ensurePeriod(context, watchPeriodMinutes(it, now)) }
+        else dao.newestCreatedAt(now - GIVE_UP_AFTER_MS)?.let { ReadyWatchJobService.ensurePeriod(context, watchPeriodMinutes(it, now)) }
         if (fromBackground && ready.isNotEmpty()) DownloadNotifications.notifyReady(context, ready)
         ready
     }

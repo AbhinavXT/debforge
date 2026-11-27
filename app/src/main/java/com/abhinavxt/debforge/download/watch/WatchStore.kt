@@ -49,6 +49,10 @@ fun watchStep(w: WatchEntity, signedIn: Set<ProviderId>, ready: Boolean, now: Lo
     }
 }
 
+/** The decision once a job came back ready, from the row re-read after the network call: a muted or removed watch does nothing. */
+fun freshWatchStep(fresh: WatchEntity?, signedIn: Set<ProviderId>, now: Long = System.currentTimeMillis()): WatchStep =
+    if (fresh == null) WatchStep.SKIP else watchStep(fresh, signedIn, ready = true, now = now)
+
 private fun watchReadyStep(w: WatchEntity, ready: Boolean): WatchStep = when {
     !ready -> WatchStep.WAIT
     w.notifyOnly -> WatchStep.NOTIFY
@@ -85,8 +89,16 @@ interface WatchDao {
     @Query("SELECT * FROM watches ORDER BY createdAt ASC")
     suspend fun getAll(): List<WatchEntity>
 
-    @Query("SELECT MAX(createdAt) FROM watches")
-    suspend fun newestCreatedAt(): Long?
+    /** Newest row still worth polling (same rows as [countActive]). */
+    @Query("SELECT MAX(createdAt) FROM watches WHERE muted = 0 AND (notifyOnly = 0 OR createdAt > :cutoff)")
+    suspend fun newestCreatedAt(cutoff: Long): Long?
+
+    @Query("SELECT * FROM watches WHERE provider = :provider AND jobRef = :jobRef")
+    suspend fun get(provider: ProviderId, jobRef: String): WatchEntity?
+
+    /** Drops muted and notify-only markers created before [cutoff]. */
+    @Query("DELETE FROM watches WHERE (muted = 1 OR notifyOnly = 1) AND createdAt < :cutoff")
+    suspend fun purgeMarkersBefore(cutoff: Long)
 
     @Query("SELECT COUNT(*) FROM watches")
     suspend fun count(): Int

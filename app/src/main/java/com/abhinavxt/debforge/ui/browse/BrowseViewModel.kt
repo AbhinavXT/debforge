@@ -670,7 +670,7 @@ class BrowseViewModel @Inject constructor(
     /** Removes a job that's still processing (e.g. a stalled torrent). */
     fun removeJob(job: RemoteJob) {
         viewModelScope.launch {
-            val watches = watchesOf(job)
+            val watches = watchesOf(job, anyWatchKeys.value) // incl. muted markers
             removeKeys(job.provider, setOf(job.ref))
             // A removed job must not auto-download later (removeKeys already dropped its own watch).
             if (_processing.value.none { it.ref == job.ref }) watches.forEach { watcher.unwatch(job.provider, it) }

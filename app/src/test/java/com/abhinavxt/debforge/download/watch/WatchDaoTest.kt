@@ -81,4 +81,31 @@ class WatchDaoTest {
         assertEquals(listOf(false), dao.getAll().map { it.muted })
         assertEquals(1, dao.countActive(cutoff = 0))
     }
+
+    @Test
+    fun newestCreatedAtIgnoresMutedAndStaleNotifyOnlyRows() = runBlocking {
+        dao.upsert(WatchEntity(ProviderId.TORBOX, "a", "a", createdAt = 100))
+        dao.upsert(WatchEntity(ProviderId.TORBOX, "m", "m", createdAt = 900, muted = true))
+        dao.insertIgnore(WatchEntity(ProviderId.TORBOX, "n", "n", createdAt = 500, notifyOnly = true))
+        assertEquals(100L, dao.newestCreatedAt(cutoff = 600))
+        assertEquals(500L, dao.newestCreatedAt(cutoff = 400))
+    }
+
+    @Test
+    fun purgeDropsOnlyOldMarkers() = runBlocking {
+        dao.upsert(WatchEntity(ProviderId.TORBOX, "oldMuted", "m", createdAt = 100, muted = true))
+        dao.insertIgnore(WatchEntity(ProviderId.TORBOX, "oldNotify", "n", createdAt = 100, notifyOnly = true))
+        dao.upsert(WatchEntity(ProviderId.TORBOX, "oldAuto", "a", createdAt = 100))
+        dao.upsert(WatchEntity(ProviderId.TORBOX, "newMuted", "m", createdAt = 300, muted = true))
+        dao.purgeMarkersBefore(200)
+        assertEquals(listOf("oldAuto", "newMuted"), dao.getAll().map { it.jobRef })
+    }
+
+    @Test
+    fun getReturnsTheCurrentRowOrNull() = runBlocking {
+        dao.upsert(WatchEntity(ProviderId.TORBOX, "j", "j"))
+        dao.upsert(WatchEntity(ProviderId.TORBOX, "j", "j", muted = true))
+        assertEquals(true, dao.get(ProviderId.TORBOX, "j")?.muted)
+        assertEquals(null, dao.get(ProviderId.TORBOX, "x"))
+    }
 }
