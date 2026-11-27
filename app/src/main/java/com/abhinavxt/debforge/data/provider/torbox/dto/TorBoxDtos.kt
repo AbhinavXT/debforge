@@ -111,3 +111,24 @@ data class TbWebControl(
     @Json(name = "operation") val operation: String = "delete"
 )
 
+
+/**
+ * GET /stream/createstream data. Everything is nullable. [metadata] is kept
+ * loose (`{"video": {"height": 1080, ...}}`, possibly a list of streams).
+ */
+@JsonClass(generateAdapter = true)
+data class TbStreamDto(
+    @Json(name = "hls_url") val hlsUrl: String?,
+    @Json(name = "resolution_index") val resolutionIndex: Int? = null,
+    @Json(name = "is_transcoding") val isTranscoding: Boolean? = null,
+    @Json(name = "needs_transcoding") val needsTranscoding: Boolean? = null,
+    @Json(name = "metadata") val metadata: Map<String, Any?>? = null
+) {
+    /** Source video height in pixels, or null if the metadata doesn't say. */
+    val videoHeight: Int?
+        get() {
+            val v = metadata?.get("video")
+            val m = (if (v is List<*>) v.firstOrNull() else v) as? Map<*, *>
+            return (m?.get("height") as? Number)?.toInt()?.takeIf { it > 0 }
+        }
+}

@@ -11,6 +11,7 @@ import com.abhinavxt.debforge.data.provider.NotCachedException
 import com.abhinavxt.debforge.data.provider.ProviderException
 import com.abhinavxt.debforge.data.provider.ProviderInfo
 import com.abhinavxt.debforge.data.provider.ResolvedLink
+import com.abhinavxt.debforge.data.provider.StreamQuality
 import com.abhinavxt.debforge.data.provider.torbox.dto.TbEnvelope
 import com.abhinavxt.debforge.data.provider.torbox.dto.TbItemDto
 import com.abhinavxt.debforge.data.provider.torbox.dto.TbQueuedControl
@@ -370,6 +371,35 @@ class TorBoxProvider @Inject constructor(
         return ResolvedLink(url = url, maxConnections = null, filesize = null)
     }
 
+    // --- stream qualities (HLS, TorBox Pro) -----------------------------------
+
+    override val supportsStreamQualities = true
+
+    override suspend fun streamQualities(sourceRef: String): List<StreamQuality> {
+        val ref = SourceRef.parse(sourceRef) ?: return emptyList()
+        val stream = try {
+            api.createStream(ref.itemId, ref.fileId, ref.kind.streamType).unwrap()
+        } catch (ce: CancellationException) {
+            throw ce
+        } catch (e: ProviderException) {
+            return emptyList() // refused, typically not Pro: the UI hides the choice
+        } catch (e: HttpException) {
+            if (e.code() in REFUSED_CODES) return emptyList() else throw e
+        }
+        return buildQualities(stream.videoHeight)
+    }
+
+    override suspend fun streamUrl(sourceRef: String, quality: StreamQuality): String {
+        if (quality.id == StreamQuality.ORIGINAL) return resolveLink(sourceRef).url
+        val ref = SourceRef.parse(sourceRef)
+            ?: throw ProviderException("Corrupt TorBox reference: $sourceRef")
+        val index = RESOLUTIONS.indexOfFirst { it.first.toString() == quality.id }.takeIf { it >= 0 }
+            ?: throw ProviderException("Unknown stream quality: ${quality.label}")
+        val url = api.createStream(ref.itemId, ref.fileId, ref.kind.streamType, index).unwrap().hlsUrl
+        if (url.isNullOrBlank()) throw ProviderException("TorBox returned no stream link")
+        return url
+    }
+
     // --- whole-item zip -------------------------------------------------------
 
     override fun zipBundle(parentRef: String, parentName: String, fileCount: Int): DownloadItem? {
@@ -687,10 +717,10 @@ class TorBoxProvider @Inject constructor(
         }
     }
 
-    private enum class Kind(val key: String, val label: String) {
-        TORRENT("torrent", "Torrent"),
-        USENET("usenet", "Usenet"),
-        WEB("web", "Web");
+    private enum class Kind(val key: String, val label: String, val streamType: String) {
+        TORRENT("torrent", "Torrent", "torrent"),
+        USENET("usenet", "Usenet", "usenet"),
+        WEB("web", "Web", "webdownload");
 
         companion object {
             fun fromKey(key: String) = entries.firstOrNull { it.key == key }
@@ -769,6 +799,17 @@ class TorBoxProvider @Inject constructor(
         const val SNAPSHOT_REUSE_MS = 5_000L
         /** Most single-item lookups per refresh for items listed without files (rate limit). */
         const val MAX_FILE_LOOKUPS = 10
+
+        /** createstream's chosen_resolution_index is the list position; the first is the height (the quality id). */
+        val RESOLUTIONS = listOf(144 to "144p", 240 to "240p", 360 to "360p", 480 to "480p", 720 to "720p", 1080 to "1080p", 1440 to "1440p", 2160 to "2160p")
+        val REFUSED_CODES = setOf(401, 402, 403)
+
+        /** "Original" plus every fixed resolution below [sourceHeight]; unknown height offers 480p to 1080p. */
+        fun buildQualities(sourceHeight: Int?): List<StreamQuality> {
+            val lower = RESOLUTIONS.filter { (h, _) -> if (sourceHeight == null) h in 480..1080 else h < sourceHeight }
+                .map { (h, label) -> StreamQuality(h.toString(), label, h) }.reversed()
+            return listOf(StreamQuality(StreamQuality.ORIGINAL, "Original", sourceHeight)) + lower
+        }
 
         fun <T> TbEnvelope<T>.unwrap(): T {
             if (!success) throw ProviderException("TorBox: ${detail ?: error ?: "request failed"}")

@@ -1,6 +1,7 @@
 package com.abhinavxt.debforge.data.provider.torbox
 
 import com.abhinavxt.debforge.data.provider.torbox.dto.TbEnvelope
+import com.abhinavxt.debforge.data.provider.torbox.dto.TbStreamDto
 import com.abhinavxt.debforge.data.provider.torbox.dto.TbQueuedControl
 import com.abhinavxt.debforge.data.provider.torbox.dto.TbQueuedDto
 import com.abhinavxt.debforge.data.provider.torbox.dto.TbTorrentControl
@@ -102,6 +103,16 @@ interface TorBoxApi {
         @Query("file_id") fileId: Long?,
         @Query("zip_link") zipLink: Boolean = false
     ): TbEnvelope<String>
+
+    // --- transcoded HLS stream (Pro only); no resolution index = original -----
+
+    @GET("stream/createstream")
+    suspend fun createStream(
+        @Query("id") id: Long,
+        @Query("file_id") fileId: Long,
+        @Query("type") type: String,
+        @Query("chosen_resolution_index") resolutionIndex: Int? = null
+    ): TbEnvelope<TbStreamDto>
 
     // --- adding (multipart/form-data, per TorBox's SDKs) -----------------------
     //

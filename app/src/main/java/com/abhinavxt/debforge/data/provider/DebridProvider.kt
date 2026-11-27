@@ -133,6 +133,23 @@ interface DebridProvider {
 
     /** Non-null if the service supports device-code sign-in. */
     val deviceLogin: DeviceLogin? get() = null
+
+    // --- optional: server-side quality choice for streaming (HLS) -----------
+
+    /** True if [streamQualities] can offer lower-quality streams (TorBox Pro). */
+    val supportsStreamQualities: Boolean get() = false
+
+    /** Qualities for the file at [sourceRef], "Original" first; empty if none are offered. */
+    suspend fun streamQualities(sourceRef: String): List<StreamQuality> = emptyList()
+
+    /** A playable URL for [quality] of [sourceRef]. Only called with a quality from [streamQualities]. */
+    suspend fun streamUrl(sourceRef: String, quality: StreamQuality): String =
+        throw ProviderException("${info.displayName} doesn't offer stream qualities")
+}
+
+/** One choice in the stream quality list. [id] is "original" or provider-specific; [height] is null if unknown. */
+data class StreamQuality(val id: String, val label: String, val height: Int?) {
+    companion object { const val ORIGINAL = "original" }
 }
 
 /**

@@ -186,6 +186,7 @@ dependencies {
 
     // In-app video player (PlayerView: controls, track pickers, TV D-pad).
     implementation(libs.androidx.media3.exoplayer)
+    implementation(libs.androidx.media3.exoplayer.hls)
     implementation(libs.androidx.media3.ui)
     // Background playback: media notification, lock screen and headset controls.
     implementation(libs.androidx.media3.session)
